@@ -1,0 +1,97 @@
+sentence,label,train_bool,to_add,to_be_predicted
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,None,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,1,some data,DISCRIMINATION AGE
+cherche boulanger,None,1,some data,None
+cherche boulanger,None,1,some data,None
+cherche boulanger,None,1,some data,None
+cherche boulanger,None,1,some data,None
+cherche boulanger,None,1,some data,None
+cherche boulanger,None,1,some data,None
+cherche boulanger,None,1,some data,None
+cherche boulanger,None,1,some data,None
+cherche boulanger,None,1,some data,None
+cherche boulanger,None,1,some data,None
+cherche boulanger,None,1,some data,None
+cherche boulanger,DISCRIMINATION AGE,1,some data,None
+cherche boulanger,None,1,some data,None
+cherche boulanger,None,1,some data,None
+cherche boulanger,None,1,some data,None
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,None,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche personne jeune,DISCRIMINATION AGE,0,some data,DISCRIMINATION AGE
+cherche boulanger,None,0,some data,None
+cherche boulanger,None,0,some data,None
+cherche boulanger,None,0,some data,None
+cherche boulanger,None,0,some data,None
+cherche boulanger,None,0,some data,None
+cherche boulanger,None,0,some data,None
+cherche boulanger,None,0,some data,None
+cherche boulanger,None,0,some data,None
+cherche boulanger,None,0,some data,None
+cherche boulanger,None,0,some data,None
+cherche boulanger,None,0,some data,None
+cherche boulanger,DISCRIMINATION AGE,0,some data,None
+cherche boulanger,None,0,some data,None
+cherche boulanger,None,0,some data,None
+cherche boulanger,None,0,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,1,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,1,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,1,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,1,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,1,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,1,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,1,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,1,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,1,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,1,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,1,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,1,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,1,some data,None
+cherche grande personne,None,1,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,0,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,0,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,0,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,0,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,0,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,0,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,0,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,0,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,0,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,0,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,0,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,0,some data,None
+cherche grande personne,DISCRIMINATION TAILLE,0,some data,None
+cherche grande personne,None,0,some data,None

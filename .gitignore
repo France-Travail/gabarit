@@ -1,0 +1,8 @@
+.idea
+__pycache__
+.vscode
+**/*egg-info*
+dist/**
+build/**
+test_template**
+**/venv**

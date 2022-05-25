@@ -1,0 +1,60 @@
+# Data manipulation
+numpy==1.19.5
+pandas==1.3.5
+
+# Models
+tensorflow==2.6.2
+scikit_learn==0.24.2
+
+# If needed for local installation, add : -f https://download.pytorch.org/whl/torch_stable.html
+# If GPU : replace +cpu by +cu111
+torch==1.8.2+cpu
+torchvision==0.9.2+cpu
+
+# If needed for local installation, add : -f https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.8/index.html
+# If GPU : replace +cpu by +cu111
+detectron2==0.6+cpu
+# Warning, on windows, there are no pre-built for detectron2
+# You must first install torch and then install detectron2 manually:
+# pip install git+https://github.com/facebookresearch/detectron2.git@v0.6+cpu
+# (you might need to update Visual Studio C++)
+
+
+# Plots & cie
+matplotlib==3.3.3
+seaborn==0.11.0
+opencv-python-headless==4.5.5.62
+
+# Others
+dill==0.3.3
+mlflow==1.12.1
+pycocotools==2.0.4
+tqdm==4.62.2
+
+
+# Optionnals - useless in prod.
+pydot==1.4.1 # Needed to plot models architecture
+lime==0.2.0.1 # Needed to get a model explanation
+
+
+# Optionnals - streamlit POC
+streamlit==1.7.0
+altair==4.2.0
+
+
+# Optionnals - code quality & cie
+mypy==0.910
+types-setuptools==57.0.2
+flake8==3.7.9
+black==21.4b2
+isort==4.3.21
+nose==1.3.7
+nose-exclude==0.5.0
+coverage==5.3
+
+# Optionnals - DVC{% if dvc_config_ok is false %}
+# WARNING : you didn't set up a DVC config file when you generated the project. Hence this is useless and can be removed{% endif %}
+dvc==1.10.1
+{% if additional_pip_packages is not none %}
+{{additional_pip_packages}}
+{% endif %}

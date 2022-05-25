@@ -1,0 +1,47 @@
+{% if dvc_config_ok is true %}#!/bin/bash
+# Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+# Add warnings if some data files are not tracked by DVC
+GIT_WARNINGS=""
+DVC_WARNINGS=""
+for entry in data/*
+do
+	if [[ ( $entry != *.dvc ) && ( ${entry: -4: -3} == '.' ) ]]
+	then
+		DVC_FILE="${entry}.dvc"
+		if ! [[ -f "$DVC_FILE" ]]
+		then  # Condition : no .dvc file
+			DVC_WARNINGS="${DVC_WARNINGS}[DVC] - Warning, the file ${entry} is not tracked by DVC\n"
+		else  # Condition : .dvc file, but untracked
+			GIT_TRACKED=$(git ls-files $DVC_FILE)
+			{% raw %}if [[ ${#GIT_TRACKED} == 0 ]]{% endraw %}
+			then
+				GIT_WARNINGS="${GIT_WARNINGS}[GIT] - Warning, the file ${DVC_FILE} is not tracked by GIT\n"
+			fi
+		fi
+  fi
+done
+echo -e $DVC_WARNINGS
+echo -e $GIT_WARNINGS
+
+# Execution hook dvc if available
+if command -v dvc &> /dev/null
+then
+	echo -e "[DVC] - Execution hook 'pre-push'\n"
+	exec dvc git-hook pre-push $@
+else
+	echo -e "[DVC] - Warning the command 'dvc' is unavailable. Skip DVC. \n"
+fi
+{% endif %}

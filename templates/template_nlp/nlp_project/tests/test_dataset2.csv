@@ -1,0 +1,32 @@
+#preprocess_P1
+x_col;y_col;preprocessed_text
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule
+Ceci est un test;1;ceci est un test
+"Ceci est un autre test; avec un point-virgule";0;ceci est un autre test avec un point virgule

@@ -1,0 +1,10 @@
+{% if dvc_config_ok is true %}/config.local
+/updater
+/lock
+/updater.lock
+/tmp
+/state-journal
+/state-wal
+/state
+/cache
+{% endif %}

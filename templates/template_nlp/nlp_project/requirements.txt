@@ -1,0 +1,50 @@
+# Data manipulation
+numpy==1.19.5
+pandas==1.3.5
+
+# Models
+tensorflow==2.6.2
+scikit_learn==0.24.2
+lightgbm==2.3.0
+# If you don't have access to pytorch ressources (e.g. via your proxy), you can add : -f https://download.pytorch.org/whl/torch_stable.html
+# If you need a GPU installation, replace torch version with 1.8.2+cu111
+torch==1.8.2+cpu
+transformers==4.3.2
+pytorch_lightning==1.1.8
+
+# NLP
+words-n-fun==1.4.0
+nltk==3.4.5 # Already in wnf
+
+# Plots
+matplotlib==3.3.3
+seaborn==0.11.0
+
+# Others
+dill==0.3.3
+mlflow==1.12.1
+
+# Optionnals - useless in prod.
+pydot==1.4.1 # Needed to plot models architecture
+lime==0.2.0.1 # Needed to get a model explanation
+
+# Optionnals - streamlit POC
+streamlit==1.7.0
+altair==4.2.0
+
+# Optionnals - code quality & cie
+mypy==0.910
+types-setuptools==57.0.2
+flake8==3.7.9
+black==21.4b2
+isort==4.3.21
+nose==1.3.7
+nose-exclude==0.5.0
+coverage==5.3
+
+# Optionnals - DVC{% if dvc_config_ok is false %}
+# WARNING : you didn't set up a DVC config file when you generated the project. Hence this is useless and can be removed{% endif %}
+dvc==1.10.1
+{% if additional_pip_packages is not none %}
+{{additional_pip_packages}}
+{% endif %}

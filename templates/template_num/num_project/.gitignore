@@ -1,0 +1,19 @@
+.idea
+__pycache__
+.vscode
+{{package_name}}-data/**
+!{{package_name}}-data/**/*/  # Unignore subfolders
+!{{package_name}}-data/sources/*  # Unignore all files in sources subfolder
+!{{package_name}}-data/**/*.dvc  # Unignore .dvc files
+{{package_name}}-models/**
+{{package_name}}-transformers/**
+{{package_name}}-pipelines/**
+**/*egg-info*
+nosetests.xml
+.coverage
+**/output_coverage_tests/**
+local
+venv**
+**/ml_runs/**
+dist/**
+build/**
