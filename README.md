@@ -119,13 +119,16 @@ Obviously any prior knowledge of the holy trinity of python ML modules (pandas, 
 Each individual framework contains a `generate_XXX_project.py` file that creates a new project code base. To be able to run this script, you only have to install Jinja2: `pip install Jinja2==2.10.3`.
 They take several parameters as input :
 
-- '-n' or '--name' : Name of the package/project (lowercase, no whitespace)
-- '-p' or '--path' : Path (Absolute or relative) where to create the main directory of the project
-- '--sep' : Default CSV separator
-- '--encoding' : Default encoding
+- **'-n'** or **'--name'** : Name of the package/project (lowercase, no whitespace)
+- **'-p'** or **'--path'** : Path (Absolute or relative) where to create the main directory of the project
+- **'-c'** or **'--config'** : Path (Absolute or relative) to a .ini configuration file.  
+	An default configuration file is given alongside each project. (`default_config.ini`).
+	It usually contains stuff like default encoding, default separator for .csv files, pip proxy settings, etc.
+- **'--upload'** or **'--upload_intructions'** : Path (Absolute or relative) to a file that contains a list of instructions to upload a trained model to your favorite storage solution.
+- **'--dvc'** or **'--dvc_config'** : Path (Absolute or relative) to a DVC configuration file. If not provided, DVC won't be used.
 
 
-Example : `python generate_nlp_project.py -n my_awesome_package -p ../../../my_new_project --sep ';' --encoding utf-8`
+Example : `python generate_nlp_project.py -n my_awesome_package -p ../../../my_new_project -c my_configuration.ini --upload my_instructions.md --dvc dvc_config`
 
 ### 2.2 Setup the new project  <a name="setup"></a>
 
