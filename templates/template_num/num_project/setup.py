@@ -45,6 +45,7 @@ setup(
         'yellowbrick==1.3.post1',
         'dill>=0.3.2,<0.3.4',
         'mlflow>=1.11.0,<1.12.2',
+        'protobuf==3.20.1',  #https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
     ],
     extras_require={
         "tensorflow": ["tensorflow==2.6.2"],

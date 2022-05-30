@@ -22,6 +22,8 @@ seaborn==0.11.0
 
 # Others
 dill==0.3.3
+# https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+protobuf==3.20.1
 mlflow==1.12.1
 
 # Optionnals - useless in prod.
