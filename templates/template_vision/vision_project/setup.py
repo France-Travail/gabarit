@@ -21,7 +21,7 @@ from setuptools import setup
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'version.txt'), 'r') as version_file:
     version = version_file.read().strip()
 
-version = os.getenv('VERSION') or version+'-local'
+version = os.getenv('VERSION') or f"{version}-local"
 # Setup
 setup(
     name="{{package_name}}",
@@ -49,7 +49,7 @@ setup(
         'protobuf==3.20.1',  #https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
     ],
     extras_require={
-        "detectron": ["torch==1.8.2+cpu", "detectron2==0.6+cpu", "torchvision==0.9.2+cpu"],
+        "detectron": ["torch==1.8.1+cpu", "detectron2==0.6+cpu", "torchvision==0.9.1+cpu"],  # If GPU with cuda 11.1 : replace +cpu by +cu111
     }
     # pip install {{package_name}} || pip install {{package_name}}[detectron]
 )

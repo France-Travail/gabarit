@@ -64,7 +64,7 @@ class ModelMockClassifier(ModelClassifierMixin, ModelClass):
             return self.get_classes_from_proba(predicted_proba)
     def predict_proba(self, df_test, batch_size: int = None):
         '''Simplified version of predict_proba'''
-        return self.predict(x_test, return_proba=True, batch_size=batch_size)
+        return self.predict(df_test, return_proba=True, batch_size=batch_size)
     def predict_on_name(self, name: str):
         if 'toto' in name:
             return [0.8, 0.1, 0.1]

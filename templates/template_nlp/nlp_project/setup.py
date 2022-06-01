@@ -21,7 +21,7 @@ from setuptools import setup
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'version.txt'), 'r') as version_file:
     version = version_file.read().strip()
 
-version = os.getenv('VERSION') or version+'-local'
+version = os.getenv('VERSION') or f"{version}-local"
 # Setup
 setup(
     name="{{package_name}}",
@@ -49,7 +49,7 @@ setup(
     ],
     extras_require={
         "tensorflow": ["tensorflow==2.6.2"],
-        "torch": ["torch==1.8.2+cpu", "transformers==4.3.2", "pytorch_lightning==1.1.8"],  # replace +cpu with +cu111 for GPU installation
+        "torch": ["torch==1.8.1+cpu", "transformers==4.3.2", "pytorch_lightning==1.1.8"],  # If GPU with cuda 11.1 : replace +cpu by +cu111
     }
     # pip install {{package_name}} || pip install {{package_name}}[tensorflow] || pip install {{package_name}}[torch]
 )

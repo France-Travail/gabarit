@@ -6,6 +6,7 @@
 - Add more options with Jinja ? For example --without-tensorflow would remove all references to TensorFlow. Not easy to test.
 - Add other templates ? Such as unsupervised templates.
 - Fix all TODOs
+- Add a note in the README.md about torch packages management (cf. https://stackoverflow.com/questions/57689387/equivalent-for-find-links-in-setup-py)
 
 
 ### All templates
@@ -27,6 +28,7 @@
 - Should we keep the `with_new_embedding` argument ? It is not used.
 - We should probably mutualise all keras models' `predict_proba` functions in `model_keras.py`. Only `ModelTfidfDense` is different, it should overload this method.
 - Rework `model_rules.py`.
+- Download flaubert_small_cased before using tests (in Actions)
 
 
 ### Template - Numerical

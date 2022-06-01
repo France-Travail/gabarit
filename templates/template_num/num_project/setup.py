@@ -21,7 +21,7 @@ from setuptools import setup
 with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'version.txt'), 'r') as version_file:
     version = version_file.read().strip()
 
-version = os.getenv('VERSION') or version+'-local'
+version = os.getenv('VERSION') or f"{version}-local"
 # Setup
 setup(
     name="{{package_name}}",

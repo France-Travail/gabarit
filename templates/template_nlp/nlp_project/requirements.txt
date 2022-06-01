@@ -6,9 +6,11 @@ pandas==1.3.5
 tensorflow==2.6.2
 scikit_learn==0.24.2
 lightgbm==2.3.0
-# If you don't have access to pytorch ressources (e.g. via your proxy), you can add : -f https://download.pytorch.org/whl/torch_stable.html
-# If you need a GPU installation, replace torch version with 1.8.2+cu111
-torch==1.8.2+cpu
+
+# Torch
+# If GPU with cuda 11.1 : replace +cpu by +cu111
+--find-links https://download.pytorch.org/whl/torch_stable.html
+torch==1.8.1+cpu
 transformers==4.3.2
 pytorch_lightning==1.1.8
 

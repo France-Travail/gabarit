@@ -90,6 +90,7 @@ class Case1_Env(unittest.TestCase):
             returncodes = [0]
         self.assertTrue(subprocess.run(copy_data, shell=True).returncode in returncodes)
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label.csv')))
+        # TODO: Try to load flaubert small for torch tests
 
 
 class Case2_functionals_tests(unittest.TestCase):

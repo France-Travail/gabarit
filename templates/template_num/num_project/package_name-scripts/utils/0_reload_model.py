@@ -109,7 +109,7 @@ def main(model_dir: str, config_file: str = 'configurations.json',
 
     # Get model type
     model_type_dicts = {
-        'model_ridge_classifier': model_ridge_classifier.ModelRidgeClassifier
+        'model_ridge_classifier': model_ridge_classifier.ModelRidgeClassifier,
         'model_logistic_regression_classifier': model_logistic_regression_classifier.ModelLogisticRegressionClassifier,
         'model_svm_classifier': model_svm_classifier.ModelSVMClassifier,
         'model_sgd_classifier': model_sgd_classifier.ModelSGDClassifier,
