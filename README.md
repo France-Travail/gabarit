@@ -14,7 +14,7 @@ This project is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE V3.0. Pl
 - [2. Usage](#usage)
 	- [2.1 Kickstart a new project](#newproject)
 	- [2.2 Setup the new project](#setup)
-	- [2.3 QGeneral principles](#principles)
+	- [2.3 General principles](#principles)
 	- [2.4 Main steps of a given project](#steps)
 	- [2.5 Data formats](#format)
 - [3. Features](#features)
