@@ -13,7 +13,7 @@ transformers==4.3.2
 pytorch_lightning==1.1.8
 
 # NLP
-words-n-fun==1.4.0
+words-n-fun==1.5.0
 nltk==3.4.5 # Already in wnf
 
 # Plots
