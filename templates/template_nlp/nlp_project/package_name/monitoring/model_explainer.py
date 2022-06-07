@@ -25,7 +25,7 @@ import logging
 import numpy as np
 from typing import Type, Union, Any
 from lime.explanation import Explanation
-from pe_semantic.preprocessing import api
+from words_n_fun.preprocessing import api
 from lime.lime_text import IndexedString, TextDomainMapper, LimeTextExplainer
 
 from {{package_name}}.preprocessing import preprocess
