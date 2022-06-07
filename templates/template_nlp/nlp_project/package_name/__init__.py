@@ -16,7 +16,7 @@
 
 
 import logging
-import pe_semantic
+import words_n_fun as wnf
 
 # Get logger (def level: INFO)
 logger = logging.getLogger(__name__)
@@ -36,4 +36,4 @@ logger.addHandler(ch)
 
 
 ## Manage dependancies loggers (def level: INFO)
-pe_semantic.logger.setLevel(logging.INFO)
+wnf.logger.setLevel(logging.INFO)

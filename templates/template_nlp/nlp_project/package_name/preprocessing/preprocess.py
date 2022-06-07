@@ -22,8 +22,8 @@ import logging
 import functools
 import pandas as pd
 from typing import Callable
-from pe_semantic.preprocessing import api
-from pe_semantic import utils as pe_semantic_utils
+from words_n_fun.preprocessing import api
+from words_n_fun import utils as wnf_utils
 
 from {{package_name}} import utils
 
@@ -65,8 +65,8 @@ def get_preprocessor(preprocess_str: str) -> Callable:
     return preprocessor
 
 
-@pe_semantic_utils.data_agnostic
-@pe_semantic_utils.regroup_data_series
+@wnf_utils.data_agnostic
+@wnf_utils.regroup_data_series
 def preprocess_sentence_P1(docs: pd.Series) -> pd.Series:
     '''Applies "default" preprocess to a list of documents (text)
 
