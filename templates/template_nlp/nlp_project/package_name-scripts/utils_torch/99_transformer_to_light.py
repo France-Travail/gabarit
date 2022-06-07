@@ -94,12 +94,12 @@ def main(model_dir: str) -> None:
     # hence, it helps with some parameters such as `_get_model`
     list_keys_json_data = ['filename', 'min_rows', 'preprocess_str', 'fit_time',
                            'date', '_get_model', 'pytorch_model']
-    json_data = {key: configs.get(key, None) for key in list_keys_json_data}
+    json_data = {key: model_conf.get(key, None) for key in list_keys_json_data}
 
     # Add training version
-    if 'package_version' in configs:
+    if 'package_version' in model_conf:
         # If no trained version yet, use package version
-        trained_version = configs.get('trained_version', configs['package_version'])
+        trained_version = model_conf.get('trained_version', model_conf['package_version'])
         if trained_version != utils.get_package_version():
             json_data['trained_version'] = trained_version
 

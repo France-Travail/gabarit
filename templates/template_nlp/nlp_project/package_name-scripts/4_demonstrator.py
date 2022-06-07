@@ -190,7 +190,7 @@ def get_prediction(model: Type[ModelClass], model_conf: dict, content: str) -> T
     predictions, probas = model.predict_with_proba([content_preprocessed])
 
     # Get prediction
-    prediction = prediction[0]
+    prediction = predictions[0]
     probas = probas[0]
 
     # Return with prediction time

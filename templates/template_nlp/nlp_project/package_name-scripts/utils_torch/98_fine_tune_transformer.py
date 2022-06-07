@@ -46,7 +46,7 @@ logger = logging.getLogger('{{package_name}}.98_fine_tune_transformer')
 
 
 
-def main(dataset_train: str, dataset_valid: str, pretrained_model_name: str, x_col: Uniont[str, int],
+def main(dataset_train: str, dataset_valid: str, pretrained_model_name: str, x_col: Union[str, int],
          batch_size: int = 4, epochs: int = 1, output_dir: Union[str, None] = None,
          sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}') -> None:
     '''Finetunes a pretrained transformer
@@ -80,7 +80,7 @@ def main(dataset_train: str, dataset_valid: str, pretrained_model_name: str, x_c
     dataset_valid = os.path.join(utils.get_data_path(), dataset_valid)
     pretrained_model_path = os.path.join(utils.get_transformers_path(), pretrained_model_name)
     output_dir = os.path.join(utils.get_transformers_path(), output_dir)
-    
+
     if not os.path.exists(dataset_train):
         raise FileNotFoundError(f"The file {dataset_train} does not exist")
     if not os.path.exists(dataset_valid):
@@ -92,11 +92,11 @@ def main(dataset_train: str, dataset_valid: str, pretrained_model_name: str, x_c
 
     # Load data
     df_train = pd.read_csv(dataset_train, sep=sep, encoding=encoding)
-    df_val = pd.read_csv(dataset_valid, sep=sep, encoding=encoding)
+    df_valid = pd.read_csv(dataset_valid, sep=sep, encoding=encoding)
     # Legacy: add a fake target column to comply with ModelPytorch
     y_col = ["dummy"]
     df_train[y_col] = pd.Series(np.random.randint(0, 2, df_train.shape[0]))
-    df_val[y_col] = pd.Series(np.random.randint(0, 2, df_val.shape[0]))
+    df_valid[y_col] = pd.Series(np.random.randint(0, 2, df_valid.shape[0]))
     x_train, y_train = df_train[x_col], df_train[y_col]
     x_valid, y_valid = df_valid[x_col], df_valid[y_col]
 
