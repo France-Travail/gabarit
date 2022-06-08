@@ -19,9 +19,11 @@
 
 import os
 import argparse
+import tempfile
 import configparser
 from typing import Union
 from shutil import copyfile
+from distutils.dir_util import copy_tree
 from jinja2 import Environment, FileSystemLoader
 
 
@@ -70,21 +72,6 @@ def generate(project_name: str, project_path: str, config_path: str,
     if not os.path.exists(output_dir):
         os.makedirs(output_dir)
 
-    # Copy models upload instructions
-    ressources_path = os.path.join(output_dir, f'{project_name}-ressources')
-    if not os.path.exists(ressources_path):
-        os.makedirs(ressources_path)
-    upload_intructions_target_path = os.path.join(ressources_path, 'model_upload_instructions.md')
-    copyfile(upload_intructions_path, upload_intructions_target_path)
-
-    # Copy dvc config if available
-    if dvc_config_path is not None:
-        dvc_config_directory = os.path.join(output_dir, '.dvc')
-        if not os.path.exists(dvc_config_directory):
-            os.makedirs(dvc_config_directory)
-        dvc_target_path = os.path.join(dvc_config_directory, 'config')
-        copyfile(dvc_config_path, dvc_target_path)
-
     # Retrieve configurations
     config = configparser.ConfigParser(comment_prefixes=';')
     config.read(config_path)
@@ -113,60 +100,83 @@ def generate(project_name: str, project_path: str, config_path: str,
     detectron_config_backup_urls = detectron_config_backup_urls.split('\n') if detectron_config_backup_urls is not None else None
     detectron_model_backup_urls = detectron_model_backup_urls.split('\n') if detectron_model_backup_urls is not None else None
 
-    # Get environment
-    template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'vision_project')
-    env = Environment(loader=FileSystemLoader(template_dir))
+    # Render the new project -> all the process is made using a temporary folder
+    # Idea : we will copy all the files that needs to be rendered + the optionnal instructions / configurations in this folder
+    # Then we will render the whole folder at once
+    with tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__))) as tmp_folder:
 
-    # For each template (a.k.a. files), load and fill it, then save into output dir
-    for template_name in env.list_templates():
+        # Copy main folder to be rendered
+        template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'vision_project')
+        copy_tree(template_dir, tmp_folder)
 
-        # Nominal process
-        if not template_name.endswith(('.jpg', '.jpeg', '.png')):
-            # Get render
-            template = env.get_template(template_name)
-            render = template.render(package_name=project_name,
-                                     default_sep=default_sep,
-                                     default_encoding=default_encoding,
-                                     pip_trusted_host=pip_trusted_host,
-                                     pip_index_url=pip_index_url,
-                                     mlflow_tracking_uri=mlflow_tracking_uri,
-                                     additional_pip_packages=additional_pip_packages,
-                                     vgg16_weights_backup_urls=vgg16_weights_backup_urls,
-                                     efficientnetb6_weights_backup_urls=efficientnetb6_weights_backup_urls,
-                                     detectron_config_base_backup_urls=detectron_config_base_backup_urls,
-                                     detectron_config_backup_urls=detectron_config_backup_urls,
-                                     detectron_model_backup_urls=detectron_model_backup_urls,
-                                     dvc_config_ok=dvc_config_ok)
+        # Copy models upload instructions
+        ressources_path = os.path.join(tmp_folder, f'{project_name}-ressources')
+        if not os.path.exists(ressources_path):
+            os.makedirs(ressources_path)
+        upload_intructions_target_path = os.path.join(ressources_path, 'model_upload_instructions.md')
+        copyfile(upload_intructions_path, upload_intructions_target_path)
 
-            # Ignore empty files
-            # This is useful to remove some files when configuration are missing, e.g. for DVC
-            if render == '' and not template_name.endswith('__init__.py'):
-                continue
+        # Copy dvc config if available
+        if dvc_config_path is not None:
+            dvc_config_directory = os.path.join(tmp_folder, '.dvc')
+            if not os.path.exists(dvc_config_directory):
+                os.makedirs(dvc_config_directory)
+            dvc_target_path = os.path.join(dvc_config_directory, 'config')
+            copyfile(dvc_config_path, dvc_target_path)
 
-            # Replace package_name in file/directory
-            template_name = template_name.replace('package_name', project_name)
+        # Get environment
+        env = Environment(loader=FileSystemLoader(tmp_folder))
 
-            # Save it
-            final_path = os.path.join(output_dir, template_name)
-            basedir = os.path.dirname(final_path)
-            if not os.path.exists(basedir):
-                os.makedirs(basedir)
-            # Encoding scripts in utf-8 !
-            with open(final_path, 'w', encoding='utf-8') as f:
-                f.write(render)
+        # For each template (a.k.a. files), load and fill it, then save into output dir
+        for template_name in env.list_templates():
 
-        # Specials format -> copy/paste
-        else:
-            initial_path = os.path.join(template_dir, template_name)
-            # Replace package_name in file/directory
-            template_name = template_name.replace('package_name', project_name)
-            final_path = os.path.join(output_dir, template_name)
-            dist_dir_path = os.path.dirname(final_path)
-            if not os.path.exists(dist_dir_path):
-                os.makedirs(dist_dir_path)
-            copyfile(initial_path, final_path)
+            # Nominal process
+            if not template_name.endswith(('.jpg', '.jpeg', '.png')):
+                # Get render
+                template = env.get_template(template_name)
+                render = template.render(package_name=project_name,
+                                         default_sep=default_sep,
+                                         default_encoding=default_encoding,
+                                         pip_trusted_host=pip_trusted_host,
+                                         pip_index_url=pip_index_url,
+                                         mlflow_tracking_uri=mlflow_tracking_uri,
+                                         additional_pip_packages=additional_pip_packages,
+                                         vgg16_weights_backup_urls=vgg16_weights_backup_urls,
+                                         efficientnetb6_weights_backup_urls=efficientnetb6_weights_backup_urls,
+                                         detectron_config_base_backup_urls=detectron_config_base_backup_urls,
+                                         detectron_config_backup_urls=detectron_config_backup_urls,
+                                         detectron_model_backup_urls=detectron_model_backup_urls,
+                                         dvc_config_ok=dvc_config_ok)
 
-    # Create all subdirectories
+                # Ignore empty files
+                # This is useful to remove some files when configuration are missing, e.g. for DVC
+                if render == '' and not template_name.endswith('__init__.py'):
+                    continue
+
+                # Replace package_name in file/directory
+                template_name = template_name.replace('package_name', project_name)
+
+                # Save it
+                final_path = os.path.join(output_dir, template_name)
+                basedir = os.path.dirname(final_path)
+                if not os.path.exists(basedir):
+                    os.makedirs(basedir)
+                # Encoding scripts in utf-8 !
+                with open(final_path, 'w', encoding='utf-8') as f:
+                    f.write(render)
+
+            # Specials format -> copy/paste
+            else:
+                initial_path = os.path.join(template_dir, template_name)
+                # Replace package_name in file/directory
+                template_name = template_name.replace('package_name', project_name)
+                final_path = os.path.join(output_dir, template_name)
+                dist_dir_path = os.path.dirname(final_path)
+                if not os.path.exists(dist_dir_path):
+                    os.makedirs(dist_dir_path)
+                copyfile(initial_path, final_path)
+
+    # Everything is rendered, we just need to create some subdirectories
     data_dir = os.path.join(output_dir, f'{project_name}-data')
     models_weights_dir = os.path.join(output_dir, f'{project_name}-data', 'transfer_learning_weights')
     detectron2_conf_dir = os.path.join(output_dir, f'{project_name}-data', 'detectron2_conf_files')
