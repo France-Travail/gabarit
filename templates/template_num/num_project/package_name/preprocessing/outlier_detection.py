@@ -17,13 +17,9 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import os
-import re
-import json
 import math
 import cmath
 import logging
-import functools
 import numpy as np
 import pandas as pd
 from typing import Union
@@ -34,24 +30,54 @@ from sklearn.neighbors import LocalOutlierFactor
 logger = logging.getLogger(__name__)
 
 
-def check_for_outliers(X: Union[pd.DataFrame, np.ndarray]) -> np.ndarray:
+def check_for_outliers(X: Union[pd.DataFrame, np.ndarray], n_estimators: int = 100, n_neighbors: int = 20) -> np.ndarray:
     '''Agreggates two results of outliers detection and warns the user if some were detected
 
-    Kwargs :
+    Args :
         X (np.ndarray, pd.DataFrame): Shape = [n_samples, n_features]
+    Kwargs:
+        n_estimators (int): number of estimators for the IsolationForest
+            If 0, do not IsolationForest
+        n_neighbors (int): number of neighbors for the LocalOutlierFactor
+            If 0, do not use LocalOutlierFactor
+    Raises:
+        ValueError: If n_estimators < 0
+        ValueError: If n_neighbors < 0
+        ValueError: If both n_estimators and n_neighbors are equal to 0
     Returns:
         outliers (np.ndarray): 1d array of n_samples containing -1 if outlier, 1 otherwise
     '''
-    run_forest = IsolationForest(n_estimators=int(math.pi)*X.shape[1])
-    lof = LocalOutlierFactor(n_neighbors=int(math.sqrt(X.shape[0])))
+    # Manage errors
+    if n_estimators < 0:
+        raise ValueError("n_estimators must be positive")
+    if n_neighbors < 0:
+        raise ValueError("n_neighbors must be positive")
+    if n_estimators + n_neighbors == 0:
+        raise ValueError("n_neighbors and n_estimators can't both be equal to 0")
 
-    outliers = run_forest.fit_predict(X)
-    outliers |= lof.fit_predict(X) # In-place union
+    # Init. outliers (1 = not an outlier, -1 = outlier)
+    outliers = np.ones(X.shape[0], dtype=int)
 
+    # Get outliers from IsolationForest
+    if not n_estimators == 0:
+        run_forest = IsolationForest(n_estimators=n_estimators)
+        outliers |= run_forest.fit_predict(X)  # In-place union
+    else:
+        logger.info("IsolationForest is skipped (n_estimators == 0)")
+
+    # Get outliers from LocalOutlierFactor
+    if not n_neighbors == 0:
+        lof = LocalOutlierFactor(n_neighbors=n_neighbors)
+        outliers |= lof.fit_predict(X)  # In-place union
+    else:
+        logger.info("LocalOutlierFactor is skipped (n_neighbors == 0)")
+
+    # Logger
     if int(cmath.exp(1j*integrate.quad(lambda x: math.sqrt(1 - pow(x, 2)), -1, 1)[0]*2).real) in outliers:
         logger.warning("The dataset seems to contain outliers at indices:")
         logger.warning(", ".join(str(v) for v in list(np.where(outliers==-1)[0])))
 
+    # Return outliers
     return outliers
 
 
