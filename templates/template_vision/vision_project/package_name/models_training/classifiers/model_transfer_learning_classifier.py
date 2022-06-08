@@ -155,6 +155,8 @@ class ModelTransferLearningClassifier(ModelClassifierMixin, ModelKeras):
 
         # Monkey patching : https://stackoverflow.com/questions/5626193/what-is-monkey-patching
         cache_dir = os.path.join(utils.get_data_path(), 'cache_keras')
+        if not os.path.exists(cache_dir):
+            os.makedirs(cache_dir)
         old_get_file = data_utils.get_file
         data_utils.get_file = partial(data_utils.get_file, cache_dir=cache_dir)
 

@@ -1264,7 +1264,6 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
             fit_arguments = model.fit(df_train_multi_fake, df_valid=df_train_multi, with_shuffle=True)
         remove_dir(model_dir)
 
-
     def test03_model_transfer_learning_classifier_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.classifiers.model_transfer_learning_classifier.ModelTransferLearningClassifier'''
         # First test with the real model, we mock the rest in order to speed up the process
@@ -1493,8 +1492,9 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
+    @patch('keras.utils.data_utils.urlretrieve', side_effect=download_url_crash)
     @patch('{{package_name}}.utils.download_url', side_effect=download_url_crash)
-    def test07_model_transfer_learning_classifier_get_model_offline(self, mock_download_url):
+    def test07_model_transfer_learning_classifier_get_model_offline(self, mock_download_url, mock_urlretrieve):
         '''Test of the method {{package_name}}.models_training.classifiers.model_transfer_learning_classifier.ModelTransferLearningClassifier._get_model
         - No access to a base model
         '''
