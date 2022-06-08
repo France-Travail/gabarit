@@ -1,10 +1,11 @@
-name: Build & Test - NUM
+name: Build & Tests - NLP - Auto
 on:
   push:
     branches:
       - 'main'
       - 'release/v*'
   pull_request:
+    types: [opened, reopened, edit]
     branches:
       - 'main'
       - 'release/v*'
@@ -30,14 +31,14 @@ jobs:
       - name: Lint with flake8
         run: |
           # Create a new temporary project
-          cd templates/template_num
-          python generate_num_project.py -n tmp_project_flake8 -p tmp_project_flake8
+          cd templates/template_nlp
+          python generate_nlp_project.py -n tmp_project_flake8 -p tmp_project_flake8
           cd tmp_project_flake8
           # Stop the build if there are Python syntax errors or undefined names
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # Exit-zero treats all errors as warnings.
           flake8 . --count --exit-zero --max-complexity=10 --ignore=E501 --statistics
-      - name: Test generate NUM
+      - name: Test generate NLP
         run: |
-          cd templates/template_num
-          python num_tests/tests_setup.py
+          cd templates/template_nlp
+          python nlp_tests/tests_setup.py
