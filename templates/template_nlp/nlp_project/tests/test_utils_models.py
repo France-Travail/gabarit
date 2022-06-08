@@ -101,6 +101,7 @@ class UtilsModelsTests(unittest.TestCase):
         test_size = 0.5
         col = 'col2'
         train, test = utils_models.stratified_split(input_test, col, test_size=test_size)
+        # -1 because the '2' is removed (not enough values)
         self.assertEqual(train.shape[0], (input_test.shape[0] - 1) * (1 - test_size))
         self.assertEqual(test.shape[0], (input_test.shape[0] - 1) * test_size)
         self.assertEqual(train[train[col] == 0].shape[0], input_test[input_test[col] == 0].shape[0] * (1 - test_size))
@@ -117,16 +118,19 @@ class UtilsModelsTests(unittest.TestCase):
     def test04_hierarchical_split(self):
         '''Test of the function {{package_name}}.models_training.utils_models.hierarchical_split'''
         # Valids to test
-        val_doublon = 'test1'
-        input_test = pd.DataFrame({'col1': ['a', 'b', 'c', 'd', 'e', 'f', 'g', 'h', 'i', 'j'],
-                                   'col2': [val_doublon, 'a', 'b', 'c', val_doublon, 'd', 'e', 'f', 'g', 'h']})
+        duplicate_val = 'test1'
+        input_test = pd.DataFrame({'col1': ['x', 'a', 'b', 'c', 'x', 'd', 'e', 'f', 'g', 'h', 'x', 'x', 'x', 'x', 'i'],
+                                   'col2': [duplicate_val, 'a', 'b', 'c', duplicate_val, 'd', 'e', 'f', 'g', 'h', duplicate_val, duplicate_val, duplicate_val, duplicate_val, 'i']})
         test_size = 0.2
         col = 'col2'
         train, test = utils_models.hierarchical_split(input_test, col, test_size=test_size)
-        self.assertEqual(train.shape[0], input_test.shape[0] * (1 - test_size))
-        self.assertEqual(test.shape[0], input_test.shape[0] * test_size)
-        self.assertTrue((train[train[col] == val_doublon].shape[0] == 2 and test[test[col] == val_doublon].shape[0] == 0)
-                        or (train[train[col] == val_doublon].shape[0] == 0 and test[test[col] == val_doublon].shape[0] == 2))
+        # We can't really test the dataframe size here (depends on where the duplicate value is sent)
+        # Instead, we test the nb of unique values
+        self.assertEqual(len(train[col].unique()), len(input_test[col].unique()) * (1 - test_size))
+        self.assertEqual(len(test[col].unique()), len(input_test[col].unique()) * test_size)
+        # Check all 6 duplicates value in the same dataframe
+        self.assertTrue((train[train[col] == duplicate_val].shape[0] == 6 and test[test[col] == duplicate_val].shape[0] == 0)
+                        or (train[train[col] == duplicate_val].shape[0] == 0 and test[test[col] == duplicate_val].shape[0] == 6))
 
         # Check the input(s) type(s)
         with self.assertRaises(ValueError):
