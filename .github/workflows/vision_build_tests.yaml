@@ -1,10 +1,11 @@
-name: Build & Test - VISION
+name: Build & Tests - VISION - Auto
 on:
   push:
     branches:
       - 'main'
       - 'release/v*'
   pull_request:
+    types: [opened, reopened, edit]
     branches:
       - 'main'
       - 'release/v*'
