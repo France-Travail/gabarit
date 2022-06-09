@@ -27,7 +27,7 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'version.txt'
 setup(
     name='gabarit',
     version=version,
-    packages=['gabarit'],
+    packages=['gabarit', 'gabarit.template_nlp', 'gabarit.template_num', 'gabarit.template_vision'],
     license='AGPL-3.0',
     author='Agence Data Services PE Nantes',
     description="Kickstart your AI project as code",
