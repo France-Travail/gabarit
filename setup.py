@@ -25,16 +25,16 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'version.txt'
 
 # Setup
 setup(
-    name='initia', #initia: init ia
+    name='gabarit', 
     version=version,
-    packages=['initia'],
+    packages=['gabarit'],
     license='AGPL3.0',
     author='Agence Data Services PE Nantes',
     description="Kickstart your AI project as code",
     url="https://github.com/OSS-Pole-Emploi/AI_frameworks",
     platforms=['windows', 'linux'],
     package_data={
-        'initia': ['templates/*']
+        'gabarit': ['templates/*']
     },
     include_package_data=True,
     install_requires=[
@@ -43,9 +43,9 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-        'generate_nlp_project = initia.template_nlp.generate_nlp_project:main',
-        'generate_num_project = initia.template_num.generate_num_project:main',
-        'generate_vision_project = initia.template_vision.generate_vision_project:main'
+        'generate_nlp_project = gabarit.template_nlp.generate_nlp_project:main',
+        'generate_num_project = gabarit.template_num.generate_num_project:main',
+        'generate_vision_project = gabarit.template_vision.generate_vision_project:main'
         ],
     }
 )
