@@ -133,7 +133,7 @@ def generate(project_name: str, project_path: str, config_path: str,
         for template_name in env.list_templates():
 
             # Nominal process
-            if not template_name.endswith(('.jpg', '.jpeg', '.png')):
+            if not template_name.endswith(('.jpg', '.jpeg', '.png', '.pyc', '.pyo')):
                 # Get render
                 template = env.get_template(template_name)
                 render = template.render(package_name=project_name,

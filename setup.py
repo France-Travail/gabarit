@@ -33,9 +33,6 @@ setup(
     description="Kickstart your AI project as code",
     url="https://github.com/OSS-Pole-Emploi/AI_frameworks",
     platforms=['windows', 'linux'],
-    package_data={
-        'gabarit': ['templates/*']
-    },
     include_package_data=True,
     install_requires=[
         'Jinja2==3.0.3',
@@ -43,9 +40,9 @@ setup(
     ],
     entry_points={
         'console_scripts': [
-        'generate_nlp_project = gabarit.template_nlp.generate_nlp_project:main',
-        'generate_num_project = gabarit.template_num.generate_num_project:main',
-        'generate_vision_project = gabarit.template_vision.generate_vision_project:main'
+            'generate_nlp_project = gabarit.template_nlp.generate_nlp_project:main',
+            'generate_num_project = gabarit.template_num.generate_num_project:main',
+            'generate_vision_project = gabarit.template_vision.generate_vision_project:main'
         ],
     }
 )

@@ -1,0 +1,15 @@
+recursive-include gabarit/template_nlp/nlp_project *
+recursive-include gabarit/template_num/num_project *
+recursive-include gabarit/template_vision/vision_project *
+include gabarit/template_nlp/default_config.ini
+include gabarit/template_nlp/default_model_upload_instructions.md
+include gabarit/template_num/default_config.ini
+include gabarit/template_num/default_model_upload_instructions.md
+include gabarit/template_vision/default_config.ini
+include gabarit/template_vision/default_model_upload_instructions.md
+recursive-exclude gabarit/template_nlp/nlp_data *
+recursive-exclude gabarit/template_nlp/nlp_tests *
+recursive-exclude gabarit/template_num/num_data *
+recursive-exclude gabarit/template_num/num_tests *
+recursive-exclude gabarit/template_vision/vision_data *
+recursive-exclude gabarit/template_vision/vision_tests *
