@@ -42,7 +42,7 @@ class Case1_Env(unittest.TestCase):
         if os.path.exists(full_path_lib):
             shutil.rmtree(full_path_lib)
         # Generate project and test it
-        gen_project = f"python generate_vision_project.py -n test_template_vision -p {full_path_lib}"
+        gen_project = f"generate_vision_project -n test_template_vision -p {full_path_lib}"
         self.assertEqual(subprocess.run(gen_project, shell=True).returncode, 0)
         self.assertTrue(os.path.exists(full_path_lib))
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'setup.py')))

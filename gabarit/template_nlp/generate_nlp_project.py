@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Generation of a computer vision python template
+## Generation of a NLP python template
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -26,6 +26,8 @@ from shutil import copyfile
 from distutils.dir_util import copy_tree
 from jinja2 import Environment, FileSystemLoader
 
+ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
 
 def main() -> None:
     '''Generates a python template'''
@@ -33,8 +35,8 @@ def main() -> None:
     parser = argparse.ArgumentParser()
     parser.add_argument('-n', '--name', required=True, help='Project name')
     parser.add_argument('-p', '--path', required=True, help='Path (relative or absolute) to project directory')
-    parser.add_argument('-c', '--config', default='default_config.ini', help='Configuration file to use (relative or absolute).')
-    parser.add_argument('--upload', '--upload_intructions', default='default_model_upload_instructions.md',
+    parser.add_argument('-c', '--config', default=os.path.join(ROOT_DIR, 'default_config.ini'), help='Configuration file to use (relative or absolute).')
+    parser.add_argument('--upload', '--upload_intructions', default=os.path.join(ROOT_DIR, 'default_model_upload_instructions.md'),
                         help='Markdown file with models upload instructions (relative or absolute).')
     parser.add_argument('--dvc', '--dvc_config', default=None, help='DVC configuration file to use (relative or absolute).')
     args = parser.parse_args()
@@ -44,7 +46,7 @@ def main() -> None:
 
 def generate(project_name: str, project_path: str, config_path: str,
              upload_intructions_path: str, dvc_config_path: Union[str, None] = None) -> None:
-    '''Generates a Computer Vision python template from arguments.
+    '''Generates a NLP python template from arguments.
 
     Args:
         project_name (str): Name of the project to generate
@@ -86,19 +88,7 @@ def generate(project_name: str, project_path: str, config_path: str,
     pip_index_url = get_config(config, 'pip', 'index-url', fallback=None)
     mlflow_tracking_uri = get_config(config, 'mlflow', 'tracking_uri', fallback=None)
     additional_pip_packages = get_config(config, 'packages', 'additional_pip_packages', fallback=None)
-    vgg16_weights_backup_urls = get_config(config, 'transfer_learning', 'vgg16_weights_backup_urls', fallback=None)
-    efficientnetb6_weights_backup_urls = get_config(config, 'transfer_learning', 'efficientnetb6_weights_backup_urls', fallback=None)
-    detectron_config_base_backup_urls = get_config(config, 'detectron', 'detectron_config_base_backup_urls', fallback=None)
-    detectron_config_backup_urls = get_config(config, 'detectron', 'detectron_config_backup_urls', fallback=None)
-    detectron_model_backup_urls = get_config(config, 'detectron', 'detectron_model_backup_urls', fallback=None)
     dvc_config_ok = True if dvc_config_path is not None else False
-
-    # Fix some options that should be list of elements
-    vgg16_weights_backup_urls = vgg16_weights_backup_urls.split('\n') if vgg16_weights_backup_urls is not None else None
-    efficientnetb6_weights_backup_urls = efficientnetb6_weights_backup_urls.split('\n') if efficientnetb6_weights_backup_urls is not None else None
-    detectron_config_base_backup_urls = detectron_config_base_backup_urls.split('\n') if detectron_config_base_backup_urls is not None else None
-    detectron_config_backup_urls = detectron_config_backup_urls.split('\n') if detectron_config_backup_urls is not None else None
-    detectron_model_backup_urls = detectron_model_backup_urls.split('\n') if detectron_model_backup_urls is not None else None
 
     # Render the new project -> all the process is made using a temporary folder
     # Idea : we will copy all the files that needs to be rendered + the optionnal instructions / configurations in this folder
@@ -106,7 +96,7 @@ def generate(project_name: str, project_path: str, config_path: str,
     with tempfile.TemporaryDirectory(dir=os.path.dirname(os.path.realpath(__file__))) as tmp_folder:
 
         # Copy main folder to be rendered
-        template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'vision_project')
+        template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'nlp_project')
         copy_tree(template_dir, tmp_folder)
 
         # Copy models upload instructions
@@ -141,11 +131,6 @@ def generate(project_name: str, project_path: str, config_path: str,
                                          pip_index_url=pip_index_url,
                                          mlflow_tracking_uri=mlflow_tracking_uri,
                                          additional_pip_packages=additional_pip_packages,
-                                         vgg16_weights_backup_urls=vgg16_weights_backup_urls,
-                                         efficientnetb6_weights_backup_urls=efficientnetb6_weights_backup_urls,
-                                         detectron_config_base_backup_urls=detectron_config_base_backup_urls,
-                                         detectron_config_backup_urls=detectron_config_backup_urls,
-                                         detectron_model_backup_urls=detectron_model_backup_urls,
                                          dvc_config_ok=dvc_config_ok)
 
                 # Ignore empty files
@@ -178,14 +163,11 @@ def generate(project_name: str, project_path: str, config_path: str,
 
     # Everything is rendered, we just need to create some subdirectories
     data_dir = os.path.join(output_dir, f'{project_name}-data')
-    models_weights_dir = os.path.join(output_dir, f'{project_name}-data', 'transfer_learning_weights')
-    detectron2_conf_dir = os.path.join(output_dir, f'{project_name}-data', 'detectron2_conf_files')
-    cache_keras_dir = os.path.join(output_dir, f'{project_name}-data', 'cache_keras')
     models_dir = os.path.join(output_dir, f'{project_name}-models')
     exploration_dir = os.path.join(output_dir, f'{project_name}-exploration')
+    transformers_dir = os.path.join(output_dir, f'{project_name}-transformers')
     configs_dir = os.path.join(output_dir, project_name, 'configs')
-    for new_dir in [data_dir, models_weights_dir, detectron2_conf_dir,
-                    cache_keras_dir, models_dir, exploration_dir, configs_dir]:
+    for new_dir in [data_dir, models_dir, exploration_dir, transformers_dir, configs_dir]:
         if not os.path.exists(new_dir):
             os.makedirs(new_dir)
 
