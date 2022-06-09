@@ -31,7 +31,7 @@ jobs:
       - name: Lint with flake8
         run: |
           # Create a new temporary project
-          cd templates/template_nlp
+          cd gabarit/template_nlp
           python generate_nlp_project.py -n tmp_project_flake8 -p tmp_project_flake8
           cd tmp_project_flake8
           # Stop the build if there are Python syntax errors or undefined names
@@ -39,4 +39,4 @@ jobs:
           # Exit-zero treats all errors as warnings.
           flake8 . --count --exit-zero --max-complexity=10 --ignore=E501 --statistics
       - name: Test generate NLP
-        run: python templates/template_nlp/nlp_tests/tests_setup.py
+        run: python gabarit/template_nlp/nlp_tests/tests_setup.py
