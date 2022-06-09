@@ -25,10 +25,10 @@ with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'version.txt'
 
 # Setup
 setup(
-    name='gabarit', 
+    name='gabarit',
     version=version,
     packages=['gabarit'],
-    license='AGPL3.0',
+    license='AGPL-3.0',
     author='Agence Data Services PE Nantes',
     description="Kickstart your AI project as code",
     url="https://github.com/OSS-Pole-Emploi/AI_frameworks",
@@ -39,7 +39,7 @@ setup(
     include_package_data=True,
     install_requires=[
         'Jinja2==3.0.3',
-        'mypy==0.910'
+        'mypy==0.910',
     ],
     entry_points={
         'console_scripts': [

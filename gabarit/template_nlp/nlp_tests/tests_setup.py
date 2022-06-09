@@ -41,7 +41,7 @@ class Case1_Env(unittest.TestCase):
         if os.path.exists(full_path_lib):
             shutil.rmtree(full_path_lib)
         # Generate project and test it
-        gen_project = f"python generate_nlp_project.py -n test_template_nlp -p {full_path_lib}"
+        gen_project = f"generate_nlp_project -n test_template_nlp -p {full_path_lib}"
         self.assertEqual(subprocess.run(gen_project, shell=True).returncode, 0)
         self.assertTrue(os.path.exists(full_path_lib))
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'setup.py')))
@@ -248,6 +248,7 @@ class Case3_unit_tests(unittest.TestCase):
         # Run only if transformer loaded locally
         transformers_path = os.path.join(full_path_lib, 'test_template_nlp-transformers')
         transformer_path = os.path.join(transformers_path, 'flaubert', 'flaubert_small_cased')
+        # TODO: add flaubert_small_cased download
         if not os.path.exists(transformer_path):
             print("WARNING : Can't test the Pytorch Transformer model -> can't find transformer")
             print("How to use : download flaubert_small_cased in the folder of the module to test")
@@ -261,6 +262,7 @@ class Case3_unit_tests(unittest.TestCase):
         # Run only if transformer loaded locally
         transformers_path = os.path.join(full_path_lib, 'test_template_nlp-transformers')
         transformer_path = os.path.join(transformers_path, 'flaubert', 'flaubert_small_cased')
+        # TODO: add flaubert_small_cased download
         if not os.path.exists(transformer_path):
             print("WARNING : Can't test the Pytorch Transformer model -> can't find transformer")
             print("How to use : download flaubert_small_cased in the folder of the module to test")
