@@ -1,6 +1,3 @@
-#!/usr/bin/env python3
-
-## Pypi module setup
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -19,9 +16,19 @@
 import os
 from setuptools import setup
 
-# Get package version
-with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'version.txt'), 'r') as version_file:
+# Get package directory
+package_directory = os.path.dirname(os.path.abspath(__file__))
+
+# Get package version (env variable or verion file + -local)
+version_path = os.path.join(package_directory, 'version.txt')
+with open(version_path, 'r') as version_file:
     version = version_file.read().strip()
+version = os.getenv('VERSION') or f"{version}-local"
+
+# Get package description
+readme_path = os.path.join(package_directory, 'README.md')
+with open(readme_path, 'r') as readme_file:
+    long_description = readme_file.read()
 
 # Setup
 setup(
@@ -29,6 +36,8 @@ setup(
     version=version,
     packages=['gabarit', 'gabarit.template_nlp', 'gabarit.template_num', 'gabarit.template_vision'],
     license='AGPL-3.0',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
     author='Agence Data Services PE Nantes',
     description="Kickstart your AI project as code",
     url="https://github.com/OSS-Pole-Emploi/AI_frameworks",
