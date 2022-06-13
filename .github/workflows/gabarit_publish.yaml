@@ -1,4 +1,4 @@
-name: Publish to Pypi
+name: Publish to Pypi - Gabarit
 on:
   workflow_dispatch:
     inputs:
