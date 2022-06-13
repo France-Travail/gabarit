@@ -1,6 +1,6 @@
 # **\*\*WORK IN PROGRESS - UPDATE COMING SOON \*\***
 
-# Templates Data Science - Agence Data Services
+# Gabarit - Templates Data Science - Agence Data Services
 
 # Licence
 
@@ -12,11 +12,12 @@ This project is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE V3.0. Pl
 	- [1.2 Guidelines](#guidelines)
 	- [1.3 Prerequisites](#prerequisites)
 - [2. Usage](#usage)
-	- [2.1 Kickstart a new project](#newproject)
-	- [2.2 Setup the new project](#setup)
-	- [2.3 General principles](#principles)
-	- [2.4 Main steps of a given project](#steps)
-	- [2.5 Data formats](#format)
+	- [2.1 Installation](#installation)
+	- [2.2 Kickstart a new project](#newproject)
+	- [2.3 Setup the new project](#setup)
+	- [2.4 General principles](#principles)
+	- [2.5 Main steps of a given project](#steps)
+	- [2.6 Data formats](#format)
 - [3. Features](#features)
 	- [3.1 Model saving and reloading](#save)
 	- [3.2 Third party AI modules](#modules)
@@ -39,9 +40,12 @@ This project is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE V3.0. Pl
 
 ## 1. Philosophy <a name="philosophy"></a>
 
-As a team, we strive to help data scientists across the board (and ourselves!) build awesome IA projects by speeding up the development process. This repository contains several frameworks allowing any data scientist, IA enthousiast (or developper of any kind, really) to kickstart an IA project from scratch.
-We hate it when a project is left in the infamous POC shadow valley where nice ideas and clever models are forgotten, thus we tried to pack as much production-ready features as we could in these frameworks.
-As Hadley Wickhman would say: "you can't do data science in a GUI". We are strong believers that during a data science or IA project, you need to be able to fine tune every nooks and crannies to make the best out of your data.
+As a team, we strive to help Data Scientists across the board (and ourselves!) build awesome IA projects by speeding up the development process. This repository contains several frameworks allowing any data scientist, IA enthousiast (or developper of any kind, really) to kickstart an IA project from scratch.  
+
+We hate it when a project is left in the infamous POC shadow valley where nice ideas and clever models are forgotten, thus we tried to pack as much production-ready features as we could in these frameworks.  
+
+As Hadley Wickhman would say: "you can't do data science in a GUI". We are strong believers that during a data science or IA project, you need to be able to fine tune every nooks and crannies to make the best out of your data.  
+
 Therefore, these frameworks act as project templates that you can use to generate a code base from nothing (except for a project name). Doing so would allow your fresh and exciting new project to begin with loads of features on which you wouldn't want to focus this early :
 - Built-in models: from the ever useful TF/IDF + SVM to the more recent transformers
 - Model-agnostic save/load/reload : perfect to embed your model behind a web service
@@ -114,9 +118,17 @@ Obviously any prior knowledge of the holy trinity of python ML modules (pandas, 
 ## 2. Usage  <a name="usage"></a>
 
 
-### 2.1 Kickstart a new project  <a name="newproject"></a>
+### 2.1 Installation  <a name="installation"></a>
 
-Each individual framework contains a `generate_XXX_project.py` file that creates a new project code base. To be able to run this script, you only have to install Jinja2: `pip install Jinja2==2.10.3`.
+We packaged this project such that it can be directly installed from PyPI : `pip install gabarit` .  
+However, it is not really necessary as this just intalls Jinja2==3.0.3 and adds some entry points. Basically you can manually install Jinja2 `pip install Jinja2==3.0.3` and you'll be able to generate new projects by calling the `generate_XXX_project.py` files individually.  
+
+In the following we consider that you installed the project through pip, which enables entry points. Each entry point refers to a corresponding package generation file.
+
+
+### 2.2 Kickstart a new project  <a name="newproject"></a>
+
+Each individual framework has a `generate_XXX_project` entry point that creates a new project code base.
 They take several parameters as input :
 
 - **'-n'** or **'--name'** : Name of the package/project (lowercase, no whitespace)
@@ -128,9 +140,10 @@ They take several parameters as input :
 - **'--dvc'** or **'--dvc_config'** : Path (Absolute or relative) to a DVC configuration file. If not provided, DVC won't be used.
 
 
-Example : `python generate_nlp_project.py -n my_awesome_package -p ../../../my_new_project -c my_configuration.ini --upload my_instructions.md --dvc dvc_config`
+Example : `generate_nlp_project -n my_awesome_package -p my_new_project_path -c my_configuration.ini --upload my_instructions.md --dvc dvc_config`
 
-### 2.2 Setup the new project  <a name="setup"></a>
+
+### 2.3 Setup the new project  <a name="setup"></a>
 
 - (Optionnal) We strongly advise to create a python virtual env
 
@@ -152,7 +165,7 @@ and
 - `init-local-env`
 
 
-### 2.3 General principles  <a name="principles"></a>
+### 2.4 General principles  <a name="principles"></a>
 
 
 - Data must be kept in a directory named `project_name-data/` located at the root folder of the project (i.e. where `setup.py` is).
@@ -198,7 +211,7 @@ and
 
 
 
-### 2.4 Main steps of a given project  <a name="steps"></a>
+### 2.5 Main steps of a given project  <a name="steps"></a>
 
 The intended flow of a project driven by one of these framework is the following:
 
@@ -218,7 +231,7 @@ The intended flow of a project driven by one of these framework is the following
 - 4 – Play with a streamlit demonstrator to showcase your models
 
 
-### 2.5 Data formats  <a name="format"></a>
+### 2.6 Data formats  <a name="format"></a>
 
 Input data are supposed to be `.csv` files and the separator and encoding are to be provided during the generation of the project. It is obviously possible to use another datatype but a transformation step to `.csv` will be required to use the scripts provided by default.
 
