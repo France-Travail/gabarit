@@ -1,14 +1,21 @@
-name: Build & Tests - NLP - Auto
+name: Build & Tests - NLP
 on:
   push:
     branches:
       - 'main'
       - 'release/v*'
+    paths-ignore:
+      - 'version.txt'
+      - '.github/workflows/**'
   pull_request:
     types: [opened, reopened, edit]
     branches:
       - 'main'
       - 'release/v*'
+    paths-ignore:
+      - 'version.txt'
+      - '.github/workflows/**'
+  workflow_dispatch:
 
 jobs:
   build:
