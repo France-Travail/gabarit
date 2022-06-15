@@ -244,7 +244,7 @@ class ModelKeras(ModelClass):
         # Fit for each iteration wanted
         for iter in range(self.nb_iter_keras):
             if self.nb_iter_keras > 1:
-                self.logger.info(f"Training itération {iter}")
+                self.logger.info(f"Training iteration {iter}")
 
             # Get model (if already fitted we do not load a new one)
             if not self.trained:

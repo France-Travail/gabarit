@@ -60,9 +60,9 @@ def main(directories: List[str], n_samples: int = 100, sep: str = '{{default_sep
         # Check path
         directory_path = os.path.join(data_path, directory)
         if not os.path.exists(directory_path):
-            raise FileNotFoundError(f"Le chemin {directory_path} n'existe pas'")
+            raise FileNotFoundError(f"{directory_path} path does not exist'")
         if not os.path.isdir(directory_path):
-            raise NotADirectoryError(f"Le chemin {directory_path} ne pointe par sur un répertoire")
+            raise NotADirectoryError(f"{directory_path} is not a valid directory")
 
         # Create new directory
         new_directory = os.path.join(data_path, f"{directory}_{n_samples}_samples")

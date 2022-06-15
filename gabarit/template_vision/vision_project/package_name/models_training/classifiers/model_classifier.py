@@ -82,7 +82,7 @@ class ModelClassifierMixin:
 
     @utils.trained_needed
     def predict_with_proba(self, df_test: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
-        '''Predictions on test set avec probabilités
+        '''Predictions on test set with probabilities
 
         Args:
             df_test (pd.DataFrame): DataFrame to be predicted, with column file_path

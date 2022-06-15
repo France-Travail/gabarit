@@ -216,8 +216,8 @@ class ModelEmbeddingCnn(ModelKeras):
         # Compile model
         lr = self.keras_params.get('learning_rate', 0.002)
         decay = self.keras_params.get('decay', 0.0)
-        self.logger.info(f"Learning rate utilisée : {lr}")
-        self.logger.info(f"Decay utilisé : {decay}")
+        self.logger.info(f"Learning rate: {lr}")
+        self.logger.info(f"Decay: {decay}")
         optimizer = Adam(lr=lr, decay=decay)
         # loss = utils_deep_keras.f1_loss if self.multi_label else 'categorical_crossentropy'
         loss = 'binary_crossentropy' if self.multi_label else 'categorical_crossentropy'  # utils_deep_keras.f1_loss also possible if multi-labels

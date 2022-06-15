@@ -223,8 +223,8 @@ class ModelEmbeddingLstmGruGpu(ModelKeras):
         model = Model(inputs=words, outputs=[out])
         lr = self.keras_params['learning_rate'] if 'learning_rate' in self.keras_params.keys() else 0.01
         decay = self.keras_params['decay'] if 'decay' in self.keras_params.keys() else 0.0
-        self.logger.info(f"Learning rate utilisée : {lr}")
-        self.logger.info(f"Decay utilisé : {decay}")
+        self.logger.info(f"Learning rate: {lr}")
+        self.logger.info(f"Decay: {decay}")
         optimizer = Adam(lr=lr, decay=decay)
         loss = utils_deep_keras.f1_loss if self.multi_label else 'categorical_crossentropy'
         metrics: List[Union[str, Callable]] = ['accuracy'] if not self.multi_label else ['categorical_accuracy', 'categorical_crossentropy', utils_deep_keras.f1, utils_deep_keras.precision, utils_deep_keras.recall, utils_deep_keras.f1_loss]

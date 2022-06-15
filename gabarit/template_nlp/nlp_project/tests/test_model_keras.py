@@ -172,7 +172,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
         self.assertTrue(model.model._is_compiled)
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        self.assertEqual(lr, round(float(model.model.optimizer._decayed_lr(tensorflow.float32).numpy()), 6)) # Obligé de round
+        self.assertEqual(lr, round(float(model.model.optimizer._decayed_lr(tensorflow.float32).numpy()), 6))  # We must round (almost_equal is fine too)
         remove_dir(model_dir)
 
         #
@@ -260,7 +260,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(sorted(model.list_classes), ['test1', 'test2', 'test3'])
         self.assertTrue(model.model._is_compiled)
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        self.assertEqual(lr, round(float(model.model.optimizer._decayed_lr(tensorflow.float32).numpy()), 6)) # Obligé de round
+        self.assertEqual(lr, round(float(model.model.optimizer._decayed_lr(tensorflow.float32).numpy()), 6))  # We must round (almost_equal is fine too)
         remove_dir(model_dir)
 
         #

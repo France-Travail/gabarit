@@ -204,7 +204,7 @@ def check_coordinates_validity(function: Callable) -> Callable:
 
 @check_coordinates_validity
 def xyxy_to_xyhw(x1: float, y1: float, x2: float, y2: float) -> Tuple[float, float, float, float]:
-    '''Changes a rectangle in the format xyxy (x1, y1, x2, y2) to 
+    '''Changes a rectangle in the format xyxy (x1, y1, x2, y2) to
     the format xyhw (x, y, h, w)
 
     Args :
@@ -225,7 +225,7 @@ def xyxy_to_xyhw(x1: float, y1: float, x2: float, y2: float) -> Tuple[float, flo
 
 @check_coordinates_validity
 def xyhw_to_xyxy(x: float, y: float, h: float, w: float) -> Tuple[float, float, float, float]:
-    '''Changes a rectangle in the format xyhw (x, y, h, w) to 
+    '''Changes a rectangle in the format xyhw (x, y, h, w) to
     the format xyxy (x1, y1, x2, y2)
 
     Args :
@@ -246,7 +246,7 @@ def xyhw_to_xyxy(x: float, y: float, h: float, w: float) -> Tuple[float, float, 
 
 @check_coordinates_validity
 def xyxy_to_cxcyhw(x1: float, y1: float, x2: float, y2: float) -> Tuple[float, float, float, float]:
-    '''Changes a rectangle in the format xyxy (x1, y1, x2, y2) to 
+    '''Changes a rectangle in the format xyxy (x1, y1, x2, y2) to
     the format cxcyhw (cx, cy, h, w)
 
     Args :
@@ -284,7 +284,7 @@ def get_area_from_xyxy(x1: float, y1: float, x2: float, y2: float) -> float:
 
 
 def get_iou(coordinatesA: Tuple[float, float, float, float], coordinatesB: Tuple[float, float, float, float]) -> float:
-    '''Gives the intersection over union (iou) from the coordinates of two 
+    '''Gives the intersection over union (iou) from the coordinates of two
     rectangles (in opposite points format)
 
     Args:
@@ -390,7 +390,7 @@ def get_feature_map_size(input_height: int, input_width: int, subsampling_ratio:
 ######
 
 
-def calc_regr(coordinates_bbox: Tuple[float, float, float, float], 
+def calc_regr(coordinates_bbox: Tuple[float, float, float, float],
               coordinates_anchor: Tuple[float, float, float, float]) -> Tuple[float, float, float, float]:
     '''Gives the target of a regression given the coordinates of a bbox and of an anchor (or a ROI)
 
@@ -455,10 +455,10 @@ def non_max_suppression_fast(img_boxes_coordinates: np.ndarray, img_boxes_probas
         ValueError: If nms_max_boxes < 1
         ValueError: If img_boxes_classes is not the same length as img_boxes_coordinates (if != None)
     Returns:
-        np.ndarray: les boxes conservées
+        np.ndarray: List of kept boxes
             # shape: (nb_boxes_kept, 4)
-        np.ndarray: les probabilités associées
-        np.ndarray: les classes associées aux boxes (si prédiction)
+        np.ndarray: Associated probabilities
+        np.ndarray: Associated classes (if prediction)
     '''
     # code taken from here: http://www.pyimagesearch.com/2015/02/16/faster-non-maximum-suppression-python/
     # if there are no boxes, returns an empty list
@@ -555,7 +555,7 @@ def get_rpn_targets(model, img_data_batch: List[dict]) -> Tuple[np.ndarray, np.n
                     - 'batch_width' -> Width of the images in the batch (max width of the batch, we pad the smaller images with zeroes)
                     - 'batch_height' -> Height of the images in the batch (max height of the batch, we pad the smaller images with zeroes)
     Returns:
-        np.ndarray: Classification targets : [y_is_box_valid] + [y_rpn_overlap] for each image with : 
+        np.ndarray: Classification targets : [y_is_box_valid] + [y_rpn_overlap] for each image with :
                     - y_is_box_valid -> if a box is valid (and thus, should enter in the classification loss)
                     - y_rpn_overlap -> target of the classification ('pos', 'neg' ou 'neutral')
             # Shape (batch_size, feature_map_height, feature_map_width, nb_anchors * 2)
@@ -579,7 +579,7 @@ def get_rpn_targets(model, img_data_batch: List[dict]) -> Tuple[np.ndarray, np.n
     # Get size of the features map of the batch (for example by taking the first image)
     feature_map_height, feature_map_width = get_feature_map_size(img_data_batch[0]['batch_height'], img_data_batch[0]['batch_width'], subsampling_ratio)
 
-    # Setup target arrays 
+    # Setup target arrays
     Y1 = np.zeros((batch_size, feature_map_height, feature_map_width, nb_anchors * 2))
     Y2 = np.zeros((batch_size, feature_map_height, feature_map_width, nb_anchors * 2 * 4))
 
@@ -628,15 +628,15 @@ def get_rpn_targets(model, img_data_batch: List[dict]) -> Tuple[np.ndarray, np.n
             start_regr_index = 4 * anchor_idx[2]
             y_rpn_regr[anchor_idx[0], anchor_idx[1], start_regr_index: start_regr_index + 4] = anchor['regression_target']
 
-        # On concat les array finales
-        # Pour la partie regression, on rajoute y_rpn_overlap (repeated) à y_rpn_regr pour identifier les données utilisées par la loss de regression
+        # We then concat all final arrays
+        # For regression part, we add y_rpn_overlap (repeated) to y_rpn_regr in order to identify data that should be used by the regression loss
         y_rpn_cls = np.concatenate([y_is_box_valid, y_rpn_overlap], axis=2)
         y_rpn_regr = np.concatenate([np.repeat(y_rpn_overlap, 4, axis=2), y_rpn_regr], axis=2)
 
-        # On scale la target de regression
+        # We scale the regression target
         y_rpn_regr[:, :, y_rpn_regr.shape[2]//2:] *= rpn_regr_scaling
 
-        # On termine par update nos sorties
+        # We finally update the output arrays
         Y1[ind, :, : , :] = y_rpn_cls
         Y2[ind, :, : , :] = y_rpn_regr
 
@@ -695,7 +695,7 @@ def get_all_viable_anchors_boxes(base_anchors: List[tuple], subsampling_ratio: i
 
 
 def get_iou_anchors_bboxes(anchor_boxes_dict: dict, image_bboxes: List[dict]) -> dict:
-    '''Gives the iou for each anchor boxes with all the bboxes of a list (for example, all the 
+    '''Gives the iou for each anchor boxes with all the bboxes of a list (for example, all the
     bboxes of an image)
 
     Args:
@@ -776,7 +776,7 @@ def set_anchors_type_validity(anchor_boxes_dict: dict, image_bboxes: List[dict],
 
 
 def complete_at_least_one_anchor_per_bbox(anchor_boxes_dict: dict, bboxes_index_with_no_positive: List[dict]) -> dict:
-    '''Completes the dictionary of anchor to have at least one positive anchor per bbox if it is not 
+    '''Completes the dictionary of anchor to have at least one positive anchor per bbox if it is not
     already the case.
     If a bbox is not associated to an anchor, we associate it to the anchor with which it has
     the biggest iou (if this anchor is not already associated with another bbox)
@@ -895,14 +895,14 @@ def add_regression_target_to_pos_valid(anchor_boxes_dict: dict) -> dict:
 
 def get_roi_from_rpn_predictions(model, img_data_batch: List[dict], rpn_predictions_cls: np.ndarray,
                                  rpn_predictions_regr: np.ndarray) -> List[np.ndarray]:
-    '''Converts the output layers of the RPN (classification and regression) in ROIs 
+    '''Converts the output layers of the RPN (classification and regression) in ROIs
 
 
-    Process : We get the prediction results of the RPN and we want to select regions of interest (ROIs) for the 
-              classifier part. For each point and each base anchor, we apply the results of the regression. Then 
-              we crop the resulting ROIs in order to stay in the limit of the image. Then we delete the unsuitable 
+    Process : We get the prediction results of the RPN and we want to select regions of interest (ROIs) for the
+              classifier part. For each point and each base anchor, we apply the results of the regression. Then
+              we crop the resulting ROIs in order to stay in the limit of the image. Then we delete the unsuitable
               ROIs (ie. invalid) and finally we apply a Non Max Suppression (NMS) algorithm to remove the ROIs
-              which overlap too much. 
+              which overlap too much.
 
     Note : We work with float coordinates. It is no big deal, we will recast them to int to display them.
 
@@ -910,7 +910,7 @@ def get_roi_from_rpn_predictions(model, img_data_batch: List[dict], rpn_predicti
         model (ModelKerasFasterRcnnObjectDetector): Model used (contains all the necessary configs)
         img_data_batch (list<dict>): List of img_data of the batch
             Here, it is used to get the (preprocessed) size of the images in order to remove the ROIs which
-            are outside the image. 
+            are outside the image.
             Each entry must contain 'resized_height' & 'resized_width'
         rpn_predictions_cls (np.ndarray): Classification prediction (output RPN)
             # shape: (batch_size, height_feature_map, width_feature_map, nb_anchor)
@@ -963,7 +963,7 @@ def get_roi_from_rpn_predictions(model, img_data_batch: List[dict], rpn_predicti
     rois_on_feature_maps = np.apply_along_axis(func1d=apply_regression, axis=4, arr=concatenation_anchor_regr)  # Format x, y, h, w
     # Then we crop the ROIs to stay inside the image
     # Problem : in a batch, we padded the images so that they all have the same size,
-    #           and we want to crop the ROIs with respect to the initial size (unpadded) 
+    #           and we want to crop the ROIs with respect to the initial size (unpadded)
     # Solution : We apply same trick as before, ie. we put the limit size of each image after the coordinates of the associated ROIs
     feature_map_sizes = np.array([get_feature_map_size(img_data['resized_height'], img_data['resized_width'], subsampling_ratio)
                                   for img_data in img_data_batch])
@@ -1143,7 +1143,7 @@ def get_classifier_train_inputs_and_targets(model, img_data_batch: List[dict],
 
 
 def get_rois_bboxes_iou(rois: np.ndarray, img_data: dict, subsampling_ratio: int) -> dict:
-    '''Gives the ious between the ROIs (in rois) and the bboxes (in img_data). 
+    '''Gives the ious between the ROIs (in rois) and the bboxes (in img_data).
 
     Args:
         rois (np.ndarray): ROIs given by the RPN (ie. by the function get_roi_from_rpn_predictions())
@@ -1286,7 +1286,7 @@ def limit_rois_targets(dict_rois_targets: dict, nb_rois_per_img: int) -> Union[d
 def create_fake_dict_rois_targets(img_data: dict, subsampling_ratio: int, nb_rois_per_img: int) -> dict:
     '''Creates fake dict_rois_targets in the rare cases where the function limit_rois_targets gives an empty object (None).
 
-        Process : we return ROIs on the entire image, considered as background 
+        Process : we return ROIs on the entire image, considered as background
 
     Args:
         img_data (dict): Metadata of the image after the preprocessing. In particular, the size of the image
@@ -1314,7 +1314,7 @@ def create_fake_dict_rois_targets(img_data: dict, subsampling_ratio: int, nb_roi
 
 def format_classifier_inputs_and_targets(dict_rois_targets: dict, dict_classes: dict,
                                          classifier_regr_scaling: List[float]) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
-    '''Transforms a dictionary of target ROIs into a suitable format for the classifier model 
+    '''Transforms a dictionary of target ROIs into a suitable format for the classifier model
 
     Args:
         dict_rois (dict): Dictionary containing the possible inputs / targets of the classifier
@@ -1448,7 +1448,7 @@ def get_valid_fm_boxes_from_proba(probas: np.ndarray, proba_threshold: float, bg
 def get_valid_boxes_from_coordinates(input_img: np.ndarray, input_rois: np.ndarray, fm_boxes_candidates: List[tuple],
                                      regr_coordinates: np.ndarray, classifier_regr_scaling: List[float], subsampling_ratio: int,
                                      dict_classes: dict) -> List[tuple]:
-    '''Calculates the coordinates (in image space) after application of the regression of the boxes (in features map space) whose 
+    '''Calculates the coordinates (in image space) after application of the regression of the boxes (in features map space) whose
     probability is sufficiently high. Then restricts them to the image and keeps only the valid boxes
 
     Args:
