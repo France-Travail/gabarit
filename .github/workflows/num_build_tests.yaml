@@ -55,6 +55,6 @@ jobs:
           # Stop the build if there are Python syntax errors or undefined names
           flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
           # Exit-zero treats all errors as warnings.
-          flake8 . --count --exit-zero --max-complexity=10 --ignore=E501 --statistics
+          flake8 . --count --exit-zero --max-complexity=10 --ignore=E501,W503,E266,W605,C901 --statistics
       - name: Test generate NUM
         run: python gabarit/template_num/num_tests/tests_setup.py
