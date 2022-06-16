@@ -492,7 +492,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
         os.makedirs(model_dir)
         test_model = ModelDetectronFasterRcnnObjectDetector(level_save='HIGH', epochs=1, batch_size=1, rpn_restrict_num_regions=4, model_name=model_name, model_dir=model_dir)
-        test_model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # On essaie de diminuer la charge mémoire
+        test_model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # We try to limit the memory impact
 
         # Test it
         test.main(directory='dataset_object_detection_mini', directory_valid='dataset_object_detection_mini', model=test_model)
@@ -598,8 +598,8 @@ class ModelMockCnnClassifier(ModelCnnClassifier):
         # Set optimizer
         lr = self.keras_params['learning_rate'] if 'learning_rate' in self.keras_params.keys() else 0.001
         decay = self.keras_params['decay'] if 'decay' in self.keras_params.keys() else 0.0
-        self.logger.info(f"Learning rate utilisée : {lr}")
-        self.logger.info(f"Decay utilisé : {decay}")
+        self.logger.info(f"Learning rate: {lr}")
+        self.logger.info(f"Decay: {decay}")
         optimizer = tf.keras.optimizers.Adam(lr=lr, decay=decay)
         # Compile model
         model.compile(optimizer=optimizer, loss='categorical_crossentropy', metrics=['accuracy'])
@@ -671,7 +671,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
 
 
     def setUp(self):
-        '''On essaie de clean la mémoire'''
+        '''We try to clear the used memory'''
         gc.collect()
         tf.keras.backend.clear_session()
 
@@ -854,7 +854,7 @@ class Case3_MultiClassMonoLabel(unittest.TestCase):
 
 
     def setUp(self):
-        '''On essaie de clean la mémoire'''
+        '''We try to clear the used memory'''
         gc.collect()
         tf.keras.backend.clear_session()
 
@@ -952,7 +952,7 @@ class Case4_ObjectDetection(unittest.TestCase):
 
 
     def setUp(self):
-        '''On essaie de clean la mémoire'''
+        '''We try to clear the used memory'''
         gc.collect()
         tf.keras.backend.clear_session()
 
@@ -994,7 +994,7 @@ class Case4_ObjectDetection(unittest.TestCase):
             os.makedirs(model_dir)
             # We train on only 1 epoch. It is far too long otherwise. We will not evaluate performances
             test_model = ModelDetectronFasterRcnnObjectDetector(level_save='HIGH', epochs=1, batch_size=1, rpn_restrict_num_regions=4, model_name=model_name, model_dir=model_dir)
-            test_model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # On essaie de diminuer la charge mémoire
+            test_model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # We try to limit the memory impact
 
             # Test it
             test.main(directory='dataset_object_detection_mini_preprocess_docs', directory_valid='dataset_object_detection_mini_preprocess_docs', model=test_model)

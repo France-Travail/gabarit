@@ -341,7 +341,7 @@ def get_histogram(probas: np.ndarray, list_classes: List[str]) -> Tuple[pd.DataF
     # Get dataframe
     max_proba = max(probas)
     predicted = ['Accepted' if proba == max_proba else 'Rejected' for proba in probas]
-    df_probabilities = pd.DataFrame({'classes': list_classes, 'probabilités': probas, 'result': predicted})
+    df_probabilities = pd.DataFrame({'classes': list_classes, 'probabilities': probas, 'result': predicted})
 
     # Prepare plot
     domain = ['Accepted', 'Rejected']
@@ -350,15 +350,15 @@ def get_histogram(probas: np.ndarray, list_classes: List[str]) -> Tuple[pd.DataF
         alt.Chart(df_probabilities, width=720, height=80 * len(list_classes))
         .mark_bar()
         .encode(
-            x=alt.X('probabilités:Q', scale=alt.Scale(domain=(0, 1))),
+            x=alt.X('probabilities:Q', scale=alt.Scale(domain=(0, 1))),
             y='classes:O',
             color=alt.Color('result', scale=alt.Scale(domain=domain, range=range_)),
-            tooltip=['probabilités:Q', 'classes:O'],
+            tooltip=['probabilities:Q', 'classes:O'],
         )
     )
     # Nudges text to the right so it does not appear on top of the bar
     text = bars.mark_text(align='left', baseline='middle', dx=3)\
-               .encode(text=alt.Text('probabilités:Q', format='.2f'))
+               .encode(text=alt.Text('probabilities:Q', format='.2f'))
 
     return df_probabilities, alt.layer(bars + text)
 

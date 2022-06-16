@@ -87,8 +87,8 @@ class ModelDenseRegressor(ModelRegressorMixin, ModelKeras):
         # Set optimizer
         lr = self.keras_params['learning_rate'] if 'learning_rate' in self.keras_params.keys() else 0.001
         decay = self.keras_params['decay'] if 'decay' in self.keras_params.keys() else 0.0
-        self.logger.info(f"Learning rate utilisée : {lr}")
-        self.logger.info(f"Decay utilisé : {decay}")
+        self.logger.info(f"Learning rate: {lr}")
+        self.logger.info(f"Decay: {decay}")
         optimizer = Adam(lr=lr, decay=decay)
 
         # Set loss & metrics

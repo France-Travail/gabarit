@@ -204,14 +204,14 @@ class ModelPyTorchLanguageModel(ModelPyTorch):
         gradient_clip_val = self.pytorch_params.get('gradient_clip_val', 1.0)
         warmup_proportion = self.pytorch_params.get('warmup_proportion', 0.2)
         run_gpus = True if str(TORCH_DEVICE) == 'cuda' else False
-        self.logger.info(f"Learning rate utilisée : {lr}")
-        self.logger.info(f"Decay utilisé : {decay}")
-        self.logger.info(f"Adam's epsilon utilisé : {adam_epsilon}")
-        self.logger.info(f"Gradient clipping utilisé : {gradient_clip_val}")
+        self.logger.info(f"Learning rate: {lr}")
+        self.logger.info(f"Decay: {decay}")
+        self.logger.info(f"Adam's epsilon: {adam_epsilon}")
+        self.logger.info(f"Gradient clipping: {gradient_clip_val}")
         # TODO : Put LR scheduler optional ?
         if train_dataloader_size is not None:
-            self.logger.info("Utilisation d'un learning rate scheduler")
-            self.logger.info(f"Warmup proportion utilisée : {warmup_proportion}")
+            self.logger.info("Using a learning rate scheduler ...")
+            self.logger.info(f"Warmup proportion: {warmup_proportion}")
 
         # Update pytorch_params for saving purposes
         self.pytorch_params['learning_rate'] = lr

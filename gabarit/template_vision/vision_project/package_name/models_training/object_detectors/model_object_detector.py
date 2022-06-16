@@ -3,7 +3,7 @@
 
 # We ignore the type check on mixins : too complicated
 
-## Définition d'une classe parent pour les modèles
+## Definition of a parent class for the  object detection models
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -250,7 +250,7 @@ class ModelObjectDetectorMixin:
         '''Puts a list of list of bboxes (for example from a prediction) in the right format for pycocotools API.
 
         Args:
-            bboxes (list<list<dict>>) : A list of list of bboxes. The first level of list corresponds to the images and the second level to the 
+            bboxes (list<list<dict>>) : A list of list of bboxes. The first level of list corresponds to the images and the second level to the
             bboxes of this image.
             inv_dict_classes (dict) : The dictionary of classes in the format {class_name: class_id}
         Returns:
@@ -273,7 +273,7 @@ class ModelObjectDetectorMixin:
 
     @classmethod
     def _get_coco_evaluations(self, dataset_coco_true: dict, dataset_coco_pred: dict) -> COCOeval:
-        '''Calculates the AP from true and predicted datasets in the COCO format, the returns COCOeval, 
+        '''Calculates the AP from true and predicted datasets in the COCO format, the returns COCOeval,
         the pycocotools API containing all the results.
 
         Args:
@@ -282,7 +282,7 @@ class ModelObjectDetectorMixin:
         Returns:
             A COCOeval (pycocotools API) containing the AP
         '''
-        # Everything on mute ! pycocotools library prints too much logs and there are no level settings 
+        # Everything on mute ! pycocotools library prints too much logs and there are no level settings
         with utils.HiddenPrints():
             # Put the ground truth bboxes in the pycocotools API
             coco_ds = COCO()

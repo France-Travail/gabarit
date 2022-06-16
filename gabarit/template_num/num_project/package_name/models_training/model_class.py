@@ -315,7 +315,7 @@ class ModelClass:
         if y_input is not None:
             y_input_shape = y_input.shape[-1] if len(y_input.shape) > 1 else 1
         else:
-            y_input_shape = 0 # non utilisé
+            y_input_shape = 0  # not used
 
         # Manage fit_function = True
         if fit_function == True:

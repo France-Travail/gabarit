@@ -467,7 +467,7 @@ class ModelDetectronRCNNTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
-    
+
     @unittest.skip('This test should pass but is skipped to avoid OOM in the deployment CI')
     def test05_model_detectron_faster_rcnn_fit(self):
         '''Test of {{package_name}}.models_training.object_detectors.model_detectron_faster_rcnn.ModelDetectronFasterRcnnObjectDetector.fit'''
@@ -482,7 +482,7 @@ class ModelDetectronRCNNTests(unittest.TestCase):
 
         # Nominal case
         model = ModelDetectronFasterRcnnObjectDetector(model_dir=model_dir, epochs=2, rpn_restrict_num_regions=4)
-        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # On essaie de diminuer la charge mémoire
+        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # We try to limit the memory impact
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
         # Fit
@@ -532,7 +532,7 @@ class ModelDetectronRCNNTests(unittest.TestCase):
 
         # Nominal case
         model = ModelDetectronFasterRcnnObjectDetector(model_dir=model_dir, epochs=2, rpn_restrict_num_regions=4)
-        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # On essaie de diminuer la charge mémoire
+        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # We try to limit the memory impact
         model.fit(df_data, df_valid=None, with_shuffle=True)
         # predict (with write_images to False)
         predictions = model.predict(df_data, write_images=False)
@@ -607,7 +607,7 @@ class ModelDetectronRCNNTests(unittest.TestCase):
 
         # Nominal case
         model = ModelDetectronFasterRcnnObjectDetector(model_dir=model_dir, epochs=2, rpn_restrict_num_regions=4, level_save='LOW')
-        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # On essaie de diminuer la charge mémoire
+        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # We try to limit the memory impact
         model.fit(df_data, df_valid=None, with_shuffle=True)
         # Load json file
         path_json_metrics = os.path.join(model.cfg.OUTPUT_DIR, 'metrics.json')
@@ -693,7 +693,7 @@ class ModelDetectronRCNNTests(unittest.TestCase):
         # Model instanciation
         model = ModelDetectronFasterRcnnObjectDetector(model_dir=model_dir, epochs=1, validation_split=0.1,
                                                        min_delta_es=0.1, patience=4, rpn_restrict_num_regions=4)
-        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # On essaie de diminuer la charge mémoire
+        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # We try to limit the memory impact
         model.fit(df_data, df_valid=None, with_shuffle=True)
         model.save()
 
@@ -876,7 +876,7 @@ class TrainerRCNNTests(unittest.TestCase):
         model.cfg.DATASETS.TRAIN = ("dataset_train", )
         model.cfg.DATASETS.TEST = ("dataset_valid", )
         model.cfg.SOLVER.MAX_ITER = 1
-        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # On essaie de diminuer la charge mémoire
+        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # We try to limit the memory impact
 
         # Nominal case
         cfg = model.cfg
@@ -903,7 +903,7 @@ class TrainerRCNNTests(unittest.TestCase):
         model.cfg.DATASETS.TRAIN = ("dataset_train", )
         model.cfg.DATASETS.TEST = ("dataset_valid", )
         model.cfg.SOLVER.MAX_ITER = 100
-        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # On essaie de diminuer la charge mémoire
+        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # We try to limit the memory impact
         cfg = model.cfg
         # We test several values of patience
         patience_values = [1, 4, 10]
@@ -976,7 +976,7 @@ class TrainerRCNNTests(unittest.TestCase):
         model.cfg.DATASETS.TRAIN = ("dataset_train", )
         model.cfg.DATASETS.TEST = ("dataset_valid", )
         model.cfg.SOLVER.MAX_ITER = 1
-        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # On essaie de diminuer la charge mémoire
+        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # We try to limit the memory impact
         cfg = model.cfg
         # Nominal case
         trainer = model_detectron_faster_rcnn.TrainerRCNN(cfg, length_epoch=1, nb_iter_per_epoch=1,
@@ -1007,7 +1007,7 @@ class TrainerRCNNTests(unittest.TestCase):
         model.cfg.DATASETS.TRAIN = ("dataset_train", )
         model.cfg.DATASETS.TEST = ("dataset_valid", )
         model.cfg.SOLVER.MAX_ITER = 1
-        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # On essaie de diminuer la charge mémoire
+        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # We try to limit the memory impact
         cfg = model.cfg
 
         # Nominal case
@@ -1463,7 +1463,7 @@ class TrainValJSONWriterTests(unittest.TestCase):
         model.cfg.DATASETS.TRAIN = ("dataset_train", )
         model.cfg.DATASETS.TEST = ("dataset_valid", )
         model.cfg.SOLVER.MAX_ITER = 1
-        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # On essaie de diminuer la charge mémoire
+        model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # We try to limit the memory impact
         cfg = model.cfg
 
         # Nominal case

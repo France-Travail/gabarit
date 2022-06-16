@@ -243,7 +243,7 @@ def get_prediction_formatting_text(model: Type[ModelClass], model_conf: dict, pr
                     markdown_content += f"- **{cl}**  \n"
                 markdown_content += f"  - Probability : {round(probas[i] * 100, 2)} %  \n"
     elif model.model_type == 'regressor':
-        # TODO: gérer multi-output plus tard
+        # TODO: later, manage multi-output
         markdown_content = f"- {model_conf['y_col']}: **{prediction}**  \n"
     else:
         raise ValueError("Invalid model type")
@@ -267,7 +267,7 @@ def get_histogram(probas: np.ndarray, list_classes: List[str], is_multi_label: b
     else:
         max_proba = max(probas)
         predicted = ['Accepted' if proba == max_proba else 'Rejected' for proba in probas]
-    df_probabilities = pd.DataFrame({'classes': list_classes, 'probabilités': probas, 'result': predicted})
+    df_probabilities = pd.DataFrame({'classes': list_classes, 'probabilities': probas, 'result': predicted})
 
     # Prepare plot
     domain = ['Accepted', 'Rejected']
@@ -276,15 +276,15 @@ def get_histogram(probas: np.ndarray, list_classes: List[str], is_multi_label: b
         alt.Chart(df_probabilities, width=720, height=80 * len(list_classes))
         .mark_bar()
         .encode(
-            x=alt.X('probabilités:Q', scale=alt.Scale(domain=(0, 1))),
+            x=alt.X('probabilities:Q', scale=alt.Scale(domain=(0, 1))),
             y='classes:O',
             color=alt.Color('result', scale=alt.Scale(domain=domain, range=range_)),
-            tooltip=['probabilités:Q', 'classes:O'],
+            tooltip=['probabilities:Q', 'classes:O'],
         )
     )
     # Nudges text to the right so it does not appear on top of the bar
     text = bars.mark_text(align='left', baseline='middle', dx=3)\
-               .encode(text=alt.Text('probabilités:Q', format='.2f'))
+               .encode(text=alt.Text('probabilities:Q', format='.2f'))
 
     return df_probabilities, alt.layer(bars + text)
 

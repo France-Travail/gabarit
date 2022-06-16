@@ -14,7 +14,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# TODO : There are some tests missing, 
+# TODO : There are some tests missing,
 
 # Libs unittest
 import unittest
@@ -294,7 +294,7 @@ class UtilsObjectDetectorTests(unittest.TestCase):
 
         # Nominal case
         self.assertEqual((x1, y1, x2, y2), utils_object_detectors.xyhw_to_xyxy(x, y, h, w))
-        self.assertEqual((x1, y1, x2, y2), utils_object_detectors.xyhw_to_xyxy(*utils_object_detectors.xyxy_to_xyhw(x1, y1, x2, y2)))  # Fonction réciproque
+        self.assertEqual((x1, y1, x2, y2), utils_object_detectors.xyhw_to_xyxy(*utils_object_detectors.xyxy_to_xyhw(x1, y1, x2, y2)))  # Reciprocal fonctions
 
     def test07_xyxy_to_cxcyhw(self):
         '''Test of the function utils_object_detectors.xyxy_to_cxcyhw'''

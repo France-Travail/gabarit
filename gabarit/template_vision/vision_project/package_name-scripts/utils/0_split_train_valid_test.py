@@ -89,9 +89,9 @@ def main(directory: str, split_type: str, perc_train: float, perc_valid: float, 
     data_path = utils.get_data_path()
     directory_path = os.path.join(data_path, directory)
     if not os.path.exists(directory_path):
-        raise FileNotFoundError(f"Le chemin {directory_path} n'existe pas'")
+        raise FileNotFoundError(f"{directory_path} path does not exist'")
     if not os.path.isdir(directory_path):
-        raise NotADirectoryError(f"Le chemin {directory_path} ne pointe par sur un répertoire")
+        raise NotADirectoryError(f"{directory_path} is not a valid directory")
 
     # Manage save paths
     new_directory_train = os.path.join(data_path, f"{directory}_train")

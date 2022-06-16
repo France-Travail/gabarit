@@ -214,7 +214,7 @@ def read_folder_classification(folder_path: str, images_ext: tuple = ('.jpg', '.
 
     # Check path exists and it's a directory
     if not os.path.exists(folder_path):
-        raise FileNotFoundError(f"Le dossier {folder_path} n'existe pas.")
+        raise FileNotFoundError(f"The path {folder_path} does not exist")
     if not os.path.isdir(folder_path):
         raise NotADirectoryError(f"{folder_path} is not a valid directory")
 

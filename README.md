@@ -8,9 +8,13 @@
 
 # Gabarit - Templates Data Science - Agence Data Services
 
+---
+
 # Licence
 
 This project is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE V3.0. Please check the LICENSE file.
+
+---
 
 # Table of Contents
 - [1. Philosophy](#philosophy)

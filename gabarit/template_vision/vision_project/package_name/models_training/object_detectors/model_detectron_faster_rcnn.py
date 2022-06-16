@@ -540,11 +540,11 @@ class ModelDetectronFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelClas
         plots_path = os.path.join(self.cfg.OUTPUT_DIR, 'plots')
         if not os.path.exists(plots_path):
             os.makedirs(plots_path)
-        dict_plots = {'total_loss': {'title': 'Loss totale', 'output_filename': 'total_loss'},
-                      'loss_cls': {'title': 'Loss classification du classifier', 'output_filename': 'loss_cls_classifier'},
-                      'loss_box_reg': {'title': 'Loss régression du classifier', 'output_filename': 'loss_reg_classifier'},
-                      'loss_rpn_cls': {'title': 'Loss classification du RPN', 'output_filename': 'loss_cls_rpn'},
-                      'loss_rpn_loc': {'title': 'Loss régression du RPN', 'output_filename': 'loss_reg_rpn'}}
+        dict_plots = {'total_loss': {'title': 'Total loss', 'output_filename': 'total_loss'},
+                      'loss_cls': {'title': 'Classifier classification loss', 'output_filename': 'loss_cls_classifier'},
+                      'loss_box_reg': {'title': 'Classifier regression loss', 'output_filename': 'loss_reg_classifier'},
+                      'loss_rpn_cls': {'title': 'RPN classification loss', 'output_filename': 'loss_cls_rpn'},
+                      'loss_rpn_loc': {'title': 'RPN regression loss', 'output_filename': 'loss_reg_rpn'}}
         # Plot each metric one by one
         for name_metric, char_metric in dict_plots.items():
             self._plot_one_metric(metrics=metrics,

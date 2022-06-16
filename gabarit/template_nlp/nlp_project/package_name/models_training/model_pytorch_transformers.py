@@ -242,13 +242,13 @@ class ModelPyTorchTransformers(ModelPyTorch):
         gradient_clip_val = self.pytorch_params.get('gradient_clip_val', 1.0)
         warmup_proportion = self.pytorch_params.get('warmup_proportion', 0.2)
         run_lr_scheduler = self.pytorch_params.get('run_lr_scheduler', False)
-        self.logger.info(f"Learning rate utilisée : {lr}")
-        self.logger.info(f"Decay utilisé : {decay}")
-        self.logger.info(f"Adam's epsilon utilisé : {adam_epsilon}")
-        self.logger.info(f"Gradient clipping utilisé : {gradient_clip_val}")
+        self.logger.info(f"Learning rate: {lr}")
+        self.logger.info(f"Decay: {decay}")
+        self.logger.info(f"Adam's epsilon: {adam_epsilon}")
+        self.logger.info(f"Gradient clipping: {gradient_clip_val}")
         if run_lr_scheduler:
-            self.logger.info("Learning rate scheduler used")
-            self.logger.info(f"Warmup proportion used : {warmup_proportion}")
+            self.logger.info("Using a learning rate scheduler")
+            self.logger.info(f"Warmup proportion: {warmup_proportion}")
 
         # Update pytorch_params for saving purposes
         self.pytorch_params['learning_rate'] = lr
@@ -315,7 +315,7 @@ class ModelPyTorchTransformers(ModelPyTorch):
         if all_label is not None:
             train_dataset = TensorDataset(all_input_ids, all_input_mask, all_label)
         else:
-            raise ValueError("Aucun label associé au training set...")
+            raise ValueError("No label associated with the training set...")
         train_dl = DataLoader(train_dataset, num_workers=0, batch_size=batch_size, sampler=RandomSampler(train_dataset))
         return train_dl
 
@@ -471,7 +471,7 @@ class TaskClass(pl.LightningModule):
             adam_epsilon (float): Adam's epsilon to use
             gradient_clip_val (int | float): Gradient clipping value to use
             run_lr_scheduler (bool): Whether a learning rate scheduler should be used
-            warmup_proportion (float): Warmup proportion to use (for learning rate scheduler)
+            warmup_proportion (float): Warmup proportion to be used (for learning rate scheduler)
             train_dataloader_size (int): Number of batch per epochs. Useful to set a learning rate scheduler
         '''
         super(TaskClass, self).__init__()

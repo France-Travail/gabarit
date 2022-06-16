@@ -207,7 +207,7 @@ def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
 
     # Check for keras model
     if os.path.exists(hdf5_path):
-        # Si on a définit une fonction spéciale (faster RCNN), on l'utilise
+        # If a specific reload function has been defined (e.g. faster RCNN), we use it
         if hasattr(model, 'reload_models_from_hdf5'):
             model.reload_models_from_hdf5(hdf5_path)
         else:
