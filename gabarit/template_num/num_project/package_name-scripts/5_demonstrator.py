@@ -243,7 +243,7 @@ def get_prediction_formatting_text(model: Type[ModelClass], model_conf: dict, pr
                     markdown_content += f"- **{cl}**  \n"
                 markdown_content += f"  - Probability : {round(probas[i] * 100, 2)} %  \n"
     elif model.model_type == 'regressor':
-        # TODO: gérer multi-output plus tard
+        # TODO: later, manage multi-output
         markdown_content = f"- {model_conf['y_col']}: **{prediction}**  \n"
     else:
         raise ValueError("Invalid model type")

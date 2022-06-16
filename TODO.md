@@ -29,6 +29,7 @@
 - We should probably mutualise all keras models' `predict_proba` functions in `model_keras.py`. Only `ModelTfidfDense` is different, it should overload this method.
 - Rework `model_rules.py`.
 - Download flaubert_small_cased before using tests (in Actions)
+- Installation error with `python setup.py develop` when requirements.txt is not called first -> error: requests 2.28.0 is installed but requests<2.25.1,>=2.23.0 is required by {'words-n-fun'}
 
 
 ### Template - Numerical

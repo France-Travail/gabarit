@@ -374,9 +374,9 @@ def get_feature_map_size(input_height: int, input_width: int, subsampling_ratio:
     '''
     # Manage errors
     if input_height < 1 or input_width < 1:
-        raise ValueError(f"Dimension de l'image incorrecte (H : {input_height} / W : {input_width})")
+        raise ValueError(f"Bad image shape (H : {input_height} / W : {input_width})")
     if subsampling_ratio < 1:
-        raise ValueError(f"Ratio demandé incorrect ({subsampling_ratio})")
+        raise ValueError(f"Bad subsampling ratio ({subsampling_ratio})")
     # Process
     return input_height // subsampling_ratio, input_width // subsampling_ratio
 
@@ -1171,7 +1171,7 @@ def get_rois_bboxes_iou(rois: np.ndarray, img_data: dict, subsampling_ratio: int
         }
         # Get the iou of each bbox
         for index_bbox, bbox in enumerate(img_data['bboxes']):
-            # bbox coordonnées - format image en entrée
+            # bbox coordinates - input image format
             # Bbox coordinates (input format, ie. image space)
             bbox_coordinates = (bbox['x1'], bbox['y1'], bbox['x2'], bbox['y2'])
             # Coordinates transformation to features map space
@@ -1210,7 +1210,7 @@ def get_rois_targets(dict_rois: dict, classifier_min_overlap: float, classifier_
         dict_iou = {bbox_index: dict_roi['bboxes'][bbox_index]['iou'] for bbox_index in dict_roi['bboxes']}
         best_bbox_index = max(dict_iou, key=dict_iou.get)
         best_iou = dict_iou[best_bbox_index]
-        # ... if best_iou inférieur to a threshold, we ignore this ROI ...
+        # ... if best_iou lower than a threshold, we ignore this ROI ...
         if best_iou < classifier_min_overlap:
             continue
         # ... otherwise, we define the best bbox and we complete the targets
@@ -1403,7 +1403,6 @@ def get_classifier_test_inputs(rois_coordinates: List[np.ndarray]) -> np.ndarray
             # Shape : (1, nb_rois, 4), format x, y, h, w
     '''
     if len(rois_coordinates) != 1:
-        raise ValueError("En mode prédiction, la batch size doit être de 1 obligatoirement.")
         raise ValueError("In prediction mode, the batch_size must be 1.")
     # Init. of the output array
     nb_rois = rois_coordinates[0].shape[0]
@@ -1461,7 +1460,7 @@ def get_valid_boxes_from_coordinates(input_img: np.ndarray, input_rois: np.ndarr
         dict_classes (dict): Dictionary of the classes of the model
     Returns:
         A list of boxes valid from a probability AND coordinates xyxy points of view
-            # Format [(cl, proba, coordonnées), (...), ...)
+            # Format [(cl, proba, coordinates), (...), ...)
     '''
     boxes_candidates = []
     # For each box (in features map space)...
@@ -1495,11 +1494,11 @@ def non_max_suppression_fast_on_preds(boxes_candidates: List[tuple], nms_overlap
 
     Args:
         boxes_candidates (list): Valid predicted boxes
-            # Format [(cl, proba, coordonnées), (...), ...)
+            # Format [(cl, proba, coordinates), (...), ...)
         nms_overlap_threshold (float): Above this threshold for the iou, two boxes are said to be overlapping
     Returns:
         A list of boxes valid from a probability AND coordinates xyxy points of view and with "no" overlap
-            # Format [(cl, proba, coordonnées), (...), ...)
+            # Format [(cl, proba, coordinates), (...), ...)
     '''
     # If there are no valid boxes
     if len(boxes_candidates) == 0:
@@ -1524,7 +1523,7 @@ def get_final_bboxes(final_boxes: List[tuple], img_data: dict) -> List[dict]:
 
     Args:
         final_boxes (list) : list of boxes valid from a probability AND coordinates xyxy points of view and with "no" overlap
-            # Format [(cl, proba, coordonnées), (...), ...)
+            # Format [(cl, proba, coordinates), (...), ...)
         img_data (dict) : Metadata associated with the image (used to resize predictions)
     Returns:
         A list of bboxes corresponding to the model predictions

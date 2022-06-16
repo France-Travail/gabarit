@@ -361,7 +361,7 @@ class ModelKeras(ModelClass):
             # Otherwise, we keep the model already set on the class (useful when save_level is LOW)
             if nb_iter_keras > 1:
                 filename = 'best.hdf5' if iter == 0 else f'best_{iter}.hdf5'
-                self.logger.info(f"Prédiction avec {filename}")
+                self.logger.info(f"Predictions with file {filename}")
                 self.model = load_model(
                     os.path.join(self.model_dir, f'{filename}'),
                     custom_objects=self.custom_objects

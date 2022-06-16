@@ -1399,7 +1399,7 @@ class CustomGeneratorClassifier(Iterator):
 
         # Manage data augmentation & test
         if self.is_test and any([param == True for param in [self.horizontal_flip, self.vertical_flip, self.rot_90]]):
-            model.logger.warning("Attention, on détecte de la data augmentation sur le jeu de test ! Ce n'est certainement pas souhaité !")
+            model.logger.warning("Warning, Data Augmentation detected on the test set! This is certainly not desired!")
 
     def _get_batches_of_transformed_samples(self, index_array: np.ndarray):
         '''Gets a batch of inputs for the classifier model
