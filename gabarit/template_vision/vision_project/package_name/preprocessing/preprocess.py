@@ -17,7 +17,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import re
 import tqdm
 import logging
 import functools
@@ -25,7 +24,6 @@ from PIL import Image
 from io import BytesIO
 from typing import Callable
 
-from {{package_name}} import utils
 from {{package_name}}.preprocessing import manage_white_borders
 
 
@@ -115,7 +113,7 @@ def preprocess_docs(images: list) -> list:
         list: Preprocessed images
     '''
     # Process
-    pipeline = [convert_rgb, functools.partial(manage_white_borders.remove_white_borders, image_ratio_strategy='fill', image_ratio=3/4, with_rotation=True), resize]
+    pipeline = [convert_rgb, functools.partial(manage_white_borders.remove_white_borders, image_ratio_strategy='fill', image_ratio=0.75, with_rotation=True), resize]
     return apply_pipeline(images, pipeline=pipeline)
 
 
@@ -173,7 +171,7 @@ def jpeg_compression(images: list, quality: int = 75) -> list:
         im.save(out, format='JPEG', quality=quality)
         out.seek(0)
         tmp_im = Image.open(out)
-        tmp_im.load() # Cumpulsory to avoid "Too many open files" issue
+        tmp_im.load()  # Cumpulsory to avoid "Too many open files" issue
         results.append(tmp_im)
     return results
 

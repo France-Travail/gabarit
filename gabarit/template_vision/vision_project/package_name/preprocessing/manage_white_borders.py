@@ -17,7 +17,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import os
 import tqdm
 import logging
 import numpy as np
@@ -30,7 +29,7 @@ from typing import Union
 logger = logging.getLogger(__name__)
 
 
-def remove_white_borders(images: list, image_ratio_strategy: Union[str, None] = None, image_ratio: float = 3/4, with_rotation: bool = True) -> list:
+def remove_white_borders(images: list, image_ratio_strategy: Union[str, None] = None, image_ratio: float = 0.75, with_rotation: bool = True) -> list:
     '''Removes white border
     Also change the image ratio and rotate (if wanted) along largest dim. (i.e. portrait mode)
 
@@ -52,7 +51,7 @@ def remove_white_borders(images: list, image_ratio_strategy: Union[str, None] = 
         raise ValueError(f"image ratio strategy (image_ratio_strategy) '{image_ratio_strategy}' is not a valid option ([None, 'fill', 'stretch'])")
     # Get 'True' white
     # TODO : to be improved !
-    true_white = _rgb2gray(np.array([255,255,255]))
+    true_white = _rgb2gray(np.array([255, 255, 255]))
     # Process each image, one by one
     results = []
     for i, im in enumerate(tqdm.tqdm(images)):
@@ -60,10 +59,10 @@ def remove_white_borders(images: list, image_ratio_strategy: Union[str, None] = 
         pixels = _rgb2gray(np.array(im))
         # x : horizontal
         # y : vertical
-        first_x = _get_first_x(pixels, true_white) # Left
-        first_y = _get_first_y(pixels, true_white) # Upper
-        last_x = _get_last_x(pixels, true_white) # Right
-        last_y = _get_last_y(pixels, true_white) # Lower
+        first_x = _get_first_x(pixels, true_white)  # Left
+        first_y = _get_first_y(pixels, true_white)  # Upper
+        last_x = _get_last_x(pixels, true_white)  # Right
+        last_y = _get_last_y(pixels, true_white)  # Lower
         # If first_x -1 -> no 'non-white' pixel, do nothing
         if first_x == -1:
             continue
@@ -93,7 +92,7 @@ def _rgb2gray(rgb: np.ndarray) -> np.ndarray:
     Returns:
         np.ndarray: New image
     '''
-    return np.dot(rgb[...,:3], [0.2989, 0.5870, 0.1140])
+    return np.dot(rgb[..., :3], [0.2989, 0.5870, 0.1140])
 
 
 def _get_first_y(pixels: np.ndarray, true_white: np.ndarray) -> int:
@@ -105,7 +104,7 @@ def _get_first_y(pixels: np.ndarray, true_white: np.ndarray) -> int:
     Returns:
         int: Pixel's index
     '''
-    mins = np.amin(pixels, axis=1) # Get min pix per line
+    mins = np.amin(pixels, axis=1)  # Get min pix per line
     # Look for first row with non-white pixel(s)
     for i, pix in enumerate(mins):
         if not pix == true_white:
@@ -186,18 +185,18 @@ def fill_with_white(im: Image, image_ratio: float) -> Image:
         Image: Transformed image
     '''
     width, height = im.size
-    ratio = width/height
+    ratio = width / height
     if ratio > image_ratio:
         # Increase height
         wanted_height = round(width / image_ratio)
         new_size = (width, wanted_height)
         old_size = (width, height)
         # Set new image
-        new_im = Image.new("RGB", new_size, (255,255,255))
+        new_im = Image.new("RGB", new_size, (255, 255, 255))
         # Fill it with the old image, centered
         # (use floor to ensure the old image fits into the new one)
         x_pos = 0
-        y_pos = floor((new_size[1] - old_size[1])/2)
+        y_pos = floor((new_size[1] - old_size[1]) / 2)
         new_im.paste(im, (x_pos, y_pos))
     elif ratio < image_ratio:
         # Increase width
@@ -205,13 +204,13 @@ def fill_with_white(im: Image, image_ratio: float) -> Image:
         new_size = (wanted_width, height)
         old_size = (width, height)
         # Set new image
-        new_im = Image.new("RGB", new_size, (255,255,255))
+        new_im = Image.new("RGB", new_size, (255, 255, 255))
         # Fill it with the old image, centered
         # (use floor to ensure the old image fits into the new one)
-        x_pos = floor((new_size[0]-old_size[0])/2)
+        x_pos = floor((new_size[0] - old_size[0]) / 2)
         y_pos = 0
         new_im.paste(im, (x_pos, y_pos))
-    else: # Already correct ratio
+    else:  # Already correct ratio
         new_im = im
     return new_im
 
@@ -227,7 +226,7 @@ def stretch_image(im: Image, image_ratio: float) -> Image:
         Image: Transformed image
     '''
     width, height = im.size
-    ratio = width/height
+    ratio = width / height
     if ratio > image_ratio:
         # Increase height
         wanted_height = round(width / image_ratio)
@@ -238,7 +237,7 @@ def stretch_image(im: Image, image_ratio: float) -> Image:
         wanted_width = round(height * image_ratio)
         new_size = (wanted_width, height)
         new_im = im.resize(new_size)
-    else: # Already correct ratio
+    else:  # Already correct ratio
         new_im = im
     return new_im
 

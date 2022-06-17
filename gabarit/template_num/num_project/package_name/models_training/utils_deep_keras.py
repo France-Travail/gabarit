@@ -28,9 +28,6 @@ from functools import partial
 import tensorflow as tf
 from tensorflow.keras import backend as K
 
-# Get logger
-logger = logging.getLogger(__name__)
-
 
 def recall(y_true, y_pred) -> float:
     '''Recall to use as a custom metrics
@@ -293,4 +290,5 @@ custom_objects = {
 
 
 if __name__ == '__main__':
+    logger = logging.getLogger(__name__)
     logger.error("This script is not stand alone but belongs to a package that has to be imported.")
