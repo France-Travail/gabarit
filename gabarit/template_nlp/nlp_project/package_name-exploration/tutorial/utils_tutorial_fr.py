@@ -17,57 +17,72 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import re
+import math
 import random
+import pandas as pd
 from typing import List, Tuple
 from collections import Counter
 
+from {{package_name}}.models_training.model_tfidf_svm import ModelTfidfSvm
 
-def text_to_sentence(text: str, min_sentence_size: int, min_sentence_word: int) -> List[str]:
+
+def text_to_sentence(text: str, nb_word_sentence: int) -> List[str]:
     '''Transforms a text in sentences.
 
     Args:
         text (str) : The text to cut in sentences
-        min_sentence_size (int) : The minimal number of characters in a sentence for it to be considered a sentence
-        min_sentence_word (int) : The minimal number of words in a sentence for it to be considered a sentence
+        nb_word_sentence (int) : The number of words in a sentence
     Returns:
         list : A list of sentence
     
     '''
     text = re.sub(r'\s',' ', text)
-    # Changes all 'strong' punctuations to a period
-    text = re.sub(r'\!', r'.', text)
-    text = re.sub(r'\?', r'.', text)
-    text = re.sub(r'\;', r'.', text)
+    # Changes some punctuations to a whitespace
+    for punctuation in [r'\!', r'\?', r'\;', r'\.', r'\,']:
+        text = re.sub(punctuation, ' ', text)
     # Get rid of superfluous whitespaces
     text = re.sub(' +', ' ', text)
-    list_sentences = text.split('.')
-    list_sentences = [sentence for sentence in list_sentences if len(sentence) >= min_sentence_size]
-    list_sentences = [sentence for sentence in list_sentences if len(sentence.split(' ')) >= min_sentence_word]
+    list_mots = text.split(' ')
+    list_sentences = []
+    for i in range(math.ceil(len(list_mots)/nb_word_sentence)):
+        list_sentences.append(' '.join(list_mots[i*nb_word_sentence:(i+1)*nb_word_sentence]))
     return list_sentences
 
+def df_texts_to_df_sentences(texts, author, nb_word_sentence):
+    list_phrases = []
+    for text, author in zip(list(texts), list(author)):
+        # Cette fonction transforme un texte en phrases
+        sentences = text_to_sentence(text, nb_word_sentence)
+        list_phrases = list_phrases+[(sentence, author) for sentence in sentences]
+    df_sentences = pd.DataFrame(list_phrases, columns=['sentence', 'author'])
+    return df_sentences
 
-def predict_author(text: str, model, min_sentence_size: int, min_sentence_word: int, perc_sample: float=1.0) -> Tuple[str, dict, int]:
-    '''Predicts the author of a text.
-    
-    Args:
-        text (str) : The text whose author we want to predict
-        min_sentence_size (int) : The minimal number of characters in a sentence for it to be considered a sentence
-        min_sentence_word (int) : The minimal number of words in a sentence for it to be considered a sentence
-        perc_sample (float): The percentage of sentence of the text we consider
-    Returns:
-        tuple :
+
+class ModelAuthor(ModelTfidfSvm):
+
+    def __init__(self, nb_word_sentence, **kwargs):
+        super().__init__(**kwargs)
+        self.nb_word_sentence = nb_word_sentence
+
+    def fit(self, x_train, y_train, **kwargs) -> None:
+        df_train_sentences = df_texts_to_df_sentences(x_train, y_train, self.nb_word_sentence)
+        super().fit(df_train_sentences['sentence'], df_train_sentences['author'])
+
+    def predict_author(self, text: str) -> Tuple[str, dict, int]:
+        '''Predicts the author of a text.
+        
+        Args:
+            text (str) : The text whose author we want to predict
+        Returns:
             str : The predicted author
-            dict : The percentage of sentences attributed to each author
-            int : The number of sentences in the text
-    '''
-    # Cut the text in sentences
-    sentences = text_to_sentence(text, min_sentence_size, min_sentence_word)
-    sentences = random.sample(sentences, k=int(perc_sample*len(sentences)))
-    # For each sentence, predict an author. Gives the number of sentences predicted for each author
-    counter = dict(Counter(list(model.predict(sentences))))
-    # The author with the highest number of sentences
-    author = max(counter, key=counter.get)
-    # Calculates a percentage of sentences instead of raw numbers
-    count_sentences = [(key, round(value/len(sentences), 3)) for key, value in counter.items()]
-    count_sentences = sorted(count_sentences, key=lambda x:x[1], reverse=True)
-    return author, count_sentences, len(sentences)
+        '''
+        # Cut the text in sentences
+        sentences = text_to_sentence(text, self.nb_word_sentence)
+        # For each sentence, predict an author. Gives the number of sentences predicted for each author
+        counter = dict(Counter(list(super().predict(sentences))))
+        # The author with the highest number of sentences
+        author = max(counter, key=counter.get)
+        return author
+
+    def predict(self, x_test, **kwargs):
+        return x_test.apply(self.predict_author)
