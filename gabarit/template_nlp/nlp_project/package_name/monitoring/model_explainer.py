@@ -219,11 +219,11 @@ class AttentionExplainer(Explainer):
         # ???
         # TODO: shouldn't it be the model preprocess pipeline ?
         if pipeline is None:
-            pipeline = ['to_lower', 'remove_accents'] # ???
+            pipeline = ['to_lower', 'remove_accents']  # ???
             text = api.preprocess_pipeline(text, pipeline)
 
         # Prepare explanations
-        indexed_string = IndexedString(text, split_expression=self.model.tokenizer.split ,**kwargs)
+        indexed_string = IndexedString(text, split_expression=self.model.tokenizer.split, **kwargs)
         domain_mapper = TextDomainMapper(indexed_string)
         exp = Explanation(domain_mapper=domain_mapper, class_names=self.class_names + ["Important"])
         exp.predict_proba = self.model.predict_proba(text)
@@ -233,8 +233,8 @@ class AttentionExplainer(Explainer):
         word_list = []
         for word in exp_from_model.keys():
             word_list.append((word, float(exp_from_model[word][1])))
-        exp.local_exp = {len(self.class_names): word_list}  #exp.local_exp = sorted list of tuples where each tuple (x,y) corresponds to the feature id (x) and the local weight (y).
-        exp.intercept = '0.42'  #exp.intercept = can be ignored
+        exp.local_exp = {len(self.class_names): word_list}  # exp.local_exp = sorted list of tuples where each tuple (x,y) corresponds to the feature id (x) and the local weight (y).
+        exp.intercept = '0.42'  # exp.intercept = can be ignored
         exp.score = '0.42'  # exp.score = the R^2 value of the returned explanation. ???
         exp.local_pred = '0.42'  # exp.local_pred = the prediction of the explanation model on the original instance. Can be ignored.
 

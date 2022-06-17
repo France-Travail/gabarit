@@ -20,29 +20,22 @@
 # - ModelPyTorchTransformers -> Model for predictions via tranformers pytorch
 
 import os
-import json
 import math
-import pickle
-import shutil
 import logging
 import numpy as np
-import pandas as pd
 import seaborn as sns
 from tqdm import tqdm
 from functools import partial
-import matplotlib.pyplot as plt
 from typing import List, Union, Any, Tuple, no_type_check
 
 import torch
 import pytorch_lightning as pl
 from torch.nn.utils.rnn import pad_sequence
 from torch.utils.data import DataLoader, Dataset
-from torch.utils.data.dataset import TensorDataset
 from torch.multiprocessing import Pool, cpu_count
 from transformers import AutoConfig, AutoModelWithLMHead, AutoTokenizer, AdamW, get_linear_schedule_with_warmup
 
 from {{package_name}} import utils
-from {{package_name}}.models_training import utils_deep_torch
 from {{package_name}}.models_training.model_pytorch import ModelPyTorch
 
 sns.set(style="darkgrid")
@@ -58,8 +51,7 @@ class ModelPyTorchLanguageModel(ModelPyTorch):
 
     def __init__(self, transformer_name: str, max_sequence_length: int = 256,
                  tokenizer_special_tokens: list = ["xxbos", "xxeos"],
-                 padding: str = "max_length", truncation: bool = True,
-                  **kwargs) -> None:
+                 padding: str = "max_length", truncation: bool = True, **kwargs) -> None:
         '''Initialization of the class (see ModelClass & ModelPyTorch for more arguments)
 
         Args:
@@ -88,7 +80,7 @@ class ModelPyTorchLanguageModel(ModelPyTorch):
     def forward(self) -> None:
         sentence = "Le chat mange une pomme."
         token_ids = torch.tensor([self.tokenizer.encode(sentence)])
-        self.model.convert_network_to_device() # Convert to gpu if available
+        self.model.convert_network_to_device()  # Convert to gpu if available
         token_ids = self.model.to_device(token_ids)
         self.model.eval()
         last_layer = self.model(token_ids)[0]
@@ -220,14 +212,13 @@ class ModelPyTorchLanguageModel(ModelPyTorch):
         self.pytorch_params['gradient_clip_val'] = gradient_clip_val
         self.pytorch_params['warmup_proportion'] = warmup_proportion
 
-
         # Set task (i.e. our model)
         # Return
-        task = TaskClass(transformer_model = transformer_model, tokenizer = tokenizer,
-                         lr = lr, topK_val = 3, adam_epsilon = adam_epsilon,
-                         output_path = output_path, decay = decay, warmup_proportion = warmup_proportion,
-                         epochs = epochs, run_gpus = run_gpus, monitor = ["val_loss", "loss"],
-                         gradient_clip_val = gradient_clip_val, train_dataloader_size=train_dataloader_size)
+        task = TaskClass(transformer_model=transformer_model, tokenizer=tokenizer, lr=lr, topK_val=3,
+                         adam_epsilon=adam_epsilon, output_path=output_path, decay=decay,
+                         warmup_proportion=warmup_proportion, epochs=epochs, run_gpus=run_gpus,
+                         monitor=["val_loss", "loss"], gradient_clip_val=gradient_clip_val,
+                         train_dataloader_size=train_dataloader_size)
         return task
 
     # y_train_dummies useless for a langage model; here for compatibility purposes with ModelPytorch
@@ -363,7 +354,8 @@ class TaskClass(pl.LightningModule):
                  gradient_clip_val, train_dataloader_size: Union[int, None]) -> None:
         super(TaskClass, self).__init__()
         self.save_hyperparameters("transformer_model", "tokenizer", "lr", "topK_val", "adam_epsilon",
-        "output_path","decay","warmup_proportion", "epochs", "run_gpus","monitor", "gradient_clip_val", "train_dataloader_size")
+                                  "output_path", "decay", "warmup_proportion", "epochs", "run_gpus",
+                                  "monitor", "gradient_clip_val", "train_dataloader_size")
         self.model: Any = self.hparams.transformer_model
         self.tokenizer: Any = self.hparams.tokenizer
         self.lr: float = self.hparams.lr
@@ -377,7 +369,7 @@ class TaskClass(pl.LightningModule):
         self.monitor: Any = self.hparams.monitor
         self.gradient_clip_val: Any = self.hparams.gradient_clip_val
         self.post_init()
-        self.tokenizer = self.hparams.tokenizer  #TODO: useful ?
+        self.tokenizer = self.hparams.tokenizer  # TODO: useful ?
         self.train_dataloader_size: Union[int, None] = self.hparams.train_dataloader_size
 
     def post_init(self) -> None:
@@ -415,14 +407,14 @@ class TaskClass(pl.LightningModule):
             self.lr_sched = get_linear_schedule_with_warmup(optimizer, num_warmup_steps=warmup_steps, num_training_steps=t_total)
         else:
             self.lr_sched = None
-        #return optimizer
+        # return optimizer
 
         return_dict = {'optimizer': optimizer}
         if self.lr_sched is not None:
-            #lr_scheduler = LambdaLR(optimizer, lr_lambda=utils_deep_torch.LRScheduleWithWarmup(warmup_steps=warmup_steps, total_steps=total_steps))
+            # lr_scheduler = LambdaLR(optimizer, lr_lambda=utils_deep_torch.LRScheduleWithWarmup(warmup_steps=warmup_steps, total_steps=total_steps))
             return_dict['lr_scheduler'] = {}
             return_dict['lr_scheduler']['scheduler'] = self.lr_sched
-            return_dict['lr_scheduler']['interval'] = 'step' # Update at each step
+            return_dict['lr_scheduler']['interval'] = 'step'  # Update at each step
             return_dict['lr_scheduler']['frequency'] = 1
         return return_dict
 
@@ -431,7 +423,7 @@ class TaskClass(pl.LightningModule):
     #     self.lr_sched.step()
     #     optimizer.zero_grad()
 
-    def mask_tokens(self,inputs: torch.Tensor, tokenizer) -> Tuple[Any, Any]:
+    def mask_tokens(self, inputs: torch.Tensor, tokenizer) -> Tuple[Any, Any]:
         """Prepare masked tokens inputs/labels for masked language modeling
         : 80% MASK, 10% random, 10% original.
         """
@@ -506,8 +498,8 @@ class TaskClass(pl.LightningModule):
             "val_loss": float(val_loss),
             f"acc_top{self.topK_val}": self.div(sum(in_top_k), len(in_top_k)),
         }
-        #self.log(f"val_loss: {float(val_loss)}, acc_top{self.topK_val}: {self.div(sum(in_top_k), len(in_top_k))}")
-        self.log("val_loss",float(val_loss), prog_bar=True, on_step=False, logger=True)
+        # self.log(f"val_loss: {float(val_loss)}, acc_top{self.topK_val}: {self.div(sum(in_top_k), len(in_top_k))}")
+        self.log("val_loss", float(val_loss), prog_bar=True, on_step=False, logger=True)
         self.log(f"acc_topK_{self.topK_val}", self.div(sum(in_top_k), len(in_top_k)))
         return {"log": log, "val_loss": float(val_loss)}
 

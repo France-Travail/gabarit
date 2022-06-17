@@ -22,23 +22,18 @@
 
 import os
 import json
-import pickle
-import shutil
 import logging
 import numpy as np
 import pandas as pd
 import seaborn as sns
 from tqdm import tqdm
 from typing import Union, Any
-from functools import partial
-import matplotlib.pyplot as plt
 
 import torch
 from torch.nn import Softmax, Sigmoid
-from transformers import CONFIG_NAME, WEIGHTS_NAME, AdamW, AutoModel, AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
+from transformers import CONFIG_NAME, WEIGHTS_NAME, AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
 
 from {{package_name}} import utils
-from {{package_name}}.models_training import utils_deep_torch, utils_models
 from {{package_name}}.models_training.model_pytorch import ModelPyTorch
 
 sns.set(style="darkgrid")
