@@ -184,16 +184,7 @@ class UtilsTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             utils.get_chunk_limits(input_test_1, chunksize=-1)
 
-
-    def test06_get_configs_path(self):
-        '''Test of the function utils.get_configs_path'''
-        # Nominal case
-        path = utils.get_configs_path()
-        self.assertEqual(os.path.isdir(path), True)
-        self.assertEqual(path.endswith('configs'), True)
-
-
-    def test07_get_data_path(self):
+    def test06_get_data_path(self):
         '''Test of the function utils.get_data_path'''
         # Nominal case
         path = utils.get_data_path()
@@ -212,7 +203,7 @@ class UtilsTests(unittest.TestCase):
         remove_dir(path)
 
 
-    def test08_get_models_path(self):
+    def test07_get_models_path(self):
         '''Test of the function utils.get_models_path'''
         # Nominal case
         path = utils.get_models_path()
@@ -231,7 +222,7 @@ class UtilsTests(unittest.TestCase):
         remove_dir(path)
 
 
-    def test09_get_pipelines_path(self):
+    def test08_get_pipelines_path(self):
         '''Test of the function utils.get_pipelines_path'''
         # Nominal case
         path = utils.get_pipelines_path()
@@ -250,7 +241,7 @@ class UtilsTests(unittest.TestCase):
         remove_dir(path)
 
 
-    def test10_get_ressources_path(self):
+    def test09_get_ressources_path(self):
         '''Test of the function utils.get_ressources_path'''
         # Nominal case
         path = utils.get_ressources_path()
@@ -258,14 +249,14 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(path.endswith('{{package_name}}-ressources'), True)
 
 
-    def test11_get_package_version(self):
+    def test10_get_package_version(self):
         '''Test of the function utils.get_package_version'''
         # Nominal case
         version = utils.get_package_version()
         self.assertEqual(type(version), str)
 
 
-    def test12_flatten(self):
+    def test11_flatten(self):
         '''Test of the function utils.flatten'''
         # Nominal case
         test_list = [[1, 2], 3, [4], [1, [5, 8]]]

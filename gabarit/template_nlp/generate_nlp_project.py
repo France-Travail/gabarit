@@ -166,8 +166,7 @@ def generate(project_name: str, project_path: str, config_path: str,
     models_dir = os.path.join(output_dir, f'{project_name}-models')
     exploration_dir = os.path.join(output_dir, f'{project_name}-exploration')
     transformers_dir = os.path.join(output_dir, f'{project_name}-transformers')
-    configs_dir = os.path.join(output_dir, project_name, 'configs')
-    for new_dir in [data_dir, models_dir, exploration_dir, transformers_dir, configs_dir]:
+    for new_dir in [data_dir, models_dir, exploration_dir, transformers_dir]:
         if not os.path.exists(new_dir):
             os.makedirs(new_dir)
 

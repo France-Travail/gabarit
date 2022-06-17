@@ -173,14 +173,7 @@ class UtilsTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             utils.get_chunk_limits(input_test_1, chunksize=-1)
 
-    def test06_get_configs_path(self):
-        '''Test of the function utils.get_configs_path'''
-        # Nominal case
-        path = utils.get_configs_path()
-        self.assertEqual(os.path.isdir(path), True)
-        self.assertEqual(path.endswith('configs'), True)
-
-    def test07_get_data_path(self):
+    def test06_get_data_path(self):
         '''Test of the function utils.get_data_path'''
         # Nominal case
         path = utils.get_data_path()
@@ -195,7 +188,7 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(path, os.path.join(current_dir, '{{package_name}}-data'))
         utils.DIR_PATH = None
 
-    def test08_get_models_path(self):
+    def test07_get_models_path(self):
         '''Test of the function utils.get_models_path'''
         # Nominal case
         path = utils.get_models_path()
@@ -210,14 +203,14 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(path, os.path.join(current_dir, '{{package_name}}-models'))
         utils.DIR_PATH = None
 
-    def test09_get_ressources_path(self):
+    def test08_get_ressources_path(self):
         '''Test of the function utils.get_ressources_path'''
         # Nominal case
         path = utils.get_ressources_path()
         self.assertEqual(os.path.isdir(path), True)
         self.assertEqual(path.endswith('{{package_name}}-ressources'), True)
 
-    def test10_get_package_version(self):
+    def test09_get_package_version(self):
         '''Test of the function utils.get_package_version'''
         # Nominal case
         version = utils.get_package_version()
