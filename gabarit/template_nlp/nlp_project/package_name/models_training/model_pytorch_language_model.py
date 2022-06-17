@@ -222,7 +222,7 @@ class ModelPyTorchLanguageModel(ModelPyTorch):
         return task
 
     # y_train_dummies useless for a langage model; here for compatibility purposes with ModelPytorch
-    def _get_train_dataloader(self, batch_size: int, x_train, y_train_dummies = None) -> DataLoader:
+    def _get_train_dataloader(self, batch_size: int, x_train, y_train_dummies=None) -> DataLoader:
         '''Prepares the input data for the model
 
         Args:
