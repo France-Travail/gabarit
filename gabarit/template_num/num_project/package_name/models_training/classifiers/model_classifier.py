@@ -306,8 +306,8 @@ class ModelClassifierMixin:
                 if len(labels) > 50:
                     self.logger.warning(
                         f"Warning, there are {len(labels)} categories to plot in the confusion matrix.\n"
-                        + f"Heavy chances of slowness/display bugs/crashes...\n"
-                        + f"SKIP the plots"
+                        "Heavy chances of slowness/display bugs/crashes...\n"
+                        "SKIP the plots"
                     )
                 else:
                     # Global statistics
@@ -353,7 +353,7 @@ class ModelClassifierMixin:
 
         # Save accuracy
         acc_path = os.path.join(self.model_dir, f"acc{'_' + type_data if len(type_data) > 0 else ''}@{round(acc_tot, 5)}")
-        with open(acc_path, 'w') as f:
+        with open(acc_path, 'w'):
             pass
 
         # Upload metrics in mlflow (or another)

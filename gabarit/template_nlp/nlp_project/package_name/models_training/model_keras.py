@@ -36,12 +36,10 @@ from typing import Optional, no_type_check, Union, Tuple, Callable, Any
 
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras import backend as K
 from tensorflow.keras.utils import plot_model
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.sequence import pad_sequences
-from tensorflow.keras.callbacks import (CSVLogger, EarlyStopping,
-                                        ModelCheckpoint, TensorBoard,
+from tensorflow.keras.callbacks import (CSVLogger, EarlyStopping, ModelCheckpoint,
                                         TerminateOnNaN, LearningRateScheduler)
 
 from {{package_name}} import utils
@@ -182,7 +180,7 @@ class ModelKeras(ModelClass):
             y_train_dummies = pd.get_dummies(y_train)
             y_valid_dummies = pd.get_dummies(y_valid) if y_valid is not None else None
             # Important : get_dummies reorder the columns in alphabetical order
-                # Thus, there is no problem if we fit again on a new dataframe with shuffled data
+            # Thus, there is no problem if we fit again on a new dataframe with shuffled data
             list_classes = list(y_train_dummies.columns)
         # Else keep it as it is
         else:
@@ -229,7 +227,7 @@ class ModelKeras(ModelClass):
         x_train = self._prepare_x_train(x_train)
 
         # If available, also prepare x_valid & get validation_data (tuple)
-        validation_data: Optional[tuple] = None # Def. None if y_valid is None
+        validation_data: Optional[tuple] = None  # Def. None if y_valid is None
         if y_valid is not None:
             x_valid = self._prepare_x_test(x_valid)
             validation_data = (x_valid, y_valid_dummies)
@@ -283,7 +281,7 @@ class ModelKeras(ModelClass):
                 self.logger.error(repr(e))
 
                 # 2.
-                best_path = os.path.join(self.model_dir, f'best.hdf5')
+                best_path = os.path.join(self.model_dir, 'best.hdf5')
                 time_spent = time.time() - start_time
                 if time_spent >= 60 and self.nb_iter_keras == 1 and os.path.exists(best_path):
                     # 3.
@@ -293,9 +291,9 @@ class ModelKeras(ModelClass):
                     self.nb_fit += 1
                     # 5.
                     self.save()
-                    with open(os.path.join(self.model_dir, "0_MODEL_INCOMPLETE"), 'w') as f:
+                    with open(os.path.join(self.model_dir, "0_MODEL_INCOMPLETE"), 'w'):
                         pass
-                    with open(os.path.join(self.model_dir, "1_TRAINING_NEEDS_TO_BE_RESUMED"), 'w') as f:
+                    with open(os.path.join(self.model_dir, "1_TRAINING_NEEDS_TO_BE_RESUMED"), 'w'):
                         pass
                     # 6.
                     self.logger.error("[EXPERIMENTAL] Error during model training")
@@ -312,7 +310,7 @@ class ModelKeras(ModelClass):
                 self._plot_metrics_and_loss(fit_history, iter)
                 # Reload best model
                 self.model = load_model(
-                    os.path.join(self.model_dir, f'best.hdf5'),
+                    os.path.join(self.model_dir, 'best.hdf5'),
                     custom_objects=self.custom_objects
                 )
 
@@ -638,7 +636,7 @@ class ModelKeras(ModelClass):
         graphiz_path = 'C:/Program Files (x86)/Graphviz2.38/bin/'
         if os.path.isdir(graphiz_path):
             os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
-            img_path = os.path.join(self.model_dir, f'model.png')
+            img_path = os.path.join(self.model_dir, 'model.png')
             plot_model(model, to_file=img_path)
 
     @no_type_check  # We do not check the type, because it is complicated with managing custom_objects_str
@@ -713,7 +711,7 @@ class ModelKeras(ModelClass):
             pass
 
         # We check if we already have the custom objects
-        if hasattr(self, 'custom_objects') and self.custom_objects != None:
+        if hasattr(self, 'custom_objects') and self.custom_objects is not None:
             custom_objects = self.custom_objects
         else:
             self.logger.warning("Can't find the attribute 'custom_objects' in the model to be reloaded")
@@ -749,6 +747,7 @@ class ModelKeras(ModelClass):
             return True
         else:
             return False
+
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
