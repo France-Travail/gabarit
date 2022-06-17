@@ -87,8 +87,8 @@ Three IA Frameworks are available:
 	- Supports :
 
 		- Regression
-		- Multi Class / Mono Label classification
-		- Mono Class / Multi Label classification
+		- Multi Classes / Mono Label classification
+		- Mono Class / Multi Labels classification
 
 
 - **Computer Vision** to tackle classification use cases on images
@@ -96,7 +96,7 @@ Three IA Frameworks are available:
 	- Supports
 
 		- Mono Class / Mono Label classification
-		- Multi Class / Mono Label classification
+		- Multi Classes / Mono Label classification
 		- Area of interest detection
 
 
@@ -245,7 +245,7 @@ The intended flow of a project driven by one of these framework is the following
 
 Input data are supposed to be `.csv` files and the separator and encoding are to be provided during the generation of the project. It is obviously possible to use another datatype but a transformation step to `.csv` will be required to use the scripts provided by default.
 
-Concerning the prediction target, please refer to `2_training.py`. Usually we expect One Hot Encoded format for multilabel use cases. For singlelabel use cases, a single column (string for classification, float for regression) is expected.
+Concerning the prediction target, please refer to `2_training.py`. Usually we expect One Hot Encoded format for multi-labels use cases. For single-label use cases, a single column (string for classification, float for regression) is expected.
 
 
 ## 3. Features  <a name="features"></a>

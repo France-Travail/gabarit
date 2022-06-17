@@ -339,7 +339,7 @@ class ModelClass:
         self.logger.info('-- * * * * * * * * * * * * * * --')
         self.logger.info(f"Statistics f1-score{' ' + type_data if len(type_data) > 0 else ''}")
         self.logger.info('--------------------------------')
-        self.logger.info(f"Accuracy totale : {round(acc_tot * 100, 2)}% \t Trues: {trues} \t Falses: {falses}")
+        self.logger.info(f"Total accuracy : {round(acc_tot * 100, 2)}% \t Trues: {trues} \t Falses: {falses}")
         self.logger.info(f"F1-score (weighted) : {round(f1_weighted, 5)}")
         self.logger.info(f"Precision (weighted) : {round(precision_weighted, 5)}")
         self.logger.info(f"Recall (weighted) : {round(recall_weighted, 5)}")
