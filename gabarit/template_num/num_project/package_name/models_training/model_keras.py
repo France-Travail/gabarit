@@ -36,13 +36,10 @@ from typing import no_type_check, Optional, Union, Callable, Any
 
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras import backend as K
 from tensorflow.keras.utils import plot_model
 from tensorflow.keras.models import load_model
-from tensorflow.keras.callbacks import (CSVLogger, EarlyStopping,
-                                        ModelCheckpoint, TensorBoard,
+from tensorflow.keras.callbacks import (CSVLogger, EarlyStopping, ModelCheckpoint,
                                         TerminateOnNaN, LearningRateScheduler)
-from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
@@ -177,7 +174,7 @@ class ModelKeras(ModelClass):
                 # If len(array.shape)==2, we flatten the array if the second dimension is useless
                 if isinstance(y_train, np.ndarray) and len(y_train.shape) == 2 and y_train.shape[1] == 1:
                     y_train = np.ravel(y_train)
-                if isinstance(y_valid, np.ndarray)  and len(y_valid.shape) == 2 and y_valid.shape[1] == 1:
+                if isinstance(y_valid, np.ndarray) and len(y_valid.shape) == 2 and y_valid.shape[1] == 1:
                     y_valid = np.ravel(y_valid)
                 # Dummies transformation
                 y_train = pd.get_dummies(y_train)
@@ -224,7 +221,7 @@ class ModelKeras(ModelClass):
             y_train = np.array(y_train)
 
         # Also get y_valid as numpy & get validation_data (tuple) if available
-        validation_data: Optional[tuple] = None # Def. None if y_valid is None
+        validation_data: Optional[tuple] = None  # Def. None if y_valid is None
         if y_valid is not None:
             y_valid = np.array(y_valid)
             validation_data = (x_valid, y_valid)
@@ -278,7 +275,7 @@ class ModelKeras(ModelClass):
                 self.logger.error(repr(e))
 
                 # 2.
-                best_path = os.path.join(self.model_dir, f'best.hdf5')
+                best_path = os.path.join(self.model_dir, 'best.hdf5')
                 time_spent = time.time() - start_time
                 if time_spent >= 60 and self.nb_iter_keras == 1 and os.path.exists(best_path):
                     # 3.
@@ -288,9 +285,9 @@ class ModelKeras(ModelClass):
                     self.nb_fit += 1
                     # 5.
                     self.save()
-                    with open(os.path.join(self.model_dir, "0_MODEL_INCOMPLETE"), 'w') as f:
+                    with open(os.path.join(self.model_dir, "0_MODEL_INCOMPLETE"), 'w'):
                         pass
-                    with open(os.path.join(self.model_dir, "1_TRAINING_NEEDS_TO_BE_RESUMED"), 'w') as f:
+                    with open(os.path.join(self.model_dir, "1_TRAINING_NEEDS_TO_BE_RESUMED"), 'w'):
                         pass
                     # 6.
                     self.logger.error("[EXPERIMENTAL] Error during model training")
@@ -307,7 +304,7 @@ class ModelKeras(ModelClass):
                 self._plot_metrics_and_loss(fit_history, iter)
                 # Reload best model
                 self.model = load_model(
-                    os.path.join(self.model_dir, f'best.hdf5'),
+                    os.path.join(self.model_dir, 'best.hdf5'),
                     custom_objects=self.custom_objects
                 )
 
@@ -333,7 +330,7 @@ class ModelKeras(ModelClass):
                 # Else, shape = [n_samples, n_classes]
         '''
         # Manage errors
-        if return_proba == True and self.model_type != 'classifier':
+        if return_proba and self.model_type != 'classifier':
             raise ValueError(f"Models of the type {self.model_type} can't handle probabilities")
 
         # We check input format
@@ -437,7 +434,7 @@ class ModelKeras(ModelClass):
             raise ValueError(f"Models of type {self.model_type} do not implement the method predict_regressor")
 
         # Predict per iteration
-        predictions = np.zeros((x_test.shape[0], 1)) # TODO: later, manage multi-output
+        predictions = np.zeros((x_test.shape[0], 1))  # TODO: later, manage multi-output
         for iter in range(nb_iter_keras):
             # We get the model corresponding to the current iteration if there are more than one available model.
             # Otherwise, we keep the model already set on the class (useful when save_level is LOW)
@@ -487,7 +484,7 @@ class ModelKeras(ModelClass):
         return self.predict(x_test, return_proba=True)
 
     @utils.trained_needed
-    def experimental_predict_proba(self, x_test:pd.DataFrame) -> np.ndarray:
+    def experimental_predict_proba(self, x_test: pd.DataFrame) -> np.ndarray:
         '''Predictions on test set - simple pass forward - experimental
 
         Args:
@@ -653,7 +650,7 @@ class ModelKeras(ModelClass):
         graphiz_path = 'C:/Program Files (x86)/Graphviz2.38/bin/'
         if os.path.isdir(graphiz_path):
             os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
-            img_path = os.path.join(self.model_dir, f'model.png')
+            img_path = os.path.join(self.model_dir, 'model.png')
             plot_model(model, to_file=img_path)
 
     @no_type_check  # We do not check the type, because it is complicated with managing custom_objects_str
@@ -691,7 +688,7 @@ class ModelKeras(ModelClass):
             for key in custom_objects_str.keys():
                 if callable(custom_objects_str[key]):
                     # Nominal case
-                    if not isinstance(custom_objects_str[key],functools.partial):
+                    if not isinstance(custom_objects_str[key], functools.partial):
                         custom_objects_str[key] = pickle.source.getsourcelines(custom_objects_str[key])[0]
                     # Manage partials
                     else:
@@ -728,7 +725,7 @@ class ModelKeras(ModelClass):
             pass
 
         # We check if we already have the custom objects
-        if hasattr(self, 'custom_objects') and self.custom_objects != None:
+        if hasattr(self, 'custom_objects') and self.custom_objects is not None:
             custom_objects = self.custom_objects
         else:
             self.logger.warning("Can't find the attribute 'custom_objects' in the model to be reloaded")

@@ -1287,7 +1287,7 @@ class CustomGeneratorRpn(Iterator):
         self.with_img_data = with_img_data
 
         # Manage data augmentation & test
-        if self.is_test and any([param == True for param in [self.horizontal_flip, self.vertical_flip, self.rot_90]]):
+        if self.is_test and any([param for param in [self.horizontal_flip, self.vertical_flip, self.rot_90]]):
             model.logger.warning("Warning, data augmentation on the test dataset ! It is most certainly a mistake !")
 
     def _get_batches_of_transformed_samples(self, index_array: np.ndarray) -> tuple:
@@ -1398,7 +1398,7 @@ class CustomGeneratorClassifier(Iterator):
             self.rpn_clone = None
 
         # Manage data augmentation & test
-        if self.is_test and any([param == True for param in [self.horizontal_flip, self.vertical_flip, self.rot_90]]):
+        if self.is_test and any([param for param in [self.horizontal_flip, self.vertical_flip, self.rot_90]]):
             model.logger.warning("Warning, Data Augmentation detected on the test set! This is certainly not desired!")
 
     def _get_batches_of_transformed_samples(self, index_array: np.ndarray):

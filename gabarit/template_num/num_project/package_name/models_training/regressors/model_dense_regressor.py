@@ -24,19 +24,14 @@ import os
 import json
 import shutil
 import logging
-import numpy as np
-import pandas as pd
 import dill as pickle
 from typing import Union, List, Callable
 
-import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model as load_model_keras
-from tensorflow.keras.layers import (ELU, BatchNormalization, Conv1D, Dense, Dropout,
-                                     Input, LeakyReLU, ReLU)
+from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout, Input
 
-from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
 from {{package_name}}.models_training.model_keras import ModelKeras
 from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
@@ -78,7 +73,7 @@ class ModelDenseRegressor(ModelRegressorMixin, ModelKeras):
         x = Dropout(0.2)(x)
 
         # Last layer
-        activation = None # 'relu' if result should be > 0
+        activation = None  # 'relu' if result should be > 0
         out = Dense(1, activation=activation, kernel_initializer='glorot_uniform')(x)
 
         # Set model
@@ -92,7 +87,7 @@ class ModelDenseRegressor(ModelRegressorMixin, ModelKeras):
         optimizer = Adam(lr=lr, decay=decay)
 
         # Set loss & metrics
-        loss = 'mean_squared_error' # could be 'mean_absolute_error'
+        loss = 'mean_squared_error'  # could be 'mean_absolute_error'
         metrics: List[Union[str, Callable]] = ['mean_squared_error', 'mean_absolute_error', utils_deep_keras.root_mean_squared_error]
 
         # Compile model

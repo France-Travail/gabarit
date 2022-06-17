@@ -140,7 +140,7 @@ def remove_small_classes(df: pd.DataFrame, col: Union[str, int], min_rows: int =
     classes_to_remove = list(v_count[v_count < min_rows].index.values)
     for cl in classes_to_remove:
         logger.warning(f"/!\\ /!\\ /!\\ Class {cl} has less than {min_rows} lines in the training set.")
-        logger.warning(f"/!\\ /!\\ /!\\ This class is automatically removed from the dataset.")
+        logger.warning("/!\\ /!\\ /!\\ This class is automatically removed from the dataset.")
     return df[~df[col].isin(classes_to_remove)]
 
 
@@ -212,9 +212,9 @@ def load_pipeline(pipeline_dir: Union[str, None], is_path: bool = False) -> Tupl
     '''
     # If pipeline_dir is None, backups on "no_preprocess"
     if pipeline_dir is None:
-        logger.warning(f"The folder of the pipeline is None. Backups on 'no_preprocess'")
+        logger.warning("The folder of the pipeline is None. Backups on 'no_preprocess'")
         preprocess_str = "no_preprocess"
-        preprocess_pipeline = preprocess.get_pipeline(preprocess_str) # Warning, must be fitted
+        preprocess_pipeline = preprocess.get_pipeline(preprocess_str)  # Warning, must be fitted
         return preprocess_pipeline, preprocess_str
 
     # Otherwise, nominal case
@@ -270,7 +270,6 @@ def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
         model_path = model_dir
         if not os.path.exists(model_path):
             raise FileNotFoundError(f"Can't find model {model_path} (considered as a path)")
-
 
     # Get configs
     configuration_path = os.path.join(model_path, 'configurations.json')
@@ -364,7 +363,7 @@ def apply_pipeline(df: pd.DataFrame, preprocess_pipeline: ColumnTransformer) -> 
     missing_optionals_columns = [col for col in optionals_columns if col not in df.columns]
     for col in missing_optionals_columns:
         logger.warning(f'The column {col} is missing in order to apply the preprocessing.')
-        logger.warning(f'Experimental : it should be useless -> creation of an empty column')
+        logger.warning('Experimental : it should be useless -> creation of an empty column')
         df[col] = np.nan
 
     # Apply transform on reordered columns
@@ -518,7 +517,6 @@ def search_hp_cv(model_cls, model_params: dict, hp_params: dict, scoring_fn: Uni
     if n_splits <= 1:
         raise ValueError(f"The number of crossvalidation splits ({n_splits}) must be more than 1")
 
-
     #################
     # Manage scoring
     #################
@@ -533,7 +531,6 @@ def search_hp_cv(model_cls, model_params: dict, hp_params: dict, scoring_fn: Uni
     elif scoring_fn == 'recall':
         scoring_fn = lambda x: x['Recall']
 
-
     #################
     # Manage x_train & y_train format
     #################
@@ -543,7 +540,6 @@ def search_hp_cv(model_cls, model_params: dict, hp_params: dict, scoring_fn: Uni
 
     if not isinstance(kwargs_fit['y_train'], (pd.DataFrame, pd.Series)):
         kwargs_fit['y_train'] = pd.Series(kwargs_fit['y_train'].copy())
-
 
     #################
     # Process
@@ -565,7 +561,7 @@ def search_hp_cv(model_cls, model_params: dict, hp_params: dict, scoring_fn: Uni
         logger.info(pprint.pformat(tmp_hp_params))
 
         # Get folds (shuffle recommended since the classes could be ordered)
-        if model_params['multi_label'] == True:
+        if model_params['multi_label']:
             k_fold = KFold(n_splits=n_splits, shuffle=True)  # Can't stratify on multi-labels
         else:
             k_fold = StratifiedKFold(n_splits=n_splits, shuffle=True)
@@ -605,7 +601,7 @@ def search_hp_cv(model_cls, model_params: dict, hp_params: dict, scoring_fn: Uni
         logger.info(f"Score for search n°{i + 1}: {metrics_df[metrics_df['index_params'] == i]['Score'].mean()}")
 
     # Metric agregation for all the folds
-    metrics_df = metrics_df.join(metrics_df[['index_params', 'Score']].groupby('index_params').mean().rename({'Score':'mean_score'}, axis=1), on='index_params', how='left')
+    metrics_df = metrics_df.join(metrics_df[['index_params', 'Score']].groupby('index_params').mean().rename({'Score': 'mean_score'}, axis=1), on='index_params', how='left')
 
     # Select the set of parameters with the best mean score (on the folds)
     best_index = metrics_df[metrics_df.mean_score == metrics_df.mean_score.max()]["index_params"].values[0]
@@ -616,7 +612,7 @@ def search_hp_cv(model_cls, model_params: dict, hp_params: dict, scoring_fn: Uni
     best_model = model_cls(**{**model_params, **best_params})
 
     # Save the metrics report of the hyperparameters search and the tested parameters
-    csv_path = os.path.join(best_model.model_dir, f"hyper_params_results.csv")
+    csv_path = os.path.join(best_model.model_dir, "hyper_params_results.csv")
     metrics_df.to_csv(csv_path, sep='{{default_sep}}', index=False, encoding='{{default_encoding}}')
     json_data = {
         'model_params': model_params,
@@ -624,7 +620,7 @@ def search_hp_cv(model_cls, model_params: dict, hp_params: dict, scoring_fn: Uni
         'n_splits': n_splits,
         'hp_params_set': {i: {k: v[i] for k, v in hp_params.items()} for i in range(nb_search)},
     }
-    json_path = os.path.join(best_model.model_dir, f"hyper_params_tested.json")
+    json_path = os.path.join(best_model.model_dir, "hyper_params_tested.json")
     with open(json_path, 'w', encoding='{{default_encoding}}') as f:
         json.dump(json_data, f, indent=4, cls=utils.NpEncoder)
 

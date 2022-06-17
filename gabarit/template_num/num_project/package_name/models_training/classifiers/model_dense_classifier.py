@@ -24,19 +24,14 @@ import os
 import json
 import shutil
 import logging
-import numpy as np
-import pandas as pd
 import dill as pickle
 from typing import Union, List, Callable
 
-import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model as load_model_keras
-from tensorflow.keras.layers import (ELU, BatchNormalization, Conv1D, Dense, Dropout,
-                                     Input, LeakyReLU, ReLU)
+from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout, Input
 
-from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
 from {{package_name}}.models_training.model_keras import ModelKeras
 from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin  # type: ignore
