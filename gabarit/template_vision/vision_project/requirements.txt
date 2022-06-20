@@ -42,7 +42,7 @@ lime==0.2.0.1 # Needed to get a model explanation
 
 
 # Optionnals - streamlit POC
-streamlit==1.7.0
+streamlit==1.10.0
 altair==4.2.0
 
 
