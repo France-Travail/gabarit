@@ -30,8 +30,6 @@ import matplotlib.pyplot as plt
 
 
 import os
-import re
-import json
 import logging
 import numpy as np
 import pandas as pd
@@ -40,14 +38,7 @@ from typing import List, Union
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
-from sklearn.metrics import (accuracy_score, auc, confusion_matrix, f1_score,
-                             multilabel_confusion_matrix, precision_score,
-                             recall_score, roc_curve, average_precision_score)
-
 from {{package_name}} import utils
-from {{package_name}}.models_training import utils_models
-from {{package_name}}.monitoring.model_logger import ModelLogger
-from {{package_name}}.models_training.object_detectors import utils_object_detectors
 
 sns.set(style="darkgrid")
 
@@ -139,10 +130,10 @@ class ModelObjectDetectorMixin:
         # Prints
         if len(gt_classes_not_in_model):
             self.logger.info(f"Classes {gt_classes_not_in_model} are not predicted by the model.")
-            self.logger.info(f"We won't take them into account in the calculation of the metrics.")
+            self.logger.info("We won't take them into account in the calculation of the metrics.")
         if len(model_classes_not_in_gt):
             self.logger.info(f"Classes {model_classes_not_in_gt} are not present in the dataset used to calculate the metrics.")
-            self.logger.info(f"Metrics on these classes won't be accurate.")
+            self.logger.info("Metrics on these classes won't be accurate.")
 
         # Get the classes support
         total_bbox = sum([1 for image in y_true for bbox in image if bbox['class'] in self.list_classes])
@@ -160,7 +151,6 @@ class ModelObjectDetectorMixin:
         coco_map = np.mean([value for value in list(dict_ap_coco.values()) if not np.isnan(value)])
         coco_wap = sum([dict_ap_coco[cl] * classes_support[cl] for cl in self.list_classes if classes_support[cl] > 0])
 
-
         # Global statistics
         self.logger.info('-- * * * * * * * * * * * * * * --')
         self.logger.info(f"Statistics mAP{' ' + type_data if len(type_data) > 0 else ''}")
@@ -175,7 +165,6 @@ class ModelObjectDetectorMixin:
             self.logger.info(f"Class {cl}: AP COCO = {round(dict_ap_coco[cl], 4)} /// Support = {round(classes_support[cl], 4)}")
         self.logger.info('--------------------------------')
 
-
         # Construction df_stats
         df_stats = pd.DataFrame(columns=['Label', 'AP COCO', 'Support'])
         df_stats = df_stats.append({'Label': 'All', 'AP COCO': coco_map, 'Support': 1.0}, ignore_index=True)
@@ -185,7 +174,6 @@ class ModelObjectDetectorMixin:
         # Save csv
         file_path = os.path.join(self.model_dir, f"map_coco{'_' + type_data if len(type_data) > 0 else ''}@{round(coco_map, 4)}.csv")
         df_stats.to_csv(file_path, sep='{{default_sep}}', index=False, encoding='{{default_encoding}}')
-
 
         # Upload metrics in mlflow (or another)
         if model_logger is not None:
@@ -230,9 +218,8 @@ class ModelObjectDetectorMixin:
         coco_true = self._put_bboxes_in_coco_format(y_true, inv_dict_classes)
         coco_pred = self._put_bboxes_in_coco_format(y_pred, inv_dict_classes)
         images = [{'id': i + 1} for i in range(len(y_true))]
-        categories =  [{'id': class_id,
-                        'name': class_name,
-                        'supercategory': 'none'} for class_id, class_name in self.dict_classes.items()]
+        categories = [{'id': class_id, 'name': class_name, 'supercategory': 'none'}
+                      for class_id, class_name in self.dict_classes.items()]
         dataset_coco_true = {'type': 'instances',
                              'images': images.copy(),
                              'categories': categories.copy(),
@@ -257,7 +244,7 @@ class ModelObjectDetectorMixin:
             A list of bboxes
         '''
         annotations = []
-        idx_bbox = 1 # WARNING : index begins at 1
+        idx_bbox = 1  # WARNING: index begins at 1
         for idx_img, list_bboxes in enumerate(bboxes):
             for bbox in list_bboxes:
                 dict_bbox = {'id': idx_bbox,

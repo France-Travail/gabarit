@@ -418,7 +418,7 @@ def download_url(urls: list, output_path: str) -> None:
                 with DownloadProgressBar(unit='B', unit_scale=True, miniters=1, desc=url.split('/')[-1]) as t:
                     request.urlretrieve(url, filename=output_path, reporthook=t.update_to)
                 is_downloaded = True  # Download ok
-            except:
+            except Exception:
                 logger.warning(f"Can't download from URL {url}.")
     if not is_downloaded:
         raise ConnectionError("Couldn't find a working URL")
@@ -516,6 +516,7 @@ class HiddenPrints:
     def __exit__(self, exc_type, exc_val, exc_tb) -> None:
         sys.stdout.close()
         sys.stdout = self._original_stdout
+
 
 # Class (contexte manager) to display a progress bar with downloads
 # From https://stackoverflow.com/questions/15644964/python-progress-bar-and-downloads

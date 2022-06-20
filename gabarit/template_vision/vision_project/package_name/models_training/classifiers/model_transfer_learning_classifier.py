@@ -176,7 +176,7 @@ class ModelTransferLearningClassifier(ModelClassifierMixin, ModelKeras):
         if not os.path.exists(base_model_path):
             try:
                 utils.download_url(base_model_backup_urls, base_model_path)
-            except:
+            except Exception:
                 # If we can't download it, we let the function crash alone
                 self.logger.warning("Can't find / download the base model for transfer learning application.")
 
