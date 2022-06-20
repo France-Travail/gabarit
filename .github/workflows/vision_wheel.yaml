@@ -1,4 +1,4 @@
-name: Check wheel setup - VISION
+name: Wheel setup - VISION
 on:
   push:
     branches:

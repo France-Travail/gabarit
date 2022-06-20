@@ -1,4 +1,4 @@
-name: Check wheel setup - NLP
+name: Wheel setup - NLP
 on:
   push:
     branches:

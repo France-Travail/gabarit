@@ -1,4 +1,4 @@
-name: Check wheel setup - NUM
+name: Wheel setup - NUM
 on:
   push:
     branches:
