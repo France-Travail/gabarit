@@ -21,13 +21,9 @@
 
 
 import os
-import time
 import dill
-import json
-import ntpath
 import shutil
 import logging
-import functools
 import numpy as np
 import pandas as pd
 from typing import Union, Any, List
@@ -36,15 +32,12 @@ import torch
 import pytorch_lightning as pl
 from torch.utils.data import DataLoader
 from pytorch_lightning import loggers as pl_loggers
-from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping, LearningRateMonitor, ProgressBar
+from pytorch_lightning.callbacks import ModelCheckpoint, EarlyStopping, ProgressBar
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training import utils_deep_torch, utils_models
 
-import matplotlib.pyplot as plt
 import seaborn as sns
-
 sns.set(style="darkgrid")
 
 
@@ -233,7 +226,7 @@ class ModelPyTorch(ModelClass):
         # Fit
         ##############################################
 
-        self.logger.info(f"Training ;..")
+        self.logger.info("Training ;..")
 
         # Get model (if already fitted we do not load a new one)
         if not self.trained:
@@ -250,7 +243,6 @@ class ModelPyTorch(ModelClass):
         # Fit
         # We use a try...except in order to save the model if an error arises
         # after more than a minute into training
-        start_time = time.time()
         try:
             # We unfreeze the weights
             self.model.unfreeze()  # type: ignore
@@ -277,13 +269,13 @@ class ModelPyTorch(ModelClass):
             self.model.freeze()  # type: ignore
         except (RuntimeError, SystemError, SystemExit, EnvironmentError, KeyboardInterrupt, Exception) as e:
             # Steps:
-                # 1. Display error
-                # 2. Check if more than one minute elapsed & not several iterations & existence best.hdf5
-                # 3. Reload best model
-                # 4. We consider that a fit occured (trained = True, nb_fit += 1)
-                # 5. Save & create a warning file
-                # 6. Display error messages
-                # 7. Raise an error
+            # 1. Display error
+            # 2. Check if more than one minute elapsed & not several iterations & existence best.hdf5
+            # 3. Reload best model
+            # 4. We consider that a fit occured (trained = True, nb_fit += 1)
+            # 5. Save & create a warning file
+            # 6. Display error messages
+            # 7. Raise an error
 
             # 1.
             self.logger.error(repr(e))
@@ -341,7 +333,7 @@ class ModelPyTorch(ModelClass):
         '''
         raise NotImplementedError("'predict_proba' needs to be overridden")
 
-    def _get_train_dataloader(self, batch_size: int, x_train, y_train_dummies = None) -> DataLoader:
+    def _get_train_dataloader(self, batch_size: int, x_train, y_train_dummies=None) -> DataLoader:
         '''Prepares the input data for the model
 
         Args:
@@ -563,6 +555,7 @@ class ModelPyTorch(ModelClass):
             return True
         else:
             return False
+
 
 class MyProgressBar(ProgressBar):
     '''Progress bar that does not override epochs'''

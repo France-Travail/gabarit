@@ -31,25 +31,20 @@ import pickle
 import logging
 import shutil
 import numpy as np
-import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
 from typing import Union, Any, List, Callable
 
-import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.models import Sequential
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
-from tensorflow.keras.layers import (Dense, add, Input, Embedding, Conv1D, Flatten, MaxPooling1D,
-                                     AveragePooling1D, GlobalMaxPooling1D, GlobalAveragePooling1D,
-                                     LeakyReLU, ReLU, ELU, BatchNormalization, Dropout, LSTM, GRU,
-                                     SpatialDropout1D, Bidirectional, concatenate)
+from tensorflow.keras.layers import (Dense, Input, Embedding, GlobalMaxPooling1D,
+                                     GlobalAveragePooling1D, BatchNormalization, LSTM,
+                                     GRU, SpatialDropout1D, Bidirectional, concatenate)
 
 from {{package_name}} import utils
+from {{package_name}}.models_training import utils_deep_keras
 from {{package_name}}.models_training.model_keras import ModelKeras
-from {{package_name}}.models_training import utils_models, utils_deep_keras
 from {{package_name}}.models_training.utils_deep_keras import AttentionWithContext
 
 sns.set(style="darkgrid")
@@ -187,8 +182,8 @@ class ModelEmbeddingLstmAttention(ModelKeras):
         LSTM_UNITS = 100
         words = Input(shape=(self.max_sequence_length,))
         # trainable=True to finetune the model
-        #words = Input(shape=(None,))
-        #x = Embedding(*embedding_matrix.shape, weights=[embedding_matrix], trainable=False)(words)
+        # words = Input(shape=(None,))
+        # x = Embedding(*embedding_matrix.shape, weights=[embedding_matrix], trainable=False)(words)
         x = Embedding(input_dim, embedding_size, weights=[embedding_matrix], trainable=False)(words)
         x = BatchNormalization(momentum=0.9)(x)
         x = SpatialDropout1D(0.5)(x)
@@ -254,7 +249,7 @@ class ModelEmbeddingLstmAttention(ModelKeras):
         # Save tokenizer if not None & level_save > LOW
         if (self.tokenizer is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
             # Manage paths
-            tokenizer_path = os.path.join(self.model_dir, f"embedding_tokenizer.pkl")
+            tokenizer_path = os.path.join(self.model_dir, "embedding_tokenizer.pkl")
             # Save as pickle
             with open(tokenizer_path, 'wb') as f:
                 # TODO: use dill to get rid of  "can't pickle ..." errors

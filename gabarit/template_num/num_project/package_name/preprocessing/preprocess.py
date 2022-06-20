@@ -17,18 +17,15 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import re
 import logging
-import functools
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import Pipeline, make_pipeline
 from sklearn.feature_selection import SelectKBest, SelectorMixin
+from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.feature_extraction.text import CountVectorizer, _VectorizerMixin
-from sklearn.compose import ColumnTransformer, make_column_transformer, make_column_selector
-from sklearn.preprocessing import (FunctionTransformer, StandardScaler, MinMaxScaler,
-                                   KBinsDiscretizer, Binarizer, PolynomialFeatures, OneHotEncoder)
+from sklearn.preprocessing import FunctionTransformer, StandardScaler, OneHotEncoder
 
 from {{package_name}}.preprocessing import column_preprocessors
 
@@ -78,22 +75,22 @@ def preprocess_P1() -> ColumnTransformer:
         ColumnTransformer: The pipeline
     '''
     numeric_pipeline = make_pipeline(SimpleImputer(strategy='median'), StandardScaler())
-    cat_pipeline = make_pipeline(SimpleImputer(strategy='most_frequent'), OneHotEncoder(handle_unknown='ignore'))
-    text_pipeline = make_pipeline(CountVectorizer(), SelectKBest(k=5))
+    # cat_pipeline = make_pipeline(SimpleImputer(strategy='most_frequent'), OneHotEncoder(handle_unknown='ignore'))
+    # text_pipeline = make_pipeline(CountVectorizer(), SelectKBest(k=5))
 
     # Check https://scikit-learn.org/stable/modules/generated/sklearn.compose.make_column_selector.html
     # and https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.select_dtypes.html#pandas.DataFrame.select_dtypes
     # to understand make_column_selector
 
-     # /!\ EXEMPLE HERE /!\
-     # Good practice: Use directly the names of the columns instead of a "selector"
-     # WARNING: The text pipeline is supposed to work on a column 'text' -> Please adapt it to your project
+    # /!\ EXEMPLE HERE /!\
+    # Good practice: Use directly the names of the columns instead of a "selector"
+    # WARNING: The text pipeline is supposed to work on a column 'text' -> Please adapt it to your project
 
     # By default, we only keep the preprocess on numerical columns
     transformers = [
-    ('num', numeric_pipeline, make_column_selector(dtype_include='number')),
-    # ('cat', cat_pipeline, make_column_selector(dtype_include='category')), # To convert a column in a column with dtype category: df["A"].astype("category")
-    # ('text', text_pipeline, 'text'), # CountVectorizer possible one column at a time
+        ('num', numeric_pipeline, make_column_selector(dtype_include='number')),
+        # ('cat', cat_pipeline, make_column_selector(dtype_include='category')), # To convert a column in a column with dtype category: df["A"].astype("category")
+        # ('text', text_pipeline, 'text'), # CountVectorizer possible one column at a time
     ]
 
     # TODO: add sparse compatibility !
@@ -105,7 +102,7 @@ def preprocess_P1() -> ColumnTransformer:
     # x_train = x_train.sparse.to_coo().tocsr()
     # x_valid = x_valid.sparse.to_coo().tocsr()
     # ...
-    pipeline = ColumnTransformer(transformers, sparse_threshold=0, remainder='drop') # Use remainder='passthrough' to keep all other columns (not recommended)
+    pipeline = ColumnTransformer(transformers, sparse_threshold=0, remainder='drop')  # Use remainder='passthrough' to keep all other columns (not recommended)
 
     return pipeline
 
@@ -201,8 +198,7 @@ def get_feature_out(estimator, features_in: list) -> list:
     if hasattr(estimator, 'get_feature_names'):
         if isinstance(estimator, _VectorizerMixin):
             # handling all vectorizers
-            return [f'vec_{f}' \
-                for f in estimator.get_feature_names()]
+            return [f'vec_{f}' for f in estimator.get_feature_names()]
         else:
             return estimator.get_feature_names(features_in)
     elif isinstance(estimator, SelectorMixin):

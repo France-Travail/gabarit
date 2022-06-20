@@ -67,7 +67,7 @@ class ModelXgboostRegressor(ModelRegressorMixin, ModelClass):
         # Set objective (if not in params) & init. model
         if 'objective' not in self.xgboost_params.keys():
             self.xgboost_params['objective'] = 'reg:squarederror'
-             # list of objectives https://xgboost.readthedocs.io/en/latest/parameter.html#learning-task-parameters
+            #  List of objectives https://xgboost.readthedocs.io/en/latest/parameter.html#learning-task-parameters
         self.model = XGBRegressor(**self.xgboost_params)
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:
@@ -114,9 +114,8 @@ class ModelXgboostRegressor(ModelRegressorMixin, ModelClass):
         x_valid = np.array(x_valid)
         y_valid = np.array(y_valid)
 
-
         # Set eval set and train
-        eval_set = [(x_train, y_train), (x_valid, y_valid)] # If there’s more than one item in eval_set, the last entry will be used for early stopping.
+        eval_set = [(x_train, y_train), (x_valid, y_valid)]  # If there’s more than one item in eval_set, the last entry will be used for early stopping.
         prior_objective = self.model.objective
         self.model.fit(x_train, y_train, eval_set=eval_set, early_stopping_rounds=self.early_stopping_rounds, verbose=True)
         post_objective = self.model.objective
@@ -143,8 +142,8 @@ class ModelXgboostRegressor(ModelRegressorMixin, ModelClass):
             (np.ndarray): Array, shape = [n_samples,]
         '''
         # Manage errors
-        if return_proba == True:
-            raise ValueError(f"Models of type model_xgboost_regressor can't handle probabilities")
+        if return_proba:
+            raise ValueError("Models of type model_xgboost_regressor can't handle probabilities")
         # We check input format
         x_test, _ = self._check_input_format(x_test)
         # Warning, "The method returns the model from the last iteration"
@@ -164,7 +163,7 @@ class ModelXgboostRegressor(ModelRegressorMixin, ModelClass):
             (np.ndarray): Array, shape = [n_samples,]
         '''
         # For compatibility
-        raise ValueError(f"Models of type model_xgboost_regressor do not implement the method predict_proba")
+        raise ValueError("Models of type model_xgboost_regressor do not implement the method predict_proba")
 
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model
@@ -184,7 +183,7 @@ class ModelXgboostRegressor(ModelRegressorMixin, ModelClass):
         # Save xgboost standalone
         if self.level_save in ['MEDIUM', 'HIGH']:
             if self.trained:
-                save_path = os.path.join(self.model_dir, f'xbgoost_standalone.model')
+                save_path = os.path.join(self.model_dir, 'xbgoost_standalone.model')
                 self.model.save_model(save_path)
             else:
                 self.logger.warning("Can't save the XGboost in standalone because it hasn't been already fitted")

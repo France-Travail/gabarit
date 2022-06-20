@@ -28,11 +28,6 @@ from functools import partial
 import tensorflow as tf
 from tensorflow.keras import backend as K
 
-from {{package_name}} import utils
-
-# Get logger
-logger = logging.getLogger(__name__)
-
 
 def recall(y_true, y_pred) -> float:
     '''Recall to use as a custom metrics
@@ -44,7 +39,7 @@ def recall(y_true, y_pred) -> float:
         float: metric
     '''
     y_pred = K.round(y_pred)
-    y_true = K.cast(y_true, 'float32') # Fix : TypeError: Input 'y' of 'Mul' Op has type float32 that does not match type int32 of argument 'x'.
+    y_true = K.cast(y_true, 'float32')  # Fix : TypeError: Input 'y' of 'Mul' Op has type float32 that does not match type int32 of argument 'x'.
 
     ground_positives = K.sum(y_true, axis=0) + K.epsilon()  # We add an epsilon -> manage the case where a class is absent in the batch
 
@@ -70,7 +65,7 @@ def precision(y_true, y_pred) -> float:
         float: metric
     '''
     y_pred = K.round(y_pred)
-    y_true = K.cast(y_true, 'float32') # Fix : TypeError: Input 'y' of 'Mul' Op has type float32 that does not match type int32 of argument 'x'.
+    y_true = K.cast(y_true, 'float32')  # Fix : TypeError: Input 'y' of 'Mul' Op has type float32 that does not match type int32 of argument 'x'.
 
     ground_positives = K.sum(y_true, axis=0) + K.epsilon()  # We add an epsilon -> manage the case where a class is absent in the batch
 
@@ -103,13 +98,13 @@ def f1(y_true, y_pred) -> float:
     '''
     # Round pred to 0 & 1
     y_pred = K.round(y_pred)
-    y_true = K.cast(y_true, 'float32') # Fix : TypeError: Input 'y' of 'Mul' Op has type float32 that does not match type int32 of argument 'x'.
+    y_true = K.cast(y_true, 'float32')  # Fix : TypeError: Input 'y' of 'Mul' Op has type float32 that does not match type int32 of argument 'x'.
 
     ground_positives = K.sum(y_true, axis=0) + K.epsilon()  # We add an epsilon -> manage the case where a class is absent in the batch
 
     y_pred = K.round(y_pred)
     tp = K.sum(K.cast(y_true * y_pred, 'float'), axis=0)
-    tn = K.sum(K.cast((1 - y_true) * (1 - y_pred), 'float'), axis=0)
+    # tn = K.sum(K.cast((1 - y_true) * (1 - y_pred), 'float'), axis=0)
     fp = K.sum(K.cast((1 - y_true) * y_pred, 'float'), axis=0)
     fn = K.sum(K.cast(y_true * (1 - y_pred), 'float'), axis=0)
 
@@ -145,12 +140,12 @@ def f1_loss(y_true, y_pred) -> float:
     # We can't round here :(
     # Please make sure that all of your ops have a gradient defined (i.e. are differentiable).
     # Common ops without gradient: K.argmax, K.round, K.eval.
-    y_true = K.cast(y_true, 'float32') # Fix : TypeError: Input 'y' of 'Mul' Op has type float32 that does not match type int32 of argument 'x'.
+    y_true = K.cast(y_true, 'float32')  # Fix : TypeError: Input 'y' of 'Mul' Op has type float32 that does not match type int32 of argument 'x'.
 
     ground_positives = K.sum(y_true, axis=0) + K.epsilon()  # We add an epsilon -> manage the case where a class is absent in the batch
 
     tp = K.sum(K.cast(y_true * y_pred, 'float'), axis=0)
-    tn = K.sum(K.cast((1 - y_true) * (1 - y_pred), 'float'), axis=0)
+    # tn = K.sum(K.cast((1 - y_true) * (1 - y_pred), 'float'), axis=0)
     fp = K.sum(K.cast((1 - y_true) * y_pred, 'float'), axis=0)
     fn = K.sum(K.cast(y_true * (1 - y_pred), 'float'), axis=0)
 
@@ -187,12 +182,12 @@ def fb_loss(b: float, y_true, y_pred) -> float:
     # We can't round here :(
     # Please make sure that all of your ops have a gradient defined (i.e. are differentiable).
     # Common ops without gradient: K.argmax, K.round, K.eval.
-    y_true = K.cast(y_true, 'float32') # Fix : TypeError: Input 'y' of 'Mul' Op has type float32 that does not match type int32 of argument 'x'.
+    y_true = K.cast(y_true, 'float32')  # Fix : TypeError: Input 'y' of 'Mul' Op has type float32 that does not match type int32 of argument 'x'.
 
     ground_positives = K.sum(y_true, axis=0) + K.epsilon()  # We add an epsilon -> manage the case where a class is absent in the batch
 
     tp = K.sum(K.cast(y_true * y_pred, 'float'), axis=0)
-    tn = K.sum(K.cast((1 - y_true) * (1 - y_pred), 'float'), axis=0)
+    # tn = K.sum(K.cast((1 - y_true) * (1 - y_pred), 'float'), axis=0)
     fp = K.sum(K.cast((1 - y_true) * y_pred, 'float'), axis=0)
     fn = K.sum(K.cast(y_true * (1 - y_pred), 'float'), axis=0)
 
@@ -281,4 +276,5 @@ custom_objects = {
 
 
 if __name__ == '__main__':
+    logger = logging.getLogger(__name__)
     logger.error("This script is not stand alone but belongs to a package that has to be imported.")

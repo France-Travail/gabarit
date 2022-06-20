@@ -29,15 +29,12 @@ import matplotlib.pyplot as plt
 
 import os
 import cv2
-import time
 import copy
 import json
 import shutil
 import logging
-import itertools
 import numpy as np
 import pandas as pd
-from PIL import Image
 from functools import partial
 from typing import Union, List
 from collections import defaultdict
@@ -53,11 +50,9 @@ from detectron2.config import get_cfg, CfgNode
 from detectron2.utils.file_io import PathManager
 from detectron2.utils.visualizer import Visualizer
 from detectron2.engine import hooks as module_hooks
-from detectron2.utils.logger import log_every_n_seconds
 from detectron2.engine import DefaultTrainer, DefaultPredictor
 from detectron2.evaluation import COCOEvaluator, verify_results
-from detectron2.utils.events import (EventWriter, get_event_storage,
-                                     EventStorage, TensorboardXWriter)
+from detectron2.utils.events import EventWriter, get_event_storage, EventStorage
 from detectron2.data import (DatasetCatalog, MetadataCatalog, Metadata, detection_utils,
                              build_detection_train_loader, build_detection_test_loader,
                              DatasetMapper)
@@ -219,7 +214,7 @@ class ModelDetectronFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelClas
             cfg = get_cfg()  # Get base config
             try:
                 cfg.merge_from_file(detectron_config_path)  # Merge faster RCNN config
-            except Exception as e:
+            except Exception:
                 self.logger.error("Error when reading model configurations")
                 self.logger.error("A common issue is that the key _BASE_ of the configuration file of the RCNN must point to the base configuration file")
                 self.logger.error("Check your file 'faster_rcnn_R_50_FPN_3x.yaml'")
@@ -300,7 +295,7 @@ class ModelDetectronFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelClas
             # Get the height and width of the image
             try:
                 height, width = cv2.imread(path).shape[:2]
-            except:
+            except Exception:
                 self.logger.warning(f"Can't read image {path}. We will skip it when training.")
                 continue
             record = {}
@@ -450,8 +445,9 @@ class ModelDetectronFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelClas
                               min_delta_es=self.min_delta_es,
                               patience=self.patience,
                               restore_best_weights=self.restore_best_weights)
-        trainer.resume_or_load(resume=False)  # resume to False because we automatically save the best weights in a file,
-                                              # and then we point self.cfg.MODEL.WEIGHTS to this file
+        # Resume to False because we automatically save the best weights in a file,
+        # and then we point self.cfg.MODEL.WEIGHTS to this file
+        trainer.resume_or_load(resume=False)
         trainer.train()
 
         # Update train status
@@ -519,9 +515,9 @@ class ModelDetectronFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelClas
                 for idx in range(len(boxes)):
                     # We put it in bbox format
                     coordinates = boxes[idx]
-                    bbox = {'x1':coordinates[0], 'y1':coordinates[1], 'x2':coordinates[2],
-                            'y2':coordinates[3], 'proba':scores[idx],
-                            'class':self.dict_classes[classes[idx]]}
+                    bbox = {'x1': coordinates[0], 'y1': coordinates[1], 'x2': coordinates[2],
+                            'y2': coordinates[3], 'proba': scores[idx],
+                            'class': self.dict_classes[classes[idx]]}
                     # An we append it
                     list_bboxes_img.append(bbox.copy())
             list_bbox.append(list_bboxes_img.copy())
@@ -1051,12 +1047,7 @@ class TrainValMetricPrinter(EventWriter):
             self.logger.info(
                 " iter: {iter}, epoch: {nb_epoch}  {losses}  lr: {lr}  {memory}".format(
                     iter=iteration,
-                    losses="  ".join(
-                        [
-                            "{}: {:.4g}".format(k, storage.histories()[k].median(self.nb_iter_per_epoch))
-                            for k in losses_train
-                        ]
-                    ),
+                    losses="  ".join(["{}: {:.4g}".format(k, storage.histories()[k].median(self.nb_iter_per_epoch)) for k in losses_train]),
                     lr=lr,
                     memory="max_mem: {:.0f}M".format(max_mem_mb) if max_mem_mb is not None else "",
                     nb_epoch=nb_epoch
@@ -1065,17 +1056,12 @@ class TrainValMetricPrinter(EventWriter):
             if self.with_valid:
                 # Logs val results
                 self.logger.info(
-                "VALIDATION iter: {iter}, epoch: {nb_epoch}  {losses}".format(
-                    iter=iteration,
-                    losses="  ".join(
-                        [
-                            "{}: {:.4g}".format(k, storage.histories()[k].latest())
-                            for k in losses_valid
-                        ]
-                    ),
-                    nb_epoch=nb_epoch
+                    "VALIDATION iter: {iter}, epoch: {nb_epoch}  {losses}".format(
+                        iter=iteration,
+                        losses="  ".join(["{}: {:.4g}".format(k, storage.histories()[k].latest()) for k in losses_valid]),
+                        nb_epoch=nb_epoch
+                    )
                 )
-            )
 
 
 class TrainValJSONWriter(EventWriter):
@@ -1118,8 +1104,6 @@ class TrainValJSONWriter(EventWriter):
                 to_save[iteration][key] = storage.histories()[key].median(self.nb_iter_per_epoch)
             for key in losses_valid:
                 to_save[iteration][key] = storage.histories()[key].latest()
-            if len(to_save):
-                all_iters = sorted(to_save.keys())
 
             for itr, scalars_per_iter in to_save.items():
                 scalars_per_iter["iteration"] = itr

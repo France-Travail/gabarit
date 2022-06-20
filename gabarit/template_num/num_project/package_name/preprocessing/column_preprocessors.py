@@ -18,16 +18,13 @@
 
 
 import os
-import re
 import json
 import logging
-import functools
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator
-from typing import List, Dict, Tuple, Any, Union, Optional
 from sklearn.utils.validation import check_is_fitted
-from sklearn.preprocessing._function_transformer import FunctionTransformer
+from typing import List, Dict, Tuple, Any, Union, Optional
 
 logger = logging.getLogger(__name__)
 
@@ -252,7 +249,7 @@ class ThresholdingTransform(Estimator):
             X.iloc[:, col_index][X.iloc[:, col_index] < val_min] = val_min
             X.iloc[:, col_index][X.iloc[:, col_index] > val_max] = val_max
 
-        return X.to_numpy() # Compatibility -> return a numpy array
+        return X.to_numpy()  # Compatibility -> return a numpy array
 
 
 class AutoBinner(Estimator):
@@ -279,7 +276,7 @@ class AutoBinner(Estimator):
         allowed_strategies = ["threshold", "auto"]
         self.strategy = strategy
         if self.strategy not in allowed_strategies:
-            raise ValueError(f"Can only use these strategies: {allowed_strategies}. " +\
+            raise ValueError(f"Can only use these strategies: {allowed_strategies}. "
                              f"Got strategy={strategy}")
         if min_cat_count < 0:
             raise ValueError("min_cat_count must be non negative")
@@ -329,7 +326,7 @@ class AutoBinner(Estimator):
                 continue
             # Otherwise, we get rid of the superfluous categories
             else:
-                to_remove = list(table[table<self.threshold].index)
+                to_remove = list(table[table < self.threshold].index)
                 for item in to_remove:
                     unique_cat.remove(item)
                 self.kept_cat_by_index[col_index] = unique_cat
@@ -353,7 +350,7 @@ class AutoBinner(Estimator):
         for col_index in range(self.input_length):
             X.iloc[:, col_index] = X.iloc[:, col_index].apply(lambda x: x if x in self.kept_cat_by_index[col_index] else 'other_')
 
-        return X.to_numpy() # Compatibility, returns a numpy array
+        return X.to_numpy()  # Compatibility, returns a numpy array
 
 
 class EmbeddingTransformer(Estimator):
@@ -380,7 +377,7 @@ class EmbeddingTransformer(Estimator):
         allowed_strategies = ["zeros"]
         self.none_strategy = none_strategy
         if self.none_strategy not in allowed_strategies:
-           raise ValueError(f"Can only use these strategies: {allowed_strategies}, got strategy={self.none_strategy}")
+            raise ValueError(f"Can only use these strategies: {allowed_strategies}, got strategy={self.none_strategy}")
 
         # If str, loads the embedding
         if isinstance(embedding, str):
@@ -447,7 +444,7 @@ class EmbeddingTransformer(Estimator):
             if perc_missed != 0:
                 logger.warning(f"Warning, {self.n_missed} ({perc_missed} %) missing elements in the embedding for column {col}")
 
-        return new_df.to_numpy() # Compatibility, returns a numpy array
+        return new_df.to_numpy()  # Compatibility, returns a numpy array
 
     def apply_embedding(self, content) -> list:
         '''Applies embedding mapping

@@ -17,15 +17,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import re
 import logging
-import functools
 import pandas as pd
 from typing import Callable
 from words_n_fun.preprocessing import api
 from words_n_fun import utils as wnf_utils
-
-from {{package_name}} import utils
 
 # Get logger
 logger = logging.getLogger(__name__)

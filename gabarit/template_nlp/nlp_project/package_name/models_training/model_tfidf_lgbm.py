@@ -25,7 +25,6 @@ import json
 import pickle
 import logging
 import numpy as np
-import pandas as pd
 from typing import Union
 
 from lightgbm import LGBMClassifier
@@ -35,7 +34,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 
 from {{package_name}} import utils
-from {{package_name}}.models_training import utils_models
 from {{package_name}}.models_training.model_pipeline import ModelPipeline
 
 

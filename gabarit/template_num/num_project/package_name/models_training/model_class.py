@@ -289,7 +289,7 @@ class ModelClass:
         return model_dir
 
     def _check_input_format(self, x_input: Union[pd.DataFrame, np.ndarray], y_input: Union[pd.DataFrame, pd.Series, np.ndarray, None] = None,
-                            fit_function: bool = False) -> Tuple[Union[pd.DataFrame, np.ndarray], Union[pd.DataFrame, pd.Series, np.ndarray, None] ]:
+                            fit_function: bool = False) -> Tuple[Union[pd.DataFrame, np.ndarray], Union[pd.DataFrame, pd.Series, np.ndarray, None]]:
         '''Checks the inputs of a function. We check the number of columns and the ordering.
         Warnings if :
             - Not the right columns
@@ -318,7 +318,7 @@ class ModelClass:
             y_input_shape = 0  # not used
 
         # Manage fit_function = True
-        if fit_function == True:
+        if fit_function:
             if y_input is None:
                 raise AttributeError("The argument y_input is mandatory if fit_function == True")
             if self.x_col is None:
@@ -340,10 +340,10 @@ class ModelClass:
                 if y_input_shape == 1:
                     self.y_col = self.y_col[0]
             # If pipeline, columns_in or mandatory_columns is None, sets it
-            if self.preprocess_pipeline is None: # ie no pipeline given when initializing the class
+            if self.preprocess_pipeline is None:  # ie no pipeline given when initializing the class
                 preprocess_str = "no_preprocess"
-                preprocess_pipeline = preprocess.get_pipeline(preprocess_str) # Warning, the pipeline must be fitted
-                preprocess_pipeline.fit(x_input) # We fit the pipeline to set the necessary columns for the pipeline
+                preprocess_pipeline = preprocess.get_pipeline(preprocess_str)  # Warning, the pipeline must be fitted
+                preprocess_pipeline.fit(x_input)  # We fit the pipeline to set the necessary columns for the pipeline
                 self.preprocess_pipeline = preprocess_pipeline
                 self.columns_in, self.mandatory_columns = utils_models.get_columns_pipeline(self.preprocess_pipeline)
 
@@ -370,7 +370,7 @@ class ModelClass:
                         self.logger.warning("The input columns (x) are not in the right order -> automatic reordering !")
                         x_input = x_input[self.x_col]
             else:
-                self.logger.warning(f"The input (x) does not have the 'columns' attribute -> can't check the ordering of the columns")
+                self.logger.warning("The input (x) does not have the 'columns' attribute -> can't check the ordering of the columns")
 
         # Checking y_input
         if y_input is not None:
@@ -397,7 +397,7 @@ class ModelClass:
                             self.logger.warning("The input columns (y) are not in the right order -> automatic reordering !")
                             y_input = y_input[target_cols]
                 else:
-                    self.logger.warning(f"The input (y) does not have the 'columns' attribute -> can't check the ordering of the columns")
+                    self.logger.warning("The input (y) does not have the 'columns' attribute -> can't check the ordering of the columns")
 
         # Return
         return x_input, y_input
@@ -443,6 +443,7 @@ class ModelClass:
         '''
         # By default, no GPU
         return False
+
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

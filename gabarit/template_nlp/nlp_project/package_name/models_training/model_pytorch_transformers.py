@@ -21,15 +21,11 @@
 
 import os
 import json
-import pickle
 import shutil
 import logging
 import numpy as np
-import pandas as pd
 import seaborn as sns
 from tqdm import tqdm
-from functools import partial
-import matplotlib.pyplot as plt
 from typing import no_type_check, Union, Callable, Any, Tuple
 
 import torch
@@ -39,7 +35,7 @@ from torch.utils.data import DataLoader
 from torch.optim.lr_scheduler import LambdaLR
 from torch.utils.data.dataset import TensorDataset
 from torch.utils.data.sampler import RandomSampler
-from transformers import AdamW, AutoModel, AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
+from transformers import AdamW, AutoTokenizer, AutoConfig, AutoModelForSequenceClassification
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_torch
@@ -55,9 +51,8 @@ class ModelPyTorchTransformers(ModelPyTorch):
     _default_name = 'model_pytorch_transformers'
 
     def __init__(self, transformer_name: Union[str, None] = None, max_sequence_length: int = 256,
-                 tokenizer_special_tokens: Union[tuple, None] = None,
-                 padding: str = "max_length", truncation: bool = True,
-                  **kwargs) -> None:
+                 tokenizer_special_tokens: Union[tuple, None] = None, padding: str = "max_length",
+                 truncation: bool = True, **kwargs) -> None:
         '''Initialization of the class (see ModelClass & ModelPyTorch for more arguments)
 
         Args:
@@ -121,7 +116,7 @@ class ModelPyTorchTransformers(ModelPyTorch):
             self.model.train()
         # Predictions with DataLoader (slower when considering a small number of data)
         else:
-            test_dl = self._get_test_dataloader(self.batch_size, x_test, y_test_dummies=None) # We can change the batch size
+            test_dl = self._get_test_dataloader(self.batch_size, x_test, y_test_dummies=None)  # We can change the batch size
             trainer = pl.Trainer(default_root_dir=self.model_dir, checkpoint_callback=False, logger=False,
                                  gpus=1 if torch.cuda.is_available() else 0)
             # Test on x_test
@@ -301,7 +296,7 @@ class ModelPyTorchTransformers(ModelPyTorch):
             all_label = None
         return all_input_ids, all_input_mask, all_label
 
-    def _get_train_dataloader(self, batch_size: int, x_train, y_train_dummies = None) -> DataLoader:
+    def _get_train_dataloader(self, batch_size: int, x_train, y_train_dummies=None) -> DataLoader:
         '''Prepares the input data for the model
 
         Args:
@@ -533,7 +528,7 @@ class TaskClass(pl.LightningModule):
             lr_scheduler = LambdaLR(optimizer, lr_lambda=utils_deep_torch.LRScheduleWithWarmup(warmup_steps=warmup_steps, total_steps=total_steps))
             return_dict['lr_scheduler'] = {}
             return_dict['lr_scheduler']['scheduler'] = lr_scheduler
-            return_dict['lr_scheduler']['interval'] = 'step' # Update at each step
+            return_dict['lr_scheduler']['interval'] = 'step'  # Update at each step
             return_dict['lr_scheduler']['frequency'] = 1
         # Return dict
         return return_dict
@@ -559,14 +554,14 @@ class TaskClass(pl.LightningModule):
         loss = self.loss_func(logits, label)
         outputs = {
             "val_loss": loss,
-            "logit": logits.cpu().numpy(), # Useful for metrics
-            "label": label.cpu().numpy(), # Useful for metrics
+            "logit": logits.cpu().numpy(),  # Useful for metrics
+            "label": label.cpu().numpy(),  # Useful for metrics
         }
         return outputs
 
     def validation_epoch_end(self, outputs) -> None:
         '''On epochs ends, gets validation metrics'''
-        avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean() # val_loss = loss mean among batches
+        avg_loss = torch.stack([x["val_loss"] for x in outputs]).mean()  # val_loss = loss mean among batches
         y_true = np.vstack([x["label"] for x in outputs])
         logits = np.vstack([x["logit"] for x in outputs])
         probas = self.get_probas_from_logits(logits)
@@ -580,7 +575,7 @@ class TaskClass(pl.LightningModule):
         # Logs metrics
         self.log("val_loss", avg_loss, prog_bar=True, on_step=False, logger=True)
         for col in all_metrics.columns:
-            if col != 'Label' and all_metrics[col].values[0] != None:
+            if col != 'Label' and all_metrics[col].values[0] is not None:
                 self.log(f"val_{col}", all_metrics[col].values[0], prog_bar=True, on_step=False, logger=True)
 
     def test_step(self, batch, batch_idx):

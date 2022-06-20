@@ -153,7 +153,7 @@ class ModelPipeline(ModelClass):
                 # Else, shape = [n_samples, n_classes]
         '''
         # Manage errors
-        if return_proba == True and self.model_type != 'classifier':
+        if return_proba is True and self.model_type != 'classifier':
             raise ValueError(f"Models of the type {self.model_type} can't handle probabilities")
 
         # We check input format
@@ -226,7 +226,7 @@ class ModelPipeline(ModelClass):
 
         # Save model standalone if wanted & pipeline is not None & level_save > 'LOW'
         if self.pipeline is not None and self.level_save in ['MEDIUM', 'HIGH']:
-            pkl_path = os.path.join(self.model_dir, f"sklearn_pipeline_standalone.pkl")
+            pkl_path = os.path.join(self.model_dir, "sklearn_pipeline_standalone.pkl")
             # Save model
             with open(pkl_path, 'wb') as f:
                 pickle.dump(self.pipeline, f)

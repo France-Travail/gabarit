@@ -23,20 +23,17 @@
 
 
 import os
-import re
-import json
 import logging
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
-from typing import List, Union, Tuple
+from typing import List, Union
 from yellowbrick.regressor import ResidualsPlot, PredictionError
 
 from sklearn.linear_model import LinearRegression
-from sklearn.metrics import (explained_variance_score, mean_absolute_error, mean_squared_error, r2_score)
+from sklearn.metrics import explained_variance_score, mean_absolute_error, mean_squared_error, r2_score
 
-from {{package_name}} import utils
 from {{package_name}}.monitoring.model_logger import ModelLogger
 
 sns.set(style="darkgrid")
@@ -171,19 +168,19 @@ class ModelRegressorMixin:
 
         # Save some metrics
         mae_path = os.path.join(self.model_dir, f"mae{'_' + type_data if len(type_data) > 0 else ''}@{round(metric_mae, 5)}")
-        with open(mae_path, 'w') as f:
+        with open(mae_path, 'w'):
             pass
         mse_path = os.path.join(self.model_dir, f"mse{'_' + type_data if len(type_data) > 0 else ''}@{round(metric_mse, 5)}")
-        with open(mse_path, 'w') as f:
+        with open(mse_path, 'w'):
             pass
         rmse_path = os.path.join(self.model_dir, f"rmse{'_' + type_data if len(type_data) > 0 else ''}@{round(metric_rmse, 5)}")
-        with open(rmse_path, 'w') as f:
+        with open(rmse_path, 'w'):
             pass
         explained_variance_path = os.path.join(self.model_dir, f"explained_variance{'_' + type_data if len(type_data) > 0 else ''}@{round(metric_explained_variance_score, 5)}")
-        with open(explained_variance_path, 'w') as f:
+        with open(explained_variance_path, 'w'):
             pass
         r2_path = os.path.join(self.model_dir, f"r2{'_' + type_data if len(type_data) > 0 else ''}@{round(metric_r2, 5)}")
-        with open(r2_path, 'w') as f:
+        with open(r2_path, 'w'):
             pass
 
         # Upload metrics in mlflow (or another)
@@ -348,7 +345,7 @@ class ModelRegressorMixin:
         fig, ax = plt.subplots(figsize=(12, 10))
 
         # Set visualizer
-        visualizer = ResidualsPlot(LinearRegression(), ax=ax, is_fitted=True) # Trick model not used
+        visualizer = ResidualsPlot(LinearRegression(), ax=ax, is_fitted=True)  # Trick model not used
         visualizer.name = self.model_name
 
         # Train
