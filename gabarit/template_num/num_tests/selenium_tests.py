@@ -63,7 +63,7 @@ class DemonstratorTests(unittest.TestCase):
         sidebars = driver.find_elements(By.XPATH, "//*[@data-testid='stSidebar']")
         self.assertTrue(len(sidebars) >= 1)
 
-    @unittest.skipUnless(DemonstratorTests.trained_models, 'No model have been trained.')
+    @unittest.skipUnless(self.trained_models, 'No model have been trained.')
     def test03_sidebar_trained_models(self):
         '''Checks selectable options if models have been trained'''
         sidebar = driver.find_element(By.XPATH, "//*[@data-testid='stSidebar']")
