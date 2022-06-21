@@ -16,7 +16,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import os
 import sys
 import argparse
 
@@ -42,6 +41,7 @@ class DemonstratorTests(unittest.TestCase):
     /!\ The demonstrator must be started BEFORE running this script /!\
     '''
     demonstrator_url = None
+    trained_models = False
     driver = None
 
     def setUp(self):
@@ -63,13 +63,15 @@ class DemonstratorTests(unittest.TestCase):
         sidebars = driver.find_elements(By.XPATH, "//*[@data-testid='stSidebar']")
         self.assertTrue(len(sidebars) >= 1)
 
-    @unittest.skipUnless(os.environ["GABARIT_TRAINED_MODELS"] == "1", 'No model have been trained.')
     def test03_sidebar_trained_models(self):
         '''Checks selectable options if models have been trained'''
-        sidebar = driver.find_element(By.XPATH, "//*[@data-testid='stSidebar']")
-        sidebar_selectbox = sidebar.find_element(By.XPATH, ".//*[@class='row-widget stSelectbox']")
-        text = sidebar_selectbox.find_element(By.XPATH, "./div/div/div/div[@aria-selected='true']").text
-        self.assertFalse(text.startswith('No options to select'))
+        if not self.trained_models:
+            unittest.SkipTest('No model have been trained.')
+        else:
+            sidebar = driver.find_element(By.XPATH, "//*[@data-testid='stSidebar']")
+            sidebar_selectbox = sidebar.find_element(By.XPATH, ".//*[@class='row-widget stSelectbox']")
+            text = sidebar_selectbox.find_element(By.XPATH, "./div/div/div/div[@aria-selected='true']").text
+            self.assertFalse(text.startswith('No options to select'))
 
     def test04_title_exists(self):
         '''Checks that the title exists'''
@@ -95,8 +97,8 @@ if __name__ == '__main__':
     parser.add_argument('unittest_args', nargs='*', help="Optional unitest args")
     args = parser.parse_args()
     DemonstratorTests.demonstrator_url = args.url
+    DemonstratorTests.trained_models = args.trained_models
     sys.argv[1:] = args.unittest_args
-    # Set trained model as an environnement variable (we want to use it in a skip decorator)
-    os.environ["GABARIT_TRAINED_MODELS"] = "1" if args.trained_models else "0"
+
     # Start tests
     unittest.main()
