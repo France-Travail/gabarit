@@ -31,7 +31,6 @@ jobs:
     strategy:
       matrix:
         python-version: ["3.7", "3.8"]
-
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -65,4 +64,44 @@ jobs:
           whl_files=( *.whl )
           whl_file=${whl_files[0]}
           pip install $whl_file
+          python -c "from tmp_project import utils; print(utils.get_package_version())"
+
+  build-extras:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install wheel
+          python setup.py sdist bdist_wheel
+          cd dist
+          whl_files=( *.whl )
+          whl_file=${whl_files[0]}
+          pip install $whl_file
+          pip install flake8
+      - name: Generate a new project
+        run: |
+          # Create a new temporary project
+          generate_num_project -n tmp_project -p tmp_project_dir
+      - name: Wheel the new project
+        run: |
+          cd tmp_project_dir
+          python setup.py sdist bdist_wheel
+      - name: Install it in a venv and test it
+        run: |
+          python -m venv venv_tmp
+          source venv_tmp/bin/activate
+          cd tmp_project_dir
+          cd dist
+          whl_files=( *.whl )
+          whl_file=${whl_files[0]}
+          pip install "$whl_file[tensorflow]"
           python -c "from tmp_project import utils; print(utils.get_package_version())"
