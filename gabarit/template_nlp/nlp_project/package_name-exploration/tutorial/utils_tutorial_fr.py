@@ -20,20 +20,21 @@ import re
 import math
 import random
 import pandas as pd
-from typing import List, Tuple
 from collections import Counter
+from typing import List, Tuple, Union
 
+from {{package_name}} import utils
 from {{package_name}}.models_training.model_tfidf_svm import ModelTfidfSvm
 
 
-def text_to_sentence(text: str, nb_word_sentence: int) -> List[str]:
+def text_to_sentences(text: str, nb_word_sentence: int) -> List[str]:
     '''Transforms a text in sentences.
 
     Args:
         text (str) : The text to cut in sentences
         nb_word_sentence (int) : The number of words in a sentence
     Returns:
-        list : A list of sentence
+        list : A list of sentences
     
     '''
     text = re.sub(r'\s',' ', text)
@@ -48,17 +49,30 @@ def text_to_sentence(text: str, nb_word_sentence: int) -> List[str]:
         list_sentences.append(' '.join(list_mots[i*nb_word_sentence:(i+1)*nb_word_sentence]))
     return list_sentences
 
-def df_texts_to_df_sentences(texts, author, nb_word_sentence):
+
+def df_texts_to_df_sentences(texts: Union[list, pd.Series], authors: Union[list, pd.Series], nb_word_sentence:int) -> pd.DataFrame:
+    '''Creates a dataframe containaing 'sentences' from a collection of texts with their corresponding authors.
+
+    Args:
+        texts (list, pd.Series) : a collection of texts
+        authors (list, pd.Series) : the corresponding authors
+        nb_word_sentence (int) : The number of words in a sentence
+    Returns:
+        pd.DataFrame : A dataframe containing sentences extracted from the initial texts with their corresponding author
+
+    '''
     list_phrases = []
-    for text, author in zip(list(texts), list(author)):
-        # Cette fonction transforme un texte en phrases
-        sentences = text_to_sentence(text, nb_word_sentence)
+    for text, author in zip(list(texts), list(authors)):
+        # This function transforms a text in 'sentences'
+        sentences = text_to_sentences(text, nb_word_sentence)
         list_phrases = list_phrases+[(sentence, author) for sentence in sentences]
     df_sentences = pd.DataFrame(list_phrases, columns=['sentence', 'author'])
     return df_sentences
 
 
 class ModelAuthor(ModelTfidfSvm):
+
+    _default_name = 'model_author'
 
     def __init__(self, nb_word_sentence, **kwargs):
         super().__init__(**kwargs)
@@ -77,12 +91,16 @@ class ModelAuthor(ModelTfidfSvm):
             str : The predicted author
         '''
         # Cut the text in sentences
-        sentences = text_to_sentence(text, self.nb_word_sentence)
+        sentences = text_to_sentences(text, self.nb_word_sentence)
         # For each sentence, predict an author. Gives the number of sentences predicted for each author
         counter = dict(Counter(list(super().predict(sentences))))
         # The author with the highest number of sentences
         author = max(counter, key=counter.get)
         return author
 
+    @utils.data_agnostic_str_to_list
+    @utils.trained_needed
     def predict(self, x_test, **kwargs):
+        if isinstance(x_test, list):
+            x_test = pd.Series(x_test)
         return x_test.apply(self.predict_author)
