@@ -32,6 +32,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - uses: nanasess/setup-chromedriver@v1
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
@@ -58,7 +59,6 @@ jobs:
           flake8 tmp_project_flake8 --count --exit-zero --max-complexity=10 --ignore=E501,W503,E266,W605,C901,W292  --statistics
       # - name: Test generate NLP
       #   run: python gabarit/template_nlp/nlp_tests/tests_setup.py
-      - uses: nanasess/setup-chromedriver@v1
       - name: Start demonstrator
         run: |
           # Create a new temporary project
