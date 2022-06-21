@@ -73,7 +73,7 @@ jobs:
           cd tmp_project_selenium-scripts
           python 2_training.py -f mono_class_mono_label.csv -x x_col -y y_col
           # Start demonstrator (nohup)
-          nohup streamlit run 4_demonstrator.py
+          nohup streamlit run 4_demonstrator.py > out.file &
       - name: Test demonstrator
         run: |
           cd gabarit/template_nlp/nlp_tests
