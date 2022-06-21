@@ -74,6 +74,11 @@ jobs:
           python 2_training.py -f mono_class_mono_label.csv -x x_col -y y_col
           # Start demonstrator (nohup)
           nohup streamlit run 4_demonstrator.py > out.file &
+      - name: Start chrome display
+        run: |
+          export DISPLAY=:99
+          chromedriver --url-base=/wd/hub &
+          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # optional
       - name: Test demonstrator
         run: |
           pip install selenium==4.2.0
