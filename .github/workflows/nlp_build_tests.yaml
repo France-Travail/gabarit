@@ -76,5 +76,6 @@ jobs:
           nohup streamlit run 4_demonstrator.py > out.file &
       - name: Test demonstrator
         run: |
+          pip install selenium==4.2.0
           cd gabarit/template_nlp/nlp_tests
           python selenium_tests.py -u 'http://localhost:8501' --with_trained_models
