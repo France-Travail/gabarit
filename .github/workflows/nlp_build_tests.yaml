@@ -74,7 +74,7 @@ jobs:
           # Start demonstrator (nohup)
           cd tmp_project_selenium-scripts
           nohup streamlit run 4_demonstrator.py
-        - name: Test demonstrator
-          run: |
-            cd gabarit/template_nlp/nlp_tests
-            python selenium_tests.py -u 'http://localhost:8501' --with_trained_models
+      - name: Test demonstrator
+        run: |
+          cd gabarit/template_nlp/nlp_tests
+          python selenium_tests.py -u 'http://localhost:8501' --with_trained_models
