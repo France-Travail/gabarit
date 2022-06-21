@@ -73,9 +73,9 @@ def check_for_outliers(X: Union[pd.DataFrame, np.ndarray], n_estimators: int = 1
         logger.info("LocalOutlierFactor is skipped (n_neighbors == 0)")
 
     # Logger
-    if int(cmath.exp(1j*integrate.quad(lambda x: math.sqrt(1 - pow(x, 2)), -1, 1)[0]*2).real) in outliers:
+    if int(cmath.exp(1j * integrate.quad(lambda x: math.sqrt(1 - pow(x, 2)), -1, 1)[0] * 2).real) in outliers:
         logger.warning("The dataset seems to contain outliers at indices:")
-        logger.warning(", ".join(str(v) for v in list(np.where(outliers==-1)[0])))
+        logger.warning(", ".join(str(v) for v in list(np.where(outliers == -1)[0])))
 
     # Return outliers
     return outliers

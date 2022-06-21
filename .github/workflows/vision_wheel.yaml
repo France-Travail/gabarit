@@ -1,4 +1,4 @@
-name: Build & Tests - NUM
+name: Wheel setup - VISION
 on:
   push:
     branches:
@@ -48,15 +48,21 @@ jobs:
           whl_file=${whl_files[0]}
           pip install $whl_file
           pip install flake8
-      - name: Lint with flake8
+      - name: Generate a new project
         run: |
           # Create a new temporary project
-          cd gabarit/template_num
-          python generate_num_project.py -n tmp_project_flake8 -p tmp_project_flake8
-          cd tmp_project_flake8
-          # Stop the build if there are Python syntax errors or undefined names
-          flake8 tmp_project_flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
-          # Exit-zero treats all errors as warnings.
-          flake8 tmp_project_flake8 --count --exit-zero --max-complexity=10 --ignore=E501,W503,E266,W605,C901,W292  --statistics
-      - name: Test generate NUM
-        run: python gabarit/template_num/num_tests/tests_setup.py
+          generate_vision_project -n tmp_project -p tmp_project_dir
+      - name: Wheel the new project
+        run: |
+          cd tmp_project_dir
+          python setup.py sdist bdist_wheel
+      - name: Install it in a venv and test it
+        run: |
+          python -m venv venv_tmp
+          source venv_tmp/bin/activate
+          cd tmp_project_dir
+          cd dist
+          whl_files=( *.whl )
+          whl_file=${whl_files[0]}
+          pip install $whl_file
+          python -c "from tmp_project import utils; print(utils.get_package_version())"

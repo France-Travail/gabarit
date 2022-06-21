@@ -30,7 +30,6 @@ import matplotlib.pyplot as plt
 import os
 import io
 import cv2
-import time
 import copy
 import json
 import math
@@ -46,17 +45,11 @@ from sklearn.model_selection import train_test_split
 
 import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
-from tensorflow.python.keras.utils import tf_utils
 from tensorflow.keras.models import Model, clone_model
 from tensorflow.keras.preprocessing.image import Iterator
-from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.applications.vgg16 import preprocess_input as preprocess_input_vgg16
-from tensorflow.keras.callbacks import (CSVLogger, EarlyStopping, ModelCheckpoint, TensorBoard,
-                                        TerminateOnNaN, LearningRateScheduler, Callback)
-from tensorflow.keras.layers import (ELU, BatchNormalization, Dense, Dropout, Input, LeakyReLU,
-                                     ReLU, Conv2D, Flatten, MaxPooling2D, AveragePooling2D,
-                                     GlobalMaxPooling2D, GlobalAveragePooling2D,
-                                     TimeDistributed)
+from tensorflow.keras.layers import Dense, Dropout, Input, Conv2D, Flatten, MaxPooling2D, TimeDistributed
+from tensorflow.keras.callbacks import CSVLogger, EarlyStopping, ModelCheckpoint, TensorBoard, TerminateOnNaN
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_keras import ModelKeras
@@ -237,7 +230,7 @@ class ModelKerasFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelKeras):
 
         # Anchors boxes
         self.anchor_box_sizes = [64, 128, 256]  # In the paper : [128, 256, 512]
-        self.anchor_box_ratios = [[1, 1], [1./math.sqrt(2), 2./math.sqrt(2)], [2./math.sqrt(2), 1./math.sqrt(2)]]  # In the paper : [1, 1], [1, 2], [2, 1]]
+        self.anchor_box_ratios = [[1, 1], [1. / math.sqrt(2), 2. / math.sqrt(2)], [2. / math.sqrt(2), 1. / math.sqrt(2)]]  # In the paper : [1, 1], [1, 2], [2, 1]]
         self.nb_anchors = len(self.anchor_box_sizes) * len(self.anchor_box_ratios)
         self.list_anchors = [[anchor_size * anchor_ratio[0], anchor_size * anchor_ratio[1]]
                              for anchor_size in self.anchor_box_sizes for anchor_ratio in self.anchor_box_ratios]
@@ -259,12 +252,12 @@ class ModelKerasFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelKeras):
         self.nb_rois_classifier = nb_rois_classifier  # Def 4
         self.roi_nms_overlap_threshold = roi_nms_overlap_threshold  # Def 0.7
         self.nms_max_boxes = nms_max_boxes  # Def 300
-        self.classifier_min_overlap = classifier_min_overlap # Def 0.1
-        self.classifier_max_overlap = classifier_max_overlap # Def 0.5
+        self.classifier_min_overlap = classifier_min_overlap  # Def 0.1
+        self.classifier_max_overlap = classifier_max_overlap  # Def 0.5
 
         # Prediction Thresholds
-        self.pred_bbox_proba_threshold = pred_bbox_proba_threshold # Def 0.6
-        self.pred_nms_overlap_threshold = pred_nms_overlap_threshold # Def 0.2
+        self.pred_bbox_proba_threshold = pred_bbox_proba_threshold  # Def 0.6
+        self.pred_nms_overlap_threshold = pred_nms_overlap_threshold  # Def 0.2
 
         ### Misc.
 
@@ -460,11 +453,11 @@ class ModelKerasFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelKeras):
         # Classifier : ROI class
         # Regressor : ROI coordinates correction
         nb_classes = len(self.list_classes)
-        out_class = TimeDistributed(Dense(nb_classes + 1, activation='softmax', kernel_initializer='zero'), name=f"dense_class")(out)
+        out_class = TimeDistributed(Dense(nb_classes + 1, activation='softmax', kernel_initializer='zero'), name="dense_class")(out)
         # TODO: Do we really need to a regression for each class ?!
         # TODO: Couldn't we simply have a single regression ? The corresponding loss would be on matching an object (whatever the class).
         # TODO: Couldn't we event make without the regression part here? After all, it is already done by the RPN.
-        out_regr = TimeDistributed(Dense(4 * nb_classes, activation='linear', kernel_initializer='zero'), name=f"dense_regr")(out)
+        out_regr = TimeDistributed(Dense(4 * nb_classes, activation='linear', kernel_initializer='zero'), name="dense_regr")(out)
 
         return [out_class, out_regr]
 
@@ -733,7 +726,7 @@ class ModelKerasFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelKeras):
         for bboxes in df_train['bboxes'].to_dict().values():
             set_classes = set_classes.union({bbox['class'] for bbox in bboxes})
         if 'bg' in set_classes:
-            raise ValueError(f"The 'bg' class must not be present in the bounding boxes classes")
+            raise ValueError("The 'bg' class must not be present in the bounding boxes classes")
 
         list_classes = sorted(list(set_classes))
         # Also set dict_classes
@@ -1032,7 +1025,7 @@ class ModelKerasFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelKeras):
             'loss': [f'RPN loss with trainable set to {trainable}', f'loss_{model_type}_trainable_{trainable}'],
             'rpn_class_loss': [f'RPN classification loss with trainable set to {trainable}', f'loss_class_{model_type}_trainable_{trainable}'],
             'rpn_regr_loss': [f'RPN regression loss with trainable set to {trainable}', f'loss_regr_{model_type}_trainable_{trainable}'],
-            'rpn_class_accuracy' : [f'RPN classification accuracy with trainable set to {trainable}', f'accuracy_class_{model_type}_trainable_{trainable}']
+            'rpn_class_accuracy': [f'RPN classification accuracy with trainable set to {trainable}', f'accuracy_class_{model_type}_trainable_{trainable}']
         }
         metrics_dir_classifier = {
             'loss': [f'Classifier loss with trainable set to {trainable}', f'loss_{model_type}_trainable_{trainable}'],
@@ -1045,7 +1038,7 @@ class ModelKerasFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelKeras):
         if model_type == 'rpn':
             metrics_dir = copy.deepcopy(metrics_dir_rpn)
         else:
-             metrics_dir = copy.deepcopy(metrics_dir_classifier)
+            metrics_dir = copy.deepcopy(metrics_dir_classifier)
 
         # Plots each available metrics & losses
         for metric in fit_history.history.keys():
@@ -1204,8 +1197,8 @@ class ModelKerasFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelKeras):
         # Set class vars
         # self.model_name = # Keep the created name
         # self.model_dir = # Keep the created folder
-        self.nb_fit = configs.get('nb_fit', 1) # Consider one unique fit by default
-        self.trained = configs.get('trained', True) # Consider trained by default
+        self.nb_fit = configs.get('nb_fit', 1)  # Consider one unique fit by default
+        self.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['model_type', 'list_classes', 'dict_classes', 'level_save', 'batch_size',
                           'epochs', 'validation_split', 'patience', 'color_mode', 'data_augmentation_params',
@@ -1287,7 +1280,7 @@ class CustomGeneratorRpn(Iterator):
         self.with_img_data = with_img_data
 
         # Manage data augmentation & test
-        if self.is_test and any([param == True for param in [self.horizontal_flip, self.vertical_flip, self.rot_90]]):
+        if self.is_test and any([param for param in [self.horizontal_flip, self.vertical_flip, self.rot_90]]):
             model.logger.warning("Warning, data augmentation on the test dataset ! It is most certainly a mistake !")
 
     def _get_batches_of_transformed_samples(self, index_array: np.ndarray) -> tuple:
@@ -1398,7 +1391,7 @@ class CustomGeneratorClassifier(Iterator):
             self.rpn_clone = None
 
         # Manage data augmentation & test
-        if self.is_test and any([param == True for param in [self.horizontal_flip, self.vertical_flip, self.rot_90]]):
+        if self.is_test and any([param for param in [self.horizontal_flip, self.vertical_flip, self.rot_90]]):
             model.logger.warning("Warning, Data Augmentation detected on the test set! This is certainly not desired!")
 
     def _get_batches_of_transformed_samples(self, index_array: np.ndarray):
@@ -1462,7 +1455,7 @@ class CustomGeneratorClassifier(Iterator):
             batch_x_rois, Y1_classifier, Y2_classifier = utils_object_detectors.get_classifier_train_inputs_and_targets(self.model, batch_prepared_img_data, rois_coordinates)
             if batch_x_rois is None:
                 self.model.logger.warning("We have an image batch without ROI !!!")
-                return next(self) # We try another batch ...
+                return next(self)  # We try another batch ...
             if self.with_img_data:
                 return {'input_img': batch_x_img, 'input_rois': batch_x_rois}, {'dense_class': Y1_classifier, 'dense_regr': Y2_classifier}, batch_prepared_img_data
             else:

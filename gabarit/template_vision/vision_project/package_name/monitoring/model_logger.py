@@ -51,7 +51,7 @@ def is_running(host: str, port: int, logger: logging.Logger) -> bool:
         sock.connect((host, port))
         sock.shutdown(socket.SHUT_RDWR)
         reachable = True
-    except:
+    except Exception:
         logger.error(f'Monitoring - MlFlow  @ {host} not reachable => nothing will be stored')
     finally:
         sock.close()
@@ -141,7 +141,7 @@ class ModelLogger:
             mlflow.set_experiment(f'/{self.experiment_name}')
             self.logger.info(f'Ml Flow running, metrics available @ {self.tracking_uri}')
             self.running = True
-        except:
+        except Exception:
             self.logger.warning(f"Host {self.tracking_uri} is not reachable. ML flow won't run")
             self.logger.warning("Warning, for a local process, mlflow only accepts relative paths ...")
             self.logger.warning("Take care to use os.path.relpath()")
@@ -151,7 +151,7 @@ class ModelLogger:
         '''Stop an MLflow run'''
         try:
             mlflow.end_run()
-        except:
+        except Exception:
             self.logger.error("Can't stop mlflow run")
 
     @is_mlflow_up

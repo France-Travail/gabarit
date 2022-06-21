@@ -54,7 +54,7 @@ class ModelRules(ModelClass):
         self.rules: List[dict] = []
         super().__init__(**kwargs)
 
-    def create_rule(self, name: Union[str, None] = None, pattern: str="*", cls: str="classe_1") -> None:
+    def create_rule(self, name: Union[str, None] = None, pattern: str = "*", cls: str = "classe_1") -> None:
         '''Creates a rule and appends it to the set of rules.
 
         Kwargs:
@@ -63,7 +63,7 @@ class ModelRules(ModelClass):
             cls (str) : The class to give if the pattern matches
 
         '''
-        self.rules.append({'name': 'rule_'+str(len(self.rules)) if name is None else name,
+        self.rules.append({'name': f'rule_{len(self.rules)}' if name is None else name,
                            'pattern': pattern,
                            'cls': cls})
 
@@ -119,12 +119,10 @@ class ModelRules(ModelClass):
                 y_valid = np.ravel(y_valid)
             # Transformation dummies
             y_train_dummies = pd.get_dummies(y_train)
-            y_valid_dummies = pd.get_dummies(y_valid) if y_valid is not None else None
             self.list_classes = list(y_train_dummies.columns)
         # Else keep it as it
         else:
             y_train_dummies = y_train
-            y_valid_dummies = y_valid
             if hasattr(y_train_dummies, 'columns'):
                 self.list_classes = list(y_train_dummies.columns)
             else:

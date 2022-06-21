@@ -73,7 +73,7 @@ class ModelXgboostClassifier(ModelClassifierMixin, ModelClass):
         # Set objective (if not in params) & init. model
         if 'objective' not in self.xgboost_params.keys():
             self.xgboost_params['objective'] = 'binary:logistic'
-             # list of objectives https://xgboost.readthedocs.io/en/latest/parameter.html#learning-task-parameters
+            #  List of objectives https://xgboost.readthedocs.io/en/latest/parameter.html#learning-task-parameters
         # WARNING, if multi-classes, AUTOMATIC backup on multi:softprob (by xgboost)
         # https://stackoverflow.com/questions/57986259/multiclass-classification-with-xgboost-classifier
         self.model = XGBClassifier(**self.xgboost_params)
@@ -113,7 +113,7 @@ class ModelXgboostClassifier(ModelClassifierMixin, ModelClass):
             x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, test_size=self.validation_split)
 
         # Gets the input columns
-        original_list_classes: Optional[List[Any]] = None # None if no 'columns' attribute
+        original_list_classes: Optional[List[Any]] = None  # None if no 'columns' attribute
         if hasattr(y_train, 'columns'):
             original_list_classes = list(y_train.columns)
 
@@ -131,9 +131,8 @@ class ModelXgboostClassifier(ModelClassifierMixin, ModelClass):
         x_valid = np.array(x_valid)
         y_valid = np.array(y_valid)
 
-
         # Set eval set and train
-        eval_set = [(x_train, y_train), (x_valid, y_valid)] # If there’s more than one item in eval_set, the last entry will be used for early stopping.
+        eval_set = [(x_train, y_train), (x_valid, y_valid)]  # If there’s more than one item in eval_set, the last entry will be used for early stopping.
         prior_objective = self.model.objective if not self.multi_label else self.model.estimator.objective
         self.model.fit(x_train, y_train, eval_set=eval_set, early_stopping_rounds=self.early_stopping_rounds, verbose=True)
         post_objective = self.model.objective if not self.multi_label else self.model.estimator.objective
@@ -227,7 +226,7 @@ class ModelXgboostClassifier(ModelClassifierMixin, ModelClass):
         if self.level_save in ['MEDIUM', 'HIGH']:
             if not self.multi_label:
                 if self.trained:
-                    save_path = os.path.join(self.model_dir, f'xbgoost_standalone.model')
+                    save_path = os.path.join(self.model_dir, 'xbgoost_standalone.model')
                     self.model.save_model(save_path)
                 else:
                     self.logger.warning("Can't save the XGboost in standalone because it hasn't been already fitted")
@@ -359,8 +358,7 @@ class MyMultiOutputClassifier(MultiOutputClassifier):
             raise ValueError("y must have at least two dimensions for "
                              "multi-output regression but has only one.")
 
-        if (sample_weight is not None and
-                not has_fit_parameter(self.estimator, 'sample_weight')):
+        if (sample_weight is not None and not has_fit_parameter(self.estimator, 'sample_weight')):
             raise ValueError("Underlying estimator does not support"
                              " sample weights.")
 

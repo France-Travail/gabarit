@@ -31,8 +31,6 @@ import numpy as np
 from skimage import io
 from typing import Union, List, Callable, Tuple
 
-from {{package_name}} import utils
-
 # Get logger
 logger = logging.getLogger(__name__)
 
@@ -66,7 +64,7 @@ def draw_bboxes_from_file(input_path: str, output_path: Union[str, None] = None,
 
 
 def draw_bboxes(input_img: np.ndarray, output_path: Union[str, None] = None, gt_bboxes: Union[List[dict], None] = None,
-                          predicted_bboxes: Union[List[dict], None] = None) -> np.ndarray:
+                predicted_bboxes: Union[List[dict], None] = None) -> np.ndarray:
     '''Adds bboxes to an image (np.ndarray)
 
     Args:
@@ -634,11 +632,11 @@ def get_rpn_targets(model, img_data_batch: List[dict]) -> Tuple[np.ndarray, np.n
         y_rpn_regr = np.concatenate([np.repeat(y_rpn_overlap, 4, axis=2), y_rpn_regr], axis=2)
 
         # We scale the regression target
-        y_rpn_regr[:, :, y_rpn_regr.shape[2]//2:] *= rpn_regr_scaling
+        y_rpn_regr[:, :, y_rpn_regr.shape[2] // 2:] *= rpn_regr_scaling
 
         # We finally update the output arrays
-        Y1[ind, :, : , :] = y_rpn_cls
-        Y2[ind, :, : , :] = y_rpn_regr
+        Y1[ind, :, :, :] = y_rpn_cls
+        Y2[ind, :, :, :] = y_rpn_regr
 
     # Return
     return Y1, Y2
@@ -668,15 +666,15 @@ def get_all_viable_anchors_boxes(base_anchors: List[tuple], subsampling_ratio: i
         # For each point of the features map...
         for x_feature_map in range(feature_map_width):
             # x coordinate of the anchor, input format (ie in image space)
-            x1_anchor = subsampling_ratio * (x_feature_map + 0.5) - width_anchor / 2 #  center - width / 2
-            x2_anchor = subsampling_ratio * (x_feature_map + 0.5) + width_anchor / 2 #  center + width / 2
+            x1_anchor = subsampling_ratio * (x_feature_map + 0.5) - width_anchor / 2  # center - width / 2
+            x2_anchor = subsampling_ratio * (x_feature_map + 0.5) + width_anchor / 2  # center + width / 2
             # We do not consider the anchors outside the image (before padding)
             if x1_anchor < 0 or x2_anchor >= im_resized_width:
                 continue
             for y_feature_map in range(feature_map_height):
                 # y coordinate of the anchor, input format (ie in image space)
-                y1_anchor = subsampling_ratio * (y_feature_map + 0.5) - height_anchor / 2 #  center - height / 2
-                y2_anchor = subsampling_ratio * (y_feature_map + 0.5) + height_anchor / 2 #  center + height / 2
+                y1_anchor = subsampling_ratio * (y_feature_map + 0.5) - height_anchor / 2  # center - height / 2
+                y2_anchor = subsampling_ratio * (y_feature_map + 0.5) + height_anchor / 2  # center + height / 2
                 # We do not consider the anchors outside the image (before padding)
                 if y1_anchor < 0 or y2_anchor >= im_resized_height:
                     continue
@@ -842,7 +840,7 @@ def restrict_valid_to_n_regions(anchor_boxes_dict: dict, num_regions: int) -> di
         anchors_indexes_to_unvalid = random.sample(positive_anchor_indexes, nb_pos_to_invalidate)
         for anchor_idx in anchors_indexes_to_unvalid:
             anchor_boxes_dict[anchor_idx]['anchor_validity'] = 0
-        nb_pos = int(num_regions/2)
+        nb_pos = int(num_regions / 2)
 
     # ... Then we invalidate negative regions until we have num_regions valid anchor boxes
     nb_neg_to_invalidate = len(negative_anchor_indexes) + nb_pos - num_regions
@@ -937,7 +935,7 @@ def get_roi_from_rpn_predictions(model, img_data_batch: List[dict], rpn_predicti
     # First we unscale the regression prediction (we scaled the target of the RPN)
     rpn_predictions_regr = rpn_predictions_regr / rpn_regr_scaling
     # We get the base anchor base in features map space
-    base_anchors_feature_maps = [(size[0]/subsampling_ratio, size[1]/subsampling_ratio) for size in base_anchors]
+    base_anchors_feature_maps = [(size[0] / subsampling_ratio, size[1] / subsampling_ratio) for size in base_anchors]
 
     # First we get all the possible anchor boxes on the features map
     # ie., for each point and each base anchor, we get the coordinates of the anchor box centered on the point
@@ -1340,7 +1338,7 @@ def format_classifier_inputs_and_targets(dict_rois_targets: dict, dict_classes: 
     class_mapping['bg'] = len(class_mapping)  # Add background to the mapping
 
     # Init. of output arrays
-    X = np.zeros((nb_rois, 4)) # ROIs coordinates
+    X = np.zeros((nb_rois, 4))  # ROIs coordinates
     Y1 = np.zeros((nb_rois, (nb_classes + 1)))  # + 1 for background
     Y2_1 = np.zeros((nb_rois, 4 * nb_classes))  # OHE class (without background), but repeated 4 times (one for each coordinate), will be used by the loss
     Y2_2 = np.zeros((nb_rois, 4 * nb_classes))  # One regression per class (# TODO verify if we can't do only one regression)
@@ -1355,7 +1353,7 @@ def format_classifier_inputs_and_targets(dict_rois_targets: dict, dict_classes: 
         gt_class = roi['classifier_class_target']
         idx_gt_class = class_mapping[gt_class]
         ohe_target = [0] * (nb_classes + 1)
-        ohe_target[idx_gt_class] = 1  #  --> e.g. [0, 1, 0] / 2 classes + 'bg'
+        ohe_target[idx_gt_class] = 1  # --> e.g. [0, 1, 0] / 2 classes + 'bg'
         Y1[i, :] = ohe_target
 
         # ROI regression - loss target
@@ -1367,7 +1365,7 @@ def format_classifier_inputs_and_targets(dict_rois_targets: dict, dict_classes: 
         if gt_class != 'bg':
             target_regression = [0.] * nb_classes * 4
             regression_values = [a * b for a, b in zip(roi['classifier_regression_target'], classifier_regr_scaling)]  # Apply a scaling
-            target_regression[idx_gt_class*4: (idx_gt_class+1)*4] = regression_values  # e.g. [0, 0, 0, 0, 0.2, -0.3, 0.1, 0.9]
+            target_regression[idx_gt_class * 4: (idx_gt_class + 1) * 4] = regression_values  # e.g. [0, 0, 0, 0, 0.2, -0.3, 0.1, 0.9]
             Y2_2[i, :] = target_regression
 
     # Concatenate Y2
@@ -1466,7 +1464,7 @@ def get_valid_boxes_from_coordinates(input_img: np.ndarray, input_rois: np.ndarr
     # For each box (in features map space)...
     for index_box, predicted_class, predicted_proba in fm_boxes_candidates:
         roi_coordinates = input_rois[index_box]  # Get corresponding ROI
-        regr_predicted = regr_coordinates[index_box][predicted_class*4:(predicted_class+1)*4]  # Get the regression associated to this class
+        regr_predicted = regr_coordinates[index_box][predicted_class * 4: (predicted_class + 1) * 4]  # Get the regression associated to this class
         regr_predicted = np.array([a / b for a, b in zip(regr_predicted, classifier_regr_scaling)])  # Remove the scaling
         # Apply predicted regression
         coordinates_after_regr = list(apply_regression(np.concatenate([roi_coordinates, regr_predicted])))

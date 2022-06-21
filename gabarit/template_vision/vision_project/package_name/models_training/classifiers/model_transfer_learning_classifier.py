@@ -25,24 +25,19 @@ import json
 import ntpath
 import shutil
 import logging
-import numpy as np
 import pandas as pd
 import dill as pickle
 from functools import partial
 from keras.utils import data_utils
-from typing import Union, Any, List, Callable
+from typing import Union, List, Callable
 
-import tensorflow as tf
+from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.applications import VGG16, EfficientNetB6
 from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.applications.vgg16 import preprocess_input as vgg16_preprocess_input
 from tensorflow.keras.applications.efficientnet import preprocess_input as enet_preprocess_input
-from tensorflow.keras.layers import (ELU, BatchNormalization, Dense, Dropout, SpatialDropout2D,
-                                     Input, LeakyReLU, ReLU, Conv2D, Flatten,
-                                     MaxPooling2D, AveragePooling2D,
-                                     GlobalMaxPooling2D, GlobalAveragePooling2D)
+from tensorflow.keras.layers import Dense, Input, Flatten, GlobalAveragePooling2D
 from tensorflow.keras.callbacks import (CSVLogger, EarlyStopping,
                                         ModelCheckpoint, TensorBoard,
                                         TerminateOnNaN, LearningRateScheduler)
@@ -132,7 +127,7 @@ class ModelTransferLearningClassifier(ModelClassifierMixin, ModelKeras):
                 self._plot_metrics_and_loss(fit_history)
                 # Reload best model
                 self.model = load_model_keras(
-                    os.path.join(self.model_dir, f'best.hdf5'),
+                    os.path.join(self.model_dir, 'best.hdf5'),
                     custom_objects=self.custom_objects
                 )
 
@@ -181,7 +176,7 @@ class ModelTransferLearningClassifier(ModelClassifierMixin, ModelKeras):
         if not os.path.exists(base_model_path):
             try:
                 utils.download_url(base_model_backup_urls, base_model_path)
-            except:
+            except Exception:
                 # If we can't download it, we let the function crash alone
                 self.logger.warning("Can't find / download the base model for transfer learning application.")
 

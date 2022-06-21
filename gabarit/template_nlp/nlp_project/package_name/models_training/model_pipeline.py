@@ -29,7 +29,6 @@ from typing import Union
 from sklearn.pipeline import Pipeline
 
 from {{package_name}} import utils
-from {{package_name}}.models_training import utils_models
 from {{package_name}}.models_training.model_class import ModelClass
 
 
@@ -175,7 +174,7 @@ class ModelPipeline(ModelClass):
 
         # Save model standalone if wanted & pipeline is not None & level_save > 'LOW'
         if self.pipeline is not None and self.level_save in ['MEDIUM', 'HIGH']:
-            pkl_path = os.path.join(self.model_dir, f"sklearn_pipeline_standalone.pkl")
+            pkl_path = os.path.join(self.model_dir, "sklearn_pipeline_standalone.pkl")
             # Save model
             with open(pkl_path, 'wb') as f:
                 pickle.dump(self.pipeline, f)

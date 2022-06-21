@@ -84,8 +84,8 @@ def read_folder(folder_path: str, images_ext: tuple = ('.jpg', '.jpeg', '.png'),
     else:
         logger.info("Classification task - Loading folder ...")
         path_list, classes_list, preprocess_str = read_folder_classification(folder_path, images_ext=images_ext,
-                                                                           sep=sep, encoding=encoding,
-                                                                           accept_no_metadata=accept_no_metadata)
+                                                                             sep=sep, encoding=encoding,
+                                                                             accept_no_metadata=accept_no_metadata)
         return path_list, classes_list, preprocess_str, 'classification'
 
 
@@ -140,7 +140,7 @@ def read_folder_object_detection(folder_path: str, images_ext: tuple = ('.jpg', 
 
         # Loading metadata file
         metadata_df = pd.read_csv(metadata_file, sep=sep, encoding=encoding)
-        if not 'filename' in metadata_df.columns:
+        if 'filename' not in metadata_df.columns:
             raise ValueError("The metadata file must contain a column 'filename'")
 
         # Retrieving information (path & bboxes)
@@ -235,7 +235,7 @@ def read_folder_classification(folder_path: str, images_ext: tuple = ('.jpg', '.
 
         # Loading metadata file
         metadata_df = pd.read_csv(metadata_file, sep=sep, encoding=encoding)
-        if not 'filename' in metadata_df.columns:
+        if 'filename' not in metadata_df.columns:
             raise ValueError("The metadata file must contain a column 'filename'")
 
         # Retrieving information (path & classes)
@@ -251,7 +251,6 @@ def read_folder_classification(folder_path: str, images_ext: tuple = ('.jpg', '.
 
         # Return here
         return path_list, classes_list, preprocess_str
-
 
     # Solution 2: we check if all files are inside the root directory and if they are all prefixed (i.e. prefix_filename.ext)
     folder_list = os.listdir(folder_path)
@@ -270,7 +269,6 @@ def read_folder_classification(folder_path: str, images_ext: tuple = ('.jpg', '.
 
         # Return here
         return path_list, classes_list, preprocess_str
-
 
     # Solution 3: check if images are saved in class subdirectories
     folders_elements = os.listdir(folder_path)
@@ -419,7 +417,7 @@ def download_url(urls: list, output_path: str) -> None:
                 with DownloadProgressBar(unit='B', unit_scale=True, miniters=1, desc=url.split('/')[-1]) as t:
                     request.urlretrieve(url, filename=output_path, reporthook=t.update_to)
                 is_downloaded = True  # Download ok
-            except:
+            except Exception:
                 logger.warning(f"Can't download from URL {url}.")
     if not is_downloaded:
         raise ConnectionError("Couldn't find a working URL")

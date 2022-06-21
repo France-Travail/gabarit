@@ -26,12 +26,10 @@ import logging
 import numpy as np
 import pandas as pd
 import dill as pickle
+from typing import Union
 from datetime import datetime
-from typing import List, Union
 
 from {{package_name}} import utils
-from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.models_training import utils_models
 from {{package_name}}.monitoring.model_logger import ModelLogger
 
 
@@ -293,6 +291,7 @@ class ModelClass:
         '''
         # By default, no GPU
         return False
+
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

@@ -48,7 +48,7 @@ logger = logging.getLogger(__name__)
 DIR_PATH = None  # IMPORTANT : THIS VARIABLE MUST BE SET IN PRODUCTION TO POINT TO DATA AND MODELS PARENT FOLDER
 
 
-def read_csv(file_path: str, sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}', dtype: type=str, **kwargs) -> Tuple[pd.DataFrame, Union[str, None]]:
+def read_csv(file_path: str, sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}', dtype: type = str, **kwargs) -> Tuple[pd.DataFrame, Union[str, None]]:
     '''Reads a .csv file and parses the first line.
 
     Args:

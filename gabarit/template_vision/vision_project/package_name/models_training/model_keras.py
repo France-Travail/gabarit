@@ -39,10 +39,9 @@ import seaborn as sns
 import dill as pickle
 from PIL import Image
 from sklearn.model_selection import train_test_split
-from typing import Optional, no_type_check, Union, Callable, Any
+from typing import no_type_check, Union, Callable, Any
 
 import tensorflow as tf
-from tensorflow.keras import backend as K
 from tensorflow.keras.utils import plot_model
 from tensorflow.keras.models import load_model
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
@@ -51,7 +50,7 @@ from tensorflow.keras.callbacks import (CSVLogger, EarlyStopping,
                                         TerminateOnNaN, LearningRateScheduler)
 
 from {{package_name}} import utils
-from {{package_name}}.models_training import utils_deep_keras, utils_models
+from {{package_name}}.models_training import utils_deep_keras
 from {{package_name}}.models_training.model_class import ModelClass
 
 sns.set(style="darkgrid")
@@ -232,7 +231,6 @@ class ModelKeras(ModelClass):
                     self.logger.error("We still continue ...")
                     self.logger.error(repr(e))
 
-
         ##############################################
         # Prepare dataset
         # Also extract list of classes
@@ -261,7 +259,6 @@ class ModelKeras(ModelClass):
 
         if df_valid is None:
             self.logger.warning(f"Warning, no validation set. The training set will be splitted (validation fraction = {self.validation_split})")
-
 
         ##############################################
         # We save some preprocessed / augmented input images examples
@@ -293,7 +290,6 @@ class ModelKeras(ModelClass):
             for i, im in enumerate(images):
                 im_path = os.path.join(save_dir, f'example_{i}.png')
                 im.save(im_path, format='PNG')
-
 
         ##############################################
         # Get generators if not in_memory, else get full data
@@ -398,7 +394,7 @@ class ModelKeras(ModelClass):
             self.logger.error(repr(e))
 
             # 2.
-            best_path = os.path.join(self.model_dir, f'best.hdf5')
+            best_path = os.path.join(self.model_dir, 'best.hdf5')
             time_spent = time.time() - start_time
             if time_spent >= 60 and self.nb_iter_keras == 1 and os.path.exists(best_path):
                 # 3.
@@ -408,9 +404,9 @@ class ModelKeras(ModelClass):
                 self.nb_fit += 1
                 # 5.
                 self.save()
-                with open(os.path.join(self.model_dir, "0_MODEL_INCOMPLETE"), 'w') as f:
+                with open(os.path.join(self.model_dir, "0_MODEL_INCOMPLETE"), 'w'):
                     pass
-                with open(os.path.join(self.model_dir, "1_TRAINING_NEEDS_TO_BE_RESUMED"), 'w') as f:
+                with open(os.path.join(self.model_dir, "1_TRAINING_NEEDS_TO_BE_RESUMED"), 'w'):
                     pass
                 # 6.
                 self.logger.error("[EXPERIMENTAL] Error during model training")
@@ -427,7 +423,7 @@ class ModelKeras(ModelClass):
             self._plot_metrics_and_loss(fit_history)
             # Reload best model
             self.model = load_model(
-                os.path.join(self.model_dir, f'best.hdf5'),
+                os.path.join(self.model_dir, 'best.hdf5'),
                 custom_objects=self.custom_objects
             )
 
@@ -754,7 +750,7 @@ class ModelKeras(ModelClass):
         graphiz_path = 'C:/Program Files (x86)/Graphviz2.38/bin/'
         if os.path.isdir(graphiz_path):
             os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
-            img_path = os.path.join(self.model_dir, f'model.png')
+            img_path = os.path.join(self.model_dir, 'model.png')
             plot_model(model, to_file=img_path)
 
     @no_type_check  # We do not check the type, because it is complicated with managing custom_objects_str
@@ -793,7 +789,7 @@ class ModelKeras(ModelClass):
         if '_get_preprocess_input' not in json_data.keys():
             json_data['_get_preprocess_input'] = pickle.source.getsourcelines(self._get_preprocess_input)[0]
         # Save preprocess_input to a .pkl file if level_save > LOW
-        pkl_path = os.path.join(self.model_dir, f"preprocess_input.pkl")
+        pkl_path = os.path.join(self.model_dir, "preprocess_input.pkl")
         if self.level_save in ['MEDIUM', 'HIGH']:
             with open(pkl_path, 'wb') as f:
                 pickle.dump(self.preprocess_input, f)
@@ -839,11 +835,11 @@ class ModelKeras(ModelClass):
             gpu_devices = tf.config.experimental.list_physical_devices('GPU')
             for device in gpu_devices:
                 tf.config.experimental.set_memory_growth(device, True)
-        except:
+        except Exception:
             pass
 
         # We check if we already have the custom objects
-        if hasattr(self, 'custom_objects') and self.custom_objects != None:
+        if hasattr(self, 'custom_objects') and self.custom_objects is not None:
             custom_objects = self.custom_objects
         else:
             self.logger.warning("Can't find the attribute 'custom_objects' in the model to be reloaded")

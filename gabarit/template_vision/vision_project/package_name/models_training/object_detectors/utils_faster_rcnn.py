@@ -27,8 +27,6 @@ from tensorflow.keras import backend as K
 from tensorflow.keras.layers import Layer
 from tensorflow.keras.metrics import categorical_crossentropy
 
-from {{package_name}} import utils
-
 # Get logger
 logger = logging.getLogger(__name__)
 
@@ -72,7 +70,7 @@ class RoiPoolingLayer(Layer):
                 # Shape : (4,)
         '''
         x, y, h, w = roi[0], roi[1], roi[2], roi[3]
-        return tf.image.resize(feature_map[y:y+h, x:x+w, :], (self.pool_size, self.pool_size))
+        return tf.image.resize(feature_map[y: y + h, x: x + w, :], (self.pool_size, self.pool_size))
 
     def call(self, x: list, mask=None):
         '''Call to the layer

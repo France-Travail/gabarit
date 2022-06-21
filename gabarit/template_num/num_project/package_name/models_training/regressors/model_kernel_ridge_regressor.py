@@ -23,15 +23,12 @@
 import os
 import json
 import logging
-import numpy as np
-import pandas as pd
 import dill as pickle
 from typing import Union
 
 from sklearn.pipeline import Pipeline
 from sklearn.kernel_ridge import KernelRidge
 
-from {{package_name}} import utils
 from {{package_name}}.models_training.model_pipeline import ModelPipeline
 from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
 

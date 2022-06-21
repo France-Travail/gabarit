@@ -28,18 +28,14 @@ matplotlib.use('Agg')
 import matplotlib.pyplot as plt
 
 import os
-import re
-import json
 import logging
 import numpy as np
 import pandas as pd
 import seaborn as sns
-from typing import List, Union, Tuple
-from sklearn.metrics import (accuracy_score, auc, confusion_matrix, f1_score,
-                             precision_score, recall_score, roc_curve)
+from typing import Union, Tuple
+from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score
 
 from {{package_name}} import utils
-from {{package_name}}.models_training import utils_models
 from {{package_name}}.monitoring.model_logger import ModelLogger
 
 sns.set(style="darkgrid")
@@ -96,7 +92,7 @@ class ModelClassifierMixin:
         return predicted_class, predicted_proba
 
     @utils.trained_needed
-    def get_predict_position(self,  df_test: pd.DataFrame, y_true) -> np.ndarray:
+    def get_predict_position(self, df_test: pd.DataFrame, y_true) -> np.ndarray:
         '''Gets the order of predictions of y_true.
         Positions start at 1 (not 0)
 
@@ -247,8 +243,8 @@ class ModelClassifierMixin:
             if len(labels) > 50:
                 self.logger.warning(
                     f"Warning, there are {len(labels)} categories to plot in the confusion matrix.\n"
-                    + f"Heavy chances of slowness/display bugs/crashes...\n"
-                    + f"SKIP the plots"
+                    "Heavy chances of slowness/display bugs/crashes...\n"
+                    "SKIP the plots"
                 )
             else:
                 # Global statistics
@@ -294,7 +290,7 @@ class ModelClassifierMixin:
 
         # Save accuracy
         acc_path = os.path.join(self.model_dir, f"acc{'_' + type_data if len(type_data) > 0 else ''}@{round(acc_tot, 5)}")
-        with open(acc_path, 'w') as f:
+        with open(acc_path, 'w'):
             pass
 
         # Upload metrics in mlflow (or another)

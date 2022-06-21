@@ -24,16 +24,14 @@
 
 import os
 import re
-import json
 import logging
 import numpy as np
 import pandas as pd
 import seaborn as sns
 import matplotlib.pyplot as plt
 from typing import List, Union, Tuple
-from sklearn.metrics import (accuracy_score, auc, confusion_matrix, f1_score,
-                             multilabel_confusion_matrix, precision_score,
-                             recall_score, roc_curve)
+from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
+                             multilabel_confusion_matrix, precision_score, recall_score)
 
 from {{package_name}} import utils
 from {{package_name}}.monitoring.model_logger import ModelLogger
@@ -176,8 +174,8 @@ class ModelClassifierMixin:
         '''
         # If multi-labels, get classes in tuple
         if self.multi_label:
-            if y.shape[-1] != len(self.list_classes): # We consider "-1" in order to take care of the case where y is 1D
-                raise ValueError(f"The size of y ({y.shape[-1]}) does not correspond" +
+            if y.shape[-1] != len(self.list_classes):  # We consider "-1" in order to take care of the case where y is 1D
+                raise ValueError(f"The size of y ({y.shape[-1]}) does not correspond"
                                  f" to the number of classes of the model : ({len(self.list_classes)})")
             # Manage 1D array (only one prediction)
             if len(y.shape) == 1:
@@ -306,8 +304,8 @@ class ModelClassifierMixin:
                 if len(labels) > 50:
                     self.logger.warning(
                         f"Warning, there are {len(labels)} categories to plot in the confusion matrix.\n"
-                        + f"Heavy chances of slowness/display bugs/crashes...\n"
-                        + f"SKIP the plots"
+                        "Heavy chances of slowness/display bugs/crashes...\n"
+                        "SKIP the plots"
                     )
                 else:
                     # Global statistics
@@ -353,7 +351,7 @@ class ModelClassifierMixin:
 
         # Save accuracy
         acc_path = os.path.join(self.model_dir, f"acc{'_' + type_data if len(type_data) > 0 else ''}@{round(acc_tot, 5)}")
-        with open(acc_path, 'w') as f:
+        with open(acc_path, 'w'):
             pass
 
         # Upload metrics in mlflow (or another)

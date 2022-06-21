@@ -26,7 +26,6 @@
 
 
 import os
-import nltk
 import json
 import pickle
 import logging
@@ -34,21 +33,14 @@ import shutil
 import numpy as np
 import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
 from typing import Union, Any, List, Callable
-
 
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras.models import Sequential
-from tensorflow.keras.optimizers import Adam, SGD
+from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
-from tensorflow.keras.layers import (Lambda, Dense, add, Input, Embedding, Conv1D, Flatten, MaxPooling1D,
-                                    AveragePooling1D, GlobalMaxPooling1D, GlobalAveragePooling1D, LeakyReLU, ReLU,
-                                    ELU, BatchNormalization, Dropout, LSTM, SpatialDropout1D, Bidirectional,
-                                    Concatenate, GRU)
-
+from tensorflow.keras.layers import Lambda, Dense, Input, Embedding, LSTM, Bidirectional
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
@@ -216,7 +208,7 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
         # Trick to name the attention layer (does not work with TensorFlow layers)
         # https://github.com/keras-team/keras/issues/6194#issuecomment-416365112
         at_identity = Lambda(lambda x: x, name="attention_layer")(at)
-        m = at_identity@h  # M = AH
+        m = at_identity @ h  # M = AH
         x = AttentionAverage(attention_hops)(m)
 
         # Last layer
@@ -314,7 +306,7 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
                             # We shift the sequence to take truncation in account
                             selected_words[i] = {index + nb_truncating: val for index, val in entry.items()}
                     else:
-                        pass # We do nothing (already in correct ordre if post truncating)
+                        pass  # We do nothing (already in correct ordre if post truncating)
 
         # Returns
         return selected_words
@@ -333,11 +325,11 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
         if len(text) > self.max_sequence_length:
             if self.truncating == 'post':
                 text = text[:self.max_sequence_length]
-            else: # pre
+            else:  # pre
                 text = text[-self.max_sequence_length:]
         # If there is not enough words, we pad the sequence
         elif len(text) < self.max_sequence_length:
-            padding_list = [pad_token for i in range(self.max_sequence_length-len(text))]
+            padding_list = [pad_token for i in range(self.max_sequence_length - len(text))]
             if self.padding == 'pre':
                 text = padding_list + text
             else:
@@ -366,7 +358,7 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
         # Save tokenizer if not None & level_save > LOW
         if (self.tokenizer is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
             # Manage paths
-            tokenizer_path = os.path.join(self.model_dir, f"embedding_tokenizer.pkl")
+            tokenizer_path = os.path.join(self.model_dir, "embedding_tokenizer.pkl")
             # Save as pickle
             with open(tokenizer_path, 'wb') as f:
                 pickle.dump(self.tokenizer, f)

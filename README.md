@@ -2,6 +2,9 @@
 ![NLP tests](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/nlp_build_tests.yaml/badge.svg)
 ![NUM tests](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/num_build_tests.yaml/badge.svg)
 ![VISION tests](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/vision_build_tests.yaml/badge.svg)
+![NLP wheel](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/nlp_wheel.yaml/badge.svg)
+![NUM wheel](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/num_wheel.yaml/badge.svg)
+![VISION wheel](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/vision_wheel.yaml/badge.svg)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Generic badge](https://img.shields.io/badge/python-3.7|3.8-blue.svg)](https://shields.io/)
 

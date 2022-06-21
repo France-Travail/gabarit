@@ -26,7 +26,6 @@ import json
 import pickle
 import logging
 import numpy as np
-import pandas as pd
 from typing import Union
 
 from sklearn.svm import LinearSVC
@@ -36,7 +35,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 
 from {{package_name}} import utils
-from {{package_name}}.models_training import utils_models
 from {{package_name}}.models_training.model_pipeline import ModelPipeline
 
 
@@ -136,7 +134,7 @@ class ModelTfidfSvm(ModelPipeline):
             np.ndarray: Array, shape = [n_samples]
         '''
         self.logger.warning("Warning, the method get_predict_position is not suitable for a SVM model"
-                                "(no probabilities, we use 1 or 0)")
+                            "(no probabilities, we use 1 or 0)")
         return super().get_predict_position(x_test, y_true)
 
     def save(self, json_data: Union[dict, None] = None) -> None:

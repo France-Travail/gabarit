@@ -26,27 +26,20 @@ import pickle
 import shutil
 import logging
 import numpy as np
-import pandas as pd
 import seaborn as sns
-import matplotlib.pyplot as plt
 from typing import Union, Any, List, Callable
 
-import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.models import Sequential
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
-from tensorflow.keras.layers import (Dense, add, Input, Embedding, Conv1D,
-                                     Flatten, MaxPooling1D, AveragePooling1D,
-                                     GlobalMaxPooling1D, GlobalAveragePooling1D,
-                                     LeakyReLU, ReLU, ELU, BatchNormalization,
-                                     Dropout, LSTM, SpatialDropout1D, Bidirectional,
-                                     Concatenate, GRU)
+from tensorflow.keras.layers import (Dense, Input, Embedding, GlobalMaxPooling1D,
+                                     GlobalAveragePooling1D, ELU, BatchNormalization, LSTM,
+                                     SpatialDropout1D, Bidirectional, Concatenate, GRU)
 
 from {{package_name}} import utils
+from {{package_name}}.models_training import utils_deep_keras
 from {{package_name}}.models_training.model_keras import ModelKeras
-from {{package_name}}.models_training import utils_models, utils_deep_keras
 
 sns.set(style="darkgrid")
 
@@ -259,7 +252,7 @@ class ModelEmbeddingLstmGruGpu(ModelKeras):
         # Save tokenizer if not None & level_save > LOW
         if (self.tokenizer is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
             # Manage paths
-            tokenizer_path = os.path.join(self.model_dir, f"embedding_tokenizer.pkl")
+            tokenizer_path = os.path.join(self.model_dir, "embedding_tokenizer.pkl")
             # Save as pickle
             with open(tokenizer_path, 'wb') as f:
                 # TODO: use dill to get rid of  "can't pickle ..." errors

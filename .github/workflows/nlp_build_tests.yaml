@@ -21,6 +21,8 @@ on:
       - '*.md'
       - 'LICENSE'
       - 'Makefile'
+  schedule:
+    - cron: '0 0 * * 0'
   workflow_dispatch:
 
 jobs:
@@ -53,8 +55,8 @@ jobs:
           python generate_nlp_project.py -n tmp_project_flake8 -p tmp_project_flake8
           cd tmp_project_flake8
           # Stop the build if there are Python syntax errors or undefined names
-          flake8 . --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 tmp_project_flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
           # Exit-zero treats all errors as warnings.
-          flake8 . --count --exit-zero --max-complexity=10 --ignore=E501,W503,E266,W605,C901 --statistics
+          flake8 tmp_project_flake8 --count --exit-zero --max-complexity=10 --ignore=E501,W503,E266,W605,C901,W292  --statistics
       - name: Test generate NLP
         run: python gabarit/template_nlp/nlp_tests/tests_setup.py
