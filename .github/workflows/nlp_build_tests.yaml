@@ -56,5 +56,27 @@ jobs:
           flake8 tmp_project_flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
           # Exit-zero treats all errors as warnings.
           flake8 tmp_project_flake8 --count --exit-zero --max-complexity=10 --ignore=E501,W503,E266,W605,C901,W292  --statistics
-      - name: Test generate NLP
-        run: python gabarit/template_nlp/nlp_tests/tests_setup.py
+      # - name: Test generate NLP
+      #   run: python gabarit/template_nlp/nlp_tests/tests_setup.py
+      - uses: nanasess/setup-chromedriver@v1
+      - name: Start demonstrator
+        run: |
+          # Create a new temporary project
+          cd gabarit/template_nlp
+          python generate_nlp_project.py -n tmp_project_selenium -p tmp_project_selenium
+          # Copy data
+          cp nlp_data/mono_class_mono_label.csv tmp_project_selenium/tmp_project_selenium-data/mono_class_mono_label.csv
+          # Init project
+          cd tmp_project_selenium
+          make create-virtualenv
+          source venv_tmp_project_selenium/bin/activate
+          make init-local-env
+          # Train a model
+          python 2_training.py -f mono_class_mono_label.csv -x x_col -y y_col
+          # Start demonstrator (nohup)
+          cd tmp_project_selenium-scripts
+          nohup streamlit run 4_demonstrator.py
+        - name: Test demonstrator
+          run: |
+            cd gabarit/template_nlp/nlp_tests
+            python selenium_tests.py -u 'http://localhost:8501' --with_trained_models
