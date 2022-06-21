@@ -70,9 +70,9 @@ jobs:
           source venv_tmp_project_selenium/bin/activate
           make init-local-env
           # Train a model
+          cd tmp_project_selenium-scripts
           python 2_training.py -f mono_class_mono_label.csv -x x_col -y y_col
           # Start demonstrator (nohup)
-          cd tmp_project_selenium-scripts
           nohup streamlit run 4_demonstrator.py
       - name: Test demonstrator
         run: |
