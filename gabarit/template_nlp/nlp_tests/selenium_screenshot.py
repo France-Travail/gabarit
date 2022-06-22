@@ -34,7 +34,7 @@ def main(output_path, url: str = 'http://localhost:8501'):
     driver = webdriver.Chrome()
     driver.get(url)
     driver.implicitly_wait(10)  # Wait 10 seconds for the page to load
-    driver.get_screenshot_as_file(output)   # Take a screenshot & save it
+    driver.get_screenshot_as_file(output_path)   # Take a screenshot & save it
     driver.close()
 
 
