@@ -32,6 +32,7 @@ jobs:
 
     steps:
       - uses: actions/checkout@v3
+      - uses: nanasess/setup-chromedriver@v1
       - name: Set up Python ${{ matrix.python-version }}
         uses: actions/setup-python@v3
         with:
@@ -56,5 +57,34 @@ jobs:
           flake8 tmp_project_flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
           # Exit-zero treats all errors as warnings.
           flake8 tmp_project_flake8 --count --exit-zero --max-complexity=10 --ignore=E501,W503,E266,W605,C901,W292  --statistics
-      - name: Test generate NUM
-        run: python gabarit/template_num/num_tests/tests_setup.py
+      - name: Start demonstrator
+        run: |
+          # Create a new temporary project
+          cd gabarit/template_num
+          python generate_num_project.py -n tmp_project_selenium -p tmp_project_selenium
+          # Copy data
+          cp num_data/mono_class_mono_label.csv tmp_project_selenium/tmp_project_selenium-data/mono_class_mono_label.csv
+          # Init project
+          cd tmp_project_selenium
+          make create-virtualenv
+          source venv_tmp_project_selenium/bin/activate
+          make init-local-env
+          # Train a model
+          cd tmp_project_selenium-scripts
+          python 3_training_classification.py -f mono_class_mono_label.csv -y y_col
+          # Start demonstrator (nohup)
+          nohup streamlit run 4_demonstrator.py > out.file &
+      - name: Test demonstrator
+        run: |
+          # Install Selenium
+          pip install selenium==4.2.0
+          # Set chromedriver to PATH
+          export PATH="/usr/local/bin:$PATH"
+          # Export display (needed ?)
+          google-chrome --version
+          export DISPLAY=:99
+          chromedriver --url-base=/wd/hub &
+          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # disable headless mode
+          # Start tests
+          cd gabarit/template_num/num_tests
+          python selenium_tests.py -u 'http://localhost:8501' --with_trained_models
