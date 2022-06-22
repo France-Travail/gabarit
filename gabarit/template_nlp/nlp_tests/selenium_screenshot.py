@@ -16,6 +16,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
+import time
 import argparse
 
 # Libs selenium
@@ -33,7 +34,7 @@ def main(output_path, url: str = 'http://localhost:8501'):
     ''''''
     driver = webdriver.Chrome()
     driver.get(url)
-    driver.implicitly_wait(30)  # Wait 30 seconds for the page to load
+    time.sleep(10)  # Wait 10s
     driver.get_screenshot_as_file(output_path)   # Take a screenshot & save it
     driver.close()
 

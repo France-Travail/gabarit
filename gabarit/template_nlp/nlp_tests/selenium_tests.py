@@ -17,6 +17,7 @@
 
 
 import sys
+import time
 import argparse
 
 # Libs unittest
@@ -48,7 +49,7 @@ class DemonstratorTests(unittest.TestCase):
         '''Setup fonction -> start a driver'''
         self.driver = webdriver.Chrome()
         self.driver.get(self.demonstrator_url)
-        self.driver.implicitly_wait(30)  # wait 30 seconds for the page to load
+        time.sleep(10)  # Wait 10s
 
     def tearDown(self):
         '''Cleaning fonction -> close the driver'''
