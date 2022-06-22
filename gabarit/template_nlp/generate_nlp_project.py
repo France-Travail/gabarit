@@ -169,10 +169,7 @@ def generate(project_name: str, project_path: str, config_path: str,
     for new_dir in [data_dir, models_dir, exploration_dir, transformers_dir]:
         if not os.path.exists(new_dir):
             os.makedirs(new_dir)
-
-    # Copy dataset for tutorials
-    template_data_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'nlp_data')
-    copyfile(os.path.join(template_data_dir, 'dataset_jvc.csv'), os.path.join(data_dir, 'dataset_jvc.csv'))
+            
 
 if __name__ == '__main__':
     main()
