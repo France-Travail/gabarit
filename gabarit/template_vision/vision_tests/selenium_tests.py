@@ -48,6 +48,7 @@ class DemonstratorTests(unittest.TestCase):
         '''Setup fonction -> start a driver'''
         self.driver = webdriver.Chrome()
         self.driver.get(self.demonstrator_url)
+        self.driver.implicitly_wait(10)  # wait 10 seconds for the page to load
 
     def tearDown(self):
         '''Cleaning fonction -> close the driver'''
@@ -55,8 +56,8 @@ class DemonstratorTests(unittest.TestCase):
         self.driver = None
 
     def test01_demonstrator_up(self):
-        '''Checks that the demosntrator is UP and running'''
-        self.assertEqual(self.driver.title, 'demonstrator · Streamlit')  # TODO: this might change in the future ? Only check if not empty ?
+        '''Checks that the demonstrator is UP and running'''
+        self.assertTrue('streamlit' in self.driver.title.lower())  # TODO: this might change in the future ? Only check if not empty ?
 
     def test02_sidebar_exists(self):
         '''Checks that the sidebar exists'''
