@@ -74,7 +74,7 @@ jobs:
           python 2_training.py -f mono_class_mono_label.csv -x x_col -y y_col
           # Start demonstrator (nohup)
           nohup streamlit run 4_demonstrator.py > out.file &
-      - name: Test demonstrator
+      - name: Setup Selenium and Chrome Driver
         run: |
           # Install Selenium
           pip install selenium==4.2.0
@@ -85,6 +85,18 @@ jobs:
           export DISPLAY=:99
           chromedriver --url-base=/wd/hub &
           sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # disable headless mode
+      - name: Take a screenshot
+        run: |
+          cd gabarit/template_nlp/nlp_tests
+          python selenium_screenshot.py -u 'http://localhost:8501' -o './demonstrator_screenshot.png'
+      - name: Archive screenshot for 2 days
+        uses: actions/upload-artifact@v3
+        with:
+          name: demosntrator_screenshot
+          path: gabarit/template_nlp/nlp_tests/demonstrator_screenshot.png
+          retention-days: 2
+      - name: Test demonstrator
+        run: |
           # Start tests
           cd gabarit/template_nlp/nlp_tests
           python selenium_tests.py -u 'http://localhost:8501' --with_trained_models
