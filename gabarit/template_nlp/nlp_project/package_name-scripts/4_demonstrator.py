@@ -35,6 +35,13 @@ from {{package_name}}.monitoring.model_explainer import LimeExplainer
 from {{package_name}}.monitoring.model_explainer import AttentionExplainer
 from {{package_name}}.models_training.model_class import ModelClass
 
+# TMP FIX: somehow, a json method prevents us to cache most of our models with Streamlit
+# That was not the case before, something must have changed within a third party library ?
+# Anyway, we will just change the method as this does not seem to be used
+# https://docs.streamlit.io/library/advanced-features/caching#the-hash_funcs-parameter
+from json.scanner import make_scanner
+make_scanner = lambda x: x
+
 # Get logger
 logger = logging.getLogger('{{package_name}}.4_demonstrator')
 
