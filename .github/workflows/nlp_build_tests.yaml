@@ -80,13 +80,14 @@ jobs:
           pip install selenium==4.2.0
           # Set chromedriver to PATH
           export PATH="/usr/local/bin:$PATH"
+      - name: Take a screenshot
+        run: |
           # Export display (needed ?)
           google-chrome --version
           export DISPLAY=:99
           chromedriver --url-base=/wd/hub &
           sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # disable headless mode
-      - name: Take a screenshot
-        run: |
+          # Take Screenshot
           cd gabarit/template_nlp/nlp_tests
           python selenium_screenshot.py -u 'http://localhost:8501' -o './demonstrator_screenshot.png'
       - name: Archive screenshot for 2 days
@@ -97,6 +98,11 @@ jobs:
           retention-days: 2
       - name: Test demonstrator
         run: |
+          # Export display (needed ?)
+          google-chrome --version
+          export DISPLAY=:99
+          chromedriver --url-base=/wd/hub &
+          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # disable headless mode
           # Start tests
           cd gabarit/template_nlp/nlp_tests
           python selenium_tests.py -u 'http://localhost:8501' --with_trained_models
