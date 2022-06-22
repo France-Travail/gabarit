@@ -47,7 +47,7 @@ class DemonstratorTests(unittest.TestCase):
     def setUp(self):
         '''Setup fonction -> start a driver'''
         self.driver = webdriver.Chrome()
-        self.driver.get(url)
+        self.driver.get(self.demonstrator_url)
 
     def tearDown(self):
         '''Cleaning fonction -> close the driver'''
