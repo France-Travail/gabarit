@@ -31,7 +31,7 @@ except ImportError as e:
 
 
 def main(output_path, url: str = 'http://localhost:8501'):
-    ''''''
+    '''Function to get and save a screenshot from an app main page'''
     driver = webdriver.Chrome()
     driver.get(url)
     time.sleep(10)  # Wait 10s

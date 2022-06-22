@@ -37,10 +37,9 @@ from {{package_name}}.models_training.model_class import ModelClass
 
 # TMP FIX: somehow, a json method prevents us to cache most of our models with Streamlit
 # That was not the case before, something must have changed within a third party library ?
-# Anyway, we will just change the method as this does not seem to be used
+# Anyway, we'll just add "hash_funcs={'_json.Scanner': hash}" to st.cache when needed.
 # https://docs.streamlit.io/library/advanced-features/caching#the-hash_funcs-parameter
-from json.scanner import make_scanner
-make_scanner = lambda x: x
+# https://github.com/streamlit/streamlit/issues/4876
 
 # Get logger
 logger = logging.getLogger('{{package_name}}.4_demonstrator')
@@ -105,7 +104,7 @@ if 'text_areas_content' not in st.session_state:
 # ---------------------
 
 
-@st.cache(allow_output_mutation=True)
+@st.cache(allow_output_mutation=True, hash_funcs={'_json.Scanner': hash})
 def load_model(selected_model: str) -> Tuple[Type[ModelClass], dict]:
     '''Loads a model
 
