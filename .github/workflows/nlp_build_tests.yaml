@@ -106,3 +106,9 @@ jobs:
           # Start tests
           cd gabarit/template_nlp/nlp_tests
           python selenium_tests.py -u 'http://localhost:8501' --with_trained_models
+      - name: Archive screenshot for 2 days
+        uses: actions/upload-artifact@v3
+        with:
+          name: demosntrator_screenshot
+          path: gabarit/template_nlp/nlp_tests/test.png
+          retention-days: 2
