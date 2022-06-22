@@ -85,7 +85,7 @@ class DemonstratorTests(unittest.TestCase):
         '''Checks that there is no streamlit exceptions'''
         # exceptions = self.driver.find_elements(By.XPATH, "//*[@class='stException']")
         # self.assertTrue(len(exceptions) == 0)
-        driver.get_screenshot_as_file('./test.png')
+        self.driver.get_screenshot_as_file('./test.png')
 
 
 if __name__ == '__main__':
