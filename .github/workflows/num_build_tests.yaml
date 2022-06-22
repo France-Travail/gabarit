@@ -93,7 +93,7 @@ jobs:
           cd tmp_project_selenium-scripts
           python 3_training_classification.py -f mono_class_mono_label.csv -y y_col
           # Start demonstrator (nohup)
-          nohup streamlit run 4_demonstrator.py --server.port=8501 > out.file &
+          nohup streamlit run 5_demonstrator.py --server.port=8501 > out.file &
       - name: Setup Selenium and Chrome Driver
         run: |
           # Install Selenium
