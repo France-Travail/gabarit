@@ -56,11 +56,11 @@ class DemonstratorTests(unittest.TestCase):
 
     def test01_demonstrator_up(self):
         '''Checks that the demosntrator is UP and running'''
-        self.assertEqual(driver.title, 'demonstrator · Streamlit')  # TODO: this might change in the future ? Only check if not empty ?
+        self.assertEqual(self.driver.title, 'demonstrator · Streamlit')  # TODO: this might change in the future ? Only check if not empty ?
 
     def test02_sidebar_exists(self):
         '''Checks that the sidebar exists'''
-        sidebars = driver.find_elements(By.XPATH, "//*[@data-testid='stSidebar']")
+        sidebars = self.driver.find_elements(By.XPATH, "//*[@data-testid='stSidebar']")
         self.assertTrue(len(sidebars) >= 1)
 
     def test03_sidebar_trained_models(self):
@@ -68,21 +68,21 @@ class DemonstratorTests(unittest.TestCase):
         if not self.trained_models:
             unittest.SkipTest('No model have been trained.')
         else:
-            sidebar = driver.find_element(By.XPATH, "//*[@data-testid='stSidebar']")
+            sidebar = self.driver.find_element(By.XPATH, "//*[@data-testid='stSidebar']")
             sidebar_selectbox = sidebar.find_element(By.XPATH, ".//*[@class='row-widget stSelectbox']")
             text = sidebar_selectbox.find_element(By.XPATH, "./div/div/div/div[@aria-selected='true']").text
             self.assertFalse(text.startswith('No options to select'))
 
     def test04_title_exists(self):
         '''Checks that the title exists'''
-        titles = driver.find_elements(By.XPATH, "//*/h1")
+        titles = self.driver.find_elements(By.XPATH, "//*/h1")
         titles_id = [title.get_property('id') for title in titles]
         main_titles = [title_id for title_id in titles_id if title_id.startswith('demonstrator')]
         self.assertTrue(len(main_titles) >= 1)
 
     def test05_no_exceptions(self):
         '''Checks that there is no streamlit exceptions'''
-        sidebars = driver.find_elements(By.XPATH, "//*[@class='stException']")
+        sidebars = self.driver.find_elements(By.XPATH, "//*[@class='stException']")
         self.assertTrue(len(sidebars) == 0)
 
 
