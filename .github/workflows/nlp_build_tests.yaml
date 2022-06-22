@@ -73,7 +73,7 @@ jobs:
           cd tmp_project_selenium-scripts
           python 2_training.py -f mono_class_mono_label.csv -x x_col -y y_col
           # Start demonstrator (nohup)
-          nohup streamlit run 4_demonstrator.py --server.port=8501 --server.enableCORS=false --server.enableWebsocketCompression=false > out.file &
+          nohup streamlit run 4_demonstrator.py --server.port=8501 > out.file &
       - name: Setup Selenium and Chrome Driver
         run: |
           # Install Selenium
