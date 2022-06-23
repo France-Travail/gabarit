@@ -32,6 +32,7 @@
 - Rework `model_rules.py`.
 - Download flaubert_small_cased before using tests (in Actions)
 - Installation error with `python setup.py develop` when requirements.txt is not called first -> error: requests 2.28.0 is installed but requests<2.25.1,>=2.23.0 is required by {'words-n-fun'}
+- Shouldn't transformers be saved into `XXX-data` folder ? Like detectron models for the vision template ? (If changed, also change tutorial)
 
 
 ### Template - Numerical

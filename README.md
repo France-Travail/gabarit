@@ -341,11 +341,15 @@ Once you have trained a model which is a release candidate :
 
   - Then you have to push it to your repository, for instance by using [twine](https://pypi.org/project/twine/) : `twine upload --username {USER} --password {PWD} --repository-url https://{repository_url} dist/*.whl`
 
-  - Note that we strongly advise to embed these steps within a Continuous Integration Pipeline and ensuring that all yout unit tests are OK (you can use nose to run your test suite : `pip install nose nose-cov && nosetests tests/`)
+  - Note that we strongly advise to embed these steps within a Continuous Integration Pipeline and ensuring that all your unit tests are OK (you can use nose to run your test suite : `pip install nose nose-cov && nosetests tests/`)
 
   - Beware, function `utils_models.predict` has to be adapted to your project needs (e.g. if some specific computations are required before or after the actual inference).
 
     - This is the function that has to be called by the web service that will serve your model. Using `utils_models.predict` instead of the actual predict method of the model class ensure that your service can stay model agnostic: if one day you decide to change your design, to use another model; the service won't be impacted.
+
+  - Warning: some libraries (such as torch, detectron2, etc.) may not be hosted on PyPI. You'll need to add an extra `--find-links` option to your pip installation.
+
+	- If you don't have access to the internet, you'll need to setup a proxy which will host all the needed libraries. You can then use `--trusted-host` and `--index-url` options.
 
 - You can use our API Framework to expose your model:
 

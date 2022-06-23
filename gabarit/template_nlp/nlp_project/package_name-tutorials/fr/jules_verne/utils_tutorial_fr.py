@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Fichier utile pour formation NLP
+## Utils fonctions for the tutorial
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -32,26 +32,26 @@ def text_to_sentences(text: str, nb_word_sentence: int) -> List[str]:
     '''Transforms a text in sentences.
 
     Args:
-        text (str) : The text to cut in sentences
-        nb_word_sentence (int) : The number of words in a sentence
+        text (str): The text to cut in sentences
+        nb_word_sentence (int): The number of words in a sentence
     Returns:
-        list : A list of sentences
+        list: A list of sentences
     '''
-    text = re.sub(r'\s',' ', text)
-    # Changes some punctuations to a whitespace
+    text = re.sub(r'\s', ' ', text)
+    # Change some punctuations to a whitespace
     for punctuation in [r'\!', r'\?', r'\;', r'\.', r'\,']:
         text = re.sub(punctuation, ' ', text)
     # Get rid of superfluous whitespaces
     text = re.sub(' +', ' ', text)
-    list_mots = text.split(' ')
+    words_list = text.split(' ')
     list_sentences = []
     # Cut the text in sentences
-    for i in range(math.ceil(len(list_mots)/nb_word_sentence)):
-        list_sentences.append(' '.join(list_mots[i*nb_word_sentence:(i+1)*nb_word_sentence]))
+    for i in range(math.ceil(len(words_list) / nb_word_sentence)):
+        list_sentences.append(' '.join(words_list[i * nb_word_sentence: (i + 1) * nb_word_sentence]))
     return list_sentences
 
 
-def df_texts_to_df_sentences(texts: Union[list, pd.Series], authors: Union[list, pd.Series], nb_word_sentence:int) -> pd.DataFrame:
+def df_texts_to_df_sentences(texts: Union[list, pd.Series], authors: Union[list, pd.Series], nb_word_sentence: int) -> pd.DataFrame:
     '''Creates a dataframe containaing 'sentences' from a collection of texts with their corresponding authors.
 
     Args:
@@ -84,7 +84,7 @@ class ModelAuthor(ModelTfidfSvm):
 
     def get_nb_sentences_author(self, text:str) -> dict:
         '''Predicts the author of a text.
-        
+
         Args:
             text (str) : The text whose author we want to predict
         Returns:
@@ -113,5 +113,3 @@ class ModelAuthor(ModelTfidfSvm):
                 author = max(nb_sentences_author, key=nb_sentences_author.get)
                 list_predictions.append(author)
         return np.array(list_predictions)
-
-

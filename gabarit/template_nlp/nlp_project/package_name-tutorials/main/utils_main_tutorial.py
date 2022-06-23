@@ -16,28 +16,26 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import logging
 import os
 import sys
-import pandas as pd
+import logging
 import numpy as np
+import pandas as pd
+
 from {{package_name}} import utils
 
-## Manage logger
 
+## Manage logger
 # Get logger (def level: INFO)
 logger = logging.getLogger(__name__)
 logger.setLevel(logging.DEBUG)
-
 # Get console handler
 # On log tout ce qui est possible ici (i.e >= level du logger)
 ch = logging.StreamHandler(sys.stdout)
 ch.setLevel(logging.DEBUG)
-
 # Manage formatter
 formatter = logging.Formatter('[%(asctime)s] - %(levelname)s - %(message)s', datefmt='%Y-%m-%d %H:%M:%S')
 ch.setFormatter(formatter)
-
 # Add handler to the logger
 logger.addHandler(ch)
 
@@ -240,8 +238,8 @@ def get_exercice_4_solution():
     print('')
     print('   1. Add the function preprocess_sentence_P2 :')
     print('''
-@pe_semantic_utils.data_agnostic
-@pe_semantic_utils.regroup_data_series
+@wnf_utils.data_agnostic
+@wnf_utils.regroup_data_series
 def preprocess_sentence_P2(docs):
     if type(docs) != pd.Series: raise TypeError("L'objet docs doit être du type pd.Series.")
     pipeline = ['remove_non_string', 'get_true_spaces', 'remove_punct', 'to_lower',
@@ -249,9 +247,9 @@ def preprocess_sentence_P2(docs):
     return api.preprocess_pipeline(docs, pipeline=pipeline, chunksize=100000)
     ''')
     print('')
-    print('   2. Add an entry in the dictionary preprocessor_dict :')
+    print('   2. Add an entry in the dictionary preprocessors_dict :')
     print('''
-            preprocessor_dict = {
+            preprocessors_dict = {
                 'no_preprocess': lambda x: x,
                 'preprocess_P1': preprocess_sentence_P1, # Example of a preprocessing
                 'preprocess_P2': preprocess_sentence_P2, # New preprocessing
