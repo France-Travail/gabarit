@@ -57,14 +57,14 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(df.shape[0], 15)
 
         # Double files
-        fonctionnement_double = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000"
-        self.assertEqual(subprocess.run(fonctionnement_double, shell=True).returncode, 0)
+        double_files_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000"
+        self.assertEqual(subprocess.run(double_files_run, shell=True).returncode, 0)
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_num-data', 'mono_class_mono_label_2000_samples.csv')))
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_num-data', 'multi_class_mono_label_2000_samples.csv')))
         df1 = pd.read_csv(f"{full_path_lib}/test_template_num-data/mono_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
         df2 = pd.read_csv(f"{full_path_lib}/test_template_num-data/multi_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
         self.assertEqual(df1.shape[0], 210)
-        self.assertEqual(df2.shape[0], 210) # 210 row max
+        self.assertEqual(df2.shape[0], 210)  # 210 row max
 
     def test02_MergeFiles(self):
         '''Test of the file 0_merge_files.py'''
@@ -75,7 +75,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_num-data', 'merged_file.csv')))
         df = pd.read_csv(f"{full_path_lib}/test_template_num-data/merged_file.csv", sep=';', encoding='utf-8')
-        self.assertGreater(df.shape[0], 210) # We check that there are more than 210 elements (ie. the size of one of the two files)
+        self.assertGreater(df.shape[0], 210)  # We check that there are more than 210 elements (ie. the size of one of the two files)
 
     def test03_SplitTrainValidTest(self):
         '''Test of the file 0_split_train_valid_test.py'''
@@ -244,21 +244,28 @@ class Case1_e2e_pipeline(unittest.TestCase):
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_classification.py -f mono_class_mono_label_train_preprocess_P1.csv -y y_col --filename_valid mono_class_mono_label_valid_preprocess_P1.csv"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check model saved
-        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier') # Ridge Classifier by default
+        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier')  # Ridge Classifier by default
         self.assertTrue(os.path.exists(save_model_dir))
         listdir = os.listdir(os.path.join(save_model_dir))
-        self.assertGreater(len(listdir), 0)
-        # Clean
-        shutil.rmtree(save_model_dir)
+        self.assertEqual(len(listdir), 1)
 
         # With excluded_cols
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_classification.py -f mono_class_mono_label_train_preprocess_P1.csv -y y_col --filename_valid mono_class_mono_label_valid_preprocess_P1.csv --excluded_cols col_2"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check model saved
-        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier') # Ridge Classifier by default
+        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier')  # Ridge Classifier by default
         self.assertTrue(os.path.exists(save_model_dir))
         listdir = os.listdir(os.path.join(save_model_dir))
-        self.assertGreater(len(listdir), 0)
+        self.assertEqual(len(listdir), 2)
+
+        # Multilabel - no preprocess - no valid
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_classification.py -f mono_class_multi_label.csv -y y_col_1 y_col_2"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        # Check model saved
+        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier')  # Ridge Classifier by default
+        self.assertTrue(os.path.exists(save_model_dir))
+        listdir = os.listdir(os.path.join(save_model_dir))
+        self.assertEqual(len(listdir), 3)
 
         ############
         # Regression
@@ -269,21 +276,19 @@ class Case1_e2e_pipeline(unittest.TestCase):
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_regression.py -f mono_output_regression_train.csv -y y_col --filename_valid mono_output_regression_valid.csv"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check model saved
-        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_elasticnet_regressor') # ElasticNet Regressor by default
+        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_elasticnet_regressor')  # ElasticNet Regressor by default
         self.assertTrue(os.path.exists(save_model_dir))
         listdir = os.listdir(os.path.join(save_model_dir))
-        self.assertGreater(len(listdir), 0)
-        # Clean
-        shutil.rmtree(save_model_dir)
+        self.assertEqual(len(listdir), 1)
 
         # With excluded_cols
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_regression.py -f mono_output_regression_train.csv -y y_col --filename_valid mono_output_regression_valid.csv --excluded_cols col_2"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check model saved
-        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_elasticnet_regressor') # ElasticNet Regressor by default
+        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_elasticnet_regressor')  # ElasticNet Regressor by default
         self.assertTrue(os.path.exists(save_model_dir))
         listdir = os.listdir(os.path.join(save_model_dir))
-        self.assertGreater(len(listdir), 0)
+        self.assertEqual(len(listdir), 2)
 
     def test07_PredictE2E(self):
         '''Test of the file 4_predict.py'''
@@ -294,9 +299,9 @@ class Case1_e2e_pipeline(unittest.TestCase):
         ################
 
         # "Basic" case
-        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier') # tfidf svm by default
+        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier')  # Ridge Classifier by default
         listdir = os.listdir(os.path.join(save_model_dir))
-        model_name = listdir[0]
+        model_name = listdir[0]  # First or second one trained (ordered by date)
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/4_predict.py -f mono_class_mono_label_test.csv -m {model_name}"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check predictions
@@ -306,18 +311,43 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[0], 'predictions.csv')))
 
         # Run with "y_col"
+        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier')  # Ridge Classifier by default
+        listdir = os.listdir(os.path.join(save_model_dir))
+        model_name = listdir[1]  # First or second one trained (ordered by date)
         run_with_y_col = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/4_predict.py -f mono_class_mono_label_test.csv -y y_col -m {model_name}"
         self.assertEqual(subprocess.run(run_with_y_col, shell=True).returncode, 0)
         # Check predictions
         listdir = sorted(os.listdir(os.path.join(save_predictions_dir)))
-        self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[-1], 'predictions_with_y_true.csv'))) # last folder
+        self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[-1], 'predictions_with_y_true.csv')))  # last folder
+
+        # Multilabel
+        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier')  # Ridge Classifier by default
+        listdir = os.listdir(os.path.join(save_model_dir))
+        multilabel_run = listdir[2]  # Third one trained (ordered by date)
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/4_predict.py -f mono_class_multi_label.csv -m {multilabel_run}"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        # Check predictions
+        save_predictions_dir = os.path.join(full_path_lib, 'test_template_num-data', 'predictions', 'mono_class_multi_label')
+        self.assertTrue(os.path.exists(save_predictions_dir))
+        listdir = os.listdir(os.path.join(save_predictions_dir))
+        self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[0], 'predictions.csv')))
+
+        # Multilabel -with y_col
+        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier')  # Ridge Classifier by default
+        listdir = os.listdir(os.path.join(save_model_dir))
+        model_name = listdir[2]  # Third one trained (ordered by date)
+        run_with_y_col = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/4_predict.py -f mono_class_multi_label.csv -y y_col_1 y_col_2 -m {model_name}"
+        self.assertEqual(subprocess.run(run_with_y_col, shell=True).returncode, 0)
+        # Check predictions
+        listdir = sorted(os.listdir(os.path.join(save_predictions_dir)))
+        self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[-1], 'predictions_with_y_true.csv')))  # last folder
 
         ################
         # Regression
         ################
 
         # "Basic" case
-        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_elasticnet_regressor') # tfidf svm by default
+        save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_elasticnet_regressor')  # ElasticNet Regressor by default
         listdir = os.listdir(os.path.join(save_model_dir))
         model_name = listdir[0]
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/4_predict.py -f mono_output_regression_test.csv -m {model_name}"
@@ -333,7 +363,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(subprocess.run(run_with_y_col, shell=True).returncode, 0)
         # Check predictions
         listdir = sorted(os.listdir(os.path.join(save_predictions_dir)))
-        self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[-1], 'predictions_with_y_true.csv'))) # last folder
+        self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[-1], 'predictions_with_y_true.csv')))  # last folder
 
 
 def test_model_mono_class_mono_label(test_class, test_model):
@@ -384,7 +414,7 @@ def test_model_mono_class_mono_label(test_class, test_model):
     test_class.assertEqual(list(test_model.get_classes_from_proba(probas)), ['non', 'oui'])
     # get_top_n_from_proba
     with test_class.assertRaises(ValueError):
-        test_model.get_top_n_from_proba(probas, n=5) # Only 2 classes in our model
+        test_model.get_top_n_from_proba(probas, n=5)  # Only 2 classes in our model
     top_n, top_n_proba = test_model.get_top_n_from_proba(probas, n=2)
     test_class.assertEqual([list(_) for _ in top_n], [['non', 'oui'], ['oui', 'non']])
     test_class.assertEqual([list(_) for _ in top_n_proba], [[probas[0][index_non], probas[0][index_oui]], [probas[1][index_oui], probas[1][index_non]]])
@@ -1047,7 +1077,7 @@ def test_model_mono_class_multi_label(test_class, test_model):
     test_class.assertEqual([list(_) for _ in test_model.get_classes_from_proba(probas)], [pred_none, pred_col_1, pred_col_2, pred_all])
     # get_top_n_from_proba
     with test_class.assertRaises(ValueError):
-        test_model.get_top_n_from_proba(probas, n=2) # Does not work with multi-labels
+        test_model.get_top_n_from_proba(probas, n=2)  # Does not work with multi-labels
     # inverse_transform
     test_class.assertEqual(list(test_model.inverse_transform(preds)), [(), ('y_col_1',), ('y_col_2',), ('y_col_1', 'y_col_2')])
 
@@ -1436,7 +1466,7 @@ def test_model_multi_class_mono_label(test_class, test_model):
     test_class.assertEqual(list(preds), ['none', 'a', 'b', 'both'])
     # predict_proba
     probas = test_model.predict_proba(df_input_preds_prep)
-    test_class.assertEqual(round(probas.sum(), 3), 4.) # We round for deep learning models
+    test_class.assertEqual(round(probas.sum(), 3), 4.)  # We round for deep learning models
     test_class.assertGreater(probas[0][index_none], 1/4)
     test_class.assertLess(probas[0][index_a], probas[0][index_none])
     test_class.assertLess(probas[0][index_b], probas[0][index_none])
@@ -1455,7 +1485,7 @@ def test_model_multi_class_mono_label(test_class, test_model):
     test_class.assertGreater(probas[3][index_both], 1/4)
     # predict w/ return_proba=True
     probas2 = test_model.predict(df_input_preds_prep, return_proba=True)
-    test_class.assertEqual(round(probas2.sum(), 3), 4.) # We round for deep learning models
+    test_class.assertEqual(round(probas2.sum(), 3), 4.)  # We round for deep learning models
     test_class.assertGreater(probas2[0][index_none], 1/4)
     test_class.assertLess(probas2[0][index_a], probas2[0][index_none])
     test_class.assertLess(probas2[0][index_b], probas2[0][index_none])
@@ -1475,7 +1505,7 @@ def test_model_multi_class_mono_label(test_class, test_model):
     # predict_with_proba
     pred_proba = test_model.predict_with_proba(df_input_preds_prep)
     test_class.assertEqual(list(pred_proba[0]), ['none', 'a', 'b', 'both'])
-    test_class.assertEqual(round(pred_proba[1].sum(), 3), 4.) # We round for deep learning models
+    test_class.assertEqual(round(pred_proba[1].sum(), 3), 4.)  # We round for deep learning models
     test_class.assertGreater(pred_proba[1][0][index_none], 1/4)
     test_class.assertLess(pred_proba[1][0][index_a], pred_proba[1][0][index_none])
     test_class.assertLess(pred_proba[1][0][index_b], pred_proba[1][0][index_none])
@@ -1506,7 +1536,7 @@ def test_model_multi_class_mono_label(test_class, test_model):
     test_class.assertEqual(list(test_model.get_classes_from_proba(probas)), ['none', 'a', 'b', 'both'])
     # get_top_n_from_proba
     with test_class.assertRaises(ValueError):
-        test_model.get_top_n_from_proba(probas, n=5) # Only 4 classes in our model
+        test_model.get_top_n_from_proba(probas, n=5)  # Only 4 classes in our model
     top_n, top_n_proba = test_model.get_top_n_from_proba(probas, n=4)
     test_class.assertEqual([_[0] for _ in top_n], ['none', 'a', 'b', 'both'])
     test_class.assertEqual(sorted(top_n[0]), sorted(['none', 'a', 'b', 'both']))
@@ -2125,10 +2155,10 @@ def test_model_mono_output_regression(test_class, test_model):
     df_input_preds_prep = utils_models.apply_pipeline(df_input_preds, test_model.preprocess_pipeline)
     # predict
     preds = test_model.predict(df_input_preds_prep)
-    test_class.assertGreater(preds[0], -4) # should predict -3, test > -4 ...
-    test_class.assertLess(preds[0], -2) # ... and < -2
-    test_class.assertGreater(preds[1], 4) # should predict 5, test > 4 ...
-    test_class.assertLess(preds[1], 6) # ... and < 6
+    test_class.assertGreater(preds[0], -4)  # should predict -3, test > -4 ...
+    test_class.assertLess(preds[0], -2)  # ... and < -2
+    test_class.assertGreater(preds[1], 4)  # should predict 5, test > 4 ...
+    test_class.assertLess(preds[1], 6)  # ... and < 6
     # predict_proba
     with test_class.assertRaises(ValueError):
         probas = test_model.predict_proba(df_input_preds_prep)
