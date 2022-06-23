@@ -103,6 +103,5 @@ jobs:
           cd dist
           whl_files=( *.whl )
           whl_file=${whl_files[0]}
-          pip install $whl_file
-          pip install "$whl_file[detectron]"
+          pip install $whl_file -f https://download.pytorch.org/whl/torch_stable.html -f https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.8/index.html
           python -c "from tmp_project import utils; print(utils.get_package_version())"

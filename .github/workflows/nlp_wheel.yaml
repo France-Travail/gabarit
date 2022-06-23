@@ -63,7 +63,7 @@ jobs:
           cd dist
           whl_files=( *.whl )
           whl_file=${whl_files[0]}
-          pip install $whl_file
+          pip install $whl_file -f https://download.pytorch.org/whl/torch_stable.html
           python -c "from tmp_project import utils; print(utils.get_package_version())"
 
   build-extras:
