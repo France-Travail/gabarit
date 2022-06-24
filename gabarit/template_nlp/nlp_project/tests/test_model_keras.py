@@ -325,7 +325,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # Second fit
         y_train_different_order = np.array([1, 0, 0, 1, 2] * 100)
-        time.sleep(1)  # Ensure new directory
         model.fit(x_train[:50], y_train_different_order[:50], x_valid=None, y_valid=None, with_shuffle=True)
         # We do not save on purpose
         self.assertTrue(model.trained)
@@ -335,7 +334,6 @@ class ModelKerasTests(unittest.TestCase):
         model_dir_2 = model.model_dir
         self.assertNotEqual(model_dir, model_dir_2)
         # third fit
-        time.sleep(1)  # Ensure new directory
         model.fit(x_train[50:], y_train_mono[50:], x_valid=None, y_valid=None, with_shuffle=True)
         model.save()
         self.assertTrue(model.trained)
@@ -412,7 +410,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # Second fit
-        time.sleep(1)  # Ensure new directory
         model.fit(x_train[:50], y_train_multi[:50], x_valid=None, y_valid=None, with_shuffle=True)
         # We do not save on purpose
         self.assertTrue(model.trained)
@@ -422,7 +419,6 @@ class ModelKerasTests(unittest.TestCase):
         model_dir_2 = model.model_dir
         self.assertNotEqual(model_dir, model_dir_2)
         # third fit
-        time.sleep(1)  # Ensure new directory
         model.fit(x_train[50:], y_train_multi[50:], x_valid=None, y_valid=None, with_shuffle=True)
         model.save()
         self.assertTrue(model.trained)

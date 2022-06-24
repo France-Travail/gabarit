@@ -329,7 +329,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # 2nd fit
-        time.sleep(1)  # Ensure new directory
         fit_arguments = model.fit(df_train_mono, df_valid=df_train_mono, with_shuffle=True)  # We fit again with the same data, not important
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 2)
@@ -339,7 +338,6 @@ class ModelKerasTests(unittest.TestCase):
         model_dir_2 = model.model_dir
         self.assertNotEqual(model_dir, model_dir_2)
         # 3rd fit
-        time.sleep(1)  # Ensure new directory
         fit_arguments = model.fit(df_train_mono, df_valid=df_train_mono, with_shuffle=True)  # We fit again with the same data, not important
         model.save()
         self.assertTrue(model.trained)
@@ -538,7 +536,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # 2nd fit
-        time.sleep(1)  # Ensure new directory
         fit_arguments = model.fit(df_train_multi, df_valid=df_train_multi, with_shuffle=True)  # We fit again with the same data, not important
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 2)
@@ -548,7 +545,6 @@ class ModelKerasTests(unittest.TestCase):
         model_dir_2 = model.model_dir
         self.assertNotEqual(model_dir, model_dir_2)
         # 3rd fit
-        time.sleep(1)  # Ensure new directory
         fit_arguments = model.fit(df_train_multi, df_valid=df_train_multi, with_shuffle=True)  # We fit again with the same data, not important
         model.save()
         self.assertTrue(model.trained)
