@@ -60,11 +60,15 @@ class ModelTfidfNaive(ModelPipeline):
             with_super_documents (bool): train model with super documents
         Raises:
             ValueError: If multiclass_strategy is not 'ovo', 'ovr' or None
+            ValueError: If with_super_documents and multi_label
         '''
         if multiclass_strategy is not None and multiclass_strategy not in ['ovo', 'ovr']:
             raise ValueError(f"The value of 'multiclass_strategy' must be 'ovo' or 'ovr' (not {multiclass_strategy})")
         # Init.
         super().__init__(**kwargs)
+
+        if self.with_super_documents and self.multi_label:
+            raise ValueError("The method with super documents does not support multi label")
 
         # Get logger (must be done after super init)
         self.logger = logging.getLogger(__name__)

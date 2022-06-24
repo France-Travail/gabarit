@@ -111,6 +111,11 @@ class ModelTfidfSvmTests(unittest.TestCase):
             model = ModelTfidfSvm(model_dir=model_dir, svc_params={'penalty': 'l1', 'fit_intercept': False}, multi_label=False, multiclass_strategy='toto')
         remove_dir(model_dir)
 
+        with self.assertRaises(ValueError):
+            model = ModelTfidfSvm(model_dir=model_dir, multi_label=True, with_super_documents=True)
+        remove_dir(model_dir)
+
+
     def test02_model_tfidf_svm_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_tfidf_svm.ModelTfidfSvm'''
 
@@ -616,6 +621,25 @@ class ModelTfidfSvmTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             new_model = ModelTfidfSvm()
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path='toto.pkl')
+
+
+    def test08_model_tfidf_svm_with_super_documents(self):
+        '''Test of the fit and predict with super documents of tfidfDemo.models_training.model_tfidf_svm.ModelTfidfSvm'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        corpus = np.array([
+                        "Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
+                        "Covid - le point sur des chiffres qui s'envolent en France",
+                        "Carte des résultats des législatives : les qualifiés circonscription par circonscription",
+                            ])
+        target = np.array(['s','s','p'])
+
+        model = ModelTfidfSvm(model_dir=model_dir)
+        model.fit(corpus, target)
+        self.assertTrue(np.array_equal(model.predict(corpus), target))
+        remove_dir(model_dir)
 
 
 # Perform tests

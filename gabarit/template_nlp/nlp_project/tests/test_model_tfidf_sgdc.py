@@ -112,6 +112,11 @@ class ModelTfidfSgdcTests(unittest.TestCase):
             model = ModelTfidfSgdc(model_dir=model_dir, sgdc_params={'loss': 'squared_hinge', 'max_iter': 50}, multi_label=False, multiclass_strategy='toto')
         remove_dir(model_dir)
 
+        with self.assertRaises(ValueError):
+            model = ModelTfidfSgdc(model_dir=model_dir, multi_label=True, with_super_documents=True)
+        remove_dir(model_dir)
+
+
     def test02_model_tfidf_sgdc_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_tfidf_sgdc.ModelTfidfSgdc'''
 
@@ -612,6 +617,25 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             new_model = ModelTfidfSgdc()
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path='toto.pkl')
+
+
+    def test07_model_tfidf_sgdc_with_super_documents(self):
+        '''Test of the fit and predict with super documents of tfidfDemo.models_training.model_tfidf_sgdc.ModelTfidfSgdc'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        corpus = np.array([
+                        "Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
+                        "Covid - le point sur des chiffres qui s'envolent en France",
+                        "Carte des résultats des législatives : les qualifiés circonscription par circonscription",
+                            ])
+        target = np.array(['s','s','p'])
+
+        model = ModelTfidfSgdc(model_dir=model_dir)
+        model.fit(corpus, target)
+        self.assertTrue(np.array_equal(model.predict(corpus), target))
+        remove_dir(model_dir)
 
 
 # Perform tests
