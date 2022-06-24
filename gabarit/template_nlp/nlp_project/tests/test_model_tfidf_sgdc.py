@@ -28,6 +28,7 @@ import pandas as pd
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_tfidf_sgdc import ModelTfidfSgdc
+from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
 
 # Disable logging
 import logging
@@ -632,7 +633,8 @@ class ModelTfidfSgdcTests(unittest.TestCase):
                             ])
         target = np.array(['s','s','p'])
 
-        model = ModelTfidfSgdc(model_dir=model_dir)
+        model = ModelTfidfSgdc(model_dir=model_dir, with_super_documents=True)
+        self.assertTrue(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
         model.fit(corpus, target)
         self.assertTrue(np.array_equal(model.predict(corpus), target))
         remove_dir(model_dir)

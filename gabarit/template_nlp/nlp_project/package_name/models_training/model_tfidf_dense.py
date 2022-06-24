@@ -48,27 +48,21 @@ class ModelTfidfDense(ModelKeras):
 
     _default_name = 'model_tfidf_dense'
 
-    def __init__(self, tfidf_params: Union[dict, None] = None, with_super_documents: bool=False, **kwargs) -> None:
+    def __init__(self, tfidf_params: Union[dict, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelClass & ModelKeras for more arguments).
 
         Kwargs:
             tfidf_params (dict) : Parameters for the tfidf
-        Raises:
-            ValueError: If with_super_documents and multi_label
         '''
         # Init.
         super().__init__(**kwargs)
 
-        if with_super_documents and self.multi_label:
-            raise ValueError("The method with super documents does not support multi label")
-
         # Get logger (must be done after super init)
         self.logger = logging.getLogger(__name__)
-        self.with_super_documents = with_super_documents
 
         if tfidf_params is None:
             tfidf_params = {}
-        self.tfidf = TfidfVectorizer(**tfidf_params) if not self.with_super_documents else TfidfVectorizerSuperDocuments(**tfidf_params)
+        self.tfidf = TfidfVectorizer(**tfidf_params)
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed

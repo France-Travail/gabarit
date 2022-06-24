@@ -73,15 +73,6 @@ class ModelTfidfDenseTests(unittest.TestCase):
         self.assertEqual(model.tfidf.binary, True)
         remove_dir(model_dir)
 
-        # Check with super documents
-        model = ModelTfidfDense(model_dir=model_dir, with_super_documents=True)
-        self.assertEqual(model.with_super_documents, True)
-        remove_dir(model_dir)
-
-        with self.assertRaises(ValueError):
-            model = ModelTfidfDense(model_dir=model_dir, multi_label=True, with_super_documents=True)
-        remove_dir(model_dir)
-
     def test02_model_tfidf_dense_predict_proba(self):
         '''Test of {{package_name}}.models_training.test_model_tfidf_dense.ModelTfidfDense.predict_proba'''
 
@@ -346,25 +337,6 @@ class ModelTfidfDenseTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             new_model = ModelTfidfDense()
             new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tfidf_path='toto.pkl')
-
-
-    def test10_model_tfidf_dense_with_super_documents(self):
-        '''Test of the fit and predict with super documents of tfidfDemo.models_training.model_tfidf_dense.ModelTfidfDense'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        corpus = np.array([
-                        "Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
-                        "Covid - le point sur des chiffres qui s'envolent en France",
-                        "Carte des résultats des législatives : les qualifiés circonscription par circonscription",
-                            ])
-        target = np.array(['s','s','p'])
-
-        model = ModelTfidfDense(model_dir=model_dir)
-        model.fit(corpus, target)
-        self.assertTrue(np.array_equal(model.predict(corpus), target))
-        remove_dir(model_dir)
 
 
 # Perform tests
