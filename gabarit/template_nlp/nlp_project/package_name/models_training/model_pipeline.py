@@ -40,11 +40,12 @@ class ModelPipeline(ModelClass):
     # Not implemented :
     # -> reload
 
-    def __init__(self, pipeline: Union[Pipeline, None] = None, **kwargs) -> None:
+    def __init__(self, pipeline: Union[Pipeline, None] = None, with_super_documents: bool=False, **kwargs) -> None:
         '''Initialization of the class (see ModelClass for more arguments)
 
         Kwargs:
             pipeline (Pipeline): Pipeline to use
+            with_super_documents (bool): train model with super documents
         '''
         # Init.
         super().__init__(**kwargs)
@@ -54,6 +55,9 @@ class ModelPipeline(ModelClass):
 
         # Manage model (to implement for children class)
         self.pipeline = pipeline
+
+        # If we should use the agregation in super documents
+        self.with_super_documents = with_super_documents
 
     def fit(self, x_train, y_train, **kwargs) -> None:
         '''Trains the model

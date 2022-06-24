@@ -73,6 +73,11 @@ class ModelTfidfDenseTests(unittest.TestCase):
         self.assertEqual(model.tfidf.binary, True)
         remove_dir(model_dir)
 
+        # Check with super documents
+        model = ModelTfidfDense(model_dir=model_dir, with_super_documents=True)
+        self.assertEqual(model.with_super_documents, True)
+        remove_dir(model_dir)
+
     def test02_model_tfidf_dense_predict_proba(self):
         '''Test of {{package_name}}.models_training.test_model_tfidf_dense.ModelTfidfDense.predict_proba'''
 

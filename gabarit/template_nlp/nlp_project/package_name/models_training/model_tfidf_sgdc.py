@@ -36,6 +36,7 @@ from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_pipeline import ModelPipeline
+from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
 
 
 class ModelTfidfSgdc(ModelPipeline):
@@ -65,7 +66,7 @@ class ModelTfidfSgdc(ModelPipeline):
         # Manage model
         if tfidf_params is None:
             tfidf_params = {}
-        self.tfidf = TfidfVectorizer(**tfidf_params)
+        self.tfidf = TfidfVectorizer(**tfidf_params) if not self.with_super_documents else TfidfVectorizerSuperDocuments(**tfidf_params)
         if sgdc_params is None:
             sgdc_params = {}
         self.sgdc = SGDClassifier(**sgdc_params)

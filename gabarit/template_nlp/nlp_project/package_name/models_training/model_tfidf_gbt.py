@@ -34,6 +34,7 @@ from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_pipeline import ModelPipeline
+from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
 
 
 class ModelTfidfGbt(ModelPipeline):
@@ -62,7 +63,7 @@ class ModelTfidfGbt(ModelPipeline):
         # Manage model
         if tfidf_params is None:
             tfidf_params = {}
-        self.tfidf = TfidfVectorizer(**tfidf_params)
+        self.tfidf = TfidfVectorizer(**tfidf_params) if not self.with_super_documents else TfidfVectorizerSuperDocuments(**tfidf_params)
         if gbt_params is None:
             gbt_params = {}
         self.gbt = GradientBoostingClassifier(**gbt_params)

@@ -37,6 +37,7 @@ from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
 from {{package_name}}.models_training.model_keras import ModelKeras
+from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
 
 
 sns.set(style="darkgrid")
@@ -61,7 +62,7 @@ class ModelTfidfDense(ModelKeras):
 
         if tfidf_params is None:
             tfidf_params = {}
-        self.tfidf = TfidfVectorizer(**tfidf_params)
+        self.tfidf = TfidfVectorizer(**tfidf_params) if not self.with_super_documents else TfidfVectorizerSuperDocuments(**tfidf_params)
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed

@@ -102,6 +102,11 @@ class ModelTfidfLgbmTests(unittest.TestCase):
         self.assertEqual(model.multi_label, True)
         remove_dir(model_dir)
 
+        # Check with super documents
+        model = ModelTfidfLgbm(model_dir=model_dir, with_super_documents=True)
+        self.assertEqual(model.with_super_documents, True)
+        remove_dir(model_dir)
+
         # Error
         with self.assertRaises(ValueError):
             model = ModelTfidfLgbm(model_dir=model_dir, lgbm_params={'n_estimators': 8, 'max_depth': 5}, multi_label=False, multiclass_strategy='toto')

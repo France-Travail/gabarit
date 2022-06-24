@@ -102,6 +102,11 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         self.assertEqual(model.multi_label, True)
         remove_dir(model_dir)
 
+        # Check with super documents
+        model = ModelTfidfSgdc(model_dir=model_dir, with_super_documents=True)
+        self.assertEqual(model.with_super_documents, True)
+        remove_dir(model_dir)
+
         # Error
         with self.assertRaises(ValueError):
             model = ModelTfidfSgdc(model_dir=model_dir, sgdc_params={'loss': 'squared_hinge', 'max_iter': 50}, multi_label=False, multiclass_strategy='toto')
