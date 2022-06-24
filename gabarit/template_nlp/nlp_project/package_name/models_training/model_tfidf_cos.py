@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Modèle TFIDF Naive
+## Modèle TFIDF Cosine Similarity
 
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
@@ -18,7 +18,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelTfidfNaive -> Model for predictions TF-IDF naive
+# - ModelTfidfCos -> Model for predictions TF-IDF Cosine Similarity
 
 
 import os
@@ -44,13 +44,13 @@ from {{package_name}}.models_training.model_pipeline import ModelPipeline
 from {{package_name}}.models_training.utils_super_documents import TfidfTransformerSuperDocuments
 
 
-class ModelTfidfNaive(ModelPipeline):
-    '''Model for predictions via TF-IDF + Naive'''
+class ModelTfidfCos(ModelPipeline):
+    '''Model for predictions via TF-IDF + Cosine Similarity'''
 
-    _default_name = 'model_tfidf_naive'
+    _default_name = 'model_tfidf_cos'
 
     def __init__(self, tfidf_count_params: Union[dict, None] = None, tfidf_transformer_params: Union[dict, None] = None, 
-                 multiclass_strategy: Union[str, None] = None, with_super_documents: bool = True, **kwargs):
+                 multiclass_strategy: Union[str, None] = None, with_super_documents: bool = False, **kwargs):
         '''Initialization of the class (see ModelPipeline & ModelClass for more arguments)
 
         Kwargs:
@@ -66,12 +66,9 @@ class ModelTfidfNaive(ModelPipeline):
             raise ValueError(f"The value of 'multiclass_strategy' must be 'ovo' or 'ovr' (not {multiclass_strategy})")
         # Init.
         super().__init__(**kwargs)
-        self.with_super_documents = with_super_documents
 
-        if self.multi_label:
-            raise ValueError("The TFIDF Naive does not support multi label")
-        if not self.with_super_documents:
-            raise ValueError("The TFIDF Naive does not support without super documents") 
+        if with_super_documents and self.multi_label:
+            raise ValueError("The method with super documents does not support multi label")
 
         # Get logger (must be done after super init)
         self.logger = logging.getLogger(__name__)
@@ -79,7 +76,7 @@ class ModelTfidfNaive(ModelPipeline):
         # Manage model
         if tfidf_transformer_params is None:
             tfidf_transformer_params = {}
-        self.tfidf = TfidfTransformerSuperDocuments(**tfidf_transformer_params)
+        self.tfidf = TfidfTransformer(**tfidf_transformer_params) if not self.with_super_documents else TfidfTransformerSuperDocuments(**tfidf_transformer_params)
 
         if tfidf_count_params is None:
             tfidf_count_params = {}
@@ -94,12 +91,11 @@ class ModelTfidfNaive(ModelPipeline):
         if not self.multi_label:
             # If not multi-classes : no impact
             if multiclass_strategy == 'ovr':
-                raise ValueError("The TFIDF Naive can't do ovr")
+                raise ValueError("The TFIDF Cosine Similarity can't do ovr")
             elif multiclass_strategy == 'ovo':
-                raise ValueError("The TFIDF Naive can't do ovo")
+                raise ValueError("The TFIDF Cosine Similarity can't do ovo")
             else:
                 self.pipeline = Pipeline([('tfidf_count', self.tfidf_count),('tfidf', self.tfidf)])
-
 
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model
@@ -206,33 +202,43 @@ class ModelTfidfNaive(ModelPipeline):
             RuntimeError: If the model is already fitted
         '''
         self.tfidf.classes_ = list(np.unique(y_train))
+        self.array_target = np.array(y_train)
         super().fit(x_train, y_train)
-        x_count = self.pipeline['tfidf_count'].fit_transform(x_train)
-        x_super, self.array_target = self.pipeline['tfidf'].get_super_documents_count_vectorizer(x_count, y_train)
-        self.matrix_train = self.pipeline['tfidf'].transform(x_super)
+        self.matrix_train = self.pipeline.transform(x_train)
 
     @utils.trained_needed
-    def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
-        '''Predictions on test set
-
+    def predict(self, x_test:np.ndarray, return_proba: bool = False, **kwargs) -> np.ndarray:
+        '''Predictions without super documents
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
         Kwargs:
             return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
-        Raise:
-            ValueError: if return_proba is True
+        Raises:
+            ValueError: If with_super_documents is not False
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
-        x_test = np.array(x_test) if isinstance(x_test, list) else x_test
-
         if return_proba:
             raise ValueError("The TFIDF Naive does not support return_proba")
         else:
-            vec_counts = self.tfidf_count.transform(x_test)
-            predicts = np.argmax(np.dot(vec_counts, self.matrix_train.transpose()).toarray(), axis=1)
-            predicts = self.array_target[predicts]
+            x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
+            x_test = np.array(x_test) if isinstance(x_test, list) else x_test
+
+            chunk_size = 5000
+            vec = self.pipeline.transform(x_test).astype(np.float16)
+            self.matrix_train = self.matrix_train.astype(np.float16)
+            vec_size = math.ceil((vec.shape[0])/chunk_size)
+            train_size = math.ceil((self.matrix_train.shape[0])/chunk_size)
+            array_predicts = np.array([], dtype='int')
+            for vec_row in range(vec_size):
+                block_vec = vec[vec_row*chunk_size:(vec_row+1)*chunk_size]
+                list_cosine = []
+                for train_row in range(train_size):
+                    block_train = self.matrix_train[train_row*chunk_size:(train_row+1)*chunk_size]
+                    cosine = cosine_similarity(block_train, block_vec).astype(np.float16)
+                    list_cosine.append(cosine)
+                array_predicts = np.append(array_predicts, np.argmax(np.concatenate(list_cosine), axis=0))
+            predicts = self.array_target[array_predicts]
             return predicts
 
 
