@@ -21,6 +21,7 @@
 
 
 import os
+import time
 import json
 import logging
 import numpy as np
@@ -284,7 +285,10 @@ class ModelClass:
         subfolder = os.path.join(models_dir, self.model_name)
         folder_name = datetime.now().strftime(f"{self.model_name}_%Y_%m_%d-%H_%M_%S")
         model_dir = os.path.join(subfolder, folder_name)
-        if not os.path.isdir(model_dir):
+        if os.path.isdir(model_dir):
+            time.sleep(1)  # Wait 1 second so that the 'date' changes...
+            return self._get_model_dir()  # Get new directory name
+        else:
             os.makedirs(model_dir)
         return model_dir
 
