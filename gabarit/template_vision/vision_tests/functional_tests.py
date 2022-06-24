@@ -31,8 +31,8 @@ import subprocess
 import numpy as np
 import pandas as pd
 import importlib.util
-from typing import Any
 from PIL import Image
+from typing import Any
 from pathlib import Path
 from datetime import datetime
 
@@ -550,14 +550,14 @@ class Case1_e2e_pipeline(unittest.TestCase):
 
         # "Basic" case dataset_object_detection_mini
         save_model_dir = os.path.join(full_path_lib, 'test_template_vision-models', 'model_detectron_faster_rcnn_e2e')
-        listdir = os.listdir(os.path.join(save_model_dir))
+        listdir = sorted(os.listdir(os.path.join(save_model_dir)))
         model_name = listdir[0]
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/3_predict.py -d dataset_object_detection_mini -m {model_name}"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check predictions
         save_predictions_dir = os.path.join(full_path_lib, 'test_template_vision-data', 'predictions', 'dataset_object_detection_mini')
         self.assertTrue(os.path.exists(save_predictions_dir))
-        listdir = os.listdir(os.path.join(save_predictions_dir))
+        listdir = sorted(os.listdir(os.path.join(save_predictions_dir)))
         self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[0], 'predictions.csv')))
 
     def test08_ReloadModel(self):
@@ -566,7 +566,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
 
         # "Basic" case
         save_model_dir = os.path.join(full_path_lib, 'test_template_vision-models', 'model_cnn_classifier')  # cnn by default
-        listdir = os.listdir(os.path.join(save_model_dir))
+        listdir = sorted(os.listdir(os.path.join(save_model_dir)))
         model_name = listdir[0]
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_reload_model.py -m {model_name}"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)

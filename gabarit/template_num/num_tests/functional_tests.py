@@ -300,7 +300,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
 
         # "Basic" case
         save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier')  # Ridge Classifier by default
-        listdir = os.listdir(os.path.join(save_model_dir))
+        listdir = sorted(os.listdir(os.path.join(save_model_dir)))
         model_name = listdir[0]  # First or second one trained (ordered by date)
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/4_predict.py -f mono_class_mono_label_test.csv -m {model_name}"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
@@ -312,7 +312,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
 
         # Run with "y_col"
         save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier')  # Ridge Classifier by default
-        listdir = os.listdir(os.path.join(save_model_dir))
+        listdir = sorted(os.listdir(os.path.join(save_model_dir)))
         model_name = listdir[1]  # First or second one trained (ordered by date)
         run_with_y_col = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/4_predict.py -f mono_class_mono_label_test.csv -y y_col -m {model_name}"
         self.assertEqual(subprocess.run(run_with_y_col, shell=True).returncode, 0)
@@ -322,7 +322,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
 
         # Multilabel
         save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier')  # Ridge Classifier by default
-        listdir = os.listdir(os.path.join(save_model_dir))
+        listdir = sorted(os.listdir(os.path.join(save_model_dir)))
         multilabel_run = listdir[2]  # Third one trained (ordered by date)
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/4_predict.py -f mono_class_multi_label.csv -m {multilabel_run}"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
@@ -334,7 +334,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
 
         # Multilabel -with y_col
         save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier')  # Ridge Classifier by default
-        listdir = os.listdir(os.path.join(save_model_dir))
+        listdir = sorted(os.listdir(os.path.join(save_model_dir)))
         model_name = listdir[2]  # Third one trained (ordered by date)
         run_with_y_col = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/4_predict.py -f mono_class_multi_label.csv -y y_col_1 y_col_2 -m {model_name}"
         self.assertEqual(subprocess.run(run_with_y_col, shell=True).returncode, 0)
@@ -348,7 +348,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
 
         # "Basic" case
         save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_elasticnet_regressor')  # ElasticNet Regressor by default
-        listdir = os.listdir(os.path.join(save_model_dir))
+        listdir = sorted(os.listdir(os.path.join(save_model_dir)))
         model_name = listdir[0]
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/4_predict.py -f mono_output_regression_test.csv -m {model_name}"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
