@@ -50,7 +50,7 @@ class ModelTfidfCos(ModelPipeline):
     _default_name = 'model_tfidf_cos'
 
     def __init__(self, tfidf_count_params: Union[dict, None] = None, tfidf_transformer_params: Union[dict, None] = None, 
-                 multiclass_strategy: Union[str, None] = None, with_super_documents: bool = False, **kwargs):
+                 multiclass_strategy: Union[str, None] = None, **kwargs):
         '''Initialization of the class (see ModelPipeline & ModelClass for more arguments)
 
         Kwargs:
@@ -67,7 +67,7 @@ class ModelTfidfCos(ModelPipeline):
         # Init.
         super().__init__(**kwargs)
 
-        if with_super_documents and self.multi_label:
+        if self.with_super_documents and self.multi_label:
             raise ValueError("The method with super documents does not support multi label")
 
         # Get logger (must be done after super init)
@@ -83,7 +83,6 @@ class ModelTfidfCos(ModelPipeline):
         self.tfidf_count = CountVectorizer(**tfidf_count_params)
 
         self.multiclass_strategy = multiclass_strategy
-        self.with_super_documents = with_super_documents
         self.matrix_train = csr_matrix((0,0))
         self.array_target = np.array([])
 
