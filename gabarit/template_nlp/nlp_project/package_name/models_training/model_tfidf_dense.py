@@ -48,21 +48,28 @@ class ModelTfidfDense(ModelKeras):
 
     _default_name = 'model_tfidf_dense'
 
-    def __init__(self, tfidf_params: Union[dict, None] = None, **kwargs) -> None:
+    def __init__(self, tfidf_params: Union[dict, None] = None, with_super_documents: bool = False, **kwargs) -> None:
         '''Initialization of the class (see ModelClass & ModelKeras for more arguments).
 
         Kwargs:
             tfidf_params (dict) : Parameters for the tfidf
+            with_super_documents (bool): train model with super documents
+        Raises:
+            ValueError: If with_super_documents and multi_label
         '''
         # Init.
         super().__init__(**kwargs)
+        self.with_super_documents = with_super_documents
+
+        if self.with_super_documents and self.multi_label:
+            raise ValueError("The method with super documents does not support multi label")
 
         # Get logger (must be done after super init)
         self.logger = logging.getLogger(__name__)
 
         if tfidf_params is None:
             tfidf_params = {}
-        self.tfidf = TfidfVectorizer(**tfidf_params)
+        self.tfidf = TfidfVectorizer(**tfidf_params) if not with_super_documents else TfidfVectorizerSuperDocuments(**tfidf_params)
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
@@ -84,7 +91,7 @@ class ModelTfidfDense(ModelKeras):
         else:
             return self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
-    def _prepare_x_train(self, x_train) -> np.ndarray:
+    def _prepare_x_train(self, x_train, y_train = None) -> np.ndarray:
         '''Prepares the input data for the model. Called when fitting the model
 
         Args:
@@ -93,7 +100,7 @@ class ModelTfidfDense(ModelKeras):
             (np.ndarray): Prepared data
         '''
         # Fit tfidf & return x transformed
-        self.tfidf.fit(x_train)
+        self.tfidf.fit(x_train, y_train)
         # TODO: Use of todense because tensorflow 2.3 does not support sparse data anymore
         return self.tfidf.transform(x_train).todense()
 

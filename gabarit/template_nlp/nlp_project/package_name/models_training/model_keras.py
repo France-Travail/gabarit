@@ -224,7 +224,7 @@ class ModelKeras(ModelClass):
         y_valid_dummies = np.array(y_valid_dummies)
 
         # Prepare x_train
-        x_train = self._prepare_x_train(x_train)
+        x_train = self._prepare_x_train(x_train, y_train)
 
         # If available, also prepare x_valid & get validation_data (tuple)
         validation_data: Optional[tuple] = None  # Def. None if y_valid is None
