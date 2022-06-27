@@ -36,12 +36,12 @@ from sklearn.pipeline import Pipeline
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
-from sklearn.feature_extraction.text import TfidfTransformer, CountVectorizer
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_models
 from {{package_name}}.models_training.model_pipeline import ModelPipeline
-from {{package_name}}.models_training.utils_super_documents import TfidfTransformerSuperDocuments
+from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
 
 
 class ModelTfidfCos(ModelPipeline):
@@ -49,15 +49,12 @@ class ModelTfidfCos(ModelPipeline):
 
     _default_name = 'model_tfidf_cos'
 
-    def __init__(self, tfidf_count_params: Union[dict, None] = None, tfidf_transformer_params: Union[dict, None] = None, 
-                 multiclass_strategy: Union[str, None] = None, **kwargs):
+    def __init__(self, tfidf_params: Union[dict, None] = None, multiclass_strategy: Union[str, None] = None, **kwargs):
         '''Initialization of the class (see ModelPipeline & ModelClass for more arguments)
 
         Kwargs:
-            tfidf_transformer_params (dict): Parameters for the tfidf TfidfTransformer
-            tfidf_count_params (dict): Parameters for the countVectorize
+            tfidf_params (dict): Parameters for the tfidf TfidfTransformer
             multiclass_strategy (str): Multi-classes strategy, only can be None
-            with_super_documents (bool): train model with super documents
         Raises:
             ValueError: If multiclass_strategy is not 'ovo', 'ovr' or None
             ValueError: If with_super_documents and multi_label
@@ -74,13 +71,9 @@ class ModelTfidfCos(ModelPipeline):
         self.logger = logging.getLogger(__name__)
 
         # Manage model
-        if tfidf_transformer_params is None:
-            tfidf_transformer_params = {}
-        self.tfidf = TfidfTransformer(**tfidf_transformer_params) if not self.with_super_documents else TfidfTransformerSuperDocuments(**tfidf_transformer_params)
-
-        if tfidf_count_params is None:
-            tfidf_count_params = {}
-        self.tfidf_count = CountVectorizer(**tfidf_count_params)
+        if tfidf_params is None:
+            tfidf_params = {}
+        self.tfidf = TfidfVectorizer(**tfidf_params) if not self.with_super_documents else TfidfVectorizerSuperDocuments(**tfidf_params)
 
         self.multiclass_strategy = multiclass_strategy
         self.matrix_train = csr_matrix((0,0))
@@ -94,7 +87,7 @@ class ModelTfidfCos(ModelPipeline):
             elif multiclass_strategy == 'ovo':
                 raise ValueError("The TFIDF Cosine Similarity can't do ovo")
             else:
-                self.pipeline = Pipeline([('tfidf_count', self.tfidf_count),('tfidf', self.tfidf)])
+                self.pipeline = Pipeline([('tfidf', self.tfidf)])
 
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model
@@ -187,7 +180,6 @@ class ModelTfidfCos(ModelPipeline):
 
         # Reload pipeline elements
         self.tfidf = self.pipeline['tfidf']
-        self.tfidf_count = self.pipeline['tfidf_count']
 
     def fit(self, x_train, y_train, **kwargs):
         '''Trains the model

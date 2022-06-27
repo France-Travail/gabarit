@@ -351,7 +351,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
             new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tfidf_path='toto.pkl')
 
 
-    def test10_model_tfidf_svm_with_super_documents(self):
+    def test10_model_tfidf_dense_with_super_documents(self):
         '''Test of the fit and predict with super documents of tfidfDemo.models_training.model_tfidf_dense.ModelTfidfDense'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')

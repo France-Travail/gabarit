@@ -28,7 +28,7 @@ import pandas as pd
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_tfidf_cos import ModelTfidfCos
-from {{package_name}}.models_training.utils_super_documents import TfidfTransformerSuperDocuments
+from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 # Disable logging
@@ -68,15 +68,9 @@ class ModelTfidfCosTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Check TFIDF params
-        model = ModelTfidfCos(model_dir=model_dir, tfidf_transformer_params={'norm': 'l1', 'sublinear_tf': True})
+        model = ModelTfidfCos(model_dir=model_dir, tfidf_params={'norm': 'l1', 'sublinear_tf': True})
         self.assertEqual(model.pipeline['tfidf'].norm, 'l1')
         self.assertEqual(model.pipeline['tfidf'].sublinear_tf, True)
-        remove_dir(model_dir)
-
-        # Check TFIDF count params - mono-label
-        model = ModelTfidfCos(model_dir=model_dir, tfidf_count_params={'analyzer': 'char', 'binary': True})
-        self.assertEqual(model.pipeline['tfidf_count'].analyzer, 'char')
-        self.assertEqual(model.pipeline['tfidf_count'].binary, True)
         remove_dir(model_dir)
 
         # Check with super documents
@@ -204,7 +198,6 @@ class ModelTfidfCosTests(unittest.TestCase):
         self.assertEqual(configs['multiclass_strategy'], None)
         # Specific model used
         self.assertTrue('tfidf_confs' in configs.keys())
-        self.assertTrue('tfidf_count_confs' in configs.keys())
         remove_dir(model_dir)
 
 
@@ -222,7 +215,6 @@ class ModelTfidfCosTests(unittest.TestCase):
         y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
         model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         tfidf = model.tfidf
-        tfidf_count = model.tfidf_count
         model.fit(x_train, y_train_mono)
         model.save()
 
@@ -246,7 +238,6 @@ class ModelTfidfCosTests(unittest.TestCase):
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
         self.assertEqual(model.tfidf.get_params(), new_model.tfidf.get_params())
-        self.assertEqual(model.tfidf_count.get_params(), new_model.tfidf_count.get_params())
         self.assertEqual(model.with_super_documents, new_model.with_super_documents)
         self.assertEqual(model.tfidf.classes_, new_model.tfidf.classes_)
         self.assertEqual(model.matrix_train.toarray().all(), new_model.matrix_train.toarray().all())
@@ -291,11 +282,10 @@ class ModelTfidfCosTests(unittest.TestCase):
         model_s = ModelTfidfCos(model_dir=model_dir, with_super_documents=True)
         model.fit(corpus, target)
         model_s.fit(corpus, target)
-        vec_count = model.tfidf_count.transform(corpus)
         preds = model_s.predict(corpus, return_proba=False)
-        self.assertFalse(isinstance(model.tfidf, TfidfTransformerSuperDocuments))
-        self.assertTrue(isinstance(model_s.tfidf, TfidfTransformerSuperDocuments))
-        self.assertFalse(np.equal(model.tfidf.fit_transform(vec_count).toarray(), model_s.tfidf.fit_transform(vec_count).toarray()).all())
+        self.assertFalse(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
+        self.assertTrue(isinstance(model_s.tfidf, TfidfVectorizerSuperDocuments))
+        self.assertFalse(np.equal(model.tfidf.transform(corpus).toarray(), model_s.tfidf.transform(corpus).toarray()).all())
         self.assertEqual(preds.shape, (len(target),))
         remove_dir(model_dir)
 
