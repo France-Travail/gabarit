@@ -127,7 +127,7 @@ class ModelEmbeddingCnn(ModelKeras):
             else:
                 return tmp_model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
-    def _prepare_x_train(self, x_train, *kwargs) -> np.ndarray:
+    def _prepare_x_train(self, x_train, **kwargs) -> np.ndarray:
         '''Prepares the input data for the model. Called when fitting the model
 
         Args:
