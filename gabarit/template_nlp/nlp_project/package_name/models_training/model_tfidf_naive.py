@@ -50,7 +50,7 @@ class ModelTfidfNaive(ModelPipeline):
     _default_name = 'model_tfidf_naive'
 
     def __init__(self, tfidf_count_params: Union[dict, None] = None, tfidf_transformer_params: Union[dict, None] = None, 
-                 multiclass_strategy: Union[str, None] = None, with_super_documents: bool = True, **kwargs):
+                 multiclass_strategy: Union[str, None] = None, **kwargs):
         '''Initialization of the class (see ModelPipeline & ModelClass for more arguments)
 
         Kwargs:
@@ -60,18 +60,15 @@ class ModelTfidfNaive(ModelPipeline):
             with_super_documents (bool): train model with super documents
         Raises:
             ValueError: If multiclass_strategy is not 'ovo', 'ovr' or None
-            ValueError: If with_super_documents and multi_label
         '''
         if multiclass_strategy is not None and multiclass_strategy not in ['ovo', 'ovr']:
             raise ValueError(f"The value of 'multiclass_strategy' must be 'ovo' or 'ovr' (not {multiclass_strategy})")
         # Init.
         super().__init__(**kwargs)
-        self.with_super_documents = with_super_documents
+        self.with_super_documents = True
 
         if self.multi_label:
             raise ValueError("The TFIDF Naive does not support multi label")
-        if not self.with_super_documents:
-            raise ValueError("The TFIDF Naive does not support without super documents") 
 
         # Get logger (must be done after super init)
         self.logger = logging.getLogger(__name__)
@@ -86,7 +83,6 @@ class ModelTfidfNaive(ModelPipeline):
         self.tfidf_count = CountVectorizer(**tfidf_count_params)
 
         self.multiclass_strategy = multiclass_strategy
-        self.with_super_documents = with_super_documents
         self.matrix_train = csr_matrix((0,0))
         self.array_target = np.array([])
 
