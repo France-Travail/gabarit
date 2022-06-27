@@ -364,10 +364,15 @@ class ModelTfidfDenseTests(unittest.TestCase):
                             ])
         target = np.array(['s','s','p'])
 
-        model = ModelTfidfDense(model_dir=model_dir, with_super_documents=True)
-        self.assertTrue(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
+        model = ModelTfidfDense(model_dir=model_dir)
+        model_s = ModelTfidfDense(model_dir=model_dir, with_super_documents=True)
         model.fit(corpus, target)
-        self.assertTrue(np.array_equal(model.predict(['Covid']), np.array(['s'])))
+        model_s.fit(corpus, target)
+        preds = model_s.predict(corpus, return_proba=False)
+        self.assertFalse(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
+        self.assertTrue(isinstance(model_s.tfidf, TfidfVectorizerSuperDocuments))
+        self.assertFalse(np.equal(model.tfidf.transform(corpus).toarray(), model_s.tfidf.transform(corpus).toarray()).all())
+        self.assertEqual(preds.shape, (len(target),))
         remove_dir(model_dir)
 
 # Perform tests

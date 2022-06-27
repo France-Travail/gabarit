@@ -90,10 +90,6 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         remove_dir(model_dir)
 
         with self.assertRaises(ValueError):
-            model = ModelTfidfNaive(model_dir=model_dir, with_super_documents=False)
-        remove_dir(model_dir)
-
-        with self.assertRaises(ValueError):
             model = ModelTfidfNaive(model_dir=model_dir, multi_label=True)
         remove_dir(model_dir)
 
@@ -274,10 +270,11 @@ class ModelTfidfNaiveTests(unittest.TestCase):
                             ])
         target = np.array(['s','s','p'])
 
-        model = ModelTfidfNaive(model_dir=model_dir, with_super_documents=True)
-        self.assertTrue(isinstance(model.tfidf, TfidfTransformerSuperDocuments))
+        model = ModelTfidfNaive(model_dir=model_dir)
         model.fit(corpus, target)
-        self.assertTrue(np.array_equal(model.predict(corpus), target))
+        preds = model.predict(corpus, return_proba=False)
+        self.assertTrue(isinstance(model.tfidf, TfidfTransformerSuperDocuments))
+        self.assertEqual(preds.shape, (len(target),))
         remove_dir(model_dir)
 
 

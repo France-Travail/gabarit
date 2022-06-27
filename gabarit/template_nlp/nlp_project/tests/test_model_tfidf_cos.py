@@ -287,10 +287,16 @@ class ModelTfidfCosTests(unittest.TestCase):
                             ])
         target = np.array(['s','s','p'])
 
-        model = ModelTfidfCos(model_dir=model_dir, with_super_documents=True)
-        self.assertTrue(isinstance(model.tfidf, TfidfTransformerSuperDocuments))
+        model = ModelTfidfCos(model_dir=model_dir)
+        model_s = ModelTfidfCos(model_dir=model_dir, with_super_documents=True)
         model.fit(corpus, target)
-        self.assertTrue(np.array_equal(model.predict(corpus), target))
+        model_s.fit(corpus, target)
+        vec_count = model.tfidf_count.transform(corpus)
+        preds = model_s.predict(corpus, return_proba=False)
+        self.assertFalse(isinstance(model.tfidf, TfidfTransformerSuperDocuments))
+        self.assertTrue(isinstance(model_s.tfidf, TfidfTransformerSuperDocuments))
+        self.assertFalse(np.equal(model.tfidf.fit_transform(vec_count).toarray(), model_s.tfidf.fit_transform(vec_count).toarray()).all())
+        self.assertEqual(preds.shape, (len(target),))
         remove_dir(model_dir)
 
 
