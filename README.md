@@ -208,7 +208,7 @@ and
 
 - The `preprocess.py` file contains the different preprocessing pipeline available by default by the package/project. More specifically, it contains a dictionnary of the pipelines. It will be used to create working datasets (for instance training set, valid test and test set).
 
--	Beware that the first row of each generated csv file after running a preprocessing will contain the name of the preprocessing pipeline applied such that it can be reused in the future. This row has to be skipped while parsing the resulting csv file.
+-	Beware that the first row of each generated csv file after running a preprocessing will contain the name of the preprocessing pipeline applied such that it can be reused in the future. Hence, this row (e.g. `#preprocess_P1`) is a metadata and **it has to be skipped** while parsing the csv file. Our templates provide a function (`utils.read_csv`) that does it automatically (it also returns the metadata).
 
 - The modelling part is built as follow :
 
