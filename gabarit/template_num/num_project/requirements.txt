@@ -3,7 +3,7 @@ numpy==1.19.5
 pandas==1.3.5
 
 # Models
-tensorflow==2.6.2
+tensorflow==2.7.1
 scikit_learn==0.24.2
 lightgbm==2.3.0
 xgboost==1.4.2
