@@ -90,8 +90,8 @@ Three IA Frameworks are available:
 	- Supports :
 
 		- Regression
-		- Multi Class / Mono Label classification
-		- Mono Class / Multi Label classification
+		- Multi Classes / Mono Label classification
+		- Mono Class / Multi Labels classification
 
 
 - **Computer Vision** to tackle classification use cases on images
@@ -99,7 +99,7 @@ Three IA Frameworks are available:
 	- Supports
 
 		- Mono Class / Mono Label classification
-		- Multi Class / Mono Label classification
+		- Multi Classes / Mono Label classification
 		- Area of interest detection
 
 
@@ -208,7 +208,7 @@ and
 
 - The `preprocess.py` file contains the different preprocessing pipeline available by default by the package/project. More specifically, it contains a dictionnary of the pipelines. It will be used to create working datasets (for instance training set, valid test and test set).
 
--	Beware that the first row of each generated csv file after running a preprocessing will contain the name of the preprocessing pipeline applied such that it can be reused in the future. This row has to be skipped while parsing the resulting csv file.
+-	Beware that the first row of each generated csv file after running a preprocessing will contain the name of the preprocessing pipeline applied such that it can be reused in the future. Hence, this row (e.g. `#preprocess_P1`) is a metadata and **it has to be skipped** while parsing the csv file. Our templates provide a function (`utils.read_csv`) that does it automatically (it also returns the metadata).
 
 - The modelling part is built as follow :
 
@@ -248,7 +248,7 @@ The intended flow of a project driven by one of these framework is the following
 
 Input data are supposed to be `.csv` files and the separator and encoding are to be provided during the generation of the project. It is obviously possible to use another datatype but a transformation step to `.csv` will be required to use the scripts provided by default.
 
-Concerning the prediction target, please refer to `2_training.py`. Usually we expect One Hot Encoded format for multilabel use cases. For singlelabel use cases, a single column (string for classification, float for regression) is expected.
+Concerning the prediction target, please refer to `2_training.py`. Usually we expect One Hot Encoded format for multi-labels use cases. For single-label use cases, a single column (string for classification, float for regression) is expected.
 
 
 ## 3. Features  <a name="features"></a>
@@ -341,11 +341,15 @@ Once you have trained a model which is a release candidate :
 
   - Then you have to push it to your repository, for instance by using [twine](https://pypi.org/project/twine/) : `twine upload --username {USER} --password {PWD} --repository-url https://{repository_url} dist/*.whl`
 
-  - Note that we strongly advise to embed these steps within a Continuous Integration Pipeline and ensuring that all yout unit tests are OK (you can use nose to run your test suite : `pip install nose nose-cov && nosetests tests/`)
+  - Note that we strongly advise to embed these steps within a Continuous Integration Pipeline and ensuring that all your unit tests are OK (you can use nose to run your test suite : `pip install nose nose-cov && nosetests tests/`)
 
   - Beware, function `utils_models.predict` has to be adapted to your project needs (e.g. if some specific computations are required before or after the actual inference).
 
     - This is the function that has to be called by the web service that will serve your model. Using `utils_models.predict` instead of the actual predict method of the model class ensure that your service can stay model agnostic: if one day you decide to change your design, to use another model; the service won't be impacted.
+
+  - Warning: some libraries (such as torch, detectron2, etc.) may not be hosted on PyPI. You'll need to add an extra `--find-links` option to your pip installation.
+
+	- If you don't have access to the internet, you'll need to setup a proxy which will host all the needed libraries. You can then use `--trusted-host` and `--index-url` options.
 
 - You can use our API Framework to expose your model:
 

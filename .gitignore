@@ -6,3 +6,4 @@ dist/**
 build/**
 test_template**
 **/venv**
+**/.ipynb_checkpoints/**
