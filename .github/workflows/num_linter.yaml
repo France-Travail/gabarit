@@ -44,5 +44,7 @@ jobs:
           cd tmp_project_flake8
           # Stop the build if there are Python syntax errors or undefined names
           flake8 tmp_project_flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 tmp_project_flake8-scripts --count --select=E9,F63,F7,F82 --show-source --statistics
           # Exit-zero treats all errors as warnings.
           flake8 tmp_project_flake8 --count --exit-zero --max-complexity=10 --ignore=E501,W503,E266,W605,C901,W292  --statistics
+          flake8 tmp_project_flake8-scripts --count --exit-zero --max-complexity=10 --ignore=E501,W503,E266,W605,C901,W292  --statistics

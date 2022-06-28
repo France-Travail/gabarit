@@ -23,7 +23,6 @@
 # - get_new_column_name -> Gets a new column name from a list of existing ones & a wanted name
 # - get_chunk_limits -> Gets chunk limits from a pandas series or dataframe
 # - trained_needed -> Decorator to ensure a model has already been trained
-# - get_configs_path -> Returns the path of the config folder
 # - get_data_path -> Returns the path of the data folder
 # - get_models_path -> Returns the path of the models folder
 # - get_pipelines_path -> Returns the path of the pipeline folder
@@ -181,18 +180,6 @@ def trained_needed(function: Callable) -> Callable:
         else:
             return function(self, *args, **kwargs)
     return wrapper
-
-
-def get_configs_path() -> str:
-    '''Returns the path to the config folder
-
-    Returns:
-        str: Path of the config folder
-    '''
-    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs')
-    if not os.path.isdir(dir_path):
-        os.mkdir(dir_path)
-    return os.path.abspath(dir_path)
 
 
 def get_data_path() -> str:

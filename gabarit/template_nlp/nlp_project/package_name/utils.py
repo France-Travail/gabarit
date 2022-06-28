@@ -24,7 +24,6 @@
 # - get_chunk_limits -> Gets chunk limits from a pandas series or dataframe
 # - data_agnostic_str_to_list -> Decorator to transform a string into a list of one element, and retrieve first element of the function returns.
 # - trained_needed -> Decorator to ensure a model has already been trained
-# - get_configs_path -> Returns the path of the config folder
 # - get_data_path -> Returns the path of the data folder
 # - get_models_path -> Returns the path of the models folder
 # - get_transformers_path -> Returns the path to the transformers folder
@@ -208,18 +207,6 @@ def trained_needed(function: Callable) -> Callable:
         else:
             return function(self, *args, **kwargs)
     return wrapper
-
-
-def get_configs_path() -> str:
-    '''Returns the path to the config folder
-
-    Returns:
-        str: Path of the config folder
-    '''
-    dir_path = os.path.join(os.path.dirname(os.path.realpath(__file__)), 'configs')
-    if not os.path.isdir(dir_path):
-        os.mkdir(dir_path)
-    return os.path.abspath(dir_path)
 
 
 def get_data_path() -> str:
