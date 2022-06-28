@@ -142,8 +142,11 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
     def _prepare_x_train(self, x_train, **kwargs) -> np.ndarray:
         '''Prepares the input data for the model. Called when fitting the model
 
+           **kwargs permits compatibility with keras model
         Args:
             x_train (?): Array-like, shape = [n_samples, n_features]
+        Kwargs:
+            y_train (?): Array-like, shape = [n_samples, n_features]
         Returns:
             (np.ndarray): Prepared data
         '''
