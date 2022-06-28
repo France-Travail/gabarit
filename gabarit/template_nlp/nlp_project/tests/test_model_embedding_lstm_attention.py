@@ -38,6 +38,7 @@ from {{package_name}}.models_training.model_embedding_lstm_attention import Mode
 import logging
 logging.disable(logging.CRITICAL)
 
+
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
@@ -71,7 +72,6 @@ class ModelEmbeddingLstmAttentionTests(unittest.TestCase):
         fake_path = os.path.join(data_path, 'fake_embedding.pkl')
         if os.path.exists(fake_path):
             os.remove(fake_path)
-
 
     def test01_model_embedding_lstm_attention_init(self):
         '''Test of {{package_name}}.models_training.model_embedding_lstm_attention.ModelEmbeddingLstmAttention.__init__'''

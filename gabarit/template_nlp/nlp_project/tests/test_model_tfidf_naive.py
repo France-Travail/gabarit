@@ -16,8 +16,6 @@
 
 # Libs unittest
 import unittest
-from unittest.mock import Mock
-from unittest.mock import patch
 
 # Utils libs
 import os
@@ -51,7 +49,7 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         os.chdir(dname)
 
     def test01_model_tfidf_naive_init(self):
-        '''Test de tfidfDemo.models_training.model_tfidf_naive.ModelTfidfNaive.__init__'''
+        '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.__init__'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -93,9 +91,8 @@ class ModelTfidfNaiveTests(unittest.TestCase):
             model = ModelTfidfNaive(model_dir=model_dir, multi_label=True)
         remove_dir(model_dir)
 
-
     def test02_model_tfidf_naive_fit(self):
-        '''Test of the method fit of tfidfDemo.models_training.model_tfidf_naive.ModelTfidfNaive'''
+        '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.fit'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -114,9 +111,15 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         self.assertEqual(model.array_target.all(), np.array(y_train_mono).all())
         remove_dir(model_dir)
 
+        # test Error
+        with self.assertRaises(RuntimeError):
+            model = ModelTfidfNaive(model_dir=model_dir)
+            model.fit(x_train, y_train_mono)
+            model.fit(x_train, y_train_mono)
+        remove_dir(model_dir)
 
     def test03_model_tfidf_naive_predict(self):
-        '''Test of the method predict of tfidfDemo.models_training.model_tfidf_naive.ModelTfidfNaive'''
+        '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.predict'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -148,15 +151,30 @@ class ModelTfidfNaiveTests(unittest.TestCase):
             model.predict('test')
         remove_dir(model_dir)
 
-        with self.assertRaises(ValueError):
-            model = ModelTfidfNaive(model_dir=model_dir)
-            model.fit(x_train, y_train_mono)
-            model.predict('test', return_proba=True)
+    def test04_model_tfidf_naive_predict_proba(self):
+        '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.predict_proba'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
+        # Set vars
+        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
+        y_train_mono = np.array([0, 1, 0, 1, 2])
+        n_classes = 3
+        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0], 'test2': [1, 0, 0, 0, 0], 'test3': [0, 0, 0, 1, 0]})
+        cols = ['test1', 'test2', 'test3']
 
-    def test04_model_tfidf_naive_save(self):
-        '''Test of the method save of tfidfDemo.models_training.model_pipeline.ModelPipeline'''
+        # Mono-label - no strategy
+        model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
+        model.fit(x_train, y_train_mono)
+        preds = model.predict_proba(x_train)
+        self.assertEqual(preds.shape, (len(x_train), n_classes))
+        preds = model.predict_proba('test')
+        self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'])[0]])
+        remove_dir(model_dir)
+
+    def test05_model_tfidf_naive_save(self):
+        '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.save'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -190,9 +208,8 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         self.assertTrue('tfidf_count_confs' in configs.keys())
         remove_dir(model_dir)
 
-
-    def test05_model_tfidf_naive_reload_from_standalone(self):
-        '''Test of the method tfidfDemo.models_training.model_tfidf_naive.ModelTfidfNaive.reload'''
+    def test06_model_tfidf_naive_reload_from_standalone(self):
+        '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.reload_from_standalone'''
 
         ############################################
         # mono_label & without multi-classes strategy
@@ -256,9 +273,8 @@ class ModelTfidfNaiveTests(unittest.TestCase):
             new_model = ModelTfidfNaive()
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, matrix_train_path=matrix_train_path, array_target_path='toto.csv')
 
-
-    def test06_model_tfidf_naive_with_super_documents(self):
-        '''Test of the fit and predict with super documents of tfidfDemo.models_training.model_tfidf_naive.ModelTfidfNaive'''
+    def test07_model_tfidf_naive_with_super_documents(self):
+        '''Test of the fit and predict with super documents of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)

@@ -352,7 +352,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
 
 
     def test10_model_tfidf_dense_with_super_documents(self):
-        '''Test of the fit and predict with super documents of tfidfDemo.models_training.model_tfidf_dense.ModelTfidfDense'''
+        '''Test the fit and predict with super documents of {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -374,6 +374,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         self.assertFalse(np.equal(model.tfidf.transform(corpus).toarray(), model_s.tfidf.transform(corpus).toarray()).all())
         self.assertEqual(preds.shape, (len(target),))
         remove_dir(model_dir)
+
 
 # Perform tests
 if __name__ == '__main__':

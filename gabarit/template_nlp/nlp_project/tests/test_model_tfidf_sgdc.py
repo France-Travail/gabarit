@@ -621,7 +621,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
 
 
     def test07_model_tfidf_sgdc_with_super_documents(self):
-        '''Test of the fit and predict with super documents of tfidfDemo.models_training.model_tfidf_sgdc.ModelTfidfSgdc'''
+        '''Test of the fit and predict with super documents of {{package_name}}.models_training.model_tfidf_sgdc.ModelTfidfSgdc'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)

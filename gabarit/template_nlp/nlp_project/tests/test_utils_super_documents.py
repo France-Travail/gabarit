@@ -16,23 +16,14 @@
 
 # Libs unittest
 import unittest
-from unittest.mock import Mock
-from unittest.mock import patch
 
 # Utils libs
 import os
-import json
 import shutil
 import numpy as np
-import pandas as pd
 
-from sklearn.svm import LinearSVC
 from sklearn.pipeline import Pipeline
-from sklearn.multiclass import OneVsRestClassifier
-from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer, TfidfTransformer
-
-from {{package_name}} import utils
 from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments, TfidfTransformerSuperDocuments
 
 
@@ -40,10 +31,8 @@ from {{package_name}}.models_training.utils_super_documents import TfidfVectoriz
 import logging
 logging.disable(logging.CRITICAL)
 
-
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
-
 
 class tfidfSuperDocumentsTests(unittest.TestCase):
     '''Main class to test utils_super_documents'''
@@ -55,74 +44,8 @@ class tfidfSuperDocumentsTests(unittest.TestCase):
         dname = os.path.dirname(abspath)
         os.chdir(dname)
 
-
-    def test01_model_pipeline_TfidfVectorizerSuperDocuments(self):
-        '''Test of the fit and fit_transform tfidfDemo.models_training.utils_super_documents.TfidfVectorizerSuperDocuments'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        corpus = np.array([
-                        "Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
-                        "Covid - le point sur des chiffres qui s'envolent en France",
-                        "Carte des résultats des législatives : les qualifiés circonscription par circonscription",
-                            ])
-        target = np.array(['s','s','p'])
-
-        corpus_s = np.array([
-                        "Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023 Covid - le point sur des chiffres qui s'envolent en France",
-                        "Carte des résultats des législatives : les qualifiés circonscription par circonscription",
-                            ])
-        target_s = np.array(['s', 'p'])
-
-        param = {'ngram_range': [2,3], 'min_df': 0.02, 'max_df': 0.8, 'binary': False}
-
-        # test fit
-        tfidf = TfidfVectorizer().fit(corpus_s, target_s)
-        tfidf_s = TfidfVectorizerSuperDocuments().fit(corpus, target)
-        self.assertEqual(tfidf.transform(corpus).toarray().all(), tfidf_s.transform(corpus).toarray().all())
-        remove_dir(model_dir)
-
-        # test fit with parameters
-        tfidf = TfidfVectorizer(**param).fit(corpus_s, target_s)
-        tfidf_s = TfidfVectorizerSuperDocuments(**param).fit(corpus, target)
-        self.assertEqual(tfidf.transform(corpus).toarray().all(), tfidf_s.transform(corpus).toarray().all())
-        remove_dir(model_dir)
-
-        # test fit_transform
-        tfidf = TfidfVectorizer().fit(corpus_s, target_s)
-        tfidf_s = TfidfVectorizerSuperDocuments()
-        self.assertEqual(tfidf.transform(corpus).toarray().all(), tfidf_s.fit_transform(corpus, target).toarray().all())
-        remove_dir(model_dir)
-
-    
-    def test02_model_pipeline_get_super_documents_count_vectorizer(self):
-        '''Test of the method get_super_documents_count_vectorizer of tfidfDemo.models_training.utils_super_documents'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        corpus = np.array([
-                        "Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
-                        "Covid - le point sur des chiffres qui s'envolent en France",
-                        "Carte des résultats des législatives : les qualifiés circonscription par circonscription",
-                            ])
-        target = np.array(['a','a','b'])
-
-        corpus_s = np.array([
-                        "Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023 Covid - le point sur des chiffres qui s'envolent en France",
-                        "Carte des résultats des législatives : les qualifiés circonscription par circonscription",
-                            ])
-        target_s = np.array(['a', 'b'])
-
-        count_vec = CountVectorizer().fit_transform(corpus, target)
-        super_documents, _ = TfidfTransformerSuperDocuments().get_super_documents_count_vectorizer(count_vec, target)
-        self.assertEqual(super_documents.all(), CountVectorizer().fit_transform(corpus_s, target_s).toarray().all())
-        remove_dir(model_dir)
-
-
-    def test03_model_pipeline_TfidfTransformerSuperDocuments(self):
-        '''Test of the fit and fit_transform tfidfDemo.models_training.utils_super_documents.TfidfTransformerSuperDocuments'''
+    def test01_TfidfTransformerSuperDocuments(self):
+        '''Test the fit and fit_transform of {{package_name}}.models_training.utils_super_documents.TfidfTransformerSuperDocuments'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -163,12 +86,37 @@ class tfidfSuperDocumentsTests(unittest.TestCase):
                             ('tfidf', TfidfTransformer())]).fit(corpus_s, target_s)
         pipe_s = Pipeline([('count', CountVectorizer()),
                             ('tfidf', TfidfTransformerSuperDocuments())])
-        self.assertEqual(pipe.transform(corpus).toarray().all(), pipe_s.fit_transform(corpus, target).toarray().all())
+        pipe_s_trans = pipe_s.fit_transform(corpus, target)
+        self.assertEqual(pipe.transform(corpus).toarray().all(), pipe_s_trans.toarray().all())
+        self.assertEqual(pipe_s_trans.toarray().shape[0], 3)
+        remove_dir(model_dir)
+    
+    def test02_TfidfTransformerSuperDocuments_get_super_documents_count_vectorizer(self):
+        '''Test of {{package_name}}.models_training.utils_super_documents.TfidfTransformerSuperDocuments.get_super_documents_count_vectorizer'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
+        corpus = np.array([
+                        "Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
+                        "Covid - le point sur des chiffres qui s'envolent en France",
+                        "Carte des résultats des législatives : les qualifiés circonscription par circonscription",
+                            ])
+        target = np.array(['a','a','b'])
 
-    def test04_model_pipeline_get_super_documents(self):
-        '''Test of the method get_super_documents of tfidfDemo.models_training.utils_super_documents'''
+        corpus_s = np.array([
+                        "Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023 Covid - le point sur des chiffres qui s'envolent en France",
+                        "Carte des résultats des législatives : les qualifiés circonscription par circonscription",
+                            ])
+        target_s = np.array(['a', 'b'])
+
+        count_vec = CountVectorizer().fit_transform(corpus, target)
+        super_documents, _ = TfidfTransformerSuperDocuments().get_super_documents_count_vectorizer(count_vec, target)
+        self.assertEqual(super_documents.all(), CountVectorizer().fit_transform(corpus_s, target_s).toarray().all())
+        remove_dir(model_dir)
+
+    def test03_TfidfVectorizerSuperDocuments(self):
+        '''Test the fit and fit_transform of {{package_name}}.models_training.utils_super_documents.TfidfVectorizerSuperDocuments'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -186,10 +134,50 @@ class tfidfSuperDocumentsTests(unittest.TestCase):
                             ])
         target_s = np.array(['s', 'p'])
 
-        super_documents, _ = TfidfVectorizerSuperDocuments().get_super_documents(corpus, target)
-        self.assertEqual(super_documents['s'], corpus_s[0])
+        param = {'ngram_range': [2,3], 'min_df': 0.02, 'max_df': 0.8, 'binary': False}
+
+        # test fit
+        tfidf = TfidfVectorizer().fit(corpus_s, target_s)
+        tfidf_s = TfidfVectorizerSuperDocuments().fit(corpus, target)
+        self.assertEqual(tfidf.transform(corpus).toarray().all(), tfidf_s.transform(corpus).toarray().all())
         remove_dir(model_dir)
 
+        # test fit with parameters
+        tfidf = TfidfVectorizer(**param).fit(corpus_s, target_s)
+        tfidf_s = TfidfVectorizerSuperDocuments(**param).fit(corpus, target)
+        self.assertEqual(tfidf.transform(corpus).toarray().all(), tfidf_s.transform(corpus).toarray().all())
+        remove_dir(model_dir)
+
+        # test fit_transform
+        tfidf = TfidfVectorizer().fit(corpus_s, target_s)
+        tfidf_s = TfidfVectorizerSuperDocuments()
+        tfidf_s_trans = tfidf_s.fit_transform(corpus, target)
+        self.assertEqual(tfidf.transform(corpus).toarray().all(), tfidf_s_trans.toarray().all())
+        self.assertEqual(tfidf_s_trans.toarray().shape[0], 3)
+        remove_dir(model_dir)
+
+    def test04_TfidfVectorizerSuperDocuments_get_super_documents(self):
+        '''Test of {{package_name}}.models_training.utils_super_documents.TfidfVectorizerSuperDocuments.get_super_documents'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        corpus = np.array([
+                        "Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
+                        "Covid - le point sur des chiffres qui s'envolent en France",
+                        "Carte des résultats des législatives : les qualifiés circonscription par circonscription",
+                            ])
+        target = np.array(['a','a','b'])
+
+        corpus_s = np.array([
+                        "Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023 Covid - le point sur des chiffres qui s'envolent en France",
+                        "Carte des résultats des législatives : les qualifiés circonscription par circonscription",
+                            ])
+        target_s = np.array(['a', 'b'])
+
+        super_documents, _ = TfidfVectorizerSuperDocuments().get_super_documents(corpus, target)
+        self.assertTrue(np.equal(super_documents, corpus_s).all())
+        remove_dir(model_dir)
 
 # Perform tests
 if __name__ == '__main__':
