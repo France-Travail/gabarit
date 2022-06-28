@@ -43,7 +43,7 @@ setup(
         'opencv-python-headless==4.5.5.62',
         'dill>=0.3.2,<0.3.4',
         'mlflow>=1.11.0,<1.12.2',
-        'tensorflow==2.6.2',
+        'tensorflow==2.7.1',
         'pycocotools==2.0.4',
         'tqdm==4.62.2',  #https://github.com/tqdm/tqdm/issues/780
         'protobuf==3.20.1',  #https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
