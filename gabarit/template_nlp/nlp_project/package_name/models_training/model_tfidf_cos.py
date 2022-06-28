@@ -33,9 +33,7 @@ from datetime import datetime
 
 from scipy.sparse import csr_matrix
 from sklearn.pipeline import Pipeline
-from sklearn.multioutput import MultiOutputClassifier
 from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from {{package_name}} import utils
@@ -183,12 +181,11 @@ class ModelTfidfCos(ModelPipeline):
 
     def fit(self, x_train, y_train, **kwargs):
         '''Trains the model
-            Transform the document to super document when with_super_documents = True
 
            **kwargs permits compatibility with Keras model
         Args:
-            x_train (?): Array-like, shape = [n_samples, n_features]
-            y_train (?): Array-like, shape = [n_samples, n_targets]
+            x_train (?): Array-like, shape = [n_samples]
+            y_train (?): Array-like, shape = [n_samples]
         Raises:
             RuntimeError: If the model is already fitted
         '''
@@ -199,18 +196,17 @@ class ModelTfidfCos(ModelPipeline):
 
     @utils.trained_needed
     def predict(self, x_test:np.ndarray, return_proba: bool = False, **kwargs) -> np.ndarray:
-        '''Predictions without super documents
+        '''Predictions
+
         Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Kwargs:
             return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
-        Raises:
-            ValueError: If with_super_documents is not False
         Returns:
-            (np.ndarray): Array, shape = [n_samples, n_classes]
+            (np.ndarray): Array, shape = [n_samples]
         '''
         if return_proba:
-            raise ValueError("The TFIDF Naive does not support return_proba")
+            return self.predict_proba(x_test)
         else:
             x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
             x_test = np.array(x_test) if isinstance(x_test, list) else x_test
@@ -232,6 +228,26 @@ class ModelTfidfCos(ModelPipeline):
             predicts = self.array_target[array_predicts]
             return predicts
 
+    @utils.data_agnostic_str_to_list
+    @utils.trained_needed
+    def predict_proba(self, x_test, **kwargs) -> np.ndarray:
+        '''Predicts the probabilities on the test set
+        - /!\\ THE MODEL COSINE SIMILARITY DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL TO 0 OR 1 /!\\ -
+
+        Args:
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
+        Returns:
+            (np.ndarray): Array, shape = [n_samples, n_classes]
+        '''
+        if not self.multi_label:
+            preds = self.predict(x_test)
+            # Format ['a', 'b', 'c', 'a', ..., 'b']
+            # Transform to "proba"
+            transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
+            probas = np.array([transform_dict[x] for x in preds])
+        else:
+            raise ValueError("The TFIDF cosine similarity does not support multi label")
+        return probas
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

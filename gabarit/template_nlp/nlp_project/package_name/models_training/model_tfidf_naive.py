@@ -33,10 +33,7 @@ from datetime import datetime
 
 from scipy.sparse import csr_matrix
 from sklearn.pipeline import Pipeline
-from sklearn.multioutput import MultiOutputClassifier
-from sklearn.metrics.pairwise import cosine_similarity
-from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
-from sklearn.feature_extraction.text import TfidfTransformer, CountVectorizer
+from sklearn.feature_extraction.text import CountVectorizer
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_models
@@ -57,9 +54,9 @@ class ModelTfidfNaive(ModelPipeline):
             tfidf_transformer_params (dict): Parameters for the tfidf TfidfTransformer
             tfidf_count_params (dict): Parameters for the countVectorize
             multiclass_strategy (str): Multi-classes strategy, only can be None
-            with_super_documents (bool): train model with super documents
         Raises:
             ValueError: If multiclass_strategy is not 'ovo', 'ovr' or None
+            ValueError: If multi_label is True
         '''
         if multiclass_strategy is not None and multiclass_strategy not in ['ovo', 'ovr']:
             raise ValueError(f"The value of 'multiclass_strategy' must be 'ovo' or 'ovr' (not {multiclass_strategy})")
@@ -95,7 +92,6 @@ class ModelTfidfNaive(ModelPipeline):
                 raise ValueError("The TFIDF Naive can't do ovo")
             else:
                 self.pipeline = Pipeline([('tfidf_count', self.tfidf_count),('tfidf', self.tfidf)])
-
 
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model
@@ -192,12 +188,11 @@ class ModelTfidfNaive(ModelPipeline):
 
     def fit(self, x_train, y_train, **kwargs):
         '''Trains the model
-            Transform the document to super document when with_super_documents = True
 
            **kwargs permits compatibility with Keras model
         Args:
-            x_train (?): Array-like, shape = [n_samples, n_features]
-            y_train (?): Array-like, shape = [n_samples, n_targets]
+            x_train (?): Array-like, shape = [n_samples]
+            y_train (?): Array-like, shape = [n_samples]
         Raises:
             RuntimeError: If the model is already fitted
         '''
@@ -212,25 +207,43 @@ class ModelTfidfNaive(ModelPipeline):
         '''Predictions on test set
 
         Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Kwargs:
             return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
-        Raise:
-            ValueError: if return_proba is True
         Returns:
-            (np.ndarray): Array, shape = [n_samples, n_classes]
+            (np.ndarray): Array, shape = [n_samples]
         '''
         x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
         x_test = np.array(x_test) if isinstance(x_test, list) else x_test
 
         if return_proba:
-            raise ValueError("The TFIDF Naive does not support return_proba")
+            return self.predict_proba(x_test)
         else:
             vec_counts = self.tfidf_count.transform(x_test)
             predicts = np.argmax(np.dot(vec_counts, self.matrix_train.transpose()).toarray(), axis=1)
             predicts = self.array_target[predicts]
             return predicts
 
+    @utils.data_agnostic_str_to_list
+    @utils.trained_needed
+    def predict_proba(self, x_test, **kwargs) -> np.ndarray:
+        '''Predicts the probabilities on the test set
+        - /!\\ THE MODEL NAIVE DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL TO 0 OR 1 /!\\ -
+
+        Args:
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
+        Returns:
+            (np.ndarray): Array, shape = [n_samples, n_classes]
+        '''
+        if not self.multi_label:
+            preds = self.predict(x_test)
+            # Format ['a', 'b', 'c', 'a', ..., 'b']
+            # Transform to "proba"
+            transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
+            probas = np.array([transform_dict[x] for x in preds])
+        else:
+            raise ValueError("The TFIDF Naive does not support multi label")
+        return probas
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
