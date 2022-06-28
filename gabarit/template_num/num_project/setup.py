@@ -48,7 +48,7 @@ setup(
         'protobuf==3.20.1',  #https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
     ],
     extras_require={
-        "tensorflow": ["tensorflow==2.6.2"],
+        "tensorflow": ["tensorflow==2.7.1"],
     }
     # pip install {{package_name}} || pip install {{package_name}}[tensorflow]
 )
