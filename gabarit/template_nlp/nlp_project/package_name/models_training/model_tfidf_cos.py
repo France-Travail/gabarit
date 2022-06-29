@@ -205,28 +205,13 @@ class ModelTfidfCos(ModelPipeline):
         Returns:
             (np.ndarray): Array, shape = [n_samples]
         '''
+        x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
+        x_test = np.array(x_test) if isinstance(x_test, list) else x_test
+
         if return_proba:
             return self.predict_proba(x_test)
         else:
-            x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
-            x_test = np.array(x_test) if isinstance(x_test, list) else x_test
-
-            chunk_size = 5000
-            vec = self.pipeline.transform(x_test).astype(np.float16)
-            self.matrix_train = self.matrix_train.astype(np.float16)
-            vec_size = math.ceil((vec.shape[0])/chunk_size)
-            train_size = math.ceil((self.matrix_train.shape[0])/chunk_size)
-            array_predicts = np.array([], dtype='int')
-            for vec_row in range(vec_size):
-                block_vec = vec[vec_row*chunk_size:(vec_row+1)*chunk_size]
-                list_cosine = []
-                for train_row in range(train_size):
-                    block_train = self.matrix_train[train_row*chunk_size:(train_row+1)*chunk_size]
-                    cosine = cosine_similarity(block_train, block_vec).astype(np.float16)
-                    list_cosine.append(cosine)
-                array_predicts = np.append(array_predicts, np.argmax(np.concatenate(list_cosine), axis=0))
-            predicts = self.array_target[array_predicts]
-            return predicts
+            return self.compute_scores(x_test)
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
@@ -235,12 +220,12 @@ class ModelTfidfCos(ModelPipeline):
         - /!\\ THE MODEL COSINE SIMILARITY DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL TO 0 OR 1 /!\\ -
 
         Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples]
+            x_test (np.ndarray): Array, shape = [n_samples]
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
         if not self.multi_label:
-            preds = self.predict(x_test)
+            preds = self.compute_scores(x_test)
             # Format ['a', 'b', 'c', 'a', ..., 'b']
             # Transform to "proba"
             transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
@@ -248,6 +233,32 @@ class ModelTfidfCos(ModelPipeline):
         else:
             raise ValueError("The TFIDF cosine similarity does not support multi label")
         return probas
+
+    @utils.trained_needed
+    def compute_scores(self, x_test:np.ndarray) -> np.ndarray:
+        '''Compute the scores for the prediction
+
+        Args:
+            x_test (np.ndarray): Array, shape = [n_samples]
+        Returns:
+            (np.ndarray): Array, shape = [n_samples]
+        '''
+        chunk_size = 5000
+        vec = self.pipeline.transform(x_test).astype(np.float16)
+        self.matrix_train = self.matrix_train.astype(np.float16)
+        vec_size = math.ceil((vec.shape[0])/chunk_size)
+        train_size = math.ceil((self.matrix_train.shape[0])/chunk_size)
+        array_predicts = np.array([], dtype='int')
+        for vec_row in range(vec_size):
+            block_vec = vec[vec_row*chunk_size:(vec_row+1)*chunk_size]
+            list_cosine = []
+            for train_row in range(train_size):
+                block_train = self.matrix_train[train_row*chunk_size:(train_row+1)*chunk_size]
+                cosine = cosine_similarity(block_train, block_vec).astype(np.float16)
+                list_cosine.append(cosine)
+            array_predicts = np.append(array_predicts, np.argmax(np.concatenate(list_cosine), axis=0))
+        predicts = self.array_target[array_predicts]
+        return predicts
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

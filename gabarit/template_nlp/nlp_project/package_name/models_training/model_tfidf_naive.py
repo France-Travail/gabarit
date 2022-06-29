@@ -219,10 +219,7 @@ class ModelTfidfNaive(ModelPipeline):
         if return_proba:
             return self.predict_proba(x_test)
         else:
-            vec_counts = self.tfidf_count.transform(x_test)
-            predicts = np.argmax(np.dot(vec_counts, self.matrix_train.transpose()).toarray(), axis=1)
-            predicts = self.array_target[predicts]
-            return predicts
+            return self.compute_scores(x_test)
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
@@ -231,12 +228,12 @@ class ModelTfidfNaive(ModelPipeline):
         - /!\\ THE MODEL NAIVE DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL TO 0 OR 1 /!\\ -
 
         Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples]
+            x_test (np.ndarray): Array, shape = [n_samples]
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
         if not self.multi_label:
-            preds = self.predict(x_test)
+            preds = self.compute_scores(x_test)
             # Format ['a', 'b', 'c', 'a', ..., 'b']
             # Transform to "proba"
             transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
@@ -244,6 +241,20 @@ class ModelTfidfNaive(ModelPipeline):
         else:
             raise ValueError("The TFIDF Naive does not support multi label")
         return probas
+
+    @utils.trained_needed
+    def compute_scores(self, x_test:np.ndarray) -> np.ndarray:
+        '''Compute the scores for the prediction
+
+        Args:
+            x_test (np.ndarray): Array, shape = [n_samples]
+        Returns:
+            (np.ndarray): Array, shape = [n_samples]
+        '''
+        vec_counts = self.tfidf_count.transform(x_test)
+        predicts = np.argmax(np.dot(vec_counts, self.matrix_train.transpose()).toarray(), axis=1)
+        predicts = self.array_target[predicts]
+        return predicts
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

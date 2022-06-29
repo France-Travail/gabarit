@@ -130,7 +130,7 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         y_train_mono = np.array([0, 1, 0, 1, 2])
         y_train_str = np.array(['a', 'b', 'a', 'b', 'c'])
 
-        # Mono label - no strategy - with super documents
+        # Mono label - no strategy
         model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         model.fit(x_train, y_train_mono)
         preds = model.predict('test', return_proba=False)
@@ -143,7 +143,6 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         self.assertEqual(preds_str.shape, (len(x_train),))
         self.assertTrue((preds_str == y_train_str).all())
         remove_dir(model_dir)
-
 
         # Model needs to be fitted
         with self.assertRaises(AttributeError):
@@ -173,7 +172,45 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'])[0]])
         remove_dir(model_dir)
 
-    def test05_model_tfidf_naive_save(self):
+        # Model needs to be fitted
+        with self.assertRaises(AttributeError):
+            model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
+            model.compute_scores('test')
+        remove_dir(model_dir)
+
+    def test05_model_tfidf_naive_compute_scores(self):
+        '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.compute_scores'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Set vars
+        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
+        x_train_super_documents = np.array(["ceci est un test cela non plus", "pas cela ici test", "là, rien!"])
+        y_train_mono = np.array([0, 1, 0, 1, 2])
+        y_train_str = np.array(['a', 'b', 'a', 'b', 'c'])
+
+        # Mono label - no strategy
+        model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model.fit(x_train, y_train_mono)
+        preds = model.compute_scores(x_train)
+        self.assertEqual(preds.shape, (len(x_train),))
+        remove_dir(model_dir)
+
+        model_str = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model_str.fit(x_train, y_train_str)
+        preds_str = model_str.compute_scores(x_train)
+        self.assertEqual(preds_str.shape, (len(x_train),))
+        self.assertTrue((preds_str == y_train_str).all())
+        remove_dir(model_dir)
+
+        # Model needs to be fitted
+        with self.assertRaises(AttributeError):
+            model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
+            model.compute_scores(x_train)
+        remove_dir(model_dir)
+
+    def test06_model_tfidf_naive_save(self):
         '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.save'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -208,7 +245,7 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         self.assertTrue('tfidf_count_confs' in configs.keys())
         remove_dir(model_dir)
 
-    def test06_model_tfidf_naive_reload_from_standalone(self):
+    def test07_model_tfidf_naive_reload_from_standalone(self):
         '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.reload_from_standalone'''
 
         ############################################
@@ -273,7 +310,7 @@ class ModelTfidfNaiveTests(unittest.TestCase):
             new_model = ModelTfidfNaive()
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, matrix_train_path=matrix_train_path, array_target_path='toto.csv')
 
-    def test07_model_tfidf_naive_with_super_documents(self):
+    def test08_model_tfidf_naive_with_super_documents(self):
         '''Test of the fit and predict with super documents of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
