@@ -11,6 +11,8 @@
 
 # Gabarit - Templates Data Science
 
+Gabarit is a projetc template for data science. It is used to generate a code base using the name of your project, including many features to speed up the production and testing of your data model. You just have to focus on the core of data science.
+
 ---
 
 # Licence
