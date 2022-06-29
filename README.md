@@ -9,7 +9,7 @@
 [![Generic badge](https://img.shields.io/badge/python-3.7|3.8-blue.svg)](https://shields.io/)
 
 
-# Gabarit - Templates Data Science - Agence Data Services
+# Gabarit - Templates Data Science
 
 ---
 
