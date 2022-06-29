@@ -195,7 +195,7 @@ class ModelTfidfCos(ModelPipeline):
         self.matrix_train = self.pipeline.transform(x_train)
 
     @utils.trained_needed
-    def predict(self, x_test:np.ndarray, return_proba: bool = False, **kwargs) -> np.ndarray:
+    def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
         '''Predictions
 
         Args:
@@ -205,9 +205,6 @@ class ModelTfidfCos(ModelPipeline):
         Returns:
             (np.ndarray): Array, shape = [n_samples]
         '''
-        x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
-        x_test = np.array(x_test) if isinstance(x_test, list) else x_test
-
         if return_proba:
             return self.predict_proba(x_test)
         else:
@@ -220,7 +217,7 @@ class ModelTfidfCos(ModelPipeline):
         - /!\\ THE MODEL COSINE SIMILARITY DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL TO 0 OR 1 /!\\ -
 
         Args:
-            x_test (np.ndarray): Array, shape = [n_samples]
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
@@ -235,14 +232,17 @@ class ModelTfidfCos(ModelPipeline):
         return probas
 
     @utils.trained_needed
-    def compute_scores(self, x_test:np.ndarray) -> np.ndarray:
+    def compute_scores(self, x_test) -> np.ndarray:
         '''Compute the scores for the prediction
 
         Args:
-            x_test (np.ndarray): Array, shape = [n_samples]
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Returns:
             (np.ndarray): Array, shape = [n_samples]
         '''
+        x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
+        x_test = np.array(x_test) if isinstance(x_test, list) else x_test
+
         chunk_size = 5000
         vec = self.pipeline.transform(x_test).astype(np.float16)
         self.matrix_train = self.matrix_train.astype(np.float16)

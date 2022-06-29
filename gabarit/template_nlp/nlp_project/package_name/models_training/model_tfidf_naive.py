@@ -213,9 +213,6 @@ class ModelTfidfNaive(ModelPipeline):
         Returns:
             (np.ndarray): Array, shape = [n_samples]
         '''
-        x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
-        x_test = np.array(x_test) if isinstance(x_test, list) else x_test
-
         if return_proba:
             return self.predict_proba(x_test)
         else:
@@ -228,7 +225,7 @@ class ModelTfidfNaive(ModelPipeline):
         - /!\\ THE MODEL NAIVE DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL TO 0 OR 1 /!\\ -
 
         Args:
-            x_test (np.ndarray): Array, shape = [n_samples]
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
@@ -243,14 +240,17 @@ class ModelTfidfNaive(ModelPipeline):
         return probas
 
     @utils.trained_needed
-    def compute_scores(self, x_test:np.ndarray) -> np.ndarray:
+    def compute_scores(self, x_test) -> np.ndarray:
         '''Compute the scores for the prediction
 
         Args:
-            x_test (np.ndarray): Array, shape = [n_samples]
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Returns:
             (np.ndarray): Array, shape = [n_samples]
         '''
+        x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
+        x_test = np.array(x_test) if isinstance(x_test, list) else x_test
+
         vec_counts = self.tfidf_count.transform(x_test)
         predicts = np.argmax(np.dot(vec_counts, self.matrix_train.transpose()).toarray(), axis=1)
         predicts = self.array_target[predicts]
