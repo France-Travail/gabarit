@@ -11,7 +11,7 @@
 
 # Gabarit - Templates Data Science
 
-Gabarit provides you with a set of python templates for your Data Science projects. It allows you to generate a code base that includes many features to speed up the production and testing of your AI models. You just have to focus on the core of Data Science.
+Gabarit provides you with a set of python templates (a.k.a. frameworks) for your Data Science projects. It allows you to generate a code base that includes many features to speed up the production and testing of your AI models. You just have to focus on the core of Data Science.
 
 ---
 
