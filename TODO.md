@@ -49,3 +49,4 @@
 	- `utils_faster_rcnn` tests
 	- etc.
 - Implement predict for object detection tasks
+- Check if we can remove all OOM skips (e.g. in functional tests)

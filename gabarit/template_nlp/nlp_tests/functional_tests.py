@@ -46,29 +46,29 @@ class Case1_e2e_pipeline(unittest.TestCase):
         print("Test of the file 0_create_samples.py")
 
         # "Basic" case
-        fonctionnement_basique = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv -n 15"
-        self.assertEqual(subprocess.run(fonctionnement_basique, shell=True).returncode, 0)
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv -n 15"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_15_samples.csv')))
         df = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_15_samples.csv", sep=';', encoding='utf-8')
         self.assertEqual(df.shape[0], 15)
 
         # Double files
-        fonctionnement_double = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000"
-        self.assertEqual(subprocess.run(fonctionnement_double, shell=True).returncode, 0)
+        double_files_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000"
+        self.assertEqual(subprocess.run(double_files_run, shell=True).returncode, 0)
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_2000_samples.csv')))
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'multi_class_mono_label_2000_samples.csv')))
         df1 = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
         df2 = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/multi_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
         self.assertEqual(df1.shape[0], 200)
-        self.assertEqual(df2.shape[0], 200) # 200 row max
+        self.assertEqual(df2.shape[0], 200)  # 200 row max
 
     def test02_GetEmbeddingDict(self):
         '''Test of the file 0_get_embedding_dict.py'''
         print("Test of the file 0_get_embedding_dict.py")
 
         # "Basic" case
-        fonctionnement_basique = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py -f custom.300.vec"
-        self.assertEqual(subprocess.run(fonctionnement_basique, shell=True).returncode, 0)
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py -f custom.300.vec"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'custom.300.pkl')))
 
     def test03_MergeFiles(self):
@@ -76,19 +76,19 @@ class Case1_e2e_pipeline(unittest.TestCase):
         print("Test of the file 0_merge_files.py")
 
         # "Basic" case
-        fonctionnement_basique = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_merge_files.py -f mono_class_mono_label.csv multi_class_mono_label.csv -c x_col y_col -o merged_file.csv"
-        self.assertEqual(subprocess.run(fonctionnement_basique, shell=True).returncode, 0)
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_merge_files.py -f mono_class_mono_label.csv multi_class_mono_label.csv -c x_col y_col -o merged_file.csv"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'merged_file.csv')))
         df = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/merged_file.csv", sep=';', encoding='utf-8')
-        self.assertGreater(df.shape[0], 200) # We check that there are more than 200 elements (ie. the size of one of the two files)
+        self.assertGreater(df.shape[0], 200)  # We check that there are more than 200 elements (ie. the size of one of the two files)
 
     def test04_SplitTrainValidTest(self):
         '''Test of the file 0_split_train_valid_test.py'''
         print("Test of the file 0_split_train_valid_test.py")
 
         # "Basic" case
-        fonctionnement_basique = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
-        self.assertEqual(subprocess.run(fonctionnement_basique, shell=True).returncode, 0)
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_train.csv')))
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_valid.csv')))
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_test.csv')))
@@ -153,8 +153,8 @@ class Case1_e2e_pipeline(unittest.TestCase):
         print("Test of the file 1_preprocess_data.py")
 
         # "Basic" case
-        fonctionnement_basique = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/1_preprocess_data.py -f mono_class_mono_label_train.csv mono_class_mono_label_valid.csv -p preprocess_P1 --input_col x_col"
-        self.assertEqual(subprocess.run(fonctionnement_basique, shell=True).returncode, 0)
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/1_preprocess_data.py -f mono_class_mono_label_train.csv mono_class_mono_label_valid.csv -p preprocess_P1 --input_col x_col"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check if exists
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_train_preprocess_P1.csv')))
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_valid_preprocess_P1.csv')))
@@ -172,24 +172,33 @@ class Case1_e2e_pipeline(unittest.TestCase):
         print("Test of the file 2_training.py")
 
         # "Basic" case
-        fonctionnement_basique = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/2_training.py -f mono_class_mono_label_train_preprocess_P1.csv -x preprocessed_text -y y_col --filename_valid mono_class_mono_label_valid_preprocess_P1.csv"
-        self.assertEqual(subprocess.run(fonctionnement_basique, shell=True).returncode, 0)
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/2_training.py -f mono_class_mono_label_train_preprocess_P1.csv -x preprocessed_text -y y_col --filename_valid mono_class_mono_label_valid_preprocess_P1.csv"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check model saved
-        save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm') # tfidf svm by default
+        save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
         self.assertTrue(os.path.exists(save_model_dir))
         listdir = os.listdir(os.path.join(save_model_dir))
-        self.assertGreater(len(listdir), 0)
+        self.assertEqual(len(listdir), 1)
+
+        # Multilabel - no preprocess - no valid
+        multilabel_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/2_training.py -f mono_class_multi_label.csv -x x_col -y y_col_1 y_col_2"
+        self.assertEqual(subprocess.run(multilabel_run, shell=True).returncode, 0)
+        # Check model saved
+        save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
+        self.assertTrue(os.path.exists(save_model_dir))
+        listdir = os.listdir(os.path.join(save_model_dir))
+        self.assertEqual(len(listdir), 2)
 
     def test07_PredictE2E(self):
         '''Test of the file 3_predict.py'''
         print("Test of the file 3_predict.py")
 
         # "Basic" case
-        save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm') # tfidf svm by default
-        listdir = os.listdir(os.path.join(save_model_dir))
-        model_name = listdir[0]
-        fonctionnement_basique = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_mono_label_test.csv -x x_col -m {model_name}"
-        self.assertEqual(subprocess.run(fonctionnement_basique, shell=True).returncode, 0)
+        save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
+        listdir = sorted(os.listdir(os.path.join(save_model_dir)))
+        model_name = listdir[0]  # First one trained (ordered by date)
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_mono_label_test.csv -x x_col -m {model_name}"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check predictions
         save_predictions_dir = os.path.join(full_path_lib, 'test_template_nlp-data', 'predictions', 'mono_class_mono_label_test')
         self.assertTrue(os.path.exists(save_predictions_dir))
@@ -197,11 +206,31 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[0], 'predictions.csv')))
 
         # With y_col
-        fonctionnement_with_y = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_mono_label_test.csv -x x_col -y y_col -m {model_name}"
-        self.assertEqual(subprocess.run(fonctionnement_with_y, shell=True).returncode, 0)
+        run_with_y = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_mono_label_test.csv -x x_col -y y_col -m {model_name}"
+        self.assertEqual(subprocess.run(run_with_y, shell=True).returncode, 0)
         # Check predictions
         listdir = sorted(os.listdir(os.path.join(save_predictions_dir)))
-        self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[-1], 'predictions_with_y_true.csv'))) # last folder
+        self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[-1], 'predictions_with_y_true.csv')))  # last folder
+
+        # Multilabel
+        save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
+        listdir = sorted(os.listdir(os.path.join(save_model_dir)))
+        model_name = listdir[1]  # Second one trained (ordered by date)
+        multilabel_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_multi_label.csv -x x_col -m {model_name}"
+        self.assertEqual(subprocess.run(multilabel_run, shell=True).returncode, 0)
+        # Check predictions
+        save_predictions_dir = os.path.join(full_path_lib, 'test_template_nlp-data', 'predictions', 'mono_class_multi_label')
+        self.assertTrue(os.path.exists(save_predictions_dir))
+        listdir = os.listdir(os.path.join(save_predictions_dir))
+        self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[0], 'predictions.csv')))
+
+        # Multilabel - with y_col
+        multilabel_run_with_y = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_multi_label.csv -x x_col -y y_col_1 y_col_2 -m {model_name}"
+        self.assertEqual(subprocess.run(multilabel_run_with_y, shell=True).returncode, 0)
+        # Check predictions
+        listdir = sorted(os.listdir(os.path.join(save_predictions_dir)))
+        self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[-1], 'predictions_with_y_true.csv')))  # last folder
+
 
 def test_model_mono_class_mono_label(test_class, test_model):
     '''Generic fonction to test a given model for mono-class/mono-label'''
@@ -241,7 +270,7 @@ def test_model_mono_class_mono_label(test_class, test_model):
     test_class.assertEqual(list(test_model.get_classes_from_proba(probas)), ['non', 'oui'])
     # get_top_n_from_proba
     with test_class.assertRaises(ValueError):
-        test_model.get_top_n_from_proba(probas, n=5) # Only 2 classes in our model
+        test_model.get_top_n_from_proba(probas, n=5)  # Only 2 classes in our model
     top_n, top_n_proba = test_model.get_top_n_from_proba(probas, n=2)
     test_class.assertEqual([list(_) for _ in top_n], [['non', 'oui'], ['oui', 'non']])
     test_class.assertEqual([list(_) for _ in top_n_proba], [[probas[0][index_non], probas[0][index_oui]], [probas[1][index_oui], probas[1][index_non]]])
@@ -703,6 +732,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('ModelEmbeddingLstmStructuredAttention failed')
 
+
 def test_model_mono_class_multi_label(test_class, test_model):
     '''Generic fonction to test a given model for mono-class/multi-labels'''
 
@@ -760,7 +790,7 @@ def test_model_mono_class_multi_label(test_class, test_model):
     test_class.assertEqual([list(_) for _ in test_model.get_classes_from_proba(probas)], [pred_none, pred_col_1, pred_col_2, pred_all])
     # get_top_n_from_proba
     with test_class.assertRaises(ValueError):
-        test_model.get_top_n_from_proba(probas, n=2) # Does not work with multi-labels
+        test_model.get_top_n_from_proba(probas, n=2)  # Does not work with multi-labels
     # inverse_transform
     test_class.assertEqual(list(test_model.inverse_transform(preds)), [(), ('y_col_1',), ('y_col_2',), ('y_col_1', 'y_col_2')])
 
@@ -1220,6 +1250,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_EmbeddingLstmStructuredAttention failed')
 
+
 def test_model_multi_class_mono_label(test_class, test_model):
     '''Generic fonction to test a given model for multi-classes/mono-label'''
 
@@ -1244,7 +1275,7 @@ def test_model_multi_class_mono_label(test_class, test_model):
     test_class.assertEqual(list(preds), ['none', 'a', 'b', 'both'])
     # predict_proba
     probas = test_model.predict_proba(['cdi à temps complet', 'vous disposez du permis', 'le véhicule est nécessaire', 'vous disposez du permis et le véhicule est nécessaire'])
-    test_class.assertEqual(round(probas.sum(), 3), 4.) # We round for deep learning models
+    test_class.assertEqual(round(probas.sum(), 3), 4.)  # We round for deep learning models
     test_class.assertGreater(probas[0][index_none], 1/4)
     test_class.assertLess(probas[0][index_a], probas[0][index_none])
     test_class.assertLess(probas[0][index_b], probas[0][index_none])
@@ -1265,7 +1296,7 @@ def test_model_multi_class_mono_label(test_class, test_model):
     probas2 = test_model.predict(['cdi à temps complet', 'vous disposez du permis',
                                   'le véhicule est nécessaire', 'vous disposez du permis et le véhicule est nécessaire'],
                                   return_proba=True)
-    test_class.assertEqual(round(probas2.sum(), 3), 4.) # We round for deep learning models
+    test_class.assertEqual(round(probas2.sum(), 3), 4.)  # We round for deep learning models
     test_class.assertGreater(probas2[0][index_none], 1/4)
     test_class.assertLess(probas2[0][index_a], probas2[0][index_none])
     test_class.assertLess(probas2[0][index_b], probas2[0][index_none])
@@ -1285,7 +1316,7 @@ def test_model_multi_class_mono_label(test_class, test_model):
     # predict_with_proba
     pred_proba = test_model.predict_with_proba(['cdi à temps complet', 'vous disposez du permis', 'le véhicule est nécessaire', 'vous disposez du permis et le véhicule est nécessaire'])
     test_class.assertEqual(list(pred_proba[0]), ['none', 'a', 'b', 'both'])
-    test_class.assertEqual(round(pred_proba[1].sum(), 3), 4.) # We round for deep learning models
+    test_class.assertEqual(round(pred_proba[1].sum(), 3), 4.)  # We round for deep learning models
     test_class.assertGreater(pred_proba[1][0][index_none], 1/4)
     test_class.assertLess(pred_proba[1][0][index_a], pred_proba[1][0][index_none])
     test_class.assertLess(pred_proba[1][0][index_b], pred_proba[1][0][index_none])
@@ -1311,7 +1342,7 @@ def test_model_multi_class_mono_label(test_class, test_model):
     test_class.assertEqual(list(test_model.get_classes_from_proba(probas)), ['none', 'a', 'b', 'both'])
     # get_top_n_from_proba
     with test_class.assertRaises(ValueError):
-        test_model.get_top_n_from_proba(probas, n=5) # Only 4 classes in our model
+        test_model.get_top_n_from_proba(probas, n=5)  # Only 4 classes in our model
     top_n, top_n_proba = test_model.get_top_n_from_proba(probas, n=4)
     test_class.assertEqual([_[0] for _ in top_n], ['none', 'a', 'b', 'both'])
     test_class.assertEqual(sorted(top_n[0]), sorted(['none', 'a', 'b', 'both']))

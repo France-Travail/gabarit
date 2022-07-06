@@ -15,7 +15,7 @@ transformers==4.3.2
 pytorch_lightning==1.1.8
 
 # NLP
-words-n-fun==1.5.0
+words-n-fun==1.5.1
 nltk==3.4.5 # Already in wnf
 
 # Plots
@@ -33,7 +33,7 @@ pydot==1.4.1 # Needed to plot models architecture
 lime==0.2.0.1 # Needed to get a model explanation
 
 # Optionnals - streamlit POC
-streamlit==1.7.0
+streamlit==1.10.0
 altair==4.2.0
 
 # Optionnals - code quality & cie

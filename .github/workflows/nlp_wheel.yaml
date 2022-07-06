@@ -11,7 +11,7 @@ on:
       - 'LICENSE'
       - 'Makefile'
   pull_request:
-    types: [opened, reopened, edit]
+    types: [opened, reopened, edit, synchronize]
     branches:
       - 'main'
       - 'release/v*'
@@ -103,5 +103,5 @@ jobs:
           cd dist
           whl_files=( *.whl )
           whl_file=${whl_files[0]}
-          pip install "$whl_file[tensorflow,torch]"
+          pip install "$whl_file[tensorflow,torch]" -f https://download.pytorch.org/whl/torch_stable.html
           python -c "from tmp_project import utils; print(utils.get_package_version())"

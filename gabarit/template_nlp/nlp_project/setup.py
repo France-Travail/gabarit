@@ -39,7 +39,7 @@ setup(
         'pandas==1.3.5',
         'scikit_learn>=0.24.2,<0.25',
         'lightgbm>=2.3.0,<2.3.1',  # Check if we can upgrade
-        'words-n-fun==1.5.0',
+        'words-n-fun==1.5.1',
         'nltk==3.4.5',
         'matplotlib>=3.0.3,<3.4',
         'seaborn>=0.9.0,<0.12',

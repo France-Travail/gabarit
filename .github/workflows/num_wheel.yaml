@@ -11,7 +11,7 @@ on:
       - 'LICENSE'
       - 'Makefile'
   pull_request:
-    types: [opened, reopened, edit]
+    types: [opened, reopened, edit, synchronize]
     branches:
       - 'main'
       - 'release/v*'

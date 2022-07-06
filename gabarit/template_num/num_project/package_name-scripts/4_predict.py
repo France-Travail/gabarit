@@ -125,7 +125,7 @@ def main(filename: str, model_dir: str, y_col: Union[List[Union[str, int]], None
                 try:
                     y_true = df[y_col].astype(int)  # Need to cast OHE var into integers
                     for col in y_col:
-                        assert sorted(y_true[y_col].unique()) == [0, 1]
+                        assert sorted(y_true[col].unique()) == [0, 1]
                 except Exception:
                     raise ValueError("You provided several target columns, but at least one of them does not seem to be in a correct OHE format.")
             else:

@@ -39,6 +39,12 @@ from {{package_name}}.models_training import utils_models
 from {{package_name}}.models_training.model_class import ModelClass
 from {{package_name}}.models_training.object_detectors import utils_object_detectors
 
+# TMP FIX: somehow, a json method prevents us to cache most of our models with Streamlit
+# That was not the case before, something must have changed within a third party library ?
+# Anyway, we'll just add "hash_funcs={'_json.Scanner': hash}" to st.cache when needed.
+# https://docs.streamlit.io/library/advanced-features/caching#the-hash_funcs-parameter
+# https://github.com/streamlit/streamlit/issues/4876
+
 # Get logger
 logger = logging.getLogger('{{package_name}}.4_demonstrator')
 
@@ -101,7 +107,7 @@ if 'input_image_file_area' not in st.session_state:
 # Utils functions
 # ---------------------
 
-@st.cache(allow_output_mutation=True)
+@st.cache(allow_output_mutation=True, hash_funcs={'_json.Scanner': hash})
 def load_model(selected_model: str) -> Tuple[Type[ModelClass], dict]:
     '''Loads a model
 
