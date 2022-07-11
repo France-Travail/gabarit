@@ -9,6 +9,7 @@
 - Add a note in the README.md about torch packages management (cf. https://stackoverflow.com/questions/57689387/equivalent-for-find-links-in-setup-py)
 - Improve 'packages' option in all setup.py
 - Fix all linters
+- Use dill instead of pickle ?
 
 
 ### All templates

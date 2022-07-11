@@ -359,7 +359,7 @@ class ModelClassTests(unittest.TestCase):
         y_true = np.array([0, 1, 0, 1])
         y_pred = np.array([0, 1, 1, 0])
         df_metrics = model.get_and_save_metrics(y_true, y_pred)
-        self.assertEqual(df_metrics.shape[0], 3) # 2 classes + All
+        self.assertEqual(df_metrics.shape[0], 3)  # 2 classes + All
         self.assertEqual(df_metrics.loc[2, :]['Label'], 'All')
         self.assertEqual(df_metrics.loc[2, :]['Accuracy'], 0.5)
         plots_path = os.path.join(model.model_dir, 'plots')
@@ -400,7 +400,7 @@ class ModelClassTests(unittest.TestCase):
             experiment_name="test"
         )
         df_metrics = model.get_and_save_metrics(y_true, y_pred, x=x, series_to_add=series_to_add, type_data=type_data, model_logger=model_logger)
-        self.assertEqual(df_metrics.shape[0], 3) # 2 classes + All
+        self.assertEqual(df_metrics.shape[0], 3)  # 2 classes + All
         self.assertEqual(df_metrics.loc[2, :]['Label'], 'All')
         self.assertEqual(df_metrics.loc[2, :]['Accuracy'], 0.5)
         plots_path = os.path.join(model.model_dir, 'plots')
@@ -429,7 +429,7 @@ class ModelClassTests(unittest.TestCase):
         y_true = np.array([0, 1, 0, 1])
         y_pred = np.array([0, 1, 1, 0])
         df_metrics = model.get_metrics_simple_monolabel(y_true, y_pred)
-        self.assertEqual(df_metrics.shape[0], 3) # 2 classes + All
+        self.assertEqual(df_metrics.shape[0], 3)  # 2 classes + All
         self.assertEqual(df_metrics.loc[2, :]['Label'], 'All')
         self.assertEqual(df_metrics.loc[2, :]['Accuracy'], 0.5)
         remove_dir(model_dir)
@@ -448,7 +448,7 @@ class ModelClassTests(unittest.TestCase):
         remove_dir(model_dir)
         model_name = 'test'
 
-        # get_and_save_metrics - mono-label
+        # get_and_save_metrics - multi-label
         model = ModelClass(model_dir=model_dir, model_name=model_name, multi_label=True)
         model.list_classes = ['test1', 'test2', 'test3']
         y_true = np.array([[0, 1, 0], [1, 1, 0], [0, 0, 0]])

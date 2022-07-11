@@ -1,4 +1,4 @@
-#!/usr/bin/env python3
+, **kwargs#!/usr/bin/env python3
 
 ## Definition of the parent class for the models
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
@@ -50,7 +50,8 @@ class ModelClass:
     # -> inverse_transform
     # -> get_and_save_metrics
 
-    def __init__(self, model_dir: Union[str, None] = None, model_name: Union[str, None] = None, level_save: str = 'HIGH') -> None:
+    def __init__(self, model_dir: Union[str, None] = None, model_name: Union[str, None] = None,
+                 level_save: str = 'HIGH', **kwargs) -> None:
         '''Initialization of the parent class.
 
         Kwargs:

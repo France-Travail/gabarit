@@ -53,15 +53,15 @@ class ModelClass:
     # -> predict_proba
 
     def __init__(self, model_dir: Union[str, None] = None, model_name: Union[str, None] = None, x_col: Union[str, int, None] = None,
-                 y_col: Union[str, int, list, None] = None, level_save: str = 'HIGH', multi_label: bool = False) -> None:
+                 y_col: Union[str, int, list, None] = None, level_save: str = 'HIGH', multi_label: bool = False, **kwargs) -> None:
         '''Initialization of the parent class.
 
         Kwargs:
             model_dir (str): Folder where to save the model
                 If None, creates a directory based on the model's name and the date (most common usage)
             model_name (str): The name of the model
-            x_col (str | int): Names of the columns used for the training - x
-            y_col (str ou int ou list if multi-labels): Name of the model's target column(s) - y
+            x_col (str | int): Name of the columns used for the training - x
+            y_col (str | int | list if multi-labels): Name of the model's target column(s) - y
             level_save (str): Level of saving
                 LOW: stats + configurations + logger keras - /!\\ The model can't be reused /!\\ -
                 MEDIUM: LOW + hdf5 + pkl + plots
@@ -149,7 +149,7 @@ class ModelClass:
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
         Kwargs:
-            with_new_embedding: If we use a new embedding matrix (useless if no embedding)
+            with_new_embedding (bool): If we use a new embedding matrix (useless if no embedding)
         Returns:
             predicted_class (np.ndarray): The predicted classes, shape = [n_samples, n_classes]
             predicted_proba (np.ndarray): The predicted probabilities for each class, shape = [n_samples, n_classes]
@@ -169,7 +169,7 @@ class ModelClass:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
             y_true (?): Array-like, shape = [n_samples, n_features]
         Kwargs:
-            with_new_embedding: If we use a new embedding matrix (useless if no embedding)
+            with_new_embedding (bool): If we use a new embedding matrix (useless if no embedding)
         Raises:
             ValueError: Not available in multi-labels case
         Returns:
