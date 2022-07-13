@@ -1,4 +1,4 @@
-, **kwargs#!/usr/bin/env python3
+#!/usr/bin/env python3
 
 ## Definition of the parent class for the models
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
