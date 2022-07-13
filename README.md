@@ -422,9 +422,9 @@ The pdf file is located in [pole-emploi.org](https://www.pole-emploi.org/accueil
 
 ## 9. Contacts  <a name="contacts"></a>
 
-If you have any question/enquiry feel free to drop us a mail :
+If you have any question/enquiry feel free to drop us a mail : contactadsaiframeworks.00619@pole-emploi.fr
 
-- Alexandre GAREL - Data Scientist : alexandre.garel-ext@pole-emploi.fr
-- Nicolas GREFFARD - Data Scientist : nicolas.greffard01-ext@pole-emploi.fr
-- Gautier SOLARD : Data Scientist : gautier.solard@pole-emploi.fr
-- Nicolas TOUZOT - Product Owner : nicolas.touzot@pole-emploi.fr
+- Alexandre GAREL - Data Scientist
+- Nicolas GREFFARD - Data Scientist
+- Gautier SOLARD : Data Scientist
+- Nicolas TOUZOT - Product Owner
