@@ -195,7 +195,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
 
         # "Basic" case
         save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
-        listdir = os.listdir(os.path.join(save_model_dir))
+        listdir = sorted(os.listdir(os.path.join(save_model_dir)))
         model_name = listdir[0]  # First one trained (ordered by date)
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_mono_label_test.csv -x x_col -m {model_name}"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
@@ -214,7 +214,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
 
         # Multilabel
         save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
-        listdir = os.listdir(os.path.join(save_model_dir))
+        listdir = sorted(os.listdir(os.path.join(save_model_dir)))
         model_name = listdir[1]  # Second one trained (ordered by date)
         multilabel_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_multi_label.csv -x x_col -m {model_name}"
         self.assertEqual(subprocess.run(multilabel_run, shell=True).returncode, 0)

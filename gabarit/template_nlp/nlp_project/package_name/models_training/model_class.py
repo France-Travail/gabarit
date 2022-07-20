@@ -22,6 +22,7 @@
 
 import os
 import re
+import time
 import json
 import pickle
 import logging
@@ -337,7 +338,7 @@ class ModelClass:
         self.logger.info('-- * * * * * * * * * * * * * * --')
         self.logger.info(f"Statistics f1-score{' ' + type_data if len(type_data) > 0 else ''}")
         self.logger.info('--------------------------------')
-        self.logger.info(f"Accuracy totale : {round(acc_tot * 100, 2)}% \t Trues: {trues} \t Falses: {falses}")
+        self.logger.info(f"Total accuracy : {round(acc_tot * 100, 2)}% \t Trues: {trues} \t Falses: {falses}")
         self.logger.info(f"F1-score (weighted) : {round(f1_weighted, 5)}")
         self.logger.info(f"Precision (weighted) : {round(precision_weighted, 5)}")
         self.logger.info(f"Recall (weighted) : {round(recall_weighted, 5)}")
@@ -796,7 +797,10 @@ class ModelClass:
         subfolder = os.path.join(models_dir, self.model_name)
         folder_name = datetime.now().strftime(f"{self.model_name}_%Y_%m_%d-%H_%M_%S")
         model_dir = os.path.join(subfolder, folder_name)
-        if not os.path.isdir(model_dir):
+        if os.path.isdir(model_dir):
+            time.sleep(1)  # Wait 1 second so that the 'date' changes...
+            return self._get_model_dir()  # Get new directory name
+        else:
             os.makedirs(model_dir)
         return model_dir
 

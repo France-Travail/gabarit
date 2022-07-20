@@ -1,15 +1,17 @@
 [![pypi badge](https://img.shields.io/pypi/v/gabarit.svg)](https://pypi.python.org/pypi/gabarit)
-![NLP tests](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/nlp_build_tests.yaml/badge.svg)
-![NUM tests](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/num_build_tests.yaml/badge.svg)
-![VISION tests](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/vision_build_tests.yaml/badge.svg)
-![NLP wheel](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/nlp_wheel.yaml/badge.svg)
-![NUM wheel](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/num_wheel.yaml/badge.svg)
-![VISION wheel](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/vision_wheel.yaml/badge.svg)
+![NLP tests](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/nlp_build_tests.yaml/badge.svg)
+![NUM tests](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/num_build_tests.yaml/badge.svg)
+![VISION tests](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/vision_build_tests.yaml/badge.svg)
+![NLP wheel](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/nlp_wheel.yaml/badge.svg)
+![NUM wheel](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/num_wheel.yaml/badge.svg)
+![VISION wheel](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/vision_wheel.yaml/badge.svg)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Generic badge](https://img.shields.io/badge/python-3.7|3.8-blue.svg)](https://shields.io/)
 
 
-# Gabarit - Templates Data Science - Agence Data Services
+# Gabarit - Templates Data Science
+
+Gabarit provides you with a set of python templates (a.k.a. frameworks) for your Data Science projects. It allows you to generate a code base that includes many features to speed up the production and testing of your AI models. You just have to focus on the core of Data Science.
 
 ---
 
@@ -48,7 +50,9 @@ This project is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE V3.0. Pl
 	- [5.2 Numeric framework](#numeric)
 	- [5.3 Computer Vision framework](#vision)
 - [6. Misc.](#misc2)
-- [7. Contacts](#contacts)
+- [7. Security warning](#security)
+- [8. Ethics](#ethics)
+- [9. Contacts](#contacts)
 
 
 ## 1. Philosophy <a name="philosophy"></a>
@@ -90,8 +94,8 @@ Three IA Frameworks are available:
 	- Supports :
 
 		- Regression
-		- Multi Class / Mono Label classification
-		- Mono Class / Multi Label classification
+		- Multi Classes / Mono Label classification
+		- Mono Class / Multi Labels classification
 
 
 - **Computer Vision** to tackle classification use cases on images
@@ -99,7 +103,7 @@ Three IA Frameworks are available:
 	- Supports
 
 		- Mono Class / Mono Label classification
-		- Multi Class / Mono Label classification
+		- Multi Classes / Mono Label classification
 		- Area of interest detection
 
 
@@ -208,7 +212,7 @@ and
 
 - The `preprocess.py` file contains the different preprocessing pipeline available by default by the package/project. More specifically, it contains a dictionnary of the pipelines. It will be used to create working datasets (for instance training set, valid test and test set).
 
--	Beware that the first row of each generated csv file after running a preprocessing will contain the name of the preprocessing pipeline applied such that it can be reused in the future. This row has to be skipped while parsing the resulting csv file.
+-	Beware that the first row of each generated csv file after running a preprocessing will contain the name of the preprocessing pipeline applied such that it can be reused in the future. Hence, this row (e.g. `#preprocess_P1`) is a metadata and **it has to be skipped** while parsing the csv file. Our templates provide a function (`utils.read_csv`) that does it automatically (it also returns the metadata).
 
 - The modelling part is built as follow :
 
@@ -248,7 +252,7 @@ The intended flow of a project driven by one of these framework is the following
 
 Input data are supposed to be `.csv` files and the separator and encoding are to be provided during the generation of the project. It is obviously possible to use another datatype but a transformation step to `.csv` will be required to use the scripts provided by default.
 
-Concerning the prediction target, please refer to `2_training.py`. Usually we expect One Hot Encoded format for multilabel use cases. For singlelabel use cases, a single column (string for classification, float for regression) is expected.
+Concerning the prediction target, please refer to `2_training.py`. Usually we expect One Hot Encoded format for multi-labels use cases. For single-label use cases, a single column (string for classification, float for regression) is expected.
 
 
 ## 3. Features  <a name="features"></a>
@@ -341,11 +345,15 @@ Once you have trained a model which is a release candidate :
 
   - Then you have to push it to your repository, for instance by using [twine](https://pypi.org/project/twine/) : `twine upload --username {USER} --password {PWD} --repository-url https://{repository_url} dist/*.whl`
 
-  - Note that we strongly advise to embed these steps within a Continuous Integration Pipeline and ensuring that all yout unit tests are OK (you can use nose to run your test suite : `pip install nose nose-cov && nosetests tests/`)
+  - Note that we strongly advise to embed these steps within a Continuous Integration Pipeline and ensuring that all your unit tests are OK (you can use nose to run your test suite : `pip install nose nose-cov && nosetests tests/`)
 
   - Beware, function `utils_models.predict` has to be adapted to your project needs (e.g. if some specific computations are required before or after the actual inference).
 
     - This is the function that has to be called by the web service that will serve your model. Using `utils_models.predict` instead of the actual predict method of the model class ensure that your service can stay model agnostic: if one day you decide to change your design, to use another model; the service won't be impacted.
+
+  - Warning: some libraries (such as torch, detectron2, etc.) may not be hosted on PyPI. You'll need to add an extra `--find-links` option to your pip installation.
+
+	- If you don't have access to the internet, you'll need to setup a proxy which will host all the needed libraries. You can then use `--trusted-host` and `--index-url` options.
 
 - You can use our API Framework to expose your model:
 
@@ -397,13 +405,26 @@ Projets generated by the different frameworks have some differences in how they 
 
 ## 6. Misc.  <a name="misc2"></a>
 - To this day, each framework is tested and integrated on our own continuous integration pipeline.
-- If a GPU is available, some models will automatically try to use it during training and inference  
+- If a GPU is available, some models will automatically try to use it during training and inference
 
-### 7. Contacts  <a name="contacts"></a>
+## 7. Security warning  <a name="security"></a> 
+Gabarit relies on a number of open source packages and therefore may carry on their potential security vulnerabilities. Our philosophy is to be as transparent as possible, which is why we are actively monitoring the dependabot analysis. In order to limit these vulnerabilities, we are in the regular process of upgrading these packages as soon as we can.
+Notice that some packages (namely torch and tensorflow) might lag a few versions behind the actual up to date version due to compatibility issues with CUDA and our own infrastructure. 
 
-If you have any question/enquiry feel free to drop us a mail :
+However, we remind you to be vigilant about the security vulnerabilities of the code and model that you will produce with these frameworks. It is your responsibility to ensure that the final product matches the security standards of your organization.
 
-- Alexandre GAREL - Data Scientist : alexandre.garel-ext@pole-emploi.fr
-- Nicolas GREFFARD - Data Scientist : nicolas.greffard01-ext@pole-emploi.fr
-- Gautier SOLARD : Data Scientist : gautier.solard@pole-emploi.fr
-- Nicolas TOUZOT - Product Owner : nicolas.touzot@pole-emploi.fr
+## 8. Ethics  <a name="ethics"></a>
+Pôle emploi intends to include the development and use of artificial intelligence algorithms and solutions in a sustainable and ethical approach. As such, Pôle emploi has adopted an ethical charter, resulting from collaborative and consultative work. The objective is to guarantee a framework of trust, respectful of the values of Pôle emploi, and to minimize the risks associated with the deployment of these technologies.
+
+The pdf file is located in [pole-emploi.org](https://www.pole-emploi.org/accueil/communiques/pole-emploi-se-dote-dune-charte-pour-une-utilisation-ethique-de-lintelligence-artificielle.html?type=article) :
+
+[PDF - Ethics charter - Pôle emploi](https://www.pole-emploi.org/files/live/sites/peorg/files/images/Communiqu%c3%a9%20de%20presse/Charte%20de%20p%c3%b4le%20emploi%20pour%20une%20Intelligence%20Artificielle%20%c3%a9....pdf)
+
+## 9. Contacts  <a name="contacts"></a>
+
+If you have any question/enquiry feel free to drop us a mail : contactadsaiframeworks.00619@pole-emploi.fr
+
+- Alexandre GAREL - Data Scientist
+- Nicolas GREFFARD - Data Scientist
+- Gautier SOLARD : Data Scientist
+- Nicolas TOUZOT - Product Owner
