@@ -25,7 +25,7 @@ import numpy as np
 import pandas as pd
 
 from {{package_name}} import utils
-from {{package_name}}.models_training.model_tfidf_naive import ModelTfidfNaive
+from {{package_name}}.models_training.model_tfidf_super_documents_naive import ModelTfidfSuperDocumentsNaive
 from {{package_name}}.models_training.utils_super_documents import TfidfTransformerSuperDocuments
 from sklearn.feature_extraction.text import TfidfVectorizer
 
@@ -38,8 +38,8 @@ def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
 
-class ModelTfidfNaiveTests(unittest.TestCase):
-    '''Main class to test model_tfidf_naive'''
+class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
+    '''Main class to test model_tfidf_super_documents_naive'''
 
     def setUp(self):
         '''SetUp fonction'''
@@ -48,14 +48,14 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         dname = os.path.dirname(abspath)
         os.chdir(dname)
 
-    def test01_model_tfidf_naive_init(self):
-        '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.__init__'''
+    def test01_model_tfidf_super_documents_naive_init(self):
+        '''Test of {{package_name}}.models_training.model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive.__init__'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
         # Init., test all params
-        model = ModelTfidfNaive(model_dir=model_dir)
+        model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir)
         self.assertEqual(model.model_dir, model_dir)
         self.assertTrue(os.path.isdir(model_dir))
         self.assertFalse(model.pipeline is None)
@@ -66,33 +66,33 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Check TFIDF params
-        model = ModelTfidfNaive(model_dir=model_dir, tfidf_transformer_params={'norm': 'l1', 'sublinear_tf': True})
+        model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, tfidf_transformer_params={'norm': 'l1', 'sublinear_tf': True})
         self.assertEqual(model.pipeline['tfidf'].norm, 'l1')
         self.assertEqual(model.pipeline['tfidf'].sublinear_tf, True)
         remove_dir(model_dir)
 
         # Check TFIDF count params - mono-label
-        model = ModelTfidfNaive(model_dir=model_dir, tfidf_count_params={'analyzer': 'char', 'binary': True})
+        model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, tfidf_count_params={'analyzer': 'char', 'binary': True})
         self.assertEqual(model.pipeline['tfidf_count'].analyzer, 'char')
         self.assertEqual(model.pipeline['tfidf_count'].binary, True)
         remove_dir(model_dir)
 
         # Check with super documents
-        model = ModelTfidfNaive(model_dir=model_dir, with_super_documents=True)
+        model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, with_super_documents=True)
         self.assertEqual(model.with_super_documents, True)
         remove_dir(model_dir)
 
         # Error
         with self.assertRaises(ValueError):
-            model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy='toto')
+            model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy='toto')
         remove_dir(model_dir)
 
         with self.assertRaises(ValueError):
-            model = ModelTfidfNaive(model_dir=model_dir, multi_label=True)
+            model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=True)
         remove_dir(model_dir)
 
-    def test02_model_tfidf_naive_fit(self):
-        '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.fit'''
+    def test02_model_tfidf_super_documents_naive_fit(self):
+        '''Test of {{package_name}}.models_training.model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive.fit'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -102,7 +102,7 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         y_train_mono = np.array([0, 1, 0, 1, 2])
         model_vec = TfidfVectorizer()
 
-        model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         model.fit(x_train, y_train_mono)
         model_vec.fit(x_train, y_train_mono)
 
@@ -113,13 +113,13 @@ class ModelTfidfNaiveTests(unittest.TestCase):
 
         # test Error
         with self.assertRaises(RuntimeError):
-            model = ModelTfidfNaive(model_dir=model_dir)
+            model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir)
             model.fit(x_train, y_train_mono)
             model.fit(x_train, y_train_mono)
         remove_dir(model_dir)
 
-    def test03_model_tfidf_naive_predict(self):
-        '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.predict'''
+    def test03_model_tfidf_super_documents_naive_predict(self):
+        '''Test of {{package_name}}.models_training.model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive.predict'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -131,13 +131,13 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         y_train_str = np.array(['a', 'b', 'a', 'b', 'c'])
 
         # Mono label - no strategy
-        model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         model.fit(x_train, y_train_mono)
         preds = model.predict('test', return_proba=False)
         self.assertEqual(preds, model.predict(['test'], return_proba=False)[0])
         remove_dir(model_dir)
 
-        model_str = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model_str = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         model_str.fit(x_train, y_train_str)
         preds_str = model_str.predict(x_train, return_proba=False)
         self.assertEqual(preds_str.shape, (len(x_train),))
@@ -146,12 +146,12 @@ class ModelTfidfNaiveTests(unittest.TestCase):
 
         # Model needs to be fitted
         with self.assertRaises(AttributeError):
-            model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
+            model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
             model.predict('test')
         remove_dir(model_dir)
 
-    def test04_model_tfidf_naive_predict_proba(self):
-        '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.predict_proba'''
+    def test04_model_tfidf_super_documents_naive_predict_proba(self):
+        '''Test of {{package_name}}.models_training.model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive.predict_proba'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -164,7 +164,7 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         cols = ['test1', 'test2', 'test3']
 
         # Mono-label - no strategy
-        model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
+        model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
         model.fit(x_train, y_train_mono)
         preds = model.predict_proba(x_train)
         self.assertEqual(preds.shape, (len(x_train), n_classes))
@@ -174,12 +174,12 @@ class ModelTfidfNaiveTests(unittest.TestCase):
 
         # Model needs to be fitted
         with self.assertRaises(AttributeError):
-            model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
+            model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
             model.compute_scores('test')
         remove_dir(model_dir)
 
-    def test05_model_tfidf_naive_compute_scores(self):
-        '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.compute_scores'''
+    def test05_model_tfidf_super_documents_naive_compute_scores(self):
+        '''Test of {{package_name}}.models_training.model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive.compute_scores'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -191,13 +191,13 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         y_train_str = np.array(['a', 'b', 'a', 'b', 'c'])
 
         # Mono label - no strategy
-        model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         model.fit(x_train, y_train_mono)
         preds = model.compute_scores(x_train)
         self.assertEqual(preds.shape, (len(x_train),))
         remove_dir(model_dir)
 
-        model_str = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model_str = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         model_str.fit(x_train, y_train_str)
         preds_str = model_str.compute_scores(x_train)
         self.assertEqual(preds_str.shape, (len(x_train),))
@@ -206,18 +206,18 @@ class ModelTfidfNaiveTests(unittest.TestCase):
 
         # Model needs to be fitted
         with self.assertRaises(AttributeError):
-            model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
+            model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
             model.compute_scores(x_train)
         remove_dir(model_dir)
 
-    def test06_model_tfidf_naive_save(self):
-        '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.save'''
+    def test06_model_tfidf_super_documents_naive_save(self):
+        '''Test of {{package_name}}.models_training.model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive.save'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
         # Nominal case
-        model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
+        model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"{model.model_name}.pkl")))
@@ -245,8 +245,8 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         self.assertTrue('tfidf_count_confs' in configs.keys())
         remove_dir(model_dir)
 
-    def test07_model_tfidf_naive_reload_from_standalone(self):
-        '''Test of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive.reload_from_standalone'''
+    def test07_model_tfidf_super_documents_naive_reload_from_standalone(self):
+        '''Test of {{package_name}}.models_training.model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive.reload_from_standalone'''
 
         ############################################
         # mono_label & without multi-classes strategy
@@ -257,7 +257,7 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
         x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
         y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
-        model = ModelTfidfNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         tfidf = model.tfidf
         tfidf_count = model.tfidf_count
         model.fit(x_train, y_train_mono)
@@ -268,7 +268,7 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         conf_path = os.path.join(model.model_dir, "configurations.json")
         matrix_train_path = os.path.join(model.model_dir, "matrix_train.csv")
         array_target_path = os.path.join(model.model_dir, "array_target.csv")
-        new_model = ModelTfidfNaive()
+        new_model = ModelTfidfSuperDocumentsNaive()
         new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, matrix_train_path=matrix_train_path, array_target_path=array_target_path)
 
         # Test
@@ -298,20 +298,20 @@ class ModelTfidfNaiveTests(unittest.TestCase):
         ############################################
 
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfNaive()
+            new_model = ModelTfidfSuperDocumentsNaive()
             new_model.reload_from_standalone(configuration_path='toto.json', sklearn_pipeline_path=pkl_path, matrix_train_path=matrix_train_path, array_target_path=array_target_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfNaive()
+            new_model = ModelTfidfSuperDocumentsNaive()
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path='toto.pkl', matrix_train_path=matrix_train_path, array_target_path=array_target_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfNaive()
+            new_model = ModelTfidfSuperDocumentsNaive()
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, matrix_train_path='toto.csv', array_target_path=array_target_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfNaive()
+            new_model = ModelTfidfSuperDocumentsNaive()
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, matrix_train_path=matrix_train_path, array_target_path='toto.csv')
 
-    def test08_model_tfidf_naive_with_super_documents(self):
-        '''Test of the fit and predict with super documents of {{package_name}}.models_training.model_tfidf_naive.ModelTfidfNaive'''
+    def test08_model_tfidf_super_documents_naive_with_super_documents(self):
+        '''Test of the fit and predict with super documents of {{package_name}}.models_training.model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -323,7 +323,7 @@ class ModelTfidfNaiveTests(unittest.TestCase):
                             ])
         target = np.array(['s','s','p'])
 
-        model = ModelTfidfNaive(model_dir=model_dir)
+        model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir)
         model.fit(corpus, target)
         preds = model.predict(corpus, return_proba=False)
         self.assertTrue(isinstance(model.tfidf, TfidfTransformerSuperDocuments))

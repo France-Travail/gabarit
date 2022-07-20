@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Modèle TFIDF Naive
+## Model TFIDF Super Documents Naive 
 
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
@@ -18,7 +18,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelTfidfNaive -> Model for predictions TF-IDF naive
+# - ModelTfidfSuperDocumentsNaive -> Model for predictions TF-IDF naive with super documents
 
 
 import os
@@ -41,10 +41,10 @@ from {{package_name}}.models_training.model_pipeline import ModelPipeline
 from {{package_name}}.models_training.utils_super_documents import TfidfTransformerSuperDocuments
 
 
-class ModelTfidfNaive(ModelPipeline):
+class ModelTfidfSuperDocumentsNaive(ModelPipeline):
     '''Model for predictions via TF-IDF + Naive'''
 
-    _default_name = 'model_tfidf_naive'
+    _default_name = 'model_tfidf_super_documents_naive'
 
     def __init__(self, tfidf_count_params: Union[dict, None] = None, tfidf_transformer_params: Union[dict, None] = None, 
                  multiclass_strategy: Union[str, None] = None, **kwargs):
@@ -65,7 +65,7 @@ class ModelTfidfNaive(ModelPipeline):
         self.with_super_documents = True
 
         if self.multi_label:
-            raise ValueError("The TFIDF Naive does not support multi label")
+            raise ValueError("This model does not support multi-labels")
 
         # Get logger (must be done after super init)
         self.logger = logging.getLogger(__name__)

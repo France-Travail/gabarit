@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Modèle TFIDF Cosine Similarity
+## Model TFIDF Cosine Similarity
 
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
@@ -63,7 +63,7 @@ class ModelTfidfCos(ModelPipeline):
         super().__init__(**kwargs)
 
         if self.with_super_documents and self.multi_label:
-            raise ValueError("The method with super documents does not support multi label")
+            raise ValueError("The method with super documents does not support multi-labels")
 
         # Get logger (must be done after super init)
         self.logger = logging.getLogger(__name__)
