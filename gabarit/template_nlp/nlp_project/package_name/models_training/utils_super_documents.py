@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Generic model for tfidf super documents
+## Utils for tfidf super documents
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,8 +17,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - TfidfTransformerSuperDocuments -> Generic model TfudfTransformer for super documents
-# - TfidfVectorizerSuperDocuments -> Generic model TfidfVectorizer for super documents
+# - TfidfTransformerSuperDocuments -> TfidfTransformer for super documents
+# - TfidfVectorizerSuperDocuments -> TfidfVectorizer for super documents
 
 import numpy as np
 import pandas as pd
@@ -56,11 +56,12 @@ class TfidfTransformerSuperDocuments(TfidfTransformer):
         self.fit(raw_super_documents, y)
         return self.transform(raw_documents)
 
+
 class TfidfVectorizerSuperDocuments(TfidfVectorizer):
     '''TfidfVectorize for super documents'''
 
     def get_super_documents(self, x_train, y_train):
-        '''Transform the document to super document
+        '''Transform the documents to super documents
 
         Args:
             x_train (?): Array-like, shape = [n_samples, n_targets]

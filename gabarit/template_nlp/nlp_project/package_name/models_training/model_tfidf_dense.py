@@ -62,7 +62,7 @@ class ModelTfidfDense(ModelKeras):
         self.with_super_documents = with_super_documents
 
         if self.with_super_documents and self.multi_label:
-            raise ValueError("The method with super documents does not support multi label")
+            raise ValueError("The method with super documents does not support multi-labels")
 
         # Get logger (must be done after super init)
         self.logger = logging.getLogger(__name__)
