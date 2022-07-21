@@ -45,7 +45,8 @@ class ModelPipeline(ModelClass):
 
         Kwargs:
             pipeline (Pipeline): Pipeline to use
-            with_super_documents (bool): train model with super documents
+            with_super_documents (bool): only for tfidf
+                Super_documents fits with [n_feature, n_terms] and transformers with [n_samples, n_terms]
         '''
         # Init.
         super().__init__(**kwargs)

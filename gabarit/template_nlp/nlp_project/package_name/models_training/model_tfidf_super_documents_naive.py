@@ -22,21 +22,17 @@
 
 
 import os
-import math
 import json
 import pickle
 import logging
 import numpy as np
-import pandas as pd
 from typing import Union
-from datetime import datetime
 
 from scipy.sparse import csr_matrix
 from sklearn.pipeline import Pipeline
 from sklearn.feature_extraction.text import CountVectorizer
 
 from {{package_name}} import utils
-from {{package_name}}.models_training import utils_models
 from {{package_name}}.models_training.model_pipeline import ModelPipeline
 from {{package_name}}.models_training.utils_super_documents import TfidfTransformerSuperDocuments
 
