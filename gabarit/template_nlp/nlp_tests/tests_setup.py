@@ -279,7 +279,7 @@ class Case3_unit_tests(unittest.TestCase):
             shutil.rmtree(models_path)
             os.makedirs(models_path)
 
-    def test23_test_model_tfidf_cos(self):
+    def test23_test_model_tfidf_naive(self):
         '''Launches tests of file model_tfidf_super_documents_naive.py'''
         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_tfidf_super_documents_naive.py', shell=True).returncode, 0)
         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
