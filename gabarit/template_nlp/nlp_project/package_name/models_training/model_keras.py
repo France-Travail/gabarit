@@ -411,11 +411,13 @@ class ModelKeras(ModelClass):
 
         return serve(x_test).numpy()
 
-    def _prepare_x_train(self, x_train) -> np.ndarray:
+    def _prepare_x_train(self, x_train, **kwargs) -> np.ndarray:
         '''Prepares the input data for the model
 
         Args:
             x_train (?): Array-like, shape = [n_samples, n_features]
+        Kwargs:
+            y_train (?): Array-like, shape = [n_samples, n_features], for with super documents
         Returns:
             (np.ndarray): Prepared data
         '''
