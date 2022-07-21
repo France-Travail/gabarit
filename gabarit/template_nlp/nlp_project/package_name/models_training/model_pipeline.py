@@ -46,7 +46,7 @@ class ModelPipeline(ModelClass):
         Kwargs:
             pipeline (Pipeline): Pipeline to use
             with_super_documents (bool): only for tfidf
-                Super_documents fits with [n_feature, n_terms] and transformers with [n_samples, n_terms]
+                Super documents fits with [n_feature, n_terms] and transforms with [n_samples, n_terms].
         '''
         # Init.
         super().__init__(**kwargs)
@@ -57,9 +57,7 @@ class ModelPipeline(ModelClass):
         # Manage model (to implement for children class)
         self.pipeline = pipeline
 
-        # Super documents collects all documents and selects them by label.
-        # Rather than the tfidf standardare model fitting with [n_samples, n_terms],
-        # Super documents fits with [n_feature, n_terms] and transformers with [n_samples, n_terms].
+        # Super documents (only for tfidf: collects all documents and gather them by label)
         self.with_super_documents = with_super_documents
 
     def fit(self, x_train, y_train, **kwargs) -> None:

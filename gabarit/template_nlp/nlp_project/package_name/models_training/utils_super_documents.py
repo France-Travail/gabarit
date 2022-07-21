@@ -20,9 +20,9 @@
 # - TfidfTransformerSuperDocuments -> TfidfTransformer for super documents
 # - TfidfVectorizerSuperDocuments -> TfidfVectorizer for super documents
 #
-# Super documents collects all documents and selects them by label.
-# Rather than the tfidf standardare model fitting with [n_samples, n_terms],
-# Super documents fits with [n_feature, n_terms] and transformers with [n_samples, n_terms].
+# Super documents collects all documents and gather them by label.
+# Unlinke standard tfidf model fitting with [n_samples, n_terms],
+# Super documents fits with [n_feature, n_terms] and transforms with [n_samples, n_terms].
 
 
 import numpy as np

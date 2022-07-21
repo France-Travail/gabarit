@@ -54,12 +54,14 @@ class ModelTfidfDense(ModelKeras):
         Kwargs:
             tfidf_params (dict) : Parameters for the tfidf
             with_super_documents (bool): train model with super documents
-                Super_documents fits with [n_feature, n_terms] and transformers with [n_samples, n_terms]
+                Super documents fits with [n_feature, n_terms] and transforms with [n_samples, n_terms].
         Raises:
             ValueError: If with_super_documents and multi_label
         '''
         # Init.
         super().__init__(**kwargs)
+
+        # Super documents (only for tfidf: collects all documents and gather them by label)
         self.with_super_documents = with_super_documents
 
         if self.with_super_documents and self.multi_label:
