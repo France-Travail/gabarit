@@ -62,10 +62,8 @@ class ModelPyTorchTransformersLightTests01(unittest.TestCase):
 
     def test01_model_pytorch_light_init(self):
         '''Test of {{package_name}}.models_training.model_pytorch_light.ModelPyTorchTransformersLight.__init__'''
-
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
-        # def __init__(self, max_sequence_length: int = 200, max_words: int = 100000
         # Init., test all parameters
         model = ModelPyTorchTransformersLight(model_dir=model_dir)
         self.assertEqual(model.model_dir, model_dir)

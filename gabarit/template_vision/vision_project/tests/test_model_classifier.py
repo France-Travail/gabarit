@@ -262,7 +262,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
         y_true = np.array([0, 1, 0, 1])
         y_pred = np.array([0, 1, 1, 0])
         df_metrics = model.get_and_save_metrics(y_true, y_pred)
-        self.assertEqual(df_metrics.shape[0], 3) # 2 classes + All
+        self.assertEqual(df_metrics.shape[0], 3)  # 2 classes + All
         self.assertEqual(df_metrics.loc[2, :]['Label'], 'All')
         self.assertEqual(df_metrics.loc[2, :]['Accuracy'], 0.5)
         plots_path = os.path.join(model.model_dir, 'plots')
@@ -283,7 +283,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
             experiment_name="test"
         )
         df_metrics = model.get_and_save_metrics(y_true, y_pred, list_files_x=list_files_x, type_data=type_data, model_logger=model_logger)
-        self.assertEqual(df_metrics.shape[0], 3) # 2 classes + All
+        self.assertEqual(df_metrics.shape[0], 3)  # 2 classes + All
         self.assertEqual(df_metrics.loc[2, :]['Label'], 'All')
         self.assertEqual(df_metrics.loc[2, :]['Accuracy'], 0.5)
         plots_path = os.path.join(model.model_dir, 'plots')
@@ -311,7 +311,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
         y_true = np.array([0, 1, 0, 1])
         y_pred = np.array([0, 1, 1, 0])
         df_metrics = model.get_metrics_simple_monolabel(y_true, y_pred)
-        self.assertEqual(df_metrics.shape[0], 3) # 2 classes + All
+        self.assertEqual(df_metrics.shape[0], 3)  # 2 classes + All
         self.assertEqual(df_metrics.loc[2, :]['Label'], 'All')
         self.assertEqual(df_metrics.loc[2, :]['Accuracy'], 0.5)
         remove_dir(model_dir)

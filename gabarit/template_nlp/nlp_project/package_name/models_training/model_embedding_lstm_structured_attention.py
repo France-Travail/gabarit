@@ -104,7 +104,7 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
         Kwargs:
-            with_new_embedding: If we use a new embedding matrix
+            with_new_embedding (bool): If we use a new embedding matrix
             experimental_version (bool): If an experimental (but faster) version must be used
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
@@ -157,7 +157,7 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
         '''Prepares the input data for the model. Called when fitting the model
 
         Args:
-            x_train (?): Array-like, shape = [n_samples, n_features]
+            x_test (?): Array-like, shape = [n_samples, n_features]
         Kwargs:
             max_sequence_length (int): Maximum number of words per sequence (ie. sentences)
                 Default to self.max_sequence_length.
