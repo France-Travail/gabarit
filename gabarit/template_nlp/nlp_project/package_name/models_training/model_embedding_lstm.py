@@ -177,13 +177,10 @@ class ModelEmbeddingLstm(ModelKeras):
         LSTM_UNITS = 100
         DENSE_HIDDEN_UNITS = 4 * LSTM_UNITS
         words = Input(shape=(self.max_sequence_length,))
-        # trainable=True to finetune the model
-        # words = Input(shape=(None,))
-        # x = Embedding(*embedding_matrix.shape, weights=[embedding_matrix], trainable=False)(words)
         x = Embedding(input_dim, embedding_size, weights=[embedding_matrix], trainable=False)(words)
         x = BatchNormalization(momentum=0.9)(x)
         x = SpatialDropout1D(0.5)(x)
-        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True))(x)  # returns a sequence of vectors of dimension 32
+        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True))(x)
         x = SpatialDropout1D(0.5)(x)
         hidden = concatenate([
             GlobalMaxPooling1D()(x),
