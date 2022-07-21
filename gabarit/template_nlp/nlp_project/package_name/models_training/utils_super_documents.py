@@ -19,12 +19,16 @@
 # Classes :
 # - TfidfTransformerSuperDocuments -> TfidfTransformer for super documents
 # - TfidfVectorizerSuperDocuments -> TfidfVectorizer for super documents
+#
+# Super documents collects all documents and selects them by label.
+# Rather than the tfidf standardare model fitting with [n_samples, n_terms],
+# Super documents fits with [n_feature, n_terms] and transformers with [n_samples, n_terms].
+
 
 import numpy as np
 import pandas as pd
 
 from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
-
 
 class TfidfTransformerSuperDocuments(TfidfTransformer):
     '''TfidfTransformer for super documents'''

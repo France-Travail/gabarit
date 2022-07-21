@@ -439,6 +439,7 @@ class ModelTfidfLgbmTests(unittest.TestCase):
         self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
         self.assertEqual(model.tfidf.get_params(), tfidf.get_params())
         self.assertEqual(model.lgbm.get_params(), lgbm.get_params())
+        self.assertEqual(model.with_super_documents, new_model.with_super_documents)
         # We can't really test the pipeline so we test predictions
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
         remove_dir(model_dir)

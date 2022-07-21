@@ -335,6 +335,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         self.assertEqual(model.validation_split, new_model.validation_split)
         self.assertEqual(model.patience, new_model.patience)
         self.assertEqual(model.embedding_name, new_model.embedding_name)
+        self.assertEqual(model.with_super_documents, new_model.with_super_documents)
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)

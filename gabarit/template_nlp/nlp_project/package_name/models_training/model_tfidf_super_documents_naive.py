@@ -101,7 +101,6 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
 
         # No need to save the parameters of the pipeline steps, it is already done in ModelPipeline
         json_data['multiclass_strategy'] = self.multiclass_strategy
-        json_data['with_super_documents'] = self.with_super_documents
         json_data['classes_'] = self.tfidf.classes_ if hasattr(self.tfidf, 'classes_') else None
 
         np.savetxt(os.path.join(self.model_dir, 'matrix_train.csv'), self.matrix_train.toarray(), delimiter=";")

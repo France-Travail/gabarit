@@ -40,7 +40,7 @@ class ModelPipeline(ModelClass):
     # Not implemented :
     # -> reload
 
-    def __init__(self, pipeline: Union[Pipeline, None] = None, with_super_documents: bool=False, **kwargs) -> None:
+    def __init__(self, pipeline: Union[Pipeline, None] = None, with_super_documents: bool = False, **kwargs) -> None:
         '''Initialization of the class (see ModelClass for more arguments)
 
         Kwargs:
@@ -57,7 +57,9 @@ class ModelPipeline(ModelClass):
         # Manage model (to implement for children class)
         self.pipeline = pipeline
 
-        # If we should use the agregation in super documents
+        # Super documents collects all documents and selects them by label.
+        # Rather than the tfidf standardare model fitting with [n_samples, n_terms],
+        # Super documents fits with [n_feature, n_terms] and transformers with [n_samples, n_terms].
         self.with_super_documents = with_super_documents
 
     def fit(self, x_train, y_train, **kwargs) -> None:
@@ -161,6 +163,7 @@ class ModelPipeline(ModelClass):
             json_data = {}
 
         json_data['librairie'] = 'scikit-learn'
+        json_data['with_super_documents'] = self.with_super_documents
 
         # Add each pipeline steps' conf
         if self.pipeline is not None:

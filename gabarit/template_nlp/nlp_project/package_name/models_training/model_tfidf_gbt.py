@@ -172,7 +172,7 @@ class ModelTfidfGbt(ModelPipeline):
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['x_col', 'y_col',
                           'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'multiclass_strategy']:
+                          'multiclass_strategy', 'with_super_documents']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload pipeline
