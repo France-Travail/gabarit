@@ -52,6 +52,8 @@ class ModelTfidfSvm(ModelPipeline):
             tfidf_params (dict) : Parameters for the tfidf
             svc_params (dict) : Parameters for the SVC
             multiclass_strategy (str): Multi-classes strategy, 'ovr' (OneVsRest), or 'ovo' (OneVsOne). If None, use the default of the algorithm.
+            with_super_documents (bool): train model with super documents
+                Super_documents fits with [n_feature, n_terms] and transformers with [n_samples, n_terms]
         Raises:
             ValueError: If multiclass_strategy is not 'ovo', 'ovr' or None
             ValueError: If with_super_documents and multi_label
