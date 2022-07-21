@@ -10,6 +10,7 @@
 - Improve 'packages' option in all setup.py
 - Fix all linters
 - Use dill instead of pickle ?
+- Add an option to remove multi_label if not needed (to clean up the code). We might also do the contrary : only keep multi_label.
 
 
 ### All templates
