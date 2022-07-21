@@ -271,6 +271,26 @@ class Case3_unit_tests(unittest.TestCase):
         # If available, run the test
         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_pytorch_light.py', shell=True).returncode, 0)
 
+    def test22_test_model_tfidf_cos(self):
+        '''Launches tests of file model_tfidf_cos.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_tfidf_cos.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
+
+    def test23_test_model_tfidf_cos(self):
+        '''Launches tests of file model_tfidf_super_documents_naive.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_tfidf_super_documents_naive.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
+
+    def test24_test_utils_super_documents(self):
+        '''Launches tests of file utils.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_utils_super_documents.py', shell=True).returncode, 0)
+
 
 if __name__ == '__main__':
     # Retrieve pip params
