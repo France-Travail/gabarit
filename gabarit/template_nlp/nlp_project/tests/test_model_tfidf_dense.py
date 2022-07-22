@@ -27,10 +27,8 @@ import pickle
 import numpy as np
 import pandas as pd
 
-import tensorflow
 import tensorflow.keras as keras
 
-from {{package_name}} import utils
 from {{package_name}}.models_training.model_tfidf_dense import ModelTfidfDense
 from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
 
@@ -193,18 +191,35 @@ class ModelTfidfDenseTests(unittest.TestCase):
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
-        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+
+        # Set vars
+        x_train = ['test titi toto', 'toto', 'titi test test toto', 'titi']
+        y_train = np.array([0, 1, 0, 1])
 
         # Nominal case
-        x_train = ['test titi toto', 'toto', 'titi test test toto', 'titi']
+        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         x_train_prepared = model._prepare_x_train(x_train)
         # Hard to easily test the results. We "only" check shapes
         size_vocab = len(set([word for elem in x_train for word in elem.split()]))
         nb_elems = len(x_train_prepared)
         self.assertEqual(x_train_prepared.shape[0], nb_elems)
         self.assertEqual(x_train_prepared.shape[1], size_vocab)
+        remove_dir(model_dir)
 
-        # Clean
+        # with super documents cas
+        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, with_super_documents=True)
+        model.tfidf.fit(x_train, y_train)
+        x_train_prepared = model._prepare_x_train(x_train)
+        size_vocab = len(set([word for elem in x_train for word in elem.split()]))
+        nb_elems = len(x_train_prepared)
+        self.assertEqual(x_train_prepared.shape[0], nb_elems)
+        self.assertEqual(x_train_prepared.shape[1], size_vocab)
+        remove_dir(model_dir)
+
+        # Error
+        with self.assertRaises(AttributeError):
+            model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, with_super_documents=True)
+            x_train_prepared = model._prepare_x_train(x_train)
         remove_dir(model_dir)
 
     def test05_model_tfidf_dense_prepare_x_test(self):

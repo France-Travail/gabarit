@@ -27,6 +27,8 @@ import logging
 import numpy as np
 import seaborn as sns
 from typing import Union, List, Callable
+
+from sklearn.exceptions import NotFittedError
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from tensorflow.keras.optimizers import Adam
@@ -94,20 +96,27 @@ class ModelTfidfDense(ModelKeras):
         else:
             return self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
-    def _prepare_x_train(self, x_train, y_train = None, **kwargs) -> np.ndarray:
+    def _prepare_x_train(self, x_train) -> np.ndarray:
         '''Prepares the input data for the model. Called when fitting the model
 
         Args:
             x_train (?): Array-like, shape = [n_samples, n_features]
-        Kwargs:
-            y_train (?): Array-like, shape = [n_samples, n_features], for with super documents
         Returns:
             (np.ndarray): Prepared data
+        Raises:
+            If self.tfidf not fitted and with_super_documents
         '''
-        # Fit tfidf & return x transformed
-        self.tfidf.fit(x_train, y_train)
-        # TODO: Use of todense because tensorflow 2.3 does not support sparse data anymore
-        return self.tfidf.transform(x_train).todense()
+        try:
+            # TODO: Use of todense because tensorflow 2.3 does not support sparse data anymore
+            return self.tfidf.transform(x_train).todense()
+        except NotFittedError:
+            if not self.with_super_documents:
+                self.tfidf.fit(x_train)
+                # TODO: Use of todense because tensorflow 2.3 does not support sparse data anymore
+                return self.tfidf.transform(x_train).todense()
+            else:
+                raise AttributeError("The function _prepare_x_train with option with_super_documents can't be called as long as the tfidf vector hasn't been fitted, \
+                        fit tfidf vector with : self.tfidf.fit(x_train, y_train)")
 
     def _prepare_x_test(self, x_test) -> np.ndarray:
         '''Prepares the input data for the model. Called when fitting the model
@@ -270,6 +279,26 @@ class ModelTfidfDense(ModelKeras):
         # Reload tfidf
         with open(tfidf_path, 'rb') as f:
             self.tfidf = pickle.load(f)
+
+    def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:
+        '''Fits the model
+
+        Args:
+            x_train (?): Array-like, shape = [n_samples, n_features]
+            y_train (?): Array-like, shape = [n_samples, n_targets]
+            x_valid (?): Array-like, shape = [n_samples, n_features]
+            y_valid (?): Array-like, shape = [n_samples, n_targets]
+        Kwargs:
+            with_shuffle (bool): If x, y must be shuffled before fitting
+                Experimental: We must verify if it works as intended depending on the formats of x and y
+                This should be used if y is not shuffled as the split_validation takes the lines in order.
+                Thus, the validation set might get classes which are not in the train set ...
+        Raises:
+            RuntimeError: If one tries to fit again a model with nb_iter_keras > 1
+            AssertionError: If different classes when comparing an already fitted model and a new dataset
+        '''
+        self.tfidf.fit(x_train, y_train)
+        super().fit(x_train, y_train, x_valid, y_valid, with_shuffle)
 
 
 if __name__ == '__main__':
