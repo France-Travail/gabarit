@@ -224,7 +224,7 @@ class ModelKeras(ModelClass):
         y_valid_dummies = np.array(y_valid_dummies)
 
         # Prepare x_train
-        x_train = self._prepare_x_train(x_train, y_train=y_train)
+        x_train = self._prepare_x_train(x_train)
 
         # If available, also prepare x_valid & get validation_data (tuple)
         validation_data: Optional[tuple] = None  # Def. None if y_valid is None
@@ -411,13 +411,11 @@ class ModelKeras(ModelClass):
 
         return serve(x_test).numpy()
 
-    def _prepare_x_train(self, x_train, **kwargs) -> np.ndarray:
+    def _prepare_x_train(self, x_train) -> np.ndarray:
         '''Prepares the input data for the model
 
         Args:
             x_train (?): Array-like, shape = [n_samples, n_features]
-        Kwargs:
-            y_train (?): Array-like, shape = [n_samples, n_features], for with super documents
         Returns:
             (np.ndarray): Prepared data
         '''
