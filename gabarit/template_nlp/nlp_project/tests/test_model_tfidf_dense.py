@@ -381,7 +381,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         target = np.array(['s','s','p'])
 
         model = ModelTfidfDense(model_dir=model_dir)
-        model_s = ModelTfidfDense(model_dir=model_dir, with_super_documents=True)
+        model_s = ModelTfidfDense(with_super_documents=True)
         model.fit(corpus, target)
         model_s.fit(corpus, target)
         preds = model_s.predict(corpus, return_proba=False)
@@ -390,6 +390,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         self.assertFalse(np.equal(model.tfidf.transform(corpus).toarray(), model_s.tfidf.transform(corpus).toarray()).all())
         self.assertEqual(preds.shape, (len(target),))
         remove_dir(model_dir)
+        remove_dir(model_s.model_dir)
 
 
 # Perform tests
