@@ -65,10 +65,17 @@ class ModelPipelineTests(unittest.TestCase):
         self.assertEqual(model.model_dir, model_dir)
         self.assertTrue(os.path.isdir(model_dir))
         self.assertEqual(model.pipeline, None)
-        self.assertFalse(model.with_super_documents)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
         self.assertTrue(type(model._is_gpu_activated()) == bool)
         model.display_if_gpu_activated()
+        remove_dir(model_dir)
+
+        # test with super documents
+        model = ModelPipeline(model_dir=model_dir)
+        self.assertFalse(model.with_super_documents)
+        remove_dir(model_dir)
+        model = ModelPipeline(model_dir=model_dir, with_super_documents=True)
+        self.assertTrue(model.with_super_documents)
         remove_dir(model_dir)
 
         tfidf = TfidfVectorizer()
