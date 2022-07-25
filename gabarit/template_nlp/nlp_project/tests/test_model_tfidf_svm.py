@@ -133,6 +133,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         # Mono-label - no strategy
         model = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
         model.fit(x_train, y_train_mono)
+        self.assertFalse(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         preds = model.predict('test', return_proba=False)
@@ -204,6 +205,20 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual([elem for elem in preds], [elem for elem in model.predict(['test'], return_proba=False)[0]])
         proba = model.predict(x_train, return_proba=True)
         self.assertEqual(proba.shape, (len(x_train), len(cols)))
+        proba = model.predict('test', return_proba=True)
+        self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
+        remove_dir(model_dir)
+
+        # Mono-label - with super documents
+        model = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model.fit(x_train, y_train_mono)
+        self.assertTrue(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
+        preds = model.predict(x_train, return_proba=False)
+        self.assertEqual(preds.shape, (len(x_train),))
+        preds = model.predict('test', return_proba=False)
+        self.assertEqual(preds, model.predict(['test'], return_proba=False)[0])
+        proba = model.predict(x_train, return_proba=True)
+        self.assertEqual(proba.shape, (len(x_train), n_classes))
         proba = model.predict('test', return_proba=True)
         self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
         remove_dir(model_dir)
@@ -623,32 +638,6 @@ class ModelTfidfSvmTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             new_model = ModelTfidfSvm()
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path='toto.pkl')
-
-
-    def test08_model_tfidf_svm_with_super_documents(self):
-        '''Test of the fit and predict with super documents of {{package_name}}.models_training.model_tfidf_svm.ModelTfidfSvm'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        corpus = np.array([
-                        "Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
-                        "Covid - le point sur des chiffres qui s'envolent en France",
-                        "Carte des résultats des législatives : les qualifiés circonscription par circonscription",
-                            ])
-        target = np.array(['s','s','p'])
-
-        model = ModelTfidfSvm(model_dir=model_dir)
-        model_s = ModelTfidfSvm(model_dir=model_dir, with_super_documents=True)
-        model.fit(corpus, target)
-        model_s.fit(corpus, target)
-        preds = model_s.predict(corpus, return_proba=False)
-        self.assertFalse(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
-        self.assertTrue(isinstance(model_s.tfidf, TfidfVectorizerSuperDocuments))
-        self.assertFalse(np.equal(model.tfidf.transform(corpus).toarray(), model_s.tfidf.transform(corpus).toarray()).all())
-        self.assertEqual(preds.shape, (len(target),))
-        remove_dir(model_dir)
-
 
 # Perform tests
 if __name__ == '__main__':

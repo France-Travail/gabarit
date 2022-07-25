@@ -102,6 +102,43 @@ class ModelTfidfCos(ModelPipeline):
         self.matrix_train = self.pipeline.transform(x_train)
 
     @utils.trained_needed
+    def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
+        '''Predictions
+
+        Args:
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
+        Kwargs:
+            return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
+        Returns:
+            (np.ndarray): Array, shape = [n_samples]
+        '''
+        if return_proba:
+            return self.predict_proba(x_test)
+        else:
+            return self.compute_scores(x_test)
+
+    @utils.data_agnostic_str_to_list
+    @utils.trained_needed
+    def predict_proba(self, x_test, **kwargs) -> np.ndarray:
+        '''Predicts the probabilities on the test set
+        - /!\\ THE MODEL COSINE SIMILARITY DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL TO 0 OR 1 /!\\ -
+
+        Args:
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
+        Returns:
+            (np.ndarray): Array, shape = [n_samples, n_classes]
+        '''
+        if not self.multi_label:
+            preds = self.compute_scores(x_test)
+            # Format ['a', 'b', 'c', 'a', ..., 'b']
+            # Transform to "proba"
+            transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
+            probas = np.array([transform_dict[x] for x in preds])
+        else:
+            raise ValueError("The TFIDF cosine similarity does not support multi label")
+        return probas
+
+    @utils.trained_needed
     def compute_scores(self, x_test) -> np.ndarray:
         '''Compute the scores for the prediction
 
@@ -129,43 +166,6 @@ class ModelTfidfCos(ModelPipeline):
             array_predicts = np.append(array_predicts, np.argmax(np.concatenate(list_cosine), axis=0))
         predicts = self.array_target[array_predicts]
         return predicts
-
-    @utils.data_agnostic_str_to_list
-    @utils.trained_needed
-    def predict_proba(self, x_test, **kwargs) -> np.ndarray:
-        '''Predicts the probabilities on the test set
-        - /!\\ THE MODEL COSINE SIMILARITY DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL TO 0 OR 1 /!\\ -
-
-        Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples]
-        Returns:
-            (np.ndarray): Array, shape = [n_samples, n_classes]
-        '''
-        if not self.multi_label:
-            preds = self.compute_scores(x_test)
-            # Format ['a', 'b', 'c', 'a', ..., 'b']
-            # Transform to "proba"
-            transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
-            probas = np.array([transform_dict[x] for x in preds])
-        else:
-            raise ValueError("The TFIDF cosine similarity does not support multi label")
-        return probas
-
-    @utils.trained_needed
-    def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
-        '''Predictions
-
-        Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples]
-        Kwargs:
-            return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
-        Returns:
-            (np.ndarray): Array, shape = [n_samples]
-        '''
-        if return_proba:
-            return self.predict_proba(x_test)
-        else:
-            return self.compute_scores(x_test)
 
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model

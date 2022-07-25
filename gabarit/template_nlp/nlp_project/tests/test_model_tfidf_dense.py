@@ -28,6 +28,7 @@ import numpy as np
 import pandas as pd
 
 import tensorflow.keras as keras
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from {{package_name}}.models_training.model_tfidf_dense import ModelTfidfDense
 from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
@@ -73,8 +74,11 @@ class ModelTfidfDenseTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Check with super documents
+        model = ModelTfidfDense(model_dir=model_dir)
+        self.assertFalse(model.with_super_documents)
+        remove_dir(model_dir)
         model = ModelTfidfDense(model_dir=model_dir, with_super_documents=True)
-        self.assertEqual(model.with_super_documents, True)
+        self.assertTrue(model.with_super_documents)
         remove_dir(model_dir)
 
         # Error
@@ -158,7 +162,22 @@ class ModelTfidfDenseTests(unittest.TestCase):
             model.predict_proba('test')
         remove_dir(model_dir)
 
-    def test03_model_tfidf_dense_get_predict_position(self):
+    def test03_model_tfidf_dense_fit(self):
+        '''Test of the method {{package_name}}.models_training.test_model_tfidf_dense.ModelTfidfDense.fit'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Set vars
+        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
+        y_train_mono = np.array([0, 1, 0, 1, 2])
+
+        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        model.fit(x_train, y_train_mono)
+        self.assertTrue(model.trained)
+        remove_dir(model_dir)
+
+    def test04_model_tfidf_dense_get_predict_position(self):
         '''Test of the method {{package_name}}.models_training.test_model_tfidf_dense.ModelTfidfDense.get_predict_position'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -185,7 +204,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
             model.get_predict_position(x_train, y_train_mono)
         remove_dir(model_dir)
 
-    def test04_model_tfidf_dense_prepare_x_train(self):
+    def test05_model_tfidf_dense_prepare_x_train(self):
         '''Test of {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense._prepare_x_train'''
 
         # Create model
@@ -204,11 +223,13 @@ class ModelTfidfDenseTests(unittest.TestCase):
         nb_elems = len(x_train_prepared)
         self.assertEqual(x_train_prepared.shape[0], nb_elems)
         self.assertEqual(x_train_prepared.shape[1], size_vocab)
+        self.assertFalse(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
         remove_dir(model_dir)
 
-        # with super documents cas
+        # with super documents case
         model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, with_super_documents=True)
         model.tfidf.fit(x_train, y_train)
+        self.assertTrue(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
         x_train_prepared = model._prepare_x_train(x_train)
         size_vocab = len(set([word for elem in x_train for word in elem.split()]))
         nb_elems = len(x_train_prepared)
@@ -222,7 +243,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
             x_train_prepared = model._prepare_x_train(x_train)
         remove_dir(model_dir)
 
-    def test05_model_tfidf_dense_prepare_x_test(self):
+    def test06_model_tfidf_dense_prepare_x_test(self):
         '''Test of {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense._prepare_x_test'''
 
         # Create model
@@ -243,7 +264,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test06_model_tfidf_dense_get_model(self):
+    def test07_model_tfidf_dense_get_model(self):
         '''Test of {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense._get_model'''
 
         # Create model
@@ -261,7 +282,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test07_model_tfidf_dense_save(self):
+    def test08_model_tfidf_dense_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -292,7 +313,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         remove_dir(model_dir)
 
 
-    def test08_model_tfidf_dense_reload_model(self):
+    def test09_model_tfidf_dense_reload_model(self):
         '''Test of the method reload_model of {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense'''
 
         # Create model
@@ -316,7 +337,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
 
         remove_dir(model_dir)
 
-    def test09_test_model_tfidf_dense_reload_from_standalone(self):
+    def test10_test_model_tfidf_dense_reload_from_standalone(self):
         '''Test of the method {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense.reload'''
 
         # Create model
@@ -365,33 +386,6 @@ class ModelTfidfDenseTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             new_model = ModelTfidfDense()
             new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tfidf_path='toto.pkl')
-
-
-    def test10_model_tfidf_dense_with_super_documents(self):
-        '''Test the fit and predict with super documents of {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        corpus = np.array([
-                        "Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
-                        "Covid - le point sur des chiffres qui s'envolent en France",
-                        "Carte des résultats des législatives : les qualifiés circonscription par circonscription",
-                            ])
-        target = np.array(['s','s','p'])
-
-        model = ModelTfidfDense(model_dir=model_dir)
-        model_s = ModelTfidfDense(with_super_documents=True)
-        model.fit(corpus, target)
-        model_s.fit(corpus, target)
-        preds = model_s.predict(corpus, return_proba=False)
-        self.assertFalse(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
-        self.assertTrue(isinstance(model_s.tfidf, TfidfVectorizerSuperDocuments))
-        self.assertFalse(np.equal(model.tfidf.transform(corpus).toarray(), model_s.tfidf.transform(corpus).toarray()).all())
-        self.assertEqual(preds.shape, (len(target),))
-        remove_dir(model_dir)
-        remove_dir(model_s.model_dir)
-
 
 # Perform tests
 if __name__ == '__main__':

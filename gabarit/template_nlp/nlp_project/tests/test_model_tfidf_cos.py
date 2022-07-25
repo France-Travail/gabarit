@@ -24,10 +24,12 @@ import shutil
 import numpy as np
 import pandas as pd
 
+from sklearn.feature_extraction.text import TfidfVectorizer
+
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_tfidf_cos import ModelTfidfCos
 from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
-from sklearn.feature_extraction.text import TfidfVectorizer
+
 
 # Disable logging
 import logging
@@ -72,6 +74,9 @@ class ModelTfidfCosTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Check with super documents
+        model = ModelTfidfCos(model_dir=model_dir)
+        self.assertFalse(model.with_super_documents)
+        remove_dir(model_dir)
         model = ModelTfidfCos(model_dir=model_dir, with_super_documents=True)
         self.assertEqual(model.with_super_documents, True)
         remove_dir(model_dir)
@@ -146,6 +151,9 @@ class ModelTfidfCosTests(unittest.TestCase):
         preds_str = model_str.predict(x_train, return_proba=False)
         self.assertEqual(preds_str.shape, (len(x_train),))
         self.assertTrue((preds_str == y_train_str).all())
+        model_vec = TfidfVectorizer()
+        model_vec.fit(x_train, y_train_str)
+        self.assertFalse(np.equal(model.tfidf.transform(x_train).toarray(), model_vec.transform(x_train).toarray()).all())
         remove_dir(model_dir)
 
         # Mono label - no strategy - without super documents
@@ -326,31 +334,6 @@ class ModelTfidfCosTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             new_model = ModelTfidfCos()
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, matrix_train_path=matrix_train_path, array_target_path='toto.csv')
-
-    def test08_model_tfidf_cos_with_super_documents(self):
-        '''Test the fit and predict with super documents of {{package_name}}.models_training.model_tfidf_cos.ModelTfidfCos'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        corpus = np.array([
-                        "Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
-                        "Covid - le point sur des chiffres qui s'envolent en France",
-                        "Carte des résultats des législatives : les qualifiés circonscription par circonscription",
-                            ])
-        target = np.array(['s','s','p'])
-
-        model = ModelTfidfCos(model_dir=model_dir)
-        model_s = ModelTfidfCos(model_dir=model_dir, with_super_documents=True)
-        model.fit(corpus, target)
-        model_s.fit(corpus, target)
-        preds = model_s.predict(corpus, return_proba=False)
-        self.assertFalse(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
-        self.assertTrue(isinstance(model_s.tfidf, TfidfVectorizerSuperDocuments))
-        self.assertFalse(np.equal(model.tfidf.transform(corpus).toarray(), model_s.tfidf.transform(corpus).toarray()).all())
-        self.assertEqual(preds.shape, (len(target),))
-        remove_dir(model_dir)
-
 
 # Perform tests
 if __name__ == '__main__':

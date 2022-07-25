@@ -96,6 +96,26 @@ class ModelTfidfDense(ModelKeras):
         else:
             return self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
+    def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:
+        '''Fits the model
+
+        Args:
+            x_train (?): Array-like, shape = [n_samples, n_features]
+            y_train (?): Array-like, shape = [n_samples, n_targets]
+            x_valid (?): Array-like, shape = [n_samples, n_features]
+            y_valid (?): Array-like, shape = [n_samples, n_targets]
+        Kwargs:
+            with_shuffle (bool): If x, y must be shuffled before fitting
+                Experimental: We must verify if it works as intended depending on the formats of x and y
+                This should be used if y is not shuffled as the split_validation takes the lines in order.
+                Thus, the validation set might get classes which are not in the train set ...
+        Raises:
+            RuntimeError: If one tries to fit again a model with nb_iter_keras > 1
+            AssertionError: If different classes when comparing an already fitted model and a new dataset
+        '''
+        self.tfidf.fit(x_train, y_train)
+        super().fit(x_train, y_train, x_valid, y_valid, with_shuffle)
+
     def _prepare_x_train(self, x_train) -> np.ndarray:
         '''Prepares the input data for the model. Called when fitting the model
 
@@ -181,26 +201,6 @@ class ModelTfidfDense(ModelKeras):
 
         # Return
         return model
-
-    def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:
-        '''Fits the model
-
-        Args:
-            x_train (?): Array-like, shape = [n_samples, n_features]
-            y_train (?): Array-like, shape = [n_samples, n_targets]
-            x_valid (?): Array-like, shape = [n_samples, n_features]
-            y_valid (?): Array-like, shape = [n_samples, n_targets]
-        Kwargs:
-            with_shuffle (bool): If x, y must be shuffled before fitting
-                Experimental: We must verify if it works as intended depending on the formats of x and y
-                This should be used if y is not shuffled as the split_validation takes the lines in order.
-                Thus, the validation set might get classes which are not in the train set ...
-        Raises:
-            RuntimeError: If one tries to fit again a model with nb_iter_keras > 1
-            AssertionError: If different classes when comparing an already fitted model and a new dataset
-        '''
-        self.tfidf.fit(x_train, y_train)
-        super().fit(x_train, y_train, x_valid, y_valid, with_shuffle)
 
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model
