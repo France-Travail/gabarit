@@ -154,10 +154,10 @@ class ModelTfidfCos(ModelPipeline):
         train_size = math.ceil((self.matrix_train.shape[0])/chunk_size)
         array_predicts = np.array([], dtype='int')
         for vec_row in range(vec_size):
-            block_vec = vec[vec_row*chunk_size:(vec_row+1)*chunk_size]
+            block_vec = vec[vec_row*chunk_size : (vec_row+1)*chunk_size]
             list_cosine = []
             for train_row in range(train_size):
-                block_train = self.matrix_train[train_row*chunk_size:(train_row+1)*chunk_size]
+                block_train = self.matrix_train[train_row*chunk_size : (train_row+1)*chunk_size]
                 cosine = cosine_similarity(block_train, block_vec).astype(np.float16)
                 list_cosine.append(cosine)
             array_predicts = np.append(array_predicts, np.argmax(np.concatenate(list_cosine), axis=0))
