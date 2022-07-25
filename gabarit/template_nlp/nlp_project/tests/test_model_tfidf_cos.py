@@ -113,7 +113,6 @@ class ModelTfidfCosTests(unittest.TestCase):
         # With super documents
         model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         model.fit(x_train, y_train_mono)
-        model_vec.fit(x_train, y_train_mono)
 
         self.assertEqual(model.tfidf.classes_, [0, 1, 2])
         self.assertEqual(model.matrix_train.toarray().shape[0], 5)
@@ -146,11 +145,11 @@ class ModelTfidfCosTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train_super_documents),))
         remove_dir(model_dir)
 
-        model_str = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
-        model_str.fit(x_train, y_train_str)
-        preds_str = model_str.predict(x_train, return_proba=False)
-        self.assertEqual(preds_str.shape, (len(x_train),))
-        self.assertTrue((preds_str == y_train_str).all())
+        model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model.fit(x_train, y_train_str)
+        preds = model.predict(x_train, return_proba=False)
+        self.assertEqual(preds.shape, (len(x_train),))
+        self.assertTrue((preds == y_train_str).all())
         model_vec = TfidfVectorizer()
         model_vec.fit(x_train, y_train_str)
         self.assertFalse(np.equal(model.tfidf.transform(x_train).toarray(), model_vec.transform(x_train).toarray()).all())
@@ -218,11 +217,11 @@ class ModelTfidfCosTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train),))
         remove_dir(model_dir)
 
-        model_str = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
-        model_str.fit(x_train, y_train_str)
-        preds_str = model_str.compute_scores(x_train)
-        self.assertEqual(preds_str.shape, (len(x_train),))
-        self.assertTrue((preds_str == y_train_str).all())
+        model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model.fit(x_train, y_train_str)
+        preds = model.compute_scores(x_train)
+        self.assertEqual(preds.shape, (len(x_train),))
+        self.assertTrue((preds == y_train_str).all())
         remove_dir(model_dir)
 
         # Mono label - no strategy - without super documents

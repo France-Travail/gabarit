@@ -100,12 +100,9 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         # Set vars
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
         y_train_mono = np.array([0, 1, 0, 1, 2])
-        model_vec = TfidfVectorizer()
 
         model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         model.fit(x_train, y_train_mono)
-        model_vec.fit(x_train, y_train_mono)
-
         self.assertEqual(model.tfidf.classes_, [0, 1, 2])
         self.assertEqual(model.matrix_train.toarray().shape[0], 3)
         self.assertEqual(model.array_target.all(), np.array(y_train_mono).all())
@@ -138,11 +135,11 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         self.assertEqual(preds, model.predict(['test'], return_proba=False)[0])
         remove_dir(model_dir)
 
-        model_str = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
-        model_str.fit(x_train, y_train_str)
-        preds_str = model_str.predict(x_train, return_proba=False)
-        self.assertEqual(preds_str.shape, (len(x_train),))
-        self.assertTrue((preds_str == y_train_str).all())
+        model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model.fit(x_train, y_train_str)
+        preds = model.predict(x_train, return_proba=False)
+        self.assertEqual(preds.shape, (len(x_train),))
+        self.assertTrue((preds == y_train_str).all())
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -195,11 +192,11 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train),))
         remove_dir(model_dir)
 
-        model_str = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
-        model_str.fit(x_train, y_train_str)
-        preds_str = model_str.compute_scores(x_train)
-        self.assertEqual(preds_str.shape, (len(x_train),))
-        self.assertTrue((preds_str == y_train_str).all())
+        model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model.fit(x_train, y_train_str)
+        preds = model.compute_scores(x_train)
+        self.assertEqual(preds.shape, (len(x_train),))
+        self.assertTrue((preds == y_train_str).all())
         remove_dir(model_dir)
 
         # Model needs to be fitted
