@@ -79,10 +79,8 @@ class ModelTfidfCos(ModelPipeline):
         # Can't do multi-labels / multi-classes
         if not self.multi_label:
             # If not multi-classes : no impact
-            if multiclass_strategy == 'ovr':
-                raise ValueError("The TFIDF Cosine Similarity can't do ovr")
-            elif multiclass_strategy == 'ovo':
-                raise ValueError("The TFIDF Cosine Similarity can't do ovo")
+            if multiclass_strategy in ['ovr', 'ovo']:
+                raise ValueError("The TFIDF Cosine Similarity can't do", self.multiclass_strategy)
             else:
                 self.pipeline = Pipeline([('tfidf', self.tfidf)])
 
@@ -99,7 +97,7 @@ class ModelTfidfCos(ModelPipeline):
         self.tfidf.classes_ = list(np.unique(y_train))
         self.array_target = np.array(y_train)
         super().fit(x_train, y_train)
-        self.matrix_train = self.pipeline.transform(x_train)
+        self.matrix_train = self.pipeline.transform(x_train).astype(np.float16)
 
     @utils.trained_needed
     def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
@@ -152,7 +150,6 @@ class ModelTfidfCos(ModelPipeline):
 
         chunk_size = 5000
         vec = self.pipeline.transform(x_test).astype(np.float16)
-        self.matrix_train = self.matrix_train.astype(np.float16)
         vec_size = math.ceil((vec.shape[0])/chunk_size)
         train_size = math.ceil((self.matrix_train.shape[0])/chunk_size)
         array_predicts = np.array([], dtype='int')
@@ -182,7 +179,8 @@ class ModelTfidfCos(ModelPipeline):
         json_data['with_super_documents'] = self.with_super_documents
         json_data['classes_'] = self.tfidf.classes_ if hasattr(self.tfidf, 'classes_') else None
 
-        np.savetxt(os.path.join(self.model_dir, 'matrix_train.csv'), self.matrix_train.toarray(), delimiter=";")
+        # Bug on float16.toarray()
+        np.savetxt(os.path.join(self.model_dir, 'matrix_train.csv'), self.matrix_train.astype(np.float32).toarray().astype(np.float16), delimiter=";")
         np.savetxt(os.path.join(self.model_dir, 'array_target.csv'), self.array_target, delimiter=";", fmt="%s")
 
         # Save
@@ -200,8 +198,12 @@ class ModelTfidfCos(ModelPipeline):
         Raises:
             ValueError: If configuration_path is None
             ValueError: If sklearn_pipeline_path is None
+            ValueError: If matrix_train_path is None
+            ValueError: If array_target_path is None
             FileNotFoundError: If the object configuration_path is not an existing file
             FileNotFoundError: If the object sklearn_pipeline_path is not an existing file
+            FileNotFoundError: If the object matrix_train_path is not an existing file
+            FileNotFoundError: If the object array_target_path is not an existing file
         '''
         # Retrieve args
         configuration_path = kwargs.get('configuration_path', None)
@@ -249,7 +251,7 @@ class ModelTfidfCos(ModelPipeline):
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload matrix_train and array_target
-        self.matrix_train = csr_matrix(np.genfromtxt(matrix_train_path, delimiter=';'))
+        self.matrix_train = csr_matrix(np.genfromtxt(matrix_train_path, delimiter=';'), dtype=np.float16)
         self.array_target = np.genfromtxt(array_target_path, delimiter=';', dtype='str')
 
         # Reload pipeline

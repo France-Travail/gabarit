@@ -106,7 +106,7 @@ class ModelTfidfCosTests(unittest.TestCase):
         model.fit(x_train, y_train_mono)
         model_vec.fit(x_train, y_train_mono)
         self.assertEqual(model.tfidf.classes_, [0, 1, 2])
-        self.assertEqual(model.matrix_train.toarray().all(), model_vec.fit_transform(x_train).toarray().all())
+        self.assertEqual(model.matrix_train.astype(np.float32).toarray().all(), model_vec.fit_transform(x_train).astype(np.float32).toarray().all())
         self.assertEqual(model.array_target.all(), np.array(y_train_mono).all())
         remove_dir(model_dir)
 
@@ -310,7 +310,7 @@ class ModelTfidfCosTests(unittest.TestCase):
         self.assertEqual(model.tfidf.get_params(), new_model.tfidf.get_params())
         self.assertEqual(model.with_super_documents, new_model.with_super_documents)
         self.assertEqual(model.tfidf.classes_, new_model.tfidf.classes_)
-        self.assertEqual(model.matrix_train.toarray().all(), new_model.matrix_train.toarray().all())
+        self.assertEqual(model.matrix_train.astype(np.float32).toarray().all(), new_model.matrix_train.astype(np.float32).toarray().all())
         # We can't really test the pipeline so we test predictions
         self.assertTrue(len(np.setdiff1d(model.predict(x_test), new_model.predict(x_test))) == 0)
         self.assertTrue(len(np.setdiff1d(model.array_target, new_model.array_target)) == 0)
