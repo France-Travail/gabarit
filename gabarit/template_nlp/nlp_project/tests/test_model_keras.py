@@ -141,6 +141,8 @@ class ModelKerasTests(unittest.TestCase):
         x_valid = np.array(["cela est un test", "ni cela", "non plus", "ici test", "là, rien de rien!"] * 100)
         y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
         y_valid_mono = y_train_mono.copy()
+        y_valid_mono_missing = y_train_mono.copy()
+        y_valid_mono_missing[y_valid_mono_missing == 2] = 0
         y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
         y_valid_multi = y_train_multi.copy()
         cols = ['test1', 'test2', 'test3']
@@ -226,6 +228,20 @@ class ModelKerasTests(unittest.TestCase):
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
         model.fit(x_train, np.expand_dims(y_train_mono, 1), x_valid=x_valid, y_valid=np.expand_dims(y_valid_mono, 1), with_shuffle=True)
+        self.assertTrue(model.trained)
+        self.assertEqual(model.nb_fit, 1)
+        self.assertEqual(sorted(model.list_classes), [0, 1, 2])
+        self.assertTrue(model.model._is_compiled)
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        remove_dir(model_dir)
+
+        # Missing targets in y_valid
+        model = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                   max_sequence_length=10, max_words=100,
+                                   embedding_name='fake_embedding.pkl')
+        self.assertFalse(model.trained)
+        self.assertEqual(model.nb_fit, 0)
+        model.fit(x_train, y_train_mono, x_valid=x_valid, y_valid=y_valid_mono_missing, with_shuffle=True)
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
