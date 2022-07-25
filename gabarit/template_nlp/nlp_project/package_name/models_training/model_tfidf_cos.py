@@ -113,7 +113,7 @@ class ModelTfidfCos(ModelPipeline):
         if return_proba:
             return self.predict_proba(x_test)
         else:
-            return self.compute_scores(x_test)
+            return self.predict_cosine_similarity(x_test)
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
@@ -127,7 +127,7 @@ class ModelTfidfCos(ModelPipeline):
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
         if not self.multi_label:
-            preds = self.compute_scores(x_test)
+            preds = self.predict_cosine_similarity(x_test)
             # Format ['a', 'b', 'c', 'a', ..., 'b']
             # Transform to "proba"
             transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
@@ -137,7 +137,7 @@ class ModelTfidfCos(ModelPipeline):
         return probas
 
     @utils.trained_needed
-    def compute_scores(self, x_test) -> np.ndarray:
+    def predict_cosine_similarity(self, x_test) -> np.ndarray:
         '''Compute the scores for the prediction
 
         Args:

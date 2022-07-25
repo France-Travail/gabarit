@@ -198,8 +198,8 @@ class ModelTfidfCosTests(unittest.TestCase):
             model.predict_proba('test')
         remove_dir(model_dir)
 
-    def test05_model_tfidf_cos_compute_scores(self):
-        '''Test of {{package_name}}.models_training.model_tfidf_cos.ModelTfidfCos.compute_scores'''
+    def test05_model_tfidf_cos_predict_cosine_similarity(self):
+        '''Test of {{package_name}}.models_training.model_tfidf_cos.ModelTfidfCos.predict_cosine_similarity'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -213,13 +213,13 @@ class ModelTfidfCosTests(unittest.TestCase):
         # Mono label - no strategy - with super documents
         model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         model.fit(x_train, y_train_mono)
-        preds = model.compute_scores(x_train)
+        preds = model.predict_cosine_similarity(x_train)
         self.assertEqual(preds.shape, (len(x_train),))
         remove_dir(model_dir)
 
         model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         model.fit(x_train, y_train_str)
-        preds = model.compute_scores(x_train)
+        preds = model.predict_cosine_similarity(x_train)
         self.assertEqual(preds.shape, (len(x_train),))
         self.assertTrue((preds == y_train_str).all())
         remove_dir(model_dir)
@@ -227,14 +227,14 @@ class ModelTfidfCosTests(unittest.TestCase):
         # Mono label - no strategy - without super documents
         model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=False)
         model.fit(x_train, y_train_mono)
-        preds = model.compute_scores(x_train)
+        preds = model.predict_cosine_similarity(x_train)
         self.assertEqual(preds.shape, (len(x_train),))
         remove_dir(model_dir)
 
         # Model needs to be fitted
         with self.assertRaises(AttributeError):
             model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
-            model.compute_scores(x_train)
+            model.predict_cosine_similarity(x_train)
         remove_dir(model_dir)
 
     def test06_model_tfidf_cos_save(self):
