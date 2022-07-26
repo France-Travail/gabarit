@@ -115,7 +115,7 @@ class ModelTfidfCosTests(unittest.TestCase):
         model.fit(x_train, y_train_mono)
 
         self.assertEqual(model.tfidf.classes_, [0, 1, 2])
-        self.assertEqual(model.matrix_train.toarray().shape[0], 5)
+        self.assertEqual(model.matrix_train.astype(np.float32).toarray().shape[0], 5)
         self.assertEqual(model.array_target.all(), np.array(y_train_mono).all())
         remove_dir(model_dir)
 

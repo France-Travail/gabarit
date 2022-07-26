@@ -125,14 +125,15 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
         y_train_mono = np.array([0, 1, 0, 1, 2])
         y_train_str = np.array(['a', 'b', 'a', 'b', 'c'])
+        x_test = np.array(['test', 'test2'])
 
         # Mono label - no strategy
         model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         model.fit(x_train, y_train_mono)
         self.assertTrue(isinstance(model.tfidf, TfidfTransformerSuperDocuments))
-        preds = model.predict('test', return_proba=False)
-        self.assertEqual(preds.shape, (len(x_train),))
-        self.assertEqual(preds, model.predict(['test'], return_proba=False)[0])
+        preds = model.predict(x_test, return_proba=False)
+        self.assertEqual(preds.shape, len(x_test))
+        self.assertEqual(preds.all(), model.predict(x_test, return_proba=False).all())
         remove_dir(model_dir)
 
         model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
@@ -171,11 +172,11 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         # Model needs to be fitted
         with self.assertRaises(AttributeError):
             model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
-            model.compute_scores('test')
+            model.compute_predict('test')
         remove_dir(model_dir)
 
-    def test05_model_tfidf_super_documents_naive_compute_scores(self):
-        '''Test of {{package_name}}.models_training.model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive.compute_scores'''
+    def test05_model_tfidf_super_documents_naive_compute_predict(self):
+        '''Test of {{package_name}}.models_training.model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive.compute_predict'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -188,13 +189,13 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         # Mono label - no strategy
         model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         model.fit(x_train, y_train_mono)
-        preds = model.compute_scores(x_train)
+        preds = model.compute_predict(x_train)
         self.assertEqual(preds.shape, (len(x_train),))
         remove_dir(model_dir)
 
         model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         model.fit(x_train, y_train_str)
-        preds = model.compute_scores(x_train)
+        preds = model.compute_predict(x_train)
         self.assertEqual(preds.shape, (len(x_train),))
         self.assertTrue((preds == y_train_str).all())
         remove_dir(model_dir)
@@ -202,7 +203,7 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         # Model needs to be fitted
         with self.assertRaises(AttributeError):
             model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
-            model.compute_scores(x_train)
+            model.compute_predict(x_train)
         remove_dir(model_dir)
 
     def test06_model_tfidf_super_documents_naive_save(self):

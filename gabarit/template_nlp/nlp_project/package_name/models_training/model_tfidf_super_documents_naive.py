@@ -20,7 +20,6 @@
 # Classes :
 # - ModelTfidfSuperDocumentsNaive -> Model for predictions TF-IDF naive with super documents
 
-
 import os
 import json
 import pickle
@@ -47,8 +46,8 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         '''Initialization of the class (see ModelPipeline & ModelClass for more arguments)
 
         Kwargs:
-            tfidf_transformer_params (dict): Parameters for the tfidf TfidfTransformer
             tfidf_count_params (dict): Parameters for the countVectorize
+            tfidf_transformer_params (dict): Parameters for the tfidf TfidfTransformerSuperDocuments
             multiclass_strategy (str): Multi-classes strategy, only can be None
         Raises:
             ValueError: If multiclass_strategy is not 'ovo', 'ovr' or None
@@ -82,10 +81,8 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         # Can't do multi-labels / multi-classes
         if not self.multi_label:
             # If not multi-classes : no impact
-            if multiclass_strategy == 'ovr':
-                raise ValueError("The TFIDF Naive can't do ovr")
-            elif multiclass_strategy == 'ovo':
-                raise ValueError("The TFIDF Naive can't do ovo")
+            if multiclass_strategy in ['ovr', 'ovo']:
+                raise ValueError("The TFIDF Cosine Similarity can't do", self.multiclass_strategy)
             else:
                 self.pipeline = Pipeline([('tfidf_count', self.tfidf_count),('tfidf', self.tfidf)])
 
@@ -106,7 +103,44 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         self.matrix_train = self.pipeline['tfidf'].transform(x_super)
 
     @utils.trained_needed
-    def compute_scores(self, x_test) -> np.ndarray:
+    def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
+        '''Predictions on test set
+
+        Args:
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
+        Kwargs:
+            return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
+        Returns:
+            (np.ndarray): Array, shape = [n_samples]
+        '''
+        if return_proba:
+            return self.predict_proba(x_test)
+        else:
+            return self.compute_predict(x_test)
+
+    @utils.data_agnostic_str_to_list
+    @utils.trained_needed
+    def predict_proba(self, x_test, **kwargs) -> np.ndarray:
+        '''Predicts the probabilities on the test set
+        - /!\\ THE MODEL NAIVE DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL TO 0 OR 1 /!\\ -
+
+        Args:
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
+        Returns:
+            (np.ndarray): Array, shape = [n_samples, n_classes]
+        '''
+        if not self.multi_label:
+            preds = self.compute_predict(x_test)
+            # Format ['a', 'b', 'c', 'a', ..., 'b']
+            # Transform to "proba"
+            transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
+            probas = np.array([transform_dict[x] for x in preds])
+        else:
+            raise ValueError("The TFIDF Naive does not support multi label")
+        return probas
+
+    @utils.trained_needed
+    def compute_predict(self, x_test) -> np.ndarray:
         '''Compute the scores for the prediction
 
         Args:
@@ -121,43 +155,6 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         predicts = np.argmax(np.dot(vec_counts, self.matrix_train.transpose()).toarray(), axis=1)
         predicts = self.array_target[predicts]
         return predicts
-
-    @utils.data_agnostic_str_to_list
-    @utils.trained_needed
-    def predict_proba(self, x_test, **kwargs) -> np.ndarray:
-        '''Predicts the probabilities on the test set
-        - /!\\ THE MODEL NAIVE DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL TO 0 OR 1 /!\\ -
-
-        Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples]
-        Returns:
-            (np.ndarray): Array, shape = [n_samples, n_classes]
-        '''
-        if not self.multi_label:
-            preds = self.compute_scores(x_test)
-            # Format ['a', 'b', 'c', 'a', ..., 'b']
-            # Transform to "proba"
-            transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
-            probas = np.array([transform_dict[x] for x in preds])
-        else:
-            raise ValueError("The TFIDF Naive does not support multi label")
-        return probas
-
-    @utils.trained_needed
-    def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
-        '''Predictions on test set
-
-        Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples]
-        Kwargs:
-            return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
-        Returns:
-            (np.ndarray): Array, shape = [n_samples]
-        '''
-        if return_proba:
-            return self.predict_proba(x_test)
-        else:
-            return self.compute_scores(x_test)
 
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model
