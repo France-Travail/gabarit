@@ -357,7 +357,7 @@ class ModelKerasTests(unittest.TestCase):
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, keras_params={'learning_rate': lr, 'decay': 0.0})
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
-        model.fit(x_train, y_train_mono, x_valid=x_train, y_valid=y_valid_mono_missing, with_shuffle=True)
+        model.fit(x_train, y_train_mono_3, x_valid=x_train, y_valid=y_valid_mono_missing, with_shuffle=True)
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
