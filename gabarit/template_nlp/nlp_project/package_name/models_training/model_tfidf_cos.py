@@ -50,8 +50,6 @@ class ModelTfidfCos(ModelPipeline):
         Kwargs:
             tfidf_params (dict): Parameters for the tfidf TfidfTransformer
             multiclass_strategy (str): Multi-classes strategy, only can be None
-            with_super_documents (bool): train model with super documents
-                Super documents fits with [n_feature, n_terms] and transforms with [n_samples, n_terms].
         Raises:
             ValueError: If multiclass_strategy is not 'ovo', 'ovr' or None
             ValueError: If with_super_documents and multi_label
@@ -215,6 +213,8 @@ class ModelTfidfCos(ModelPipeline):
             ValueError: If array_target_path is None
             FileNotFoundError: If the object configuration_path is not an existing file
             FileNotFoundError: If the object sklearn_pipeline_path is not an existing file
+            FileNotFoundError: If the object matrix_train_path is not an existing file
+            FileNotFoundError: If the object array_target_path is not an existing file
         '''
         # Retrieve args
         configuration_path = kwargs.get('configuration_path', None)
@@ -236,9 +236,9 @@ class ModelTfidfCos(ModelPipeline):
         if not os.path.exists(sklearn_pipeline_path):
             raise FileNotFoundError(f"The file {sklearn_pipeline_path} does not exist")
         if not os.path.exists(matrix_train_path):
-            self.matrix_train = None
+            raise FileNotFoundError(f"The file {matrix_train_path} does not exist")
         if not os.path.exists(array_target_path):
-            self.array_target = None
+            raise FileNotFoundError(f"The file {array_target_path} does not exist")
 
         # Load confs
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:

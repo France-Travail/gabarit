@@ -52,8 +52,6 @@ class ModelTfidfSgdc(ModelPipeline):
             tfidf_params (dict) : Parameters for the tfidf
             sgdc_params (dict) : Parameters for the sgdc
             multiclass_strategy (str): Multi-classes strategy, 'ovr' (OneVsRest), or 'ovo' (OneVsOne). If None, use the default of the algorithm.
-            with_super_documents (bool): train model with super documents
-                Super documents fits with [n_feature, n_terms] and transforms with [n_samples, n_terms].
         Raises:
             ValueError: If multiclass_strategy is not 'ovo', 'ovr' or None
             ValueError: If with_super_documents and multi_label
@@ -63,6 +61,7 @@ class ModelTfidfSgdc(ModelPipeline):
         # Init.
         super().__init__(**kwargs)
 
+        # Super documents incompatible with multi label tasks
         if self.with_super_documents and self.multi_label:
             raise ValueError("The method with super documents does not support multi-labels")
 

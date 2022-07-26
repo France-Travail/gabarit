@@ -28,7 +28,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_tfidf_cos import ModelTfidfCos
-from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
 
 
 # Disable logging
@@ -284,7 +283,6 @@ class ModelTfidfCosTests(unittest.TestCase):
         x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
         y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
         model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
-        tfidf = model.tfidf
         model.fit(x_train, y_train_mono)
         model.save()
 

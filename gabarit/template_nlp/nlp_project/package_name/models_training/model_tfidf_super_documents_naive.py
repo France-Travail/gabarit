@@ -19,6 +19,13 @@
 #
 # Classes :
 # - ModelTfidfSuperDocumentsNaive -> Model for predictions TF-IDF naive with super documents
+#
+# Super documents collects all documents and concatenate them by label.
+# Unlike standard tfidf model fitting with [n_samples, n_terms],
+# Super documents fits with [n_label, n_terms] and transforms with [n_samples, n_terms].
+#
+# Model_super_documents adds each term's tfidf*count for each document and returns the label with the highest value
+
 
 import os
 import json
@@ -205,6 +212,8 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
             ValueError: If sklearn_pipeline_path is None
             FileNotFoundError: If the object configuration_path is not an existing file
             FileNotFoundError: If the object sklearn_pipeline_path is not an existing file
+            FileNotFoundError: If the object matrix_train_path is not an existing file
+            FileNotFoundError: If the object array_target_path is not an existing file
         '''
         # Retrieve args
         configuration_path = kwargs.get('configuration_path', None)
@@ -226,9 +235,9 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         if not os.path.exists(sklearn_pipeline_path):
             raise FileNotFoundError(f"The file {sklearn_pipeline_path} does not exist")
         if not os.path.exists(matrix_train_path):
-            self.matrix_train = None
+            raise FileNotFoundError(f"The file {matrix_train_path} does not exist")
         if not os.path.exists(array_target_path):
-            self.array_target = None
+            raise FileNotFoundError(f"The file {array_target_path} does not exist")
 
         # Load confs
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
