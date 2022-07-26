@@ -73,8 +73,8 @@ class ModelTfidfCos(ModelPipeline):
         self.tfidf = TfidfVectorizer(**tfidf_params) if not self.with_super_documents else TfidfVectorizerSuperDocuments(**tfidf_params)
 
         self.multiclass_strategy = multiclass_strategy
-        self.matrix_train = csr_matrix((0,0))
-        self.array_target = np.array([])
+        self.matrix_train = None
+        self.array_target = None
 
         # Can't do multi-labels / multi-classes
         if not self.multi_label:
@@ -178,9 +178,23 @@ class ModelTfidfCos(ModelPipeline):
         json_data['multiclass_strategy'] = self.multiclass_strategy
         json_data['classes_'] = self.tfidf.classes_ if hasattr(self.tfidf, 'classes_') else None
 
-        # Bug on float16.toarray()
-        np.savetxt(os.path.join(self.model_dir, 'matrix_train.csv'), self.matrix_train.astype(np.float32).toarray().astype(np.float16), delimiter=";")
-        np.savetxt(os.path.join(self.model_dir, 'array_target.csv'), self.array_target, delimiter=";", fmt="%s")
+        # Save matrix_train if not None & level_save > LOW
+        if (self.matrix_train is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
+            # Manage paths
+            matrix_train_path = os.path.join(self.model_dir, "matrix_train.pkl")
+            # Save as pickle
+            with open(matrix_train_path, 'wb') as f:
+                # TODO: use dill to get rid of  "can't pickle ..." errors
+                pickle.dump(self.matrix_train, f)
+
+        # Save array_target if not None & level_save > LOW
+        if (self.array_target is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
+            # Manage paths
+            array_target_path = os.path.join(self.model_dir, "array_target.pkl")
+            # Save as pickle
+            with open(array_target_path, 'wb') as f:
+                # TODO: use dill to get rid of  "can't pickle ..." errors
+                pickle.dump(self.array_target, f)
 
         # Save
         super().save(json_data=json_data)
@@ -201,8 +215,6 @@ class ModelTfidfCos(ModelPipeline):
             ValueError: If array_target_path is None
             FileNotFoundError: If the object configuration_path is not an existing file
             FileNotFoundError: If the object sklearn_pipeline_path is not an existing file
-            FileNotFoundError: If the object matrix_train_path is not an existing file
-            FileNotFoundError: If the object array_target_path is not an existing file
         '''
         # Retrieve args
         configuration_path = kwargs.get('configuration_path', None)
@@ -224,9 +236,9 @@ class ModelTfidfCos(ModelPipeline):
         if not os.path.exists(sklearn_pipeline_path):
             raise FileNotFoundError(f"The file {sklearn_pipeline_path} does not exist")
         if not os.path.exists(matrix_train_path):
-            raise FileNotFoundError(f"The file {matrix_train_path} does not exist")
+            self.matrix_train = None
         if not os.path.exists(array_target_path):
-            raise FileNotFoundError(f"The file {array_target_path} does not exist")
+            self.array_target = None
 
         # Load confs
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
@@ -249,16 +261,18 @@ class ModelTfidfCos(ModelPipeline):
                           'multiclass_strategy', 'with_super_documents', 'with_super_documents']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
-        # Reload matrix_train and array_target
-        self.matrix_train = csr_matrix(np.genfromtxt(matrix_train_path, delimiter=';'), dtype=np.float16)
-        self.array_target = np.genfromtxt(array_target_path, delimiter=';', dtype='str')
-
         # Reload pipeline
         with open(sklearn_pipeline_path, 'rb') as f:
             self.pipeline = pickle.load(f)
 
         # Reload pipeline elements
         self.tfidf = self.pipeline['tfidf']
+
+        # Reload matrix_train and array_target
+        with open(matrix_train_path, 'rb') as f:
+            self.matrix_train = pickle.load(f)
+        with open(array_target_path, 'rb') as f:
+            self.array_target = pickle.load(f)
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

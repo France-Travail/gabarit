@@ -75,7 +75,7 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         self.tfidf_count = CountVectorizer(**tfidf_count_params)
 
         self.multiclass_strategy = multiclass_strategy
-        self.matrix_train = csr_matrix((0,0))
+        self.matrix_train = None
         self.array_target = np.array([])
 
         # Can't do multi-labels / multi-classes
@@ -170,8 +170,23 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         json_data['multiclass_strategy'] = self.multiclass_strategy
         json_data['classes_'] = self.tfidf.classes_ if hasattr(self.tfidf, 'classes_') else None
 
-        np.savetxt(os.path.join(self.model_dir, 'matrix_train.csv'), self.matrix_train.toarray(), delimiter=";")
-        np.savetxt(os.path.join(self.model_dir, 'array_target.csv'), self.array_target, delimiter=";", fmt="%s")
+        # Save matrix_train if not None & level_save > LOW
+        if (self.matrix_train is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
+            # Manage paths
+            matrix_train_path = os.path.join(self.model_dir, "matrix_train.pkl")
+            # Save as pickle
+            with open(matrix_train_path, 'wb') as f:
+                # TODO: use dill to get rid of  "can't pickle ..." errors
+                pickle.dump(self.matrix_train, f)
+
+        # Save array_target if not None & level_save > LOW
+        if (self.array_target is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
+            # Manage paths
+            array_target_path = os.path.join(self.model_dir, "array_target.pkl")
+            # Save as pickle
+            with open(array_target_path, 'wb') as f:
+                # TODO: use dill to get rid of  "can't pickle ..." errors
+                pickle.dump(self.array_target, f)
 
         # Save
         super().save(json_data=json_data)
@@ -211,9 +226,9 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         if not os.path.exists(sklearn_pipeline_path):
             raise FileNotFoundError(f"The file {sklearn_pipeline_path} does not exist")
         if not os.path.exists(matrix_train_path):
-            raise FileNotFoundError(f"The file {matrix_train_path} does not exist")
+            self.matrix_train = None
         if not os.path.exists(array_target_path):
-            raise FileNotFoundError(f"The file {array_target_path} does not exist")
+            self.array_target = None
 
         # Load confs
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
@@ -236,10 +251,6 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
                           'multiclass_strategy', 'with_super_documents']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
-        # Reload matrix_train and array_target
-        self.matrix_train = csr_matrix(np.genfromtxt(matrix_train_path, delimiter=';'))
-        self.array_target = np.genfromtxt(array_target_path, delimiter=';', dtype='str')
-
         # Reload pipeline
         with open(sklearn_pipeline_path, 'rb') as f:
             self.pipeline = pickle.load(f)
@@ -247,6 +258,12 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         # Reload pipeline elements
         self.tfidf = self.pipeline['tfidf']
         self.tfidf_count = self.pipeline['tfidf_count']
+
+        # Reload matrix_train and array_target
+        with open(matrix_train_path, 'rb') as f:
+            self.matrix_train = pickle.load(f)
+        with open(array_target_path, 'rb') as f:
+            self.array_target = pickle.load(f)
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

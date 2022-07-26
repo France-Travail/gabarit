@@ -132,7 +132,7 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         model.fit(x_train, y_train_mono)
         self.assertTrue(isinstance(model.tfidf, TfidfTransformerSuperDocuments))
         preds = model.predict(x_test, return_proba=False)
-        self.assertEqual(preds.shape, len(x_test))
+        self.assertEqual(preds.shape, (len(x_test),))
         self.assertEqual(preds.all(), model.predict(x_test, return_proba=False).all())
         remove_dir(model_dir)
 
@@ -262,8 +262,8 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         # Reload
         pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
         conf_path = os.path.join(model.model_dir, "configurations.json")
-        matrix_train_path = os.path.join(model.model_dir, "matrix_train.csv")
-        array_target_path = os.path.join(model.model_dir, "array_target.csv")
+        matrix_train_path = os.path.join(model.model_dir, "matrix_train.pkl")
+        array_target_path = os.path.join(model.model_dir, "array_target.pkl")
         new_model = ModelTfidfSuperDocumentsNaive()
         new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, matrix_train_path=matrix_train_path, array_target_path=array_target_path)
 

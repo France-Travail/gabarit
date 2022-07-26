@@ -34,6 +34,8 @@ from {{package_name}}.models_training import (model_tfidf_dense,
                                               model_tfidf_lgbm,
                                               model_tfidf_sgdc,
                                               model_tfidf_svm,
+                                              model_tfidf_cos,
+                                              model_tfidf_super_documents_naive,
                                               model_embedding_cnn,
                                               model_embedding_lstm,
                                               model_embedding_lstm_attention,
@@ -43,7 +45,8 @@ from {{package_name}}.models_training import (model_tfidf_dense,
                                               model_pytorch_transformers,
                                               utils_models,
                                               utils_deep_keras,
-                                              utils_deep_torch)
+                                              utils_deep_torch,
+                                              utils_super_documents,)
 
 # Get logger
 logger = logging.getLogger('{{package_name}}.0_reload_model')
@@ -53,7 +56,8 @@ def main(model_dir: str, config_file: str = 'configurations.json',
          sklearn_pipeline_file: str = 'sklearn_pipeline_standalone.pkl',
          weights_file: str = 'best.hdf5', tokenizer_file: str = 'embedding_tokenizer.pkl',
          tfidf_file: str = 'tfidf_standalone.pkl', checkpoint_path: str = 'best_model.ckpt',
-         torch_dir: Union[str, None] = None) -> None:
+         torch_dir: Union[str, None] = None, array_target_file: str = 'array_target.pkl',
+         matrix_train_file: str = 'matrix_train.pkl') -> None:
     '''Reloads a model
 
     The idea here is to reload a model that was trained on another package version.
@@ -69,6 +73,8 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         tfidf_file (str): TFIDF file name (models with tfidf)
         checkpoint_path (str): Pytorch lightning checkpoint name (models pytorch)
         torch_dir (str): Pytorch lightning directory name (models pytorch)
+        array_target_file (str): array_target file name (models with tfidf_super_documents_naive)
+        matrix_train_path (str): matrix_train file name (models with tfidf_super_documents_naive)
     Raises:
         FileNotFoundError: If model can't be found
         FileNotFoundError: If model's configuration does not exist
@@ -109,6 +115,8 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'model_tfidf_lgbm': model_tfidf_lgbm.ModelTfidfLgbm,
         'model_tfidf_sgdc': model_tfidf_sgdc.ModelTfidfSgdc,
         'model_tfidf_svm': model_tfidf_svm.ModelTfidfSvm,
+        'model_tfidf_cos': model_tfidf_svm.ModelTfidfCos,
+        'model_tfidf_super_documents_naive': model_tfidf_svm.ModelTfidfSuperDocumentsNaive,
         'model_embedding_cnn': model_embedding_cnn.ModelEmbeddingCnn,
         'model_embedding_lstm': model_embedding_lstm.ModelEmbeddingLstm,
         'model_embedding_lstm_attention': model_embedding_lstm_attention.ModelEmbeddingLstmAttention,
@@ -138,6 +146,8 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'tfidf_path': os.path.join(model_path, tfidf_file) if tfidf_file is not None else None,
         'checkpoint_path': os.path.join(model_path, checkpoint_path) if checkpoint_path is not None else None,
         'torch_dir': os.path.join(model_path, torch_dir) if torch_dir is not None else None,
+        'matrix_train_path': os.path.join(model_path, matrix_train_file) if matrix_train_file is not None else None,
+        'array_target_path': os.path.join(model_path, array_target_file) if array_target_file is not None else None,
     }
     model.reload_from_standalone(**files_dict)
 
@@ -186,7 +196,10 @@ if __name__ == '__main__':
     parser.add_argument('--tfidf_file', default='tfidf_standalone.pkl', help="TFIDF file name (models with tfidf)")
     parser.add_argument('--checkpoint_path', default='best_model.ckpt', help="Pytorch lightning checkpoint name (models pytorch)")
     parser.add_argument('--torch_dir', default=None, help="Pytorch lightning directory name (models pytorch)")
+    parser.add_argument('--matrix_train_file', default='matrix_train.pkl', help="matrix_train file name (models with tfidf_super_documents_naive)")
+    parser.add_argument('--array_target_file', default='array_target.pkl', help="array_target_file (str): array_target file name (models with tfidf_super_documents_naive)")
     args = parser.parse_args()
     main(model_dir=args.model_dir, config_file=args.config_file, weights_file=args.weights_file,
          sklearn_pipeline_file=args.sklearn_pipeline_file, tokenizer_file=args.tokenizer_file,
-         tfidf_file=args.tfidf_file, checkpoint_path=args.checkpoint_path, torch_dir=args.torch_dir)
+         tfidf_file=args.tfidf_file, checkpoint_path=args.checkpoint_path, torch_dir=args.torch_dir,
+         matrix_train_file=args.matrix_train_file, array_target_file=args.array_target_file)
