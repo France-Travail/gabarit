@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # Copyright (C) <2018-2021>  <Agence Data Services, DSI Pôle Emploi>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -94,6 +94,8 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
+        y_valid_mono_missing = y_train_mono_3.copy()
+        y_valid_mono_missing[y_valid_mono_missing == 2] = 0
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
         x_col = ['col_1', 'col_2']
         y_col_mono = ['toto']
@@ -177,6 +179,20 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col_mono)
         model.fit(x_train, y_train_mono_3, x_valid=x_train, y_valid=y_train_mono_3, with_shuffle=False)
+        self.assertTrue(model.trained)
+        self.assertEqual(model.nb_fit, 1)
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col_mono)
+        self.assertEqual(model.list_classes, [0, 1, 2])
+        self.assertEqual(model.dict_classes, {0: 0, 1: 1, 2: 2})
+        remove_dir(model_dir)
+        # Missing targets in y_valid
+        model = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, xgboost_params={'n_estimators': 5})
+        self.assertFalse(model.trained)
+        self.assertEqual(model.nb_fit, 0)
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col_mono)
+        model.fit(x_train, y_train_mono_3, x_valid=x_train, y_valid=y_valid_mono_missing, with_shuffle=False)
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(model.x_col, x_col)

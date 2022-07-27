@@ -117,6 +117,8 @@ class ModelKerasTests(unittest.TestCase):
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
+        y_valid_mono_missing = y_train_mono_3.copy()
+        y_valid_mono_missing[y_valid_mono_missing == 2] = 0
         y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
         x_col = ['col_1', 'col_2']
@@ -240,9 +242,6 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
 
 
-
-
-
         ## Classification - Mono-label - Multi-Classes
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, keras_params={'learning_rate': lr, 'decay': 0.0})
         self.assertFalse(model.trained)
@@ -353,6 +352,18 @@ class ModelKerasTests(unittest.TestCase):
         y_train_mono_3_fake = pd.Series([5, 5, 8, 8, 2, 2, 2] * 10)
         with self.assertRaises(AssertionError):
             model.fit(x_train, y_train_mono_3_fake, x_valid=x_train, y_valid=y_train_mono_3, with_shuffle=False)
+        remove_dir(model_dir)
+        # Missing targets in y_valid
+        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, keras_params={'learning_rate': lr, 'decay': 0.0})
+        self.assertFalse(model.trained)
+        self.assertEqual(model.nb_fit, 0)
+        model.fit(x_train, y_train_mono_3, x_valid=x_train, y_valid=y_valid_mono_missing, with_shuffle=True)
+        self.assertTrue(model.trained)
+        self.assertEqual(model.nb_fit, 1)
+        self.assertEqual(sorted(model.list_classes), [0, 1, 2])
+        self.assertTrue(model.model._is_compiled)
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertEqual(lr, round(float(model.model.optimizer._decayed_lr(tensorflow.float32).numpy()), 6))
         remove_dir(model_dir)
 
 
