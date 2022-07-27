@@ -49,7 +49,7 @@ class TfidfTransformerSuperDocuments(TfidfTransformer):
             y_train(np.array): array, shape = [n_targets]
         '''
         index_array = np.array([np.where(y_train == x)[0] for x in np.unique(y_train)], dtype = object)
-        result = np.array([[sum(y) for y in x_train[x, : ].transpose().toarray()] for x in index_array])
+        result = np.array([[sum(y) for y in x_train[x, :].transpose().toarray()] for x in index_array])
         return result, np.unique(y_train)
 
     def fit_transform(self, raw_documents, y=None) -> csr_matrix:

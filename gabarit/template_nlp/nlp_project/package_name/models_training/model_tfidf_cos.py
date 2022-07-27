@@ -29,7 +29,6 @@ import logging
 import numpy as np
 from typing import Union
 
-from scipy.sparse import csr_matrix
 from sklearn.pipeline import Pipeline
 from sklearn.metrics.pairwise import cosine_similarity
 from sklearn.feature_extraction.text import TfidfVectorizer
