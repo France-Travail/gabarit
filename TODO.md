@@ -21,7 +21,7 @@
 - Add a "model" that would aggregate several models (weak learners) into a meta model.
 - We should probably remove nb_iter_keras stuff. It is not used.
 - Review how the `get_classes_from_proba` and `inverse_transform` functions work! It is not very understandable!
-- Add used preprocessing as models' attributes.
+- Add used preprocessing as models' attributes ?
 - Remove / fix some `# type: ignore`.
 - Rework models folder hierarchy. We should add a directory per library (keras, sklearn, ...), and exploratory subdirectories.
 - Some 0_....py scripts are not tested (in functional tests).
@@ -35,6 +35,7 @@
 - Download flaubert_small_cased before using tests (in Actions)
 - Installation error with `python setup.py develop` when requirements.txt is not called first -> error: requests 2.28.0 is installed but requests<2.25.1,>=2.23.0 is required by {'words-n-fun'}
 - Shouldn't transformers be saved into `XXX-data` folder ? Like detectron models for the vision template ? (If changed, also change tutorial)
+- Add unit test model_pytorch
 
 
 ### Template - Numerical
