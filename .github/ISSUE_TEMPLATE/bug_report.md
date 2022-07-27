@@ -11,6 +11,13 @@ assignees: ''
 
 A clear and concise description of what the bug is.
 
+## Concerned template
+
+  - [ ] NLP template
+  - [ ] NUM template
+  - [ ] VISION template
+  - [ ] How templates are generated - Jinja
+
 ### To Reproduce
 
 Code snippet:

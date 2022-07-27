@@ -15,6 +15,13 @@ _(Note, you don't have to fill out every section here. They're just here for gui
 Is your feature request related to a problem?  
 Please describe the problem here. Ex. I'm always frustrated when [...]
 
+## Concerned template
+
+  - [ ] NLP template
+  - [ ] NUM template
+  - [ ] VISION template
+  - [ ] How templates are generated - Jinja
+
 ### Solution
 
 Describe the solution you'd like, i.e. a clear and concise description of what you want to happen.  
