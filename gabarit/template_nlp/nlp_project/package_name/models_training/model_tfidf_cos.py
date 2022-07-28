@@ -99,6 +99,7 @@ class ModelTfidfCos(ModelPipeline):
     @utils.trained_needed
     def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
         '''Predictions
+        - /!\\ THE MODEL COSINE SIMILARITY DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL COSINE SIMILARITY /!\\ -
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
