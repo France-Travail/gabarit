@@ -35,7 +35,8 @@ from test_template_nlp.models_training import (model_tfidf_svm, model_tfidf_gbt,
                                                model_tfidf_dense, model_embedding_lstm, model_embedding_lstm_attention,
                                                model_embedding_lstm_structured_attention, model_embedding_lstm_gru_gpu,
                                                model_embedding_cnn, model_pytorch_transformers,
-                                               utils_models)
+                                               utils_models, model_tfidf_cos, model_tfidf_super_documents_naive,
+                                               utils_super_documents,)
 
 
 class Case1_e2e_pipeline(unittest.TestCase):
@@ -459,7 +460,6 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_TfidfLgbm failed')
 
-
     def test05_Model_TfidfDense(self):
         '''Test of the model TF-IDF/Dense'''
         print('            ------------------ >     Test of the model TF-IDF/Dense     /   Mono-class & Mono-label')
@@ -707,7 +707,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_PytorchTransformer failed')
 
-    def test013_Model_EmbeddingLstmStructuredAttention(self):
+    def test13_Model_EmbeddingLstmStructuredAttention(self):
         '''Test of the model Embedding/LSTM/Attention + explainable'''
         print('            ------------------ >     Test of the model Embedding/LSTM/Attention + explainable     /   Mono-class & Mono-label')
 
@@ -732,6 +732,57 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('ModelEmbeddingLstmStructuredAttention failed')
 
+    def test14_Model_TfidfCos(self):
+        '''Test of the model TF-IDF/Cos'''
+        print('            ------------------ >     Test of the model TF-IDF/Cos     /   Mono-class & Mono-label')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+
+            # Set model
+            model_name = 'tfidf_cos_mono_class_mono_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_tfidf_cos.ModelTfidfCos(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                        tfidf_params={'ngram_range': [3, 5], 'min_df': 0.05, 'max_df': 0.9, 'binary': True, 'max_features': 100000},
+                                                        multi_label=False)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_mono_label(self, test_model)
+
+        except Exception:
+            self.fail('testModel_TfidfCos failed')
+
+    def test15_Model_TfidfSuperDocumentsNaive(self):
+        '''Test of the model TF-IDF/Super Documents Naive'''
+        print('            ------------------ >     Test of the model TF-IDF/Super Documents Naive     /   Mono-class & Mono-label')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+
+            # Set model
+            model_name = 'tfidf_super_documents_naive_mono_class_mono_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                                                            tfidf_params={'ngram_range': [3, 3], 'min_df': 0, 'max_df': 0.9, 'binary': True, 'max_features': 100000},
+                                                                                            super_documents_naive_params={"norm": "l2", "sublinear_tf": False},
+                                                                                            multi_label=False, model_name=model_name, model_dir=model_dir,
+                                                                                            multiclass_strategy=None)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_mono_label(self, test_model)
+
+        except Exception:
+            self.fail('testModel_TfidfSuperDocuments_naive failed')
 
 def test_model_mono_class_multi_label(test_class, test_model):
     '''Generic fonction to test a given model for mono-class/multi-labels'''
@@ -1807,6 +1858,56 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_EmbeddingLstmStructuredAttention failed')
 
+    def test14_Model_TfidfCos(self):
+        '''Test of the model TF-IDF/Cos'''
+        print('            ------------------ >     Test of the model TF-IDF/Cos     /   Multi-classes & Mono-label')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+
+            # Set model
+            model_name = 'tfidf_cos_multi_class_mono_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_tfidf_cos.ModelTfidfCos(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                       tfidf_params={'ngram_range': [3, 5], 'min_df': 0.05, 'max_df': 0.9, 'binary': True, 'max_features': 100000},
+                                                       multi_label=False, model_name=model_name, model_dir=model_dir,
+                                                       multiclass_strategy=None)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+        except Exception:
+            self.fail('testModel_TfidfCos failed')
+
+    def test15_Model_TfidfSuperDocumentsNaive(self):
+        '''Test of the model TF-IDF/Super Documents Naive'''
+        print('            ------------------ >     Test of the model TF-IDF/Super Documents Naive     /   Multi-classes & Mono-label')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+
+            # Set model
+            model_name = 'tfidf_super_documents_naive_multi_class_mono_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                                                            tfidf_params={'ngram_range': [3, 5], 'min_df': 0.05, 'max_df': 0.9, 'binary': True, 'max_features': 100000},
+                                                                                            super_documents_naive_params={"norm": "l2", "sublinear_tf": False},
+                                                                                            multi_label=False, model_name=model_name, model_dir=model_dir,
+                                                                                            multiclass_strategy=None)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+        except Exception:
+            self.fail('testModel_TfidfSuperDocumentsNaive failed')
 
 if __name__ == '__main__':
     # Change directory to script directory parent

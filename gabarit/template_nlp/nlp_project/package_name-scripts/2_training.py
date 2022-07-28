@@ -47,7 +47,10 @@ from {{package_name}}.models_training import (model_tfidf_dense,
                                               model_embedding_lstm_structured_attention,
                                               model_embedding_lstm_gru_gpu,
                                               model_pytorch_transformers,
-                                              utils_models)
+                                              utils_models,
+                                              model_tfidf_cos,
+                                              model_tfidf_super_documents_naive,
+                                              utils_super_documents,)
 
 # Disable some warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -271,7 +274,13 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
         #                                                             tokenizer_special_tokens=tuple(),
         #                                                             padding="max_length", truncation=True,
         #                                                             multi_label=multi_label)
-
+        # model = model_tfidf_cos.ModelTfidfCos(x_col=x_col, y_col=y_col, level_save=level_save,
+        #                                       tfidf_params={'ngram_range': [3, 5], 'min_df': 0.05, 'max_df': 0.9, 'binary': True, 'max_features': 100000},
+        #                                       multi_label=multi_label)
+        # model = model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive(x_col=x_col, y_col=y_col, level_save=level_save,
+        #                                       tfidf_params={'ngram_range': [3, 3], 'min_df': 0, 'max_df': 0.9, 'binary': true, 'max_features': 100000},
+        #                                       super_documents_naive_params={"norm": "l2", "sublinear_tf": false},
+        #                                       multi_label=multi_label)
     # Display if GPU is being used
     model.display_if_gpu_activated()
 
