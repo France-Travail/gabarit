@@ -107,41 +107,6 @@ class ModelTfidfCos(ModelPipeline):
         Returns:
             (np.ndarray): Array, shape = [n_samples]
         '''
-        if return_proba:
-            return self.predict_proba(x_test)
-        else:
-            return self.predict_cosine_similarity(x_test)
-
-    @utils.data_agnostic_str_to_list
-    @utils.trained_needed
-    def predict_proba(self, x_test, **kwargs) -> np.ndarray:
-        '''Predicts the probabilities on the test set
-        - /!\\ THE MODEL COSINE SIMILARITY DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL TO 0 OR 1 /!\\ -
-
-        Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples]
-        Returns:
-            (np.ndarray): Array, shape = [n_samples, n_classes]
-        '''
-        if not self.multi_label:
-            preds = self.predict_cosine_similarity(x_test)
-            # Format ['a', 'b', 'c', 'a', ..., 'b']
-            # Transform to "proba"
-            transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
-            probas = np.array([transform_dict[x] for x in preds])
-        else:
-            raise ValueError("The TFIDF cosine similarity does not support multi label")
-        return probas
-
-    @utils.trained_needed
-    def predict_cosine_similarity(self, x_test) -> np.ndarray:
-        '''Compute the scores for the prediction
-
-        Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples]
-        Returns:
-            (np.ndarray): Array, shape = [n_samples]
-        '''
         x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
         x_test = np.array(x_test) if isinstance(x_test, list) else x_test
 
@@ -158,8 +123,12 @@ class ModelTfidfCos(ModelPipeline):
                 cosine = cosine_similarity(block_train, block_vec).astype(np.float16)
                 list_cosine.append(cosine)
             array_predicts = np.append(array_predicts, np.argmax(np.concatenate(list_cosine), axis=0))
-        predicts = self.array_target[array_predicts]
-        return predicts
+
+        if return_proba:
+            return np.max(np.concatenate(list_cosine), axis=0)
+        else:
+            predicts = self.array_target[array_predicts]
+            return predicts
 
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model

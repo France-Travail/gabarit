@@ -344,6 +344,21 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             # test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
             #           filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_3)
             # test_model_mono_class_mono_label(self, test_model_3)
+
+            # Set super documents model
+            model_name = 'tfidf_svm_mono_class_mono_label_super_documents'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model_super_documents = model_tfidf_svm.ModelTfidfSvm(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                         tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
+                                                         svc_params={'C': 1.0, 'max_iter': 10000},
+                                                         multi_label=False, model_name=model_name, model_dir=model_dir,
+                                                         multiclass_strategy='ovr', with_super_documents=True)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_super_documents)
+            test_model_mono_class_mono_label(self, test_model_super_documents)
+
         except Exception:
             self.fail('testModel_TfidfSvm failed')
 
@@ -399,6 +414,21 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             # test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
             #           filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_3)
             # test_model_mono_class_mono_label(self, test_model_3)
+
+            # Set super documents model
+            model_name = 'tfidf_gbt_mono_class_mono_label_super_documents'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model_super_documents = model_tfidf_gbt.ModelTfidfGbt(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                                        tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
+                                                                        gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 'auto'},
+                                                                        multi_label=False, model_name=model_name, model_dir=model_dir,
+                                                                        multiclass_strategy='ovr', with_super_documents=True)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_super_documents)
+            test_model_mono_class_mono_label(self, test_model_super_documents)
+
         except Exception:
             self.fail('testModel_TfidfGbt failed')
 
@@ -457,6 +487,21 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             # test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
             #          filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_3)
             # test_model_mono_class_mono_label(self, test_model_3)
+
+            # Set super documents model
+            model_name = 'tfidf_lgbm_mono_class_mono_label_super_documents'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model_super_documents = model_tfidf_lgbm.ModelTfidfLgbm(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                         tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
+                                                         lgbm_params={'learning_rate': 0.1, 'n_estimators': 50, 'max_depth': 2000, 'subsample': 1.0, 'num_leaves': 12070, 'min_data_in_leaf': 2},
+                                                         multi_label=False, model_name=model_name, model_dir=model_dir,
+                                                         multiclass_strategy='ovr', with_super_documents=True)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_super_documents)
+            test_model_mono_class_mono_label(self, test_model_super_documents)
+
         except Exception:
             self.fail('testModel_TfidfLgbm failed')
 
@@ -481,6 +526,20 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_mono_label(self, test_model)
+
+            # Set super documents model
+            model_name = 'tfidf_dense_mono_class_mono_label_super_documents'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model_super_documents = model_tfidf_dense.ModelTfidfDense(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                                            tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
+                                                                            multi_label=False, model_name=model_name, model_dir=model_dir,
+                                                                            multiclass_strategy='ovr', with_super_documents=True)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_super_documents)
+            test_model_mono_class_mono_label(self, test_model_super_documents)
+
         except Exception:
             self.fail('testModel_TfidfDense failed')
 
@@ -669,6 +728,21 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             # test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
             #           filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_3)
             # test_model_mono_class_mono_label(self, test_model_3)
+
+            # Set super documents model
+            model_name = 'tfidf_sgdc_mono_class_mono_label_super_documents'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model_super_documents = model_tfidf_sgdc.ModelTfidfSgdc(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                                        tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
+                                                                        sgdc_params={'loss': 'log', 'max_iter': 1000},
+                                                                        multi_label=False, model_name=model_name, model_dir=model_dir,
+                                                                        multiclass_strategy='ovr', with_super_documents=True)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_super_documents)
+            test_model_mono_class_mono_label(self, test_model_super_documents)
+
         except Exception:
             self.fail('testModel_TfidfSgdc failed')
 
@@ -747,12 +821,25 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             os.makedirs(model_dir)
             test_model = model_tfidf_cos.ModelTfidfCos(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
-                                                        tfidf_params={'ngram_range': [3, 5], 'min_df': 0.05, 'max_df': 0.9, 'binary': True, 'max_features': 100000},
+                                                        tfidf_params={'ngram_range': (1, 2), 'min_df': 0.05, 'max_df': 0.9, 'binary': True, 'max_features': 100000},
                                                         multi_label=False)
             # Test it
             test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
                       filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_mono_label(self, test_model)
+
+            # Set super documents model
+            model_name = 'tfidf_cos_mono_class_mono_label_super_documents'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model_super_documents = model_tfidf_cos.ModelTfidfCos(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                                        tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
+                                                                        multi_label=False, model_name=model_name, model_dir=model_dir,
+                                                                        multiclass_strategy='ovr', with_super_documents=True)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_super_documents)
+            test_model_mono_class_mono_label(self, test_model_super_documents)
 
         except Exception:
             self.fail('testModel_TfidfCos failed')
@@ -772,7 +859,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             os.makedirs(model_dir)
             test_model = model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
-                                                                                            tfidf_params={'ngram_range': [3, 3], 'min_df': 0, 'max_df': 0.9, 'binary': True, 'max_features': 100000},
+                                                                                            tfidf_params={'ngram_range': (1, 2), 'min_df': 0, 'max_df': 0.9, 'binary': True, 'max_features': 100000},
                                                                                             super_documents_naive_params={"norm": "l2", "sublinear_tf": False},
                                                                                             multi_label=False, model_name=model_name, model_dir=model_dir,
                                                                                             multiclass_strategy=None)
@@ -780,6 +867,20 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
                       filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_mono_label(self, test_model)
+
+            # Set super documents model
+            model_name = 'tfidf_super_documents_naive_mono_class_mono_label_super_documents'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model_super_documents = model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                                                                        tfidf_params={'ngram_range': (1, 2), 'min_df': 0, 'max_df': 0.9, 'binary': True, 'max_features': 100000},
+                                                                                                        super_documents_naive_params={"norm": "l2", "sublinear_tf": False},
+                                                                                                        multi_label=False, model_name=model_name, model_dir=model_dir,
+                                                                                                        multiclass_strategy='ovr', with_super_documents=True)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_super_documents)
+            test_model_mono_class_mono_label(self, test_model_super_documents)
 
         except Exception:
             self.fail('testModel_TfidfSuperDocuments_naive failed')
@@ -1873,7 +1974,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             os.makedirs(model_dir)
             test_model = model_tfidf_cos.ModelTfidfCos(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
-                                                       tfidf_params={'ngram_range': [3, 5], 'min_df': 0.05, 'max_df': 0.9, 'binary': True, 'max_features': 100000},
+                                                       tfidf_params={'ngram_range': (1, 2), 'min_df': 0.05, 'max_df': 0.9, 'binary': True, 'max_features': 100000},
                                                        multi_label=False, model_name=model_name, model_dir=model_dir,
                                                        multiclass_strategy=None)
             # Test it
@@ -1898,7 +1999,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             os.makedirs(model_dir)
             test_model = model_tfidf_super_documents_naive.ModelTfidfSuperDocumentsNaive(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
-                                                                                            tfidf_params={'ngram_range': [3, 5], 'min_df': 0.05, 'max_df': 0.9, 'binary': True, 'max_features': 100000},
+                                                                                            tfidf_params={'ngram_range': (1, 2), 'min_df': 0.05, 'max_df': 0.9, 'binary': True, 'max_features': 100000},
                                                                                             super_documents_naive_params={"norm": "l2", "sublinear_tf": False},
                                                                                             multi_label=False, model_name=model_name, model_dir=model_dir,
                                                                                             multiclass_strategy=None)
