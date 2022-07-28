@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Model TFIDF Super Documents Naive 
+## Model TFIDF Super Documents Naive
 
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
@@ -47,7 +47,7 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
 
     _default_name = 'model_tfidf_super_documents_naive'
 
-    def __init__(self, tfidf_count_params: Union[dict, None] = None, tfidf_transformer_params: Union[dict, None] = None, 
+    def __init__(self, tfidf_count_params: Union[dict, None] = None, tfidf_transformer_params: Union[dict, None] = None,
                  multiclass_strategy: Union[str, None] = None, **kwargs):
         '''Initialization of the class (see ModelPipeline & ModelClass for more arguments)
 
@@ -90,7 +90,7 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
             if multiclass_strategy in ['ovr', 'ovo']:
                 raise ValueError("The TFIDF Cosine Similarity can't do", self.multiclass_strategy)
             else:
-                self.pipeline = Pipeline([('tfidf_count', self.tfidf_count),('tfidf', self.tfidf)])
+                self.pipeline = Pipeline([('tfidf_count', self.tfidf_count), ('tfidf', self.tfidf)])
 
     def fit(self, x_train, y_train, **kwargs):
         '''Trains the model

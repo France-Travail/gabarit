@@ -141,7 +141,7 @@ class ModelPipeline(ModelClass):
         # Very specific fix: in some cases, with OvR, strategy, all estimators return 0, which generates a division per 0 when normalizing
         # Hence, we replace NaNs with 1 / nb_classes
         if not self.multi_label:
-            probas = np.nan_to_num(probas, nan=1/len(self.list_classes))
+            probas = np.nan_to_num(probas, nan=1 / len(self.list_classes))
         # If use of MultiOutputClassifier ->  returns probabilities of 0 and 1 for all elements and all classes
         # Same thing for some base models
         # Correction in case where we detect a shape of length > 2 (ie. equals to 3)

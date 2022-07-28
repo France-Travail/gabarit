@@ -35,6 +35,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
 
 logger = logging.getLogger(__name__)
 
+
 class TfidfTransformerSuperDocuments(TfidfTransformer):
     '''TfidfTransformer for super documents'''
 
@@ -48,7 +49,7 @@ class TfidfTransformerSuperDocuments(TfidfTransformer):
             result(np.array): array, shape = [n_targets, n_term]
             y_train(np.array): array, shape = [n_targets]
         '''
-        index_array = np.array([np.where(y_train == x)[0] for x in np.unique(y_train)], dtype = object)
+        index_array = np.array([np.where(y_train == x)[0] for x in np.unique(y_train)], dtype=object)
         result = np.array([[sum(y) for y in x_train[x, :].transpose().toarray()] for x in index_array])
         return result, np.unique(y_train)
 
@@ -64,6 +65,7 @@ class TfidfTransformerSuperDocuments(TfidfTransformer):
         raw_super_documents, target_super_documents = self.get_super_documents_count_vectorizer(raw_documents, y)
         self.fit(raw_super_documents, y)
         return self.transform(raw_documents)
+
 
 class TfidfVectorizerSuperDocuments(TfidfVectorizer):
     '''TfidfVectorize for super documents'''
@@ -82,7 +84,7 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         y_train = pd.Series(y_train, name='y_train')
 
         df_train = pd.concat([x_train, y_train], axis=1)
-        super_train = df_train.groupby(y_train.name).agg({x_train.name:lambda sentence : ' '.join((sentence))})
+        super_train = df_train.groupby(y_train.name).agg({x_train.name:lambda sentence: ' '.join((sentence))})
         return np.array(super_train[x_train.name]), np.array(super_train.index)
 
     def fit(self, raw_documents, y=None) -> TfidfVectorizerSuperDocuments:
@@ -95,7 +97,7 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
             TfidfVectorizerSuperDocuments
         '''
         raw_super_documents, target_super_documents = self.get_super_documents(raw_documents, y)
-        X = super().fit(raw_super_documents)
+        super().fit(raw_super_documents)
         return self
 
     def fit_transform(self, raw_documents, y=None) -> csr_matrix:
