@@ -8,7 +8,10 @@ assignees: ''
 
 ---
 
-_(Note, you don't have to fill out every section here. They're just here for guidance. That said, nicely detailed feature requests are more likely to get attention sooner)_
+<!--
+Note, you don't have to fill out every section here. They're just here for guidance. That said, nicely detailed feature requests are more likely to get attention sooner
+
+-->
 
 ### Problem
 
