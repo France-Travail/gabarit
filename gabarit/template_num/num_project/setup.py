@@ -38,6 +38,7 @@ setup(
         'numpy==1.19.5',
         'pandas==1.3.5',
         'scikit_learn>=0.24.2,<0.25',
+        'scipy<1.9',  # Tmp fix. Scipy 1.9 removed linalg.pinv2 which is not compatible with scikit_learn 0.24.2
         'lightgbm>=2.3.0,<2.3.1',  # Check if we can upgrade
         'xgboost>=1.4.2,<1.4.3',
         'matplotlib>=3.0.3,<3.4',
