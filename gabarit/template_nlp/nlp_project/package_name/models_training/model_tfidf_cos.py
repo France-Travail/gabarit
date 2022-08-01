@@ -43,7 +43,7 @@ class ModelTfidfCos(ModelPipeline):
 
     _default_name = 'model_tfidf_cos'
 
-    def __init__(self, tfidf_params: Union[dict, None] = None, multiclass_strategy: Union[str, None] = None, **kwargs):
+    def __init__(self, tfidf_params: Union[dict, None] = None, multiclass_strategy: Union[str, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelPipeline & ModelClass for more arguments)
 
         Kwargs:
@@ -81,7 +81,7 @@ class ModelTfidfCos(ModelPipeline):
             else:
                 self.pipeline = Pipeline([('tfidf', self.tfidf)])
 
-    def fit(self, x_train, y_train, **kwargs):
+    def fit(self, x_train, y_train, **kwargs) -> None:
         '''Trains the model
 
            **kwargs permits compatibility with Keras model
@@ -108,6 +108,23 @@ class ModelTfidfCos(ModelPipeline):
         Returns:
             (np.ndarray): Array, shape = [n_samples]
         '''
+        if return_proba:
+            return self.predict_proba(x_test)
+        else:
+            return self.predict_cosine_similarity(x_test)
+
+    @utils.trained_needed
+    def predict_cosine_similarity(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
+        '''Predictions
+        - /!\\ THE MODEL COSINE SIMILARITY DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL COSINE SIMILARITY /!\\ -
+
+        Args:
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
+        Kwargs:
+            return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
+        Returns:
+            (np.ndarray): Array, shape = [n_samples]
+        '''
         x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
         x_test = np.array(x_test) if isinstance(x_test, list) else x_test
 
@@ -123,10 +140,11 @@ class ModelTfidfCos(ModelPipeline):
                 block_train = self.matrix_train[train_row*chunk_size : (train_row+1) * chunk_size]
                 cosine = cosine_similarity(block_train, block_vec).astype(np.float16)
                 list_cosine.append(cosine)
-            array_predicts = np.append(array_predicts, np.argmax(np.concatenate(list_cosine), axis=0))
+            concatenate_cosine = np.concatenate(list_cosine)
+            array_predicts = np.append(array_predicts, np.argmax(concatenate_cosine, axis=0))
 
         if return_proba:
-            return np.max(np.concatenate(list_cosine), axis=0)
+            return concatenate_cosine.T
         else:
             predicts = self.array_target[array_predicts]
             return predicts
@@ -141,7 +159,19 @@ class ModelTfidfCos(ModelPipeline):
         Returns:
             (np.ndarray): Array, shape = [n_samples]
         '''
-        return self.predict(x_test, return_proba=True)
+        preds = self.predict_cosine_similarity(x_test, return_proba=True)
+        index_dict = {target:[] for target in set(self.array_target)}
+        for i, target in enumerate(self.array_target):
+            index_dict[target] = index_dict[target] +[i]
+
+        probas_dict = {target:[] for target in set(self.array_target)}
+        for col in preds:
+            softmax = np.exp(col)/np.sum(np.exp(col))
+            for target in set(self.array_target):
+                probas_dict[target] = probas_dict[target] + [sum(softmax[index_dict[target]])]
+
+        probas = np.array([probas_dict[key] for key in probas_dict]).T
+        return probas
 
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model
@@ -178,7 +208,7 @@ class ModelTfidfCos(ModelPipeline):
         # Save
         super().save(json_data=json_data)
 
-    def reload_from_standalone(self, **kwargs):
+    def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files
         - /!\\ Experimental /!\\ -
 
