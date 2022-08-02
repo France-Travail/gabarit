@@ -160,10 +160,11 @@ class ModelTfidfCos(ModelPipeline):
         Returns:
             (np.ndarray): Array, shape = [n_samples]
         '''
+        x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
+        x_test = np.array(x_test) if isinstance(x_test, list) else x_test
+
         preds = self.predict_cosine_similarity(x_test, return_proba=True)
-        index_dict = {target:[] for target in set(self.array_target)}
-        for i, target in enumerate(self.array_target):
-            index_dict[target] = index_dict[target] +[i]
+        index_dict = {target: [i for i,t in enumerate(self.array_target) if t==target] for target in self.list_classes}
 
         probas_dict = {target:[] for target in set(self.array_target)}
         for col in preds:
@@ -172,7 +173,7 @@ class ModelTfidfCos(ModelPipeline):
                 probas_dict[target] = probas_dict[target] + [sum(col_softmax[index_dict[target]])]
 
         probas = [[probas_dict[key][i] for key in self.list_classes] for i in range(len(x_test))]
-        return probas
+        return np.array(probas, ndmin=2)
 
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model
