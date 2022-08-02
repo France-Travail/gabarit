@@ -170,7 +170,7 @@ class ModelTfidfCos(ModelPipeline):
             for target in set(self.array_target):
                 probas_dict[target] = probas_dict[target] + [sum(softmax[index_dict[target]])]
 
-        probas = np.array([probas_dict[key] for key in probas_dict]).T
+        probas = np.array([probas_dict[key] for key in self.list_classes]).T
         return probas
 
     def save(self, json_data: Union[dict, None] = None) -> None:
