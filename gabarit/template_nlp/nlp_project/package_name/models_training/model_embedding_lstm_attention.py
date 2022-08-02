@@ -99,7 +99,7 @@ class ModelEmbeddingLstmAttention(ModelKeras):
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
         Kwargs:
-            with_new_embedding: If we use a new embedding matrix
+            with_new_embedding (bool): If we use a new embedding matrix
             experimental_version (bool): If an experimental (but faster) version must be used
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
@@ -152,7 +152,7 @@ class ModelEmbeddingLstmAttention(ModelKeras):
         '''Prepares the input data for the model. Called when fitting the model
 
         Args:
-            x_train (?): Array-like, shape = [n_samples, n_features]
+            x_test (?): Array-like, shape = [n_samples, n_features]
         Returns:
             (np.ndarray): Prepared data
         '''

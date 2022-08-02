@@ -1,10 +1,10 @@
 [![pypi badge](https://img.shields.io/pypi/v/gabarit.svg)](https://pypi.python.org/pypi/gabarit)
-![NLP tests](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/nlp_build_tests.yaml/badge.svg)
-![NUM tests](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/num_build_tests.yaml/badge.svg)
-![VISION tests](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/vision_build_tests.yaml/badge.svg)
-![NLP wheel](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/nlp_wheel.yaml/badge.svg)
-![NUM wheel](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/num_wheel.yaml/badge.svg)
-![VISION wheel](https://github.com/OSS-Pole-Emploi/AI_frameworks/actions/workflows/vision_wheel.yaml/badge.svg)
+![NLP tests](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/nlp_build_tests.yaml/badge.svg)
+![NUM tests](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/num_build_tests.yaml/badge.svg)
+![VISION tests](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/vision_build_tests.yaml/badge.svg)
+![NLP wheel](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/nlp_wheel.yaml/badge.svg)
+![NUM wheel](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/num_wheel.yaml/badge.svg)
+![VISION wheel](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/vision_wheel.yaml/badge.svg)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Generic badge](https://img.shields.io/badge/python-3.7|3.8-blue.svg)](https://shields.io/)
 
@@ -422,9 +422,9 @@ The pdf file is located in [pole-emploi.org](https://www.pole-emploi.org/accueil
 
 ## 9. Contacts  <a name="contacts"></a>
 
-If you have any question/enquiry feel free to drop us a mail :
+If you have any question/enquiry feel free to drop us a mail : contactadsaiframeworks.00619@pole-emploi.fr
 
-- Alexandre GAREL - Data Scientist : alexandre.garel-ext@pole-emploi.fr
-- Nicolas GREFFARD - Data Scientist : nicolas.greffard01-ext@pole-emploi.fr
-- Gautier SOLARD : Data Scientist : gautier.solard@pole-emploi.fr
-- Nicolas TOUZOT - Product Owner : nicolas.touzot@pole-emploi.fr
+- Alexandre GAREL - Data Scientist
+- Nicolas GREFFARD - Data Scientist
+- Gautier SOLARD : Data Scientist
+- Nicolas TOUZOT - Product Owner

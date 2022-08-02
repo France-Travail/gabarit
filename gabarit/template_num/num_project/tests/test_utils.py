@@ -265,6 +265,9 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(flattened_list, expected_result)
 
 
+# TODO: test trained_needed
+
+
 # Perform tests
 if __name__ == '__main__':
     # Start tests

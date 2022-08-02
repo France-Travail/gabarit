@@ -156,6 +156,13 @@ class ModelPyTorch(ModelClass):
             # Important : get_dummies reorder the columns in alphabetical order
             # Thus, there is no problem if we fit again on a new dataframe with shuffled data
             list_classes = list(y_train_dummies.columns)
+            # FIX: valid test might miss some classes, hence we need to add them back to y_valid_dummies
+            if y_valid_dummies is not None and y_train_dummies.shape[1] != y_valid_dummies.shape[1]:
+                for cl in list_classes:
+                    # Add missing columns
+                    if cl not in y_valid_dummies.columns:
+                        y_valid_dummies[cl] = 0
+                y_valid_dummies = y_valid_dummies[list_classes]  # Reorder
         # Else keep it as it
         else:
             y_train_dummies = y_train
