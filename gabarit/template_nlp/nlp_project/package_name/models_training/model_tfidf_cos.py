@@ -24,6 +24,7 @@
 import os
 import math
 import json
+import scipy
 import pickle
 import logging
 import numpy as np
@@ -166,11 +167,11 @@ class ModelTfidfCos(ModelPipeline):
 
         probas_dict = {target:[] for target in set(self.array_target)}
         for col in preds:
-            softmax = np.exp(col)/np.sum(np.exp(col))
+            col_softmax = scipy.special.softmax(col, axis=0)
             for target in set(self.array_target):
-                probas_dict[target] = probas_dict[target] + [sum(softmax[index_dict[target]])]
+                probas_dict[target] = probas_dict[target] + [sum(col_softmax[index_dict[target]])]
 
-        probas = np.array([probas_dict[key] for key in self.list_classes]).T
+        probas = [[probas_dict[key][i] for key in self.list_classes] for i in range(len(x_test))]
         return probas
 
     def save(self, json_data: Union[dict, None] = None) -> None:
