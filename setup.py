@@ -40,7 +40,7 @@ setup(
     long_description_content_type='text/markdown',
     author='Agence Data Services PE Nantes',
     description="Kickstart your AI project as code",
-    url="https://github.com/OSS-Pole-Emploi/AI_frameworks",
+    url="https://github.com/OSS-Pole-Emploi/gabarit",
     platforms=['windows', 'linux'],
     include_package_data=True,
     install_requires=[
