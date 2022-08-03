@@ -1414,7 +1414,7 @@ def test_model_multi_class_mono_label(test_class, test_model):
     test_class.assertEqual(list(preds), ['none', 'a', 'b', 'both'])
     # predict_proba
     probas = test_model.predict_proba(['cdi à temps complet', 'vous disposez du permis', 'le véhicule est nécessaire', 'vous disposez du permis et le véhicule est nécessaire'])
-    test_class.assertEqual(round(probas.sum(), 3), 4.)  # We round for deep learning models
+    test_class.assertAlmostEqual(probas.sum(), 3)  # We round for deep learning models
     test_class.assertGreater(probas[0][index_none], 1/4)
     test_class.assertLess(probas[0][index_a], probas[0][index_none])
     test_class.assertLess(probas[0][index_b], probas[0][index_none])
@@ -1435,7 +1435,7 @@ def test_model_multi_class_mono_label(test_class, test_model):
     probas2 = test_model.predict(['cdi à temps complet', 'vous disposez du permis',
                                   'le véhicule est nécessaire', 'vous disposez du permis et le véhicule est nécessaire'],
                                   return_proba=True)
-    test_class.assertEqual(round(probas2.sum(), 3), 4.)  # We round for deep learning models
+    test_class.assertAlmostEqual(probas2.sum(), 3)  # We round for deep learning models
     test_class.assertGreater(probas2[0][index_none], 1/4)
     test_class.assertLess(probas2[0][index_a], probas2[0][index_none])
     test_class.assertLess(probas2[0][index_b], probas2[0][index_none])
@@ -1455,7 +1455,7 @@ def test_model_multi_class_mono_label(test_class, test_model):
     # predict_with_proba
     pred_proba = test_model.predict_with_proba(['cdi à temps complet', 'vous disposez du permis', 'le véhicule est nécessaire', 'vous disposez du permis et le véhicule est nécessaire'])
     test_class.assertEqual(list(pred_proba[0]), ['none', 'a', 'b', 'both'])
-    test_class.assertEqual(round(pred_proba[1].sum(), 3), 4.)  # We round for deep learning models
+    test_class.assertAlmostEqual(pred_proba[1].sum(), 3)  # We round for deep learning models
     test_class.assertGreater(pred_proba[1][0][index_none], 1/4)
     test_class.assertLess(pred_proba[1][0][index_a], pred_proba[1][0][index_none])
     test_class.assertLess(pred_proba[1][0][index_b], pred_proba[1][0][index_none])
