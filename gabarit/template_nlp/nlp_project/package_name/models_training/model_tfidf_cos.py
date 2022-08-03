@@ -115,7 +115,7 @@ class ModelTfidfCos(ModelPipeline):
             return self.predict_cosine_similarity(x_test)
 
     @utils.trained_needed
-    def predict_cosine_similarity(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
+    def predict_cosine_similarity(self, x_test, return_cos: bool = False, **kwargs) -> np.ndarray:
         '''Predictions
         - /!\\ THE MODEL COSINE SIMILARITY DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL COSINE SIMILARITY /!\\ -
 
@@ -124,8 +124,14 @@ class ModelTfidfCos(ModelPipeline):
         Kwargs:
             return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
         Returns:
+            (np.ndarray): Array, shape = [n_samples, n_train]
             (np.ndarray): Array, shape = [n_samples]
+        Raise:
+            if self.matrix_train or self.array_target is None
         '''
+        if self.matrix_train is None or self.array_target is None:
+            raise AttributeError('your fit is not valid')
+
         x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
         x_test = np.array(x_test) if isinstance(x_test, list) else x_test
 
@@ -144,7 +150,7 @@ class ModelTfidfCos(ModelPipeline):
             concatenate_cosine = np.concatenate(list_cosine)
             array_predicts = np.append(array_predicts, np.argmax(concatenate_cosine, axis=0))
 
-        if return_proba:
+        if return_cos:
             return concatenate_cosine.T
         else:
             predicts = self.array_target[array_predicts]
@@ -158,11 +164,16 @@ class ModelTfidfCos(ModelPipeline):
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Returns:
-            (np.ndarray): Array, shape = [n_samples]
+            (np.ndarray): Array, shape = [n_samples, n_classes]
+        Raise:
+            if self.matrix_train or self.array_target is None
         '''
+        if self.matrix_train is None or self.array_target is None:
+            raise AttributeError('your fit is not valid')
+
         x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
         x_test = np.array(x_test) if isinstance(x_test, list) else x_test
-        preds = self.predict_cosine_similarity(x_test, return_proba=True)
+        preds = self.predict_cosine_similarity(x_test, return_cos=True)
         index_dict = {target: [i for i,t in enumerate(self.array_target) if t==target] for target in self.list_classes}
 
         probas_dict = {target:[] for target in set(self.array_target)}

@@ -153,7 +153,11 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Returns:
             (np.ndarray): Array, shape = [n_samples]
+        Raise:
+            if self.matrix_train == None
         '''
+        if self.matrix_train is None:
+            raise AttributeError('your fit is not valid')
         x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
         x_test = np.array(x_test) if isinstance(x_test, list) else x_test
 

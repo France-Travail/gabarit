@@ -172,7 +172,7 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         # Model needs to be fitted
         with self.assertRaises(AttributeError):
             model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
-            model.compute_predict('test')
+            model.predict_proba('test')
         remove_dir(model_dir)
 
     def test05_model_tfidf_super_documents_naive_compute_predict(self):
@@ -204,6 +204,14 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         with self.assertRaises(AttributeError):
             model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
             model.compute_predict(x_train)
+        remove_dir(model_dir)
+
+        # fit invalid
+        with self.assertRaises(AttributeError):
+            model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
+            model.fit(x_train, y_train_mono)
+            model.matrix_train = None
+            model.compute_predict('test')
         remove_dir(model_dir)
 
     def test06_model_tfidf_super_documents_naive_save(self):
