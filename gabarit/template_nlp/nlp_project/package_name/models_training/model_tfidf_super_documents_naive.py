@@ -118,6 +118,7 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
             return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
         Returns:
             (np.ndarray): Array, shape = [n_samples]
+            return_proba (np.ndarray): Array, shape = [n_samples, n_train]
         '''
         if return_proba:
             return self.predict_proba(x_test)
