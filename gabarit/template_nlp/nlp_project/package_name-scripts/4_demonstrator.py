@@ -166,7 +166,7 @@ def get_model_conf_text(model_conf: dict, list_classes: List[str]) -> str:
     return markdown_content
 
 
-def get_prediction(model: Type[ModelClass], model_conf: dict, content: str) -> Tuple[Union[str, np.ndarray], np.ndarray, float]:
+def get_prediction(model: Type[ModelClass], model_conf: dict, content: str) -> Tuple[Union[str, np.ndarray], np.ndarray, str, float]:
     '''Gets prediction on a content for a given model
 
     Args:
@@ -178,6 +178,7 @@ def get_prediction(model: Type[ModelClass], model_conf: dict, content: str) -> T
             str if classifier mono-label
             np.ndarray if multi-labels classifier
         (np.ndarray): Probabilities
+        (str): Preprocessed content
         (float): Prediction time
     '''
     start_time = time.time()

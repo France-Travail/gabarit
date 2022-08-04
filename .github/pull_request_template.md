@@ -1,45 +1,52 @@
-# IMPORTANT: Please do not create a Pull Request without creating an issue first.
+<!--
+Before contributing :
 
-Any change needs to be discussed before proceeding. Failure to do so may result in the rejection of the pull request.
+⚠️ Any contribution that is more than a few lines of code must be stated on the corresponding issue. If there is no issue for it yet, please create it first.
 
-Please provide enough information so that others can review your pull request:
+This ensure that :
 
-Explain the details for making this change. What existing problem does the pull request solve ?
+  1. Two people aren't working on the same thing
+	2. This is something Gabarit's maintainers believe should be implemented/fixed
+  3. Your time is well spent :)
 
-Test plan (required)
+-->
 
-Demonstrate the code is solid. Example: The exact commands you ran and their output, screenshots or videos.
+## ✒️ Context
 
-# Description
+_Please describe the project or issue background here_
 
-Please include a summary of the change and which issue is fixed. Please also include relevant motivation and context. List any dependencies that are required for this change.
+- What kind of change does this PR introduce ?
 
-Fixes # (issue)
+  - [ ] Bugfix
+  - [ ] Feature
+  - [ ] Refactoring
+  - [ ] Other, please describe:
 
-## Type of change
+## 🧱 Description of Changes
 
-Please created an issue with templates :
-- Bug report : create a report to help us improve
-- Feature request : suggest an idea for this project
+- _Add bullet points summarizing your changes here_
 
-# How Has This Been Tested?
+  - [ ] This is a change for the NLP template
+  - [ ] This is a change for the NUM template
+  - [ ] This is a change for the VISION template
+  - [ ] This changes how templates are generated (i.e. a Jinja change)
 
-Please describe the tests that you ran to verify your changes. Provide instructions so we can reproduce. Please also list any relevant details for your test configuration
+## 🩺 Testing
 
-- [ ] Test A
-- [ ] Test B
+- _Add bullet points summarizing your changes here_
 
-**Test Configuration**:
-* OS:
-* Python version:
+  - [ ] This change does not need new tests
+  - [ ] Added/Updated unit tests
+  - [ ] Added/Updated functionals tests (i.e. e2e)
 
-# Checklist:
+## 🔗 References
 
-- [ ] My code follows the style guidelines of this project
-- [ ] I have performed a self-review of my own code
-- [ ] I have commented my code, particularly in hard-to-understand areas
-- [ ] I have made corresponding changes to the documentation
-- [ ] My changes generate no new warnings
-- [ ] I have added tests that prove my fix is effective or that my feature works
-- [ ] New and existing unit tests pass locally with my changes
-- [ ] Any dependent changes have been merged and published in downstream modules
+_Does this depend on other work, documents, or tickets?_
+
+- **Issue**: Closes #XXXX
+
+---
+
+**Contribution License Agreement**
+
+By submitting this pull request you agree that all contributions to this project are made under the GNU AFFERO GENERAL PUBLIC LICENSE.

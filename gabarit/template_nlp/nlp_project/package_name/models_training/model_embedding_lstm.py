@@ -94,7 +94,7 @@ class ModelEmbeddingLstm(ModelKeras):
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
         Kwargs:
-            with_new_embedding: If we use a new embedding matrix
+            with_new_embedding (bool): If we use a new embedding matrix
             experimental_version (bool): If an experimental (but faster) version must be used
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
@@ -148,7 +148,7 @@ class ModelEmbeddingLstm(ModelKeras):
         '''Prepares the input data for the model. Called when fitting the model
 
         Args:
-            x_train (?): Array-like, shape = [n_samples, n_features]
+            x_test (?): Array-like, shape = [n_samples, n_features]
         Returns:
             (np.ndarray): Prepared data
         '''
@@ -178,13 +178,10 @@ class ModelEmbeddingLstm(ModelKeras):
         LSTM_UNITS = 100
         DENSE_HIDDEN_UNITS = 4 * LSTM_UNITS
         words = Input(shape=(self.max_sequence_length,))
-        # trainable=True to finetune the model
-        # words = Input(shape=(None,))
-        # x = Embedding(*embedding_matrix.shape, weights=[embedding_matrix], trainable=False)(words)
         x = Embedding(input_dim, embedding_size, weights=[embedding_matrix], trainable=False)(words)
         x = BatchNormalization(momentum=0.9)(x)
         x = SpatialDropout1D(0.5)(x)
-        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True))(x)  # returns a sequence of vectors of dimension 32
+        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True))(x)
         x = SpatialDropout1D(0.5)(x)
         hidden = concatenate([
             GlobalMaxPooling1D()(x),

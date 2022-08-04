@@ -60,10 +60,8 @@ class ModelPyTorchTransformersTests(unittest.TestCase):
     def test01_model_pytorch_transformers_init(self):
         '''Test of {{package_name}}.models_training.model_pytorch_transformers.ModelPyTorchTransformers.__init__'''
         true_transformer_name = 'flaubert/flaubert_small_cased'
-
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
-        # def __init__(self, max_sequence_length: int = 200, max_words: int = 100000
         # Init., test all parameters
         model = ModelPyTorchTransformers(model_dir=model_dir, transformer_name=true_transformer_name)
         self.assertEqual(model.model_dir, model_dir)

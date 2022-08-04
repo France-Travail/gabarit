@@ -167,7 +167,7 @@ def data_agnostic_str_to_list(function: Callable) -> Callable:
     '''Decorator to transform a string into a list of one element,
     and retrieve first element of the function returns.
     Idea: be able to do `predict(my_string)`
-    Otherwise, we would have to do `prediction = predict([ma_str])[0]`
+    Otherwise, we would have to do `prediction = predict([my_string])[0]`
 
     Args:
         function (func): Function to decorate

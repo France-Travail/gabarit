@@ -16,7 +16,8 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
+import json
+import logging
 import os
 import re
 import math
@@ -141,7 +142,7 @@ class ModelAuthor(ModelTfidfSvm):
         configuration_path = kwargs.get('configuration_path', None)
         with open(configuration_path, 'r', encoding='utf-8') as f:
             configs = json.load(f)
-        self.nb_word_sentence = configs.get('trained', self.nb_word_sentence)
+        self.nb_word_sentence = configs.get('nb_word_sentence', self.nb_word_sentence)
 
 ### Fonctions utilitaires
 

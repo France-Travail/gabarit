@@ -198,6 +198,8 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
             'file_class': ['birman', 'birman', 'birman', 'bombay', 'bombay', 'bombay', 'shiba', 'shiba', 'shiba', 'shiba', 'birman', 'bombay'],
             'file_path': [os.path.join(data_path, _) for _ in filenames],
         })
+        df_valid_multi_missing = df_train_multi.copy()
+        df_valid_multi_missing['file_class'] = df_valid_multi_missing['file_class'].apply(lambda x: 'birman' if x == 'shiba' else x)
         # For the "val" datasets, we reuse the train, not important here
         fit_arguments_keys = ['x', 'y', 'batch_size', 'steps_per_epoch', 'validation_data', 'validation_split', 'validation_steps']  # wanted keys in fit_arguments
 
@@ -998,6 +1000,33 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
         with self.assertRaises(AssertionError):
             fit_arguments = model.fit(df_train_multi_fake, df_valid=df_train_multi, with_shuffle=True)
         remove_dir(model_dir)
+        # Missing targets in df_valid
+        model = ModelMockTransferLearningClassifier(model_dir=model_dir, batch_size=2, epochs=2, keras_params={'learning_rate': lr, 'decay': 0.0}, with_fine_tune=False)
+        self.assertFalse(model.trained)
+        self.assertEqual(model.nb_fit, 0)
+        fit_arguments = model.fit(df_train_multi, df_valid=df_valid_multi_missing, with_shuffle=True)
+        self.assertTrue(model.trained)
+        self.assertEqual(model.nb_fit, 1)
+        self.assertEqual(sorted(model.list_classes), ['birman', 'bombay', 'shiba'])
+        self.assertTrue(model.model._is_compiled)
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'logger.csv')))
+        self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'best_initial_fit.hdf5')))
+        self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'logger_initial_fit.csv')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'plots')))
+        self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'plots_initial_fit')))
+        self.assertEqual(lr, round(float(model.model.optimizer._decayed_lr(tensorflow.float32).numpy()), 6))
+        self.assertEqual(type(fit_arguments), dict)
+        self.assertTrue(all([_ in fit_arguments.keys() for _ in fit_arguments_keys]))
+        self.assertTrue(all([_ in fit_arguments_keys for _ in fit_arguments.keys()]))
+        self.assertIsNone(fit_arguments['y'])
+        self.assertIsNone(fit_arguments['batch_size'])
+        self.assertIsNone(fit_arguments['validation_split'])
+        self.assertIsNotNone(fit_arguments['x'])
+        self.assertIsNotNone(fit_arguments['validation_data'])
+        self.assertIsNotNone(fit_arguments['steps_per_epoch'])
+        self.assertIsNotNone(fit_arguments['validation_steps'])
+        remove_dir(model_dir)
 
         ## Classification - Mono-label - Multi-Classes - WITH FINETUNING
         model = ModelMockTransferLearningClassifier(model_dir=model_dir, batch_size=2, epochs=2, keras_params={'learning_rate': lr, 'decay': 0.0}, with_fine_tune=True)
@@ -1262,6 +1291,33 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
         })
         with self.assertRaises(AssertionError):
             fit_arguments = model.fit(df_train_multi_fake, df_valid=df_train_multi, with_shuffle=True)
+        remove_dir(model_dir)
+        # Missing targets in df_valid
+        model = ModelMockTransferLearningClassifier(model_dir=model_dir, batch_size=2, epochs=2, keras_params={'learning_rate': lr, 'decay': 0.0}, with_fine_tune=True)
+        self.assertFalse(model.trained)
+        self.assertEqual(model.nb_fit, 0)
+        fit_arguments = model.fit(df_train_multi, df_valid=df_valid_multi_missing, with_shuffle=True)
+        self.assertTrue(model.trained)
+        self.assertEqual(model.nb_fit, 1)
+        self.assertEqual(sorted(model.list_classes), ['birman', 'bombay', 'shiba'])
+        self.assertTrue(model.model._is_compiled)
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'logger.csv')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best_initial_fit.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'logger_initial_fit.csv')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'plots')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'plots_initial_fit')))
+        self.assertEqual(model.second_lr, round(float(model.model.optimizer._decayed_lr(tensorflow.float32).numpy()), 6))
+        self.assertEqual(type(fit_arguments), dict)
+        self.assertTrue(all([_ in fit_arguments.keys() for _ in fit_arguments_keys]))
+        self.assertTrue(all([_ in fit_arguments_keys for _ in fit_arguments.keys()]))
+        self.assertIsNone(fit_arguments['y'])
+        self.assertIsNone(fit_arguments['batch_size'])
+        self.assertIsNone(fit_arguments['validation_split'])
+        self.assertIsNotNone(fit_arguments['x'])
+        self.assertIsNotNone(fit_arguments['validation_data'])
+        self.assertIsNotNone(fit_arguments['steps_per_epoch'])
+        self.assertIsNotNone(fit_arguments['validation_steps'])
         remove_dir(model_dir)
 
     def test03_model_transfer_learning_classifier_predict(self):

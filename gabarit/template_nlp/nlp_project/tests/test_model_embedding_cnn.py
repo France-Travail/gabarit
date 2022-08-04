@@ -76,10 +76,8 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
 
     def test01_model_embedding_cnn_init(self):
         '''Test of {{package_name}}.models_training.model_embedding_cnn.ModelEmbeddingCnn.__init__'''
-
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
-        # def __init__(self, max_sequence_length: int = 200, max_words: int = 100000
         # Init., test all parameters
         model = ModelEmbeddingCnn(model_dir=model_dir)
         self.assertEqual(model.model_dir, model_dir)
@@ -329,7 +327,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5'))) -> no model trained
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'model_embedding_cnn.pkl')))
-        self.assertFalse(os.path.exists(os.path.join(model.model_dir, f"embedding_tokenizer.pkl")))
+        self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'embedding_tokenizer.pkl')))
         with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='{{default_encoding}}') as f:
             configs = json.load(f)
         self.assertEqual(configs['test'], 8)
@@ -352,7 +350,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5'))) -> no model trained
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'model_embedding_cnn.pkl')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"embedding_tokenizer.pkl")))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'embedding_tokenizer.pkl')))
         with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='{{default_encoding}}') as f:
             configs = json.load(f)
         self.assertEqual(configs['test'], 8)
@@ -374,7 +372,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5'))) -> no model trained
         self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'model_embedding_cnn.pkl')))
-        self.assertFalse(os.path.exists(os.path.join(model.model_dir, f"embedding_tokenizer.pkl")))
+        self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'embedding_tokenizer.pkl')))
         with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='{{default_encoding}}') as f:
             configs = json.load(f)
         self.assertEqual(configs['test'], 8)
@@ -430,7 +428,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         # Reload
         conf_path = os.path.join(model.model_dir, "configurations.json")
         hdf5_path = os.path.join(model.model_dir, "best.hdf5")
-        tokenizer_path = os.path.join(model.model_dir, f"embedding_tokenizer.pkl")
+        tokenizer_path = os.path.join(model.model_dir, 'embedding_tokenizer.pkl')
         new_model = ModelEmbeddingCnn()
         new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tokenizer_path=tokenizer_path)
 

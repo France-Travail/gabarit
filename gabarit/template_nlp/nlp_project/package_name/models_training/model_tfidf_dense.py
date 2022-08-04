@@ -140,7 +140,7 @@ class ModelTfidfDense(ModelKeras):
         '''Prepares the input data for the model. Called when fitting the model
 
         Args:
-            x_train (?): Array-like, shape = [n_samples, n_features]
+            x_test (?): Array-like, shape = [n_samples, n_features]
         Returns:
             (np.ndarray): Prepared data
         '''
