@@ -84,7 +84,7 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         y_train = pd.Series(y_train, name='y_train')
 
         df_train = pd.concat([x_train, y_train], axis=1)
-        super_train = df_train.groupby(y_train.name).agg({x_train.name:lambda sentence: ' '.join((sentence))})
+        super_train = df_train.groupby(y_train.name).agg({x_train.name: lambda sentence: ' '.join((sentence))})
         return np.array(super_train[x_train.name]), np.array(super_train.index)
 
     def fit(self, raw_documents, y=None) -> TfidfVectorizerSuperDocuments:
@@ -111,6 +111,7 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         '''
         self.fit(raw_documents, y)
         return self.transform(raw_documents)
+
 
 if __name__ == '__main__':
     logger.error("This script is not stand alone but belongs to a package that has to be imported.")

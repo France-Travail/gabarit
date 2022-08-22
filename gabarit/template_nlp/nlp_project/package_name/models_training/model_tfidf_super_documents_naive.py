@@ -278,6 +278,7 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         with open(array_target_path, 'rb') as f:
             self.array_target = pickle.load(f)
 
+
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
     logger.error("This script is not stand alone but belongs to a package that has to be imported.")

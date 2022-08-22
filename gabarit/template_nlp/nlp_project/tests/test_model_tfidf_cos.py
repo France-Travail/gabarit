@@ -133,9 +133,7 @@ class ModelTfidfCosTests(unittest.TestCase):
 
         # Set vars
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_train_super_documents = np.array(["ceci est un test cela non plus", "pas cela ici test", "là, rien!"])
         y_train_mono = np.array([0, 1, 0, 1, 2])
-        y_train_str = np.array(['a', 'b', 'a', 'b', 'c'])
 
         # Mono label - no strategy
         model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=False)
@@ -227,7 +225,7 @@ class ModelTfidfCosTests(unittest.TestCase):
             model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
             model.predict_cosine_similarity('test')
         remove_dir(model_dir)
-        
+
         # fit invalid
         with self.assertRaises(AttributeError):
             model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
@@ -242,7 +240,6 @@ class ModelTfidfCosTests(unittest.TestCase):
             model.predict_cosine_similarity('test')
         remove_dir(model_dir)
 
-
     def test05_model_tfidf_cos_predict_proba(self):
         '''Test of {{package_name}}.models_training.model_tfidf_cos.ModelTfidfCos.predict_proba'''
 
@@ -253,8 +250,6 @@ class ModelTfidfCosTests(unittest.TestCase):
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
         y_train_mono = np.array([0, 1, 0, 1, 2])
         n_classes = 3
-        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0], 'test2': [1, 0, 0, 0, 0], 'test3': [0, 0, 0, 1, 0]})
-        cols = ['test1', 'test2', 'test3']
 
         # Mono-label - no strategy
         model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
@@ -374,6 +369,7 @@ class ModelTfidfCosTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             new_model = ModelTfidfCos()
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, matrix_train_path=matrix_train_path, array_target_path='toto.csv')
+
 
 # Perform tests
 if __name__ == '__main__':

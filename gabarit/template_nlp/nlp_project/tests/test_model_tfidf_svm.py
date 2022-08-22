@@ -116,7 +116,6 @@ class ModelTfidfSvmTests(unittest.TestCase):
             model = ModelTfidfSvm(model_dir=model_dir, multi_label=True, with_super_documents=True)
         remove_dir(model_dir)
 
-
     def test02_model_tfidf_svm_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_tfidf_svm.ModelTfidfSvm'''
 
@@ -638,6 +637,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             new_model = ModelTfidfSvm()
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path='toto.pkl')
+
 
 # Perform tests
 if __name__ == '__main__':
