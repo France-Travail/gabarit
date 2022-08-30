@@ -24,7 +24,6 @@ from unittest.mock import patch
 import os
 import gc
 import sys
-import psutil
 import shutil
 import logging
 import subprocess

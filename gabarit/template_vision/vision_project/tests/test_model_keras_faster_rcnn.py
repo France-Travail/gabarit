@@ -26,7 +26,6 @@ import cv2
 import copy
 import math
 import json
-import psutil
 import shutil
 import numpy as np
 import pandas as pd
