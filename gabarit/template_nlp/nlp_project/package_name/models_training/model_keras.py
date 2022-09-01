@@ -327,14 +327,13 @@ class ModelKeras(ModelClass):
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict(self, x_test, return_proba: bool = False, with_new_embedding: bool = False, **kwargs) -> np.ndarray:
+    def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
         '''Predictions on test set
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Kwargs:
             return_proba (bool): If the function should return the probabilities instead of the classes
-            with_new_embedding (bool): If a new matrix embedding is used (useless if no embedding)
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
@@ -373,7 +372,7 @@ class ModelKeras(ModelClass):
                 )
 
             # Get predictions per chunk
-            preds_iter = self.predict_proba(x_test, with_new_embedding=with_new_embedding)
+            preds_iter = self.predict_proba(x_test)
 
             # We sums the probabilities ...
             predicted_proba = predicted_proba + preds_iter
@@ -389,13 +388,11 @@ class ModelKeras(ModelClass):
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict_proba(self, x_test, with_new_embedding: bool = False) -> np.ndarray:
+    def predict_proba(self, x_test) -> np.ndarray:
         '''Probabilities predicted on the test set
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
-        Kwargs:
-            with_new_embedding (boolean): If a new matrix embedding is used (useless if no embedding)
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
