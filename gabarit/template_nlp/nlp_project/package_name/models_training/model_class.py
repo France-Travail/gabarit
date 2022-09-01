@@ -143,33 +143,28 @@ class ModelClass:
         raise NotImplementedError("'predict_proba' needs to be overridden")
 
     @utils.trained_needed
-    def predict_with_proba(self, x_test, with_new_embedding: bool = False) -> Tuple[np.ndarray, np.ndarray]:
+    def predict_with_proba(self, x_test) -> Tuple[np.ndarray, np.ndarray]:
         '''Predicts on the test set with probabilities
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
-        Kwargs:
-            with_new_embedding (bool): If we use a new embedding matrix (useless if no embedding)
         Returns:
             predicted_class (np.ndarray): The predicted classes, shape = [n_samples, n_classes]
             predicted_proba (np.ndarray): The predicted probabilities for each class, shape = [n_samples, n_classes]
         '''
-        # TODO: transform 'with_new_embedding' in **kwargs
         # Process
-        predicted_proba = self.predict(x_test, return_proba=True, with_new_embedding=with_new_embedding)
+        predicted_proba = self.predict(x_test, return_proba=True)
         predicted_class = self.get_classes_from_proba(predicted_proba)
         return predicted_class, predicted_proba
 
     @utils.trained_needed
-    def get_predict_position(self, x_test, y_true, with_new_embedding: bool = False) -> np.ndarray:
+    def get_predict_position(self, x_test, y_true) -> np.ndarray:
         '''Gets the order of predictions of y_true.
         Positions start at 1 (not 0)
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
             y_true (?): Array-like, shape = [n_samples, n_features]
-        Kwargs:
-            with_new_embedding (bool): If we use a new embedding matrix (useless if no embedding)
         Raises:
             ValueError: Not available in multi-labels case
         Returns:
@@ -181,7 +176,7 @@ class ModelClass:
         # Cast en pd.Series
         y_true = pd.Series(y_true)
         # Get predicted proba
-        predicted_proba = self.predict(x_test, return_proba=True, with_new_embedding=with_new_embedding)
+        predicted_proba = self.predict(x_test, return_proba=True)
         # Get position
         order = predicted_proba.argsort()
         ranks = len(self.dict_classes.values()) - order.argsort()  # type: ignore

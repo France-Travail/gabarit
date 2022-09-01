@@ -88,7 +88,7 @@ class ModelEmbeddingLstmGruGpu(ModelKeras):
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict_proba(self, x_test, with_new_embedding: bool = False, experimental_version: bool = False, **kwargs) -> np.ndarray:
+    def predict_proba(self, x_test, experimental_version: bool = False, **kwargs) -> np.ndarray:
         '''Predicts probabilities on the test dataset
 
         Warning, this provides probabilities for a single model. If we use nb_iter > 1, we must use predict(return_proba=True)
@@ -96,40 +96,18 @@ class ModelEmbeddingLstmGruGpu(ModelKeras):
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
         Kwargs:
-            with_new_embedding (bool): If we use a new embedding matrix
             experimental_version (bool): If an experimental (but faster) version must be used
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        # If not with_new_embedding, just get classic predictions
-        if not with_new_embedding:
-            # Prepare input
-            x_test = self._prepare_x_test(x_test)
-            # Process
-            if experimental_version:
-                return self.experimental_predict_proba(x_test)
-            else:
-                return self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
-        # Else, get new tokenizer/embedding matrix
+        # Prepare input
+        x_test = self._prepare_x_test(x_test)
+        # Process
+        if experimental_version:
+            return self.experimental_predict_proba(x_test)
         else:
-            # Get tokenizer & fit on test
-            tokenizer = Tokenizer(num_words=self.max_words, filters=self.tokenizer_filters)
-            self.logger.info('Fitting the tokenizer')
-            tokenizer.fit_on_texts(x_test)
-
-            # Create new model with new embedding
-            tmp_model = self._get_model(custom_tokenizer=tokenizer)
-            # Add 'old model' weights
-            for i, layer in enumerate(self.model.layers[2:]):  # type: ignore
-                tmp_model.layers[i + 2].set_weights(layer.get_weights())
-
-            # Prepare input
-            x_test = self._get_sequence(x_test, tokenizer, self.max_sequence_length, padding=self.padding, truncating=self.truncating)
-            # Get predictions
-            if experimental_version:
-                return self.experimental_predict_proba(x_test)
-            else:
-                return tmp_model.predict(x_test, batch_size=128, verbose=1)
+            return self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
+       
 
     def _prepare_x_train(self, x_train) -> np.ndarray:
         '''Prepares the input data for the model. Called when fitting the model
