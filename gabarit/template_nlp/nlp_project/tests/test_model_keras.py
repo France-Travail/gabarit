@@ -525,10 +525,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(proba.shape, (len(x_train), 3))
         proba = model.predict('test', return_proba=True)
         self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
-        preds = model.predict(x_train, return_proba=False)
-        self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 3))
         remove_dir(model_dir)
 
         #
@@ -544,10 +540,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(proba.shape, (len(x_train), 3))
         proba = model.predict('test', return_proba=True)
         self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
-        preds = model.predict(x_train, return_proba=False)
-        self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 3))
         remove_dir(model_dir)
 
         # Multi-labels
@@ -563,10 +555,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(proba.shape, (len(x_train), len(cols)))
         proba = model.predict('test', return_proba=True)
         self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
-        preds = model.predict(x_train, return_proba=False)
-        self.assertEqual(preds.shape, (len(x_train), len(cols)))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), len(cols)))
         remove_dir(model_dir)
 
         #
@@ -582,10 +570,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(proba.shape, (len(x_train), len(cols)))
         proba = model.predict('test', return_proba=True)
         self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
-        preds = model.predict(x_train, return_proba=False)
-        self.assertEqual(preds.shape, (len(x_train), len(cols)))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), len(cols)))
         remove_dir(model_dir)
 
         # Model needs to be fitted
