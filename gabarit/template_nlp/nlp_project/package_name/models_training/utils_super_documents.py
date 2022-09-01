@@ -29,9 +29,10 @@ from __future__ import annotations
 import logging
 import numpy as np
 import pandas as pd
+from typing import Union
 
 from scipy.sparse import csr_matrix
-from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer
+from sklearn.feature_extraction.text import TfidfVectorizer, TfidfTransformer, CountVectorizer
 
 logger = logging.getLogger(__name__)
 
@@ -70,6 +71,14 @@ class TfidfTransformerSuperDocuments(TfidfTransformer):
 class TfidfVectorizerSuperDocuments(TfidfVectorizer):
     '''TfidfVectorize for super documents'''
 
+    def __init__(self, count_params: Union[dict, None] = None, **kwargs) -> None:
+        '''Initialization of the class
+        '''
+        # Init.
+        super().__init__(**kwargs)
+        self.count_vec = CountVectorizer(count_params)
+        self.vec_trans = None
+
     def get_super_documents(self, x_train, y_train) -> tuple[np.array, np.array]:
         '''Transform the documents to super documents
 
@@ -96,9 +105,23 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         Returns:
             TfidfVectorizerSuperDocuments
         '''
-        raw_super_documents, target_super_documents = self.get_super_documents(raw_documents, y)
+        raw_super_documents, _ = self.get_super_documents(raw_documents, y)
         super().fit(raw_super_documents)
+        self.count_vec.fit(raw_super_documents)
+        self.vec_trans = super().transform(raw_super_documents).toarray().T
         return self
+
+    def transform(self, raw_documents, y=None) -> csr_matrix:
+        '''transform the model with super documents calculations
+
+        Args:
+            raw_documents (?): Array-like, shape = [n_samples, n_targets]
+            y (?): Array-like, shape = [n_samples, n_targets]
+        Returns:
+            (csr_matrix): matrix, shape = [n_samples, n_term]
+        '''
+        count = self.count_vec.transform(raw_documents).toarray()
+        return csr_matrix(np.dot(count, self.vec_trans))
 
     def fit_transform(self, raw_documents, y=None) -> csr_matrix:
         '''Trains and transform the model with super documents
