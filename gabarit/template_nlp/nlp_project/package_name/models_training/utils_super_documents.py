@@ -71,13 +71,12 @@ class TfidfTransformerSuperDocuments(TfidfTransformer):
 class TfidfVectorizerSuperDocuments(TfidfVectorizer):
     '''TfidfVectorize for super documents'''
 
-    def __init__(self, count_params: Union[dict, None] = None, **kwargs) -> None:
+    def __init__(self, array_super_documents: Union[np.array, None] = None, **kwargs) -> None:
         '''Initialization of the class
         '''
         # Init.
         super().__init__(**kwargs)
-        self.count_vec = CountVectorizer(count_params)
-        self.vec_trans = None
+        self.array_super_documents = array_super_documents
 
     def get_super_documents(self, x_train, y_train) -> tuple[np.array, np.array]:
         '''Transform the documents to super documents
@@ -93,8 +92,9 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         y_train = pd.Series(y_train, name='y_train')
 
         df_train = pd.concat([x_train, y_train], axis=1)
-        super_train = df_train.groupby(y_train.name).agg({x_train.name: lambda sentence: ' '.join((sentence))})
-        return np.array(super_train[x_train.name]), np.array(super_train.index)
+        super_train = df_train.groupby(y_train.name, sort=False).agg({x_train.name: lambda sentence: ' '.join((sentence))})
+        self.array_super_documents = np.array(super_train[x_train.name])
+        return self.array_super_documents, np.array(super_train.index)
 
     def fit(self, raw_documents, y=None) -> TfidfVectorizerSuperDocuments:
         '''Trains the model with super documents
@@ -105,10 +105,8 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         Returns:
             TfidfVectorizerSuperDocuments
         '''
-        raw_super_documents, _ = self.get_super_documents(raw_documents, y)
-        super().fit(raw_super_documents)
-        self.count_vec.fit(raw_super_documents)
-        self.vec_trans = super().transform(raw_super_documents).toarray().T
+        self.get_super_documents(raw_documents, y)
+        super().fit(self.array_super_documents)
         return self
 
     def transform(self, raw_documents, y=None) -> csr_matrix:
@@ -120,8 +118,11 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         Returns:
             (csr_matrix): matrix, shape = [n_samples, n_term]
         '''
-        count = self.count_vec.transform(raw_documents).toarray()
-        return csr_matrix(np.dot(count, self.vec_trans))
+        count_vec = CountVectorizer()
+        count_vec.fit(self.array_super_documents)
+        count = count_vec.transform(raw_documents).toarray()
+        vec_trans = super().transform(self.array_super_documents).toarray().T
+        return csr_matrix(np.dot(count, vec_trans))
 
     def fit_transform(self, raw_documents, y=None) -> csr_matrix:
         '''Trains and transform the model with super documents
