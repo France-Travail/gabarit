@@ -85,9 +85,6 @@ class tfidfSuperDocumentsTests(unittest.TestCase):
     def test03_TfidfVectorizerSuperDocuments_fit(self):
         '''Test the fit of {{package_name}}.models_training.utils_super_documents.TfidfVectorizerSuperDocuments.fit'''
 
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
         x_train = np.array(["Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
                            "Covid - le point sur des chiffres qui s'envolent en France",
                            "Carte des résultats des législatives : les qualifiés circonscription par circonscription"])
@@ -145,10 +142,7 @@ class tfidfSuperDocumentsTests(unittest.TestCase):
         self.assertTrue((vec.transform(x_train).toarray() == vec_trans_s).all())
 
     def test05_TfidfVectorizerSuperDocuments_fit_transform(self):
-        '''Test the fit of {{package_name}}.models_training.utils_super_documents.TfidfVectorizerSuperDocuments.fit_transform'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
+        '''Test the fit_transform of {{package_name}}.models_training.utils_super_documents.TfidfVectorizerSuperDocuments.fit_transform'''
 
         x_train = np.array(["Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
                            "Covid - le point sur des chiffres qui s'envolent en France",
@@ -173,6 +167,61 @@ class tfidfSuperDocumentsTests(unittest.TestCase):
         count = count_vec.transform(x_train).toarray()
         vec_trans_s = np.dot(count, vec_trans)
         self.assertTrue((vec.fit_transform(x_train, y_train).toarray() == vec_trans_s).all())
+
+    def test06_TfidfVectorizerSuperDocuments_save(self):
+        '''Test the save of {{package_name}}.models_training.utils_super_documents.TfidfVectorizerSuperDocuments.save'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        x_train = np.array(["Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
+                           "Covid - le point sur des chiffres qui s'envolent en France",
+                           "Carte des résultats des législatives : les qualifiés circonscription par circonscription"])
+        y_train = np.array(['a', 'a', 'b'])
+        param = {'ngram_range': [2, 3], 'min_df': 0.02, 'max_df': 0.8, 'binary': False}
+
+        vec = TfidfVectorizerSuperDocuments(**param).fit(x_train, y_train)
+        vec.save(model_dir, level_save='HIGH')
+        self.assertTrue(os.path.exists(os.path.join(model_dir, 'count_vectorizer.pkl')))
+        self.assertTrue(os.path.exists(os.path.join(model_dir, 'tfidf_super_documents.pkl')))
+        remove_dir(model_dir)
+
+        vec = TfidfVectorizerSuperDocuments(**param)
+        vec.save(model_dir, level_save='HIGH')
+        self.assertTrue(os.path.exists(os.path.join(model_dir, 'count_vectorizer.pkl')))
+        self.assertFalse(os.path.exists(os.path.join(model_dir, 'tfidf_super_documents.pkl')))
+        remove_dir(model_dir)
+
+    def test07_TfidfVectorizerSuperDocuments_reload_from_standalone(self):
+        '''Test the reload_from_standalone of {{package_name}}.models_training.utils_super_documents.TfidfVectorizerSuperDocuments.reload_from_standalone'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Create model
+        x_train = np.array(["Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
+                           "Covid - le point sur des chiffres qui s'envolent en France",
+                           "Carte des résultats des législatives : les qualifiés circonscription par circonscription"])
+        y_train = np.array(['a', 'a', 'b'])
+        param = {'ngram_range': [2, 3], 'min_df': 0.02, 'max_df': 0.8, 'binary': False}
+        vec = TfidfVectorizerSuperDocuments(**param).fit(x_train, y_train)
+        vec.save(model_dir, level_save='HIGH')
+        self.assertTrue(os.path.exists(os.path.join(model_dir, 'count_vectorizer.pkl')))
+        self.assertTrue(os.path.exists(os.path.join(model_dir, 'tfidf_super_documents.pkl')))
+
+        # Reload
+        count_vectorizer_path = os.path.join(model_dir, f"count_vectorizer.pkl")
+        tfidf_super_documents_path = os.path.join(model_dir, "tfidf_super_documents.pkl")
+        new_vec = TfidfVectorizerSuperDocuments()
+        new_vec.reload_from_standalone(count_vectorizer_path=count_vectorizer_path, tfidf_super_documents_path=tfidf_super_documents_path)
+
+        # Test
+        self.assertTrue((vec.tfidf_super_documents == new_vec.tfidf_super_documents).all())
+        self.assertTrue(isinstance(vec.count_vec, CountVectorizer))
+        self.assertEqual(vec.count_vec.ngram_range, param['ngram_range'])
+        self.assertEqual(vec.count_vec.min_df, param['min_df'])
+        self.assertEqual(vec.count_vec.max_df, param['max_df'])
+        self.assertEqual(vec.count_vec.binary, param['binary'])
 
 
 # Perform tests

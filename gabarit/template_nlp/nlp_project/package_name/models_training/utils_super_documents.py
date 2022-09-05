@@ -26,6 +26,8 @@
 
 from __future__ import annotations
 
+import os
+import pickle
 import logging
 import numpy as np
 import pandas as pd
@@ -139,6 +141,59 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         self.fit(raw_documents, y)
         return self.transform(raw_documents)
 
+    def save(self, dir: dict, level_save: str) -> None:
+        '''Saves the model
+
+        Kwargs:
+            dir (dict): Folder where to save
+            level_save (str): Level of saving
+        '''
+        if not os.path.exists(dir):
+            os.mkdir(dir)
+
+        # Save CountVectorizer if wanted & self.count_vec is not None & level_save > 'LOW'
+        if self.count_vec is not None and level_save in ['MEDIUM', 'HIGH']:
+            pkl_path = os.path.join(dir, "count_vectorizer.pkl")
+            with open(pkl_path, 'wb') as f:
+                pickle.dump(self.count_vec, f)
+
+        # Save array tfidf with super documents if wanted & self.tfidf_super_documents is not None & level_save > 'LOW'
+        if self.tfidf_super_documents is not None and level_save in ['MEDIUM', 'HIGH']:
+            pkl_path = os.path.join(dir, "tfidf_super_documents.pkl")
+            with open(pkl_path, 'wb') as f:
+                pickle.dump(self.tfidf_super_documents, f)
+
+    def reload_from_standalone(self, **kwargs) -> None:
+        '''Reloads a model from its configuration and "standalones" files
+        - /!\\ Experimental /!\\ -
+
+        Kwargs:
+            count_vectorizer_path (str): Path to count vectorizer
+            tfidf_super_documents_path (str): Path to tfidf super documents
+        Raises:
+            ValueError: If count_vectorizer_path is None
+            ValueError: If tfidf_super_documents_path is None
+            FileNotFoundError: If the object count_vectorizer_path is not an existing file
+            FileNotFoundError: If the object tfidf_super_documents_path is not an existing file
+        '''
+        # Retrieve args
+        count_vectorizer_path = kwargs.get('count_vectorizer_path', None)
+        tfidf_super_documents_path = kwargs.get('tfidf_super_documents_path', None)
+
+        # Checks
+        if count_vectorizer_path is None:
+            raise ValueError("The argument count_vectorizer_path can't be None")
+        if tfidf_super_documents_path is None:
+            raise ValueError("The argument tfidf_super_documents_path can't be None")
+        if not os.path.exists(count_vectorizer_path):
+            raise FileNotFoundError(f"The file {count_vectorizer_path} does not exist")
+        if not os.path.exists(tfidf_super_documents_path):
+            raise FileNotFoundError(f"The file {tfidf_super_documents_path} does not exist")
+
+        with open(count_vectorizer_path, 'rb') as f:
+            self.count_vec = pickle.load(f)
+        with open(tfidf_super_documents_path, 'rb') as f:
+            self.tfidf_super_documents = pickle.load(f)
 
 if __name__ == '__main__':
     logger.error("This script is not stand alone but belongs to a package that has to be imported.")
