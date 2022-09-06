@@ -291,7 +291,7 @@ class ModelTfidfCos(ModelPipeline):
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['x_col', 'y_col',
                           'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'multiclass_strategy', 'with_super_documents', 'with_super_documents']:
+                          'multiclass_strategy', 'with_super_documents']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload pipeline
@@ -306,6 +306,9 @@ class ModelTfidfCos(ModelPipeline):
             self.matrix_train = pickle.load(f)
         with open(array_target_path, 'rb') as f:
             self.array_target = pickle.load(f)
+
+        if self.with_super_documents:
+            self.tfidf.reload_from_standalone(count_vectorizer_path=count_vectorizer_path, tfidf_super_documents_path=tfidf_super_documents_path)
 
 
 if __name__ == '__main__':

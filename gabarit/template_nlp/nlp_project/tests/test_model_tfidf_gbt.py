@@ -451,8 +451,8 @@ class ModelTfidfGbtTests(unittest.TestCase):
         self.assertEqual(model.multi_label, new_model.multi_label)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
-        self.assertEqual(model.tfidf.get_params(), tfidf.get_params())
-        self.assertEqual(model.gbt.get_params(), gbt.get_params())
+        self.assertEqual(tfidf.get_params(), new_model.tfidf.get_params())
+        self.assertEqual(gbt.get_params(), new_model.gbt.get_params())
         self.assertEqual(model.with_super_documents, new_model.with_super_documents)
         # We can't really test the pipeline so we test predictions
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
@@ -491,8 +491,8 @@ class ModelTfidfGbtTests(unittest.TestCase):
         self.assertEqual(model.multi_label, new_model.multi_label)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
-        self.assertEqual(model.tfidf.get_params(), tfidf.get_params())
-        self.assertEqual(model.gbt.get_params(), gbt.get_params())
+        self.assertEqual(tfidf.get_params(), new_model.tfidf.get_params())
+        self.assertEqual(gbt.get_params(), new_model.gbt.get_params())
         # We can't really test the pipeline so we test predictions
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
         remove_dir(model_dir)
@@ -531,8 +531,8 @@ class ModelTfidfGbtTests(unittest.TestCase):
         self.assertEqual(model.multi_label, new_model.multi_label)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
-        self.assertEqual(model.tfidf.get_params(), tfidf.get_params())
-        self.assertEqual(model.gbt.get_params(), gbt.get_params())
+        self.assertEqual(tfidf.get_params(), new_model.tfidf.get_params())
+        self.assertEqual(gbt.get_params(), new_model.gbt.get_params())
         # We can't really test the pipeline so we test predictions
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
         remove_dir(model_dir)
@@ -573,11 +573,81 @@ class ModelTfidfGbtTests(unittest.TestCase):
         self.assertEqual(model.nb_fit, new_model.nb_fit)
         self.assertEqual(model.trained, new_model.trained)
         self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
-        self.assertEqual(model.tfidf.get_params(), tfidf.get_params())
-        self.assertEqual(model.gbt.get_params(), gbt.get_params())
+        self.assertEqual(tfidf.get_params(), new_model.tfidf.get_params())
+        self.assertEqual(gbt.get_params(), new_model.gbt.get_params())
         # We can't really test the pipeline so we test predictions
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
         remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        ########################################################################
+        # mono_label & without multi-classes strategy & with_super_documents
+        ########################################################################
+
+        # Create model
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
+        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
+        y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
+        param = {'ngram_range': [2, 3], 'min_df': 0.02, 'max_df': 0.8, 'binary': False}
+        model = ModelTfidfGbt(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True, tfidf_params=param)
+        tfidf = model.tfidf
+        gbt = model.gbt
+        model.fit(x_train, y_train_mono)
+        model.save()
+
+        # Reload without path super documents
+        pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
+        conf_path = os.path.join(model.model_dir, "configurations.json")
+        new_model = ModelTfidfGbt()
+        new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
+
+        # Reload with path super documents
+        pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
+        conf_path = os.path.join(model.model_dir, "configurations.json")
+        count_vectorizer_path = os.path.join(model_dir, f"count_vectorizer.pkl")
+        tfidf_super_documents_path = os.path.join(model_dir, "tfidf_super_documents.pkl")
+        new_model_with_path_sup = ModelTfidfGbt()
+        new_model_with_path_sup.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, count_vectorizer_path=count_vectorizer_path, tfidf_super_documents_path=tfidf_super_documents_path)
+
+        # Test without path super documents
+        self.assertEqual(model.model_name, new_model.model_name)
+        self.assertEqual(model.trained, new_model.trained)
+        self.assertEqual(model.nb_fit, new_model.nb_fit)
+        self.assertEqual(model.x_col, new_model.x_col)
+        self.assertEqual(model.y_col, new_model.y_col)
+        self.assertEqual(model.list_classes, new_model.list_classes)
+        self.assertEqual(model.dict_classes, new_model.dict_classes)
+        self.assertEqual(model.multi_label, new_model.multi_label)
+        self.assertEqual(model.level_save, new_model.level_save)
+        self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
+        self.assertTrue((tfidf.tfidf_super_documents == new_model.tfidf.tfidf_super_documents).all())
+        self.assertEqual(tfidf.count_vec.get_params(), new_model.tfidf.count_vec.get_params())
+        self.assertEqual(model.gbt.get_params(), gbt.get_params())
+        self.assertEqual(model.with_super_documents, new_model.with_super_documents)
+        # We can't really test the pipeline so we test predictions
+        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
+
+        # Test with path super documents
+        self.assertEqual(model.model_name, new_model_with_path_sup.model_name)
+        self.assertEqual(model.trained, new_model_with_path_sup.trained)
+        self.assertEqual(model.nb_fit, new_model_with_path_sup.nb_fit)
+        self.assertEqual(model.x_col, new_model_with_path_sup.x_col)
+        self.assertEqual(model.y_col, new_model_with_path_sup.y_col)
+        self.assertEqual(model.list_classes, new_model_with_path_sup.list_classes)
+        self.assertEqual(model.dict_classes, new_model_with_path_sup.dict_classes)
+        self.assertEqual(model.multi_label, new_model_with_path_sup.multi_label)
+        self.assertEqual(model.level_save, new_model_with_path_sup.level_save)
+        self.assertEqual(model.multiclass_strategy, new_model_with_path_sup.multiclass_strategy)
+        self.assertTrue((tfidf.tfidf_super_documents == new_model_with_path_sup.tfidf.tfidf_super_documents).all())
+        self.assertEqual(tfidf.count_vec.get_params(), new_model_with_path_sup.tfidf.count_vec.get_params())
+        self.assertEqual(model.gbt.get_params(), gbt.get_params())
+        self.assertEqual(model.with_super_documents, new_model_with_path_sup.with_super_documents)
+        # We can't really test the pipeline so we test predictions
+        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model_with_path_sup.predict_proba(x_test)])
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
         remove_dir(new_model.model_dir)
 
         ############################################
