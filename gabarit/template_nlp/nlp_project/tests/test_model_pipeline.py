@@ -34,6 +34,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_pipeline import ModelPipeline
+from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
+
 
 # Disable logging
 import logging
@@ -265,6 +267,41 @@ class ModelPipelineTests(unittest.TestCase):
         model = ModelPipeline(model_dir=model_dir, pipeline=pipeline)
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"{model.model_name}.pkl")))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")))
+        with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='{{default_encoding}}') as f:
+            configs = json.load(f)
+        self.assertEqual(configs['test'], 8)
+        self.assertTrue('package_version' in configs.keys())
+        self.assertEqual(configs['package_version'], utils.get_package_version())
+        self.assertTrue('model_name' in configs.keys())
+        self.assertTrue('model_dir' in configs.keys())
+        self.assertTrue('trained' in configs.keys())
+        self.assertTrue('nb_fit' in configs.keys())
+        self.assertTrue('list_classes' in configs.keys())
+        self.assertTrue('dict_classes' in configs.keys())
+        self.assertTrue('x_col' in configs.keys())
+        self.assertTrue('y_col' in configs.keys())
+        self.assertTrue('multi_label' in configs.keys())
+        self.assertTrue('level_save' in configs.keys())
+        self.assertTrue('librairie' in configs.keys())
+        self.assertEqual(configs['librairie'], 'scikit-learn')
+        # Specific model used
+        self.assertTrue('tfidf_confs' in configs.keys())
+        self.assertTrue('rf_confs' in configs.keys())
+        remove_dir(model_dir)
+
+        # With Pipeline, with super_documents
+        tfidf = TfidfVectorizerSuperDocuments()
+        tfidf.fit(np.array(['ceci est un test', 'cela aussi']), np.array([0, 1]))
+        rf = RandomForestClassifier(n_estimators=10)
+        pipeline = Pipeline([('tfidf', tfidf), ('rf', rf)])
+        model = ModelPipeline(model_dir=model_dir, pipeline=pipeline)
+        model.with_super_documents = True
+        model.save(json_data={'test': 8})
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
+        self.assertTrue(os.path.exists(os.path.join(model_dir, 'count_vectorizer.pkl')))
+        self.assertTrue(os.path.exists(os.path.join(model_dir, 'tfidf_super_documents.pkl')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"{model.model_name}.pkl")))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")))
         with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='{{default_encoding}}') as f:

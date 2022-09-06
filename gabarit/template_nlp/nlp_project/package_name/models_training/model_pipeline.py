@@ -185,6 +185,10 @@ class ModelPipeline(ModelClass):
             with open(pkl_path, 'wb') as f:
                 pickle.dump(self.pipeline, f)
 
+        # Save super documents
+        if self.with_super_documents:
+            self.pipeline[0].save(dir=self.model_dir, level_save=self.level_save)
+
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files
         - /!\\ Needs to be overridden /!\\ -

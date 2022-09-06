@@ -165,6 +165,8 @@ class ModelTfidfSvm(ModelPipeline):
         Kwargs:
             configuration_path (str): Path to configuration file
             sklearn_pipeline_path (str): Path to standalone pipeline
+            count_vectorizer_path (str): Path to countVectorizer (only with_super_documents = True)
+            tfidf_super_documents_path (str): Path to tfidf super documents (only with_super_documents = True)
         Raises:
             ValueError: If configuration_path is None
             ValueError: If sklearn_pipeline_path is None
@@ -174,6 +176,8 @@ class ModelTfidfSvm(ModelPipeline):
         # Retrieve args
         configuration_path = kwargs.get('configuration_path', None)
         sklearn_pipeline_path = kwargs.get('sklearn_pipeline_path', None)
+        count_vectorizer_path = kwargs.get('count_vectorizer_path', None)
+        tfidf_super_documents_path = kwargs.get('tfidf_super_documents_path', None)
 
         # Checks
         if configuration_path is None:
@@ -184,6 +188,12 @@ class ModelTfidfSvm(ModelPipeline):
             raise FileNotFoundError(f"The file {configuration_path} does not exist")
         if not os.path.exists(sklearn_pipeline_path):
             raise FileNotFoundError(f"The file {sklearn_pipeline_path} does not exist")
+
+        dir = os.path.split(sklearn_pipeline_path)[:-1]
+        if count_vectorizer_path == None:
+            count_vectorizer_path = os.path.join(dir[0], f"count_vectorizer.pkl")
+        if tfidf_super_documents_path == None:
+            tfidf_super_documents_path = os.path.join(dir[0], "tfidf_super_documents.pkl")
 
         # Load confs
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
