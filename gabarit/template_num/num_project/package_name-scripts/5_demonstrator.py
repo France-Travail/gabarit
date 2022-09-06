@@ -344,20 +344,12 @@ if selected_model is not None:
     # TODO TODO TODO TODO TODO
     # TODO TODO TODO TODO TODO
     # TODO: TO BE CHANGED WITH YOUR DATA
-    # TODO: Here is some examples with the "titanic" dataset (https://www.kaggle.com/c/titanic)
+    # TODO: Here is some examples with the "wine" dataset from tutorial
     form.write("Input data")
-    pid = form.text_input('PassengerId')
-    pclass = form.select_slider('Pclass', options=[1, 2, 3], value=1)
-    name = form.text_input('Name')
-    sex = form.selectbox('Sex', ['male', 'female'])
-    age = form.slider('Age', min_value=0, max_value=100, value=None)
-    siblings = form.number_input('SibSp', min_value=0, max_value=10, value=0)
-    parents_children = form.number_input('Parch', min_value=0, max_value=10, value=0)
-    ticket = form.text_input('Ticket')
-    fare = form.number_input('Fare', min_value=0, max_value=10000, value=0)
-    ticket = form.text_input('Cabin')
-    embarked = form.selectbox('Embarked', ['C', 'S', 'Q'])
-    survived = form.slider('Survived', min_value=0, max_value=1, value=None)
+    form_values = {
+        col: form.number_input(col)
+        for col in model.x_col
+    }
     form.markdown("---  \n")
     # TODO TODO TODO TODO TODO
     # TODO TODO TODO TODO TODO
@@ -373,18 +365,8 @@ if selected_model is not None:
         # TODO TODO TODO TODO TODO
         # TODO: TO BE CHANGED WITH YOUR DATA
         content = pd.DataFrame({
-            'PassengerId': [pid],
-            'Pclass': [pclass],
-            'Name': [name],
-            'Sex': [sex],
-            'Age': [age],
-            'SibSp': [siblings],
-            'Parch': [parents_children],
-            'Ticket': [ticket],
-            'Fare': [fare],
-            'Cabin': [ticket],
-            'Embarked': [embarked],
-            'Survived': [survived],
+            col: [col_value]
+            for col, col_value in form_values.items()
         })
         # TODO TODO TODO TODO TODO
         st.session_state.content = content
