@@ -168,6 +168,7 @@ class ModelTfidfGbt(ModelPipeline):
         elif 'list_classes' in configs.keys():
             configs['dict_classes'] = {i: col for i, col in enumerate(configs['list_classes'])}
 
+        # Get the path of the super document if it is not given
         dir = os.path.split(sklearn_pipeline_path)[:-1]
         if count_vectorizer_path == None:
             count_vectorizer_path = os.path.join(dir[0], f"count_vectorizer.pkl")

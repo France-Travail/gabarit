@@ -189,6 +189,7 @@ class ModelTfidfSvm(ModelPipeline):
         if not os.path.exists(sklearn_pipeline_path):
             raise FileNotFoundError(f"The file {sklearn_pipeline_path} does not exist")
 
+        # Get the path of the super document if it is not given
         dir = os.path.split(sklearn_pipeline_path)[:-1]
         if count_vectorizer_path == None:
             count_vectorizer_path = os.path.join(dir[0], f"count_vectorizer.pkl")
