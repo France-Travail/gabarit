@@ -229,6 +229,8 @@ class ModelTfidfCos(ModelPipeline):
             sklearn_pipeline_path (str): Path to standalone pipeline
             matrix_train_path (str): Path to matrix_train file
             array_target_path (str): Path to array_target file
+            count_vectorizer_path (str): Path to countVectorizer (only with_super_documents = True)
+            tfidf_super_documents_path (str): Path to tfidf super documents (only with_super_documents = True)
         Raises:
             ValueError: If configuration_path is None
             ValueError: If sklearn_pipeline_path is None
@@ -244,6 +246,8 @@ class ModelTfidfCos(ModelPipeline):
         sklearn_pipeline_path = kwargs.get('sklearn_pipeline_path', None)
         matrix_train_path = kwargs.get('matrix_train_path', None)
         array_target_path = kwargs.get('array_target_path', None)
+        count_vectorizer_path = kwargs.get('count_vectorizer_path', None)
+        tfidf_super_documents_path = kwargs.get('tfidf_super_documents_path', None)
 
         # Checks
         if configuration_path is None:
@@ -262,6 +266,12 @@ class ModelTfidfCos(ModelPipeline):
             raise FileNotFoundError(f"The file {matrix_train_path} does not exist")
         if not os.path.exists(array_target_path):
             raise FileNotFoundError(f"The file {array_target_path} does not exist")
+
+        dir = os.path.split(sklearn_pipeline_path)[:-1]
+        if count_vectorizer_path == None:
+            count_vectorizer_path = os.path.join(dir[0], f"count_vectorizer.pkl")
+        if tfidf_super_documents_path == None:
+            tfidf_super_documents_path = os.path.join(dir[0], "tfidf_super_documents.pkl")
 
         # Load confs
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:

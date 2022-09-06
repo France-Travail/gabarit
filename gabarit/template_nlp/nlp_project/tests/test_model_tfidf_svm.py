@@ -668,6 +668,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
         self.assertTrue((tfidf.tfidf_super_documents == new_model.tfidf.tfidf_super_documents).all())
+        self.assertEqual(tfidf.count_vec.get_params(), new_model.tfidf.count_vec.get_params())
         self.assertEqual(svc.get_params(), new_model.svc.get_params())
         self.assertEqual(model.with_super_documents, new_model.with_super_documents)
         # We can't really test the pipeline so we test predictions
@@ -685,6 +686,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual(model.level_save, new_model_with_path_sup.level_save)
         self.assertEqual(model.multiclass_strategy, new_model_with_path_sup.multiclass_strategy)
         self.assertTrue((tfidf.tfidf_super_documents == new_model_with_path_sup.tfidf.tfidf_super_documents).all())
+        self.assertEqual(tfidf.count_vec.get_params(), new_model_with_path_sup.tfidf.count_vec.get_params())
         self.assertEqual(svc.get_params(), new_model_with_path_sup.svc.get_params())
         self.assertEqual(model.with_super_documents, new_model_with_path_sup.with_super_documents)
         # We can't really test the pipeline so we test predictions
