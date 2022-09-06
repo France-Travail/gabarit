@@ -229,6 +229,9 @@ class ModelTfidfSvm(ModelPipeline):
         else:
             self.svc = self.pipeline['svc'].estimator
 
+        if self.with_super_documents:
+            self.tfidf.reload_from_standalone(count_vectorizer_path=count_vectorizer_path, tfidf_super_documents_path=tfidf_super_documents_path)
+
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

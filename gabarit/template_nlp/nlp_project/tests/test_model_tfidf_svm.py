@@ -636,7 +636,8 @@ class ModelTfidfSvmTests(unittest.TestCase):
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
         x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
         y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
-        model = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        param = {'ngram_range': [2, 3], 'min_df': 0.02, 'max_df': 0.8, 'binary': False}
+        model = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True, tfidf_params=param)
         tfidf = model.tfidf
         svc = model.svc
         model.fit(x_train, y_train_mono)

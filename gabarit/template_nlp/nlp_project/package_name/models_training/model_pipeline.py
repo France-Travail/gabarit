@@ -178,6 +178,14 @@ class ModelPipeline(ModelClass):
         # Save
         super().save(json_data=json_data)
 
+        # Save super documents
+        if self.with_super_documents:
+            self.pipeline[0].save(dir=self.model_dir, level_save=self.level_save)
+            tfidf_super_documents = self.pipeline[0].tfidf_super_documents
+            count_vec = self.pipeline[0].count_vec
+            delattr(self.pipeline[0], "tfidf_super_documents")
+            delattr(self.pipeline[0], "count_vec")
+
         # Save model standalone if wanted & pipeline is not None & level_save > 'LOW'
         if self.pipeline is not None and self.level_save in ['MEDIUM', 'HIGH']:
             pkl_path = os.path.join(self.model_dir, "sklearn_pipeline_standalone.pkl")
@@ -185,9 +193,9 @@ class ModelPipeline(ModelClass):
             with open(pkl_path, 'wb') as f:
                 pickle.dump(self.pipeline, f)
 
-        # Save super documents
         if self.with_super_documents:
-            self.pipeline[0].save(dir=self.model_dir, level_save=self.level_save)
+            setattr(self.pipeline[0], "tfidf_super_documents", tfidf_super_documents)
+            setattr(self.pipeline[0], "count_vec", count_vec)
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files
