@@ -231,10 +231,10 @@ class ModelTfidfDenseTests(unittest.TestCase):
         model.tfidf.fit(x_train, y_train)
         self.assertTrue(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
         x_train_prepared = model._prepare_x_train(x_train)
-        size_vocab = len(set([word for elem in x_train for word in elem.split()]))
+        size_label = len(set(y_train))
         nb_elems = len(x_train_prepared)
         self.assertEqual(x_train_prepared.shape[0], nb_elems)
-        self.assertEqual(x_train_prepared.shape[1], size_vocab)
+        self.assertEqual(x_train_prepared.shape[1], size_label)
         remove_dir(model_dir)
 
         # Error
@@ -375,6 +375,79 @@ class ModelTfidfDenseTests(unittest.TestCase):
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
+
+        ############################
+        # with_super_documents
+        ############################
+
+        # Create model
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
+        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
+        y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'none'])
+        param = {'ngram_range': [2, 3], 'min_df': 0.02, 'max_df': 0.8, 'binary': False}
+        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, with_super_documents=True, tfidf_params=param)
+        model.fit(x_train, y_train_mono)
+        model.save()
+
+        # Reload without path super documents
+        conf_path = os.path.join(model.model_dir, "configurations.json")
+        hdf5_path = os.path.join(model.model_dir, "best.hdf5")
+        tfidf_path = os.path.join(model.model_dir, f"tfidf_standalone.pkl")
+        new_model = ModelTfidfDense()
+        new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tfidf_path=tfidf_path)
+
+        # Reload with path super documents
+        conf_path = os.path.join(model.model_dir, "configurations.json")
+        hdf5_path = os.path.join(model.model_dir, "best.hdf5")
+        tfidf_path = os.path.join(model.model_dir, f"tfidf_standalone.pkl")
+        count_vectorizer_path = os.path.join(model_dir, f"count_vectorizer.pkl")
+        tfidf_super_documents_path = os.path.join(model_dir, "tfidf_super_documents.pkl")
+        new_model_with_path_sup = ModelTfidfDense()
+        new_model_with_path_sup.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tfidf_path=tfidf_path, count_vectorizer_path=count_vectorizer_path, tfidf_super_documents_path=tfidf_super_documents_path)
+
+        # Test without path super documents
+        self.assertEqual(model.model_name, new_model.model_name)
+        self.assertEqual(model.x_col, new_model.x_col)
+        self.assertEqual(model.y_col, new_model.y_col)
+        self.assertEqual(model.list_classes, new_model.list_classes)
+        self.assertEqual(model.dict_classes, new_model.dict_classes)
+        self.assertEqual(model.multi_label, new_model.multi_label)
+        self.assertEqual(model.level_save, new_model.level_save)
+        self.assertEqual(model.nb_fit, new_model.nb_fit)
+        self.assertEqual(model.trained, new_model.trained)
+        self.assertEqual(model.batch_size, new_model.batch_size)
+        self.assertEqual(model.epochs, new_model.epochs)
+        self.assertEqual(model.validation_split, new_model.validation_split)
+        self.assertEqual(model.patience, new_model.patience)
+        self.assertEqual(model.embedding_name, new_model.embedding_name)
+        self.assertEqual(model.with_super_documents, new_model.with_super_documents)
+        self.assertTrue((model.tfidf.tfidf_super_documents == new_model.tfidf.tfidf_super_documents).all())
+        self.assertEqual(model.tfidf.count_vec.get_params(), new_model.tfidf.count_vec.get_params())
+        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
+
+        # Test with path super documents
+        self.assertEqual(model.model_name, new_model_with_path_sup.model_name)
+        self.assertEqual(model.x_col, new_model_with_path_sup.x_col)
+        self.assertEqual(model.y_col, new_model_with_path_sup.y_col)
+        self.assertEqual(model.list_classes, new_model_with_path_sup.list_classes)
+        self.assertEqual(model.dict_classes, new_model_with_path_sup.dict_classes)
+        self.assertEqual(model.multi_label, new_model_with_path_sup.multi_label)
+        self.assertEqual(model.level_save, new_model_with_path_sup.level_save)
+        self.assertEqual(model.nb_fit, new_model_with_path_sup.nb_fit)
+        self.assertEqual(model.trained, new_model_with_path_sup.trained)
+        self.assertEqual(model.batch_size, new_model_with_path_sup.batch_size)
+        self.assertEqual(model.epochs, new_model_with_path_sup.epochs)
+        self.assertEqual(model.validation_split, new_model_with_path_sup.validation_split)
+        self.assertEqual(model.patience, new_model_with_path_sup.patience)
+        self.assertEqual(model.embedding_name, new_model_with_path_sup.embedding_name)
+        self.assertEqual(model.with_super_documents, new_model_with_path_sup.with_super_documents)
+        self.assertTrue((model.tfidf.tfidf_super_documents == new_model_with_path_sup.tfidf.tfidf_super_documents).all())
+        self.assertEqual(model.tfidf.count_vec.get_params(), new_model_with_path_sup.tfidf.count_vec.get_params())
+        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model_with_path_sup.predict_proba(x_test)])
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+        remove_dir(new_model_with_path_sup.model_dir)
 
         # Check errors
         with self.assertRaises(FileNotFoundError):

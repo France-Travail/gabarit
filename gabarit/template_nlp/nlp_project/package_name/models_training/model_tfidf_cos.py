@@ -121,7 +121,7 @@ class ModelTfidfCos(ModelPipeline):
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Kwargs:
-            return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
+            return_cos (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
         Returns:
             (np.ndarray): Array, shape = [n_samples]
             return_proba (np.ndarray): Array, shape = [n_samples, n_train]
