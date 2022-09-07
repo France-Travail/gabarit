@@ -35,11 +35,10 @@ import numpy as np
 from typing import Union
 
 from sklearn.pipeline import Pipeline
-from sklearn.feature_extraction.text import CountVectorizer
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_pipeline import ModelPipeline
-from {{package_name}}.models_training.utils_super_documents import TfidfTransformerSuperDocuments
+from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
 
 
 class ModelTfidfSuperDocumentsNaive(ModelPipeline):
@@ -47,13 +46,13 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
 
     _default_name = 'model_tfidf_super_documents_naive'
 
-    def __init__(self, tfidf_count_params: Union[dict, None] = None, tfidf_transformer_params: Union[dict, None] = None,
+    def __init__(self, tfidf_params: Union[dict, None] = None,
                  multiclass_strategy: Union[str, None] = None, **kwargs):
         '''Initialization of the class (see ModelPipeline & ModelClass for more arguments)
 
         Kwargs:
             tfidf_count_params (dict): Parameters for the countVectorize
-            tfidf_transformer_params (dict): Parameters for the tfidf TfidfTransformerSuperDocuments
+            tfidf_params (dict): Parameters for the tfidf TfidfVectorizerSuperDocuments
             multiclass_strategy (str): Multi-classes strategy, only can be None
         Raises:
             ValueError: If multiclass_strategy is not 'ovo', 'ovr' or None
@@ -66,47 +65,23 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         self.with_super_documents = True
 
         if self.multi_label:
-            raise ValueError("This model does not support multi-labels")
+            raise ValueError("Model_tfidf_super_documents_naive does not support multi-labels")
 
         # Get logger (must be done after super init)
         self.logger = logging.getLogger(__name__)
 
         # Manage model
-        if tfidf_transformer_params is None:
-            tfidf_transformer_params = {}
-        self.tfidf = TfidfTransformerSuperDocuments(**tfidf_transformer_params)
-
-        if tfidf_count_params is None:
-            tfidf_count_params = {}
-        self.tfidf_count = CountVectorizer(**tfidf_count_params)
-
-        self.multiclass_strategy = multiclass_strategy
-        self.matrix_train = None
-        self.array_target = np.array([])
+        if tfidf_params is None:
+            tfidf_params = {}
+        self.tfidf = TfidfVectorizerSuperDocuments(**tfidf_params)
 
         # Can't do multi-labels / multi-classes
         if not self.multi_label:
             # If not multi-classes : no impact
             if multiclass_strategy in ['ovr', 'ovo']:
-                raise ValueError("The TFIDF Cosine Similarity can't do", self.multiclass_strategy)
+                raise ValueError("The TFIDF naive super_documents can't do", self.multiclass_strategy)
             else:
-                self.pipeline = Pipeline([('tfidf_count', self.tfidf_count), ('tfidf', self.tfidf)])
-
-    def fit(self, x_train, y_train, **kwargs):
-        '''Trains the model
-
-           **kwargs permits compatibility with Keras model
-        Args:
-            x_train (?): Array-like, shape = [n_samples]
-            y_train (?): Array-like, shape = [n_samples]
-        Raises:
-            RuntimeError: If the model is already fitted
-        '''
-        self.tfidf.classes_ = list(np.unique(y_train))
-        super().fit(x_train, y_train)
-        x_count = self.pipeline['tfidf_count'].fit_transform(x_train)
-        x_super, self.array_target = self.pipeline['tfidf'].get_super_documents_count_vectorizer(x_count, y_train)
-        self.matrix_train = self.pipeline['tfidf'].transform(x_super)
+                self.pipeline = Pipeline([('tfidf', self.tfidf)])
 
     @utils.trained_needed
     def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
@@ -129,7 +104,7 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
     @utils.trained_needed
     def predict_proba(self, x_test, **kwargs) -> np.ndarray:
         '''Predicts the probabilities on the test set
-        - /!\\ THE MODEL NAIVE DOES NOT RETURN PROBABILITIES, HERE WE SIMULATE PROBABILITIES EQUAL TO 0 OR 1 /!\\ -
+        - /!\\ THE MODEL NAIVE DOES NOT RETURN PROBABILITIES, HERE WE NORMALIZE TFIDF /!\\ -
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
@@ -137,11 +112,9 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
         if not self.multi_label:
-            preds = self.compute_predict(x_test)
-            # Format ['a', 'b', 'c', 'a', ..., 'b']
-            # Transform to "proba"
-            transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
-            probas = np.array([transform_dict[x] for x in preds])
+            # Normalize tfidf to "proba"
+            trans = self.tfidf.transform(x_test).toarray()
+            probas = np.array([col/sum(col) for col in trans])
         else:
             raise ValueError("The TFIDF Naive does not support multi label")
         return probas
@@ -157,50 +130,17 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         Raise:
             if self.matrix_train == None
         '''
-        if self.matrix_train is None:
-            raise AttributeError('your fit is not valid')
+        # if self.matrix_train is None:
+        if self.tfidf.tfidf_super_documents is None:
+            raise AttributeError('The tfidf not fitted')
         x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
         x_test = np.array(x_test) if isinstance(x_test, list) else x_test
 
-        vec_counts = self.tfidf_count.transform(x_test)
-        predicts = np.argmax(np.dot(vec_counts, self.matrix_train.transpose()).toarray(), axis=1)
-        predicts = self.array_target[predicts]
+        trans = self.tfidf.transform(x_test).toarray().T
+        index = np.argmax(trans, axis=0)
+        predicts = self.tfidf.classes_[index]
+
         return predicts
-
-    def save(self, json_data: Union[dict, None] = None) -> None:
-        '''Saves the model
-
-        Kwargs:
-            json_data (dict): Additional configurations to be saved
-        '''
-        # Save model
-        if json_data is None:
-            json_data = {}
-
-        # No need to save the parameters of the pipeline steps, it is already done in ModelPipeline
-        json_data['multiclass_strategy'] = self.multiclass_strategy
-        json_data['classes_'] = self.tfidf.classes_ if hasattr(self.tfidf, 'classes_') else None
-
-        # Save matrix_train if not None & level_save > LOW
-        if (self.matrix_train is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
-            # Manage paths
-            matrix_train_path = os.path.join(self.model_dir, "matrix_train.pkl")
-            # Save as pickle
-            with open(matrix_train_path, 'wb') as f:
-                # TODO: use dill to get rid of  "can't pickle ..." errors
-                pickle.dump(self.matrix_train, f)
-
-        # Save array_target if not None & level_save > LOW
-        if (self.array_target is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
-            # Manage paths
-            array_target_path = os.path.join(self.model_dir, "array_target.pkl")
-            # Save as pickle
-            with open(array_target_path, 'wb') as f:
-                # TODO: use dill to get rid of  "can't pickle ..." errors
-                pickle.dump(self.array_target, f)
-
-        # Save
-        super().save(json_data=json_data)
 
     def reload_from_standalone(self, **kwargs):
         '''Reloads a model from its configuration and "standalones" files
@@ -209,39 +149,36 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         Kwargs:
             configuration_path (str): Path to configuration file
             sklearn_pipeline_path (str): Path to standalone pipeline
-            matrix_train_path (str): Path to matrix_train file
-            array_target_path (str): Path to array_target file
+            count_vectorizer_path (str): Path to countVectorizer (only with_super_documents = True)
+            tfidf_super_documents_path (str): Path to tfidf super documents (only with_super_documents = True)
         Raises:
             ValueError: If configuration_path is None
             ValueError: If sklearn_pipeline_path is None
             FileNotFoundError: If the object configuration_path is not an existing file
             FileNotFoundError: If the object sklearn_pipeline_path is not an existing file
-            FileNotFoundError: If the object matrix_train_path is not an existing file
-            FileNotFoundError: If the object array_target_path is not an existing file
         '''
         # Retrieve args
         configuration_path = kwargs.get('configuration_path', None)
         sklearn_pipeline_path = kwargs.get('sklearn_pipeline_path', None)
-        matrix_train_path = kwargs.get('matrix_train_path', None)
-        array_target_path = kwargs.get('array_target_path', None)
+        count_vectorizer_path = kwargs.get('count_vectorizer_path', None)
+        tfidf_super_documents_path = kwargs.get('tfidf_super_documents_path', None)
 
         # Checks
         if configuration_path is None:
             raise ValueError("The argument configuration_path can't be None")
         if sklearn_pipeline_path is None:
             raise ValueError("The argument sklearn_pipeline_path can't be None")
-        if matrix_train_path is None:
-            raise ValueError("The argument matrix_train_path can't be None")
-        if array_target_path is None:
-            raise ValueError("The argument array_target_path can't be None")
         if not os.path.exists(configuration_path):
             raise FileNotFoundError(f"The file {configuration_path} does not exist")
         if not os.path.exists(sklearn_pipeline_path):
             raise FileNotFoundError(f"The file {sklearn_pipeline_path} does not exist")
-        if not os.path.exists(matrix_train_path):
-            raise FileNotFoundError(f"The file {matrix_train_path} does not exist")
-        if not os.path.exists(array_target_path):
-            raise FileNotFoundError(f"The file {array_target_path} does not exist")
+
+        # Get the path of the super document if it is not given
+        dir = os.path.split(sklearn_pipeline_path)[:-1]
+        if count_vectorizer_path == None:
+            count_vectorizer_path = os.path.join(dir[0], f"count_vectorizer.pkl")
+        if tfidf_super_documents_path == None:
+            tfidf_super_documents_path = os.path.join(dir[0], "tfidf_super_documents.pkl")
 
         # Load confs
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
@@ -261,7 +198,7 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['x_col', 'y_col',
                           'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'multiclass_strategy', 'with_super_documents']:
+                          'with_super_documents']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload pipeline
@@ -270,13 +207,10 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
 
         # Reload pipeline elements
         self.tfidf = self.pipeline['tfidf']
-        self.tfidf_count = self.pipeline['tfidf_count']
 
-        # Reload matrix_train and array_target
-        with open(matrix_train_path, 'rb') as f:
-            self.matrix_train = pickle.load(f)
-        with open(array_target_path, 'rb') as f:
-            self.array_target = pickle.load(f)
+        # Reload utile super documents
+        if self.with_super_documents:
+            self.tfidf.reload_from_standalone(count_vectorizer_path=count_vectorizer_path, tfidf_super_documents_path=tfidf_super_documents_path)
 
 
 if __name__ == '__main__':
