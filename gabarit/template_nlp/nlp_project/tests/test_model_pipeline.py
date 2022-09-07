@@ -293,15 +293,12 @@ class ModelPipelineTests(unittest.TestCase):
 
         # With Pipeline, with super_documents
         tfidf = TfidfVectorizerSuperDocuments()
-        tfidf.fit(np.array(['ceci est un test', 'cela aussi']), np.array([0, 1]))
+        tfidf.fit(np.array(['ceci est un test', 'cela aussi']), np.array(['non', 'oui']))
         rf = RandomForestClassifier(n_estimators=10)
         pipeline = Pipeline([('tfidf', tfidf), ('rf', rf)])
         model = ModelPipeline(model_dir=model_dir, pipeline=pipeline)
-        model.with_super_documents = True
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
-        self.assertTrue(os.path.exists(os.path.join(model_dir, 'count_vectorizer.pkl')))
-        self.assertTrue(os.path.exists(os.path.join(model_dir, 'tfidf_super_documents.pkl')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"{model.model_name}.pkl")))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")))
         with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='{{default_encoding}}') as f:
@@ -324,6 +321,10 @@ class ModelPipelineTests(unittest.TestCase):
         # Specific model used
         self.assertTrue('tfidf_confs' in configs.keys())
         self.assertTrue('rf_confs' in configs.keys())
+        with open(os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl"), 'rb') as f:
+            pipeline = pickle.load(f)
+        self.assertFalse(pipeline[0].tfidf_super_documents is None)
+        self.assertTrue((pipeline[0].classes_ == np.array(['non', 'oui'])).all())
         remove_dir(model_dir)
 
         # Without Pipeline
