@@ -53,7 +53,7 @@ setup(
         'numpy>=1.19,<1.24; python_version >= "3.8"',
         'scikit_learn>=1.0.0,<1.2',
         'lightgbm>=2.3.0,<3.4',
-        'words-n-fun==1.5.1',
+        'words-n-fun==1.5.2',
         'nltk>=3.4,<3.8',
         'matplotlib>=3.0.3,<3.6',
         'seaborn>=0.9.0,<0.13',
