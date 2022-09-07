@@ -49,8 +49,7 @@ setup(
     install_requires=[
         'pandas>=1.3,<1.4; python_version < "3.8"',
         'pandas>=1.3,<1.5; python_version >= "3.8"',
-        'numpy>=1.19,<1.22; python_version < "3.8"',
-        'numpy>=1.19,<1.24; python_version >= "3.8"',
+        'numpy~=1.19.2',
         'scikit_learn>=1.0.0,<1.2',
         'lightgbm>=2.3.0,<3.4',
         'xgboost>=1.4.2,<1.7',
