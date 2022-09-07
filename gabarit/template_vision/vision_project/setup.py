@@ -49,7 +49,7 @@ setup(
     install_requires=[
         'pandas>=1.3,<1.4; python_version < "3.8"',
         'pandas>=1.3,<1.5; python_version >= "3.8"',
-        'numpy~=1.19.2',
+        'numpy~=1.19.2',  # TODO: to be updated once we tensorflow is updated too
         'scikit_learn>=1.0.0,<1.1; python_version < "3.8"',
         'scikit_learn>=1.0.0,<1.2; python_version >= "3.8"',
         'matplotlib>=3.0.3,<3.6',
