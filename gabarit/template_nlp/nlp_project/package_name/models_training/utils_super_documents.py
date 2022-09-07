@@ -26,17 +26,15 @@
 
 from __future__ import annotations
 
-import os
-import pickle
 import logging
 import numpy as np
 import pandas as pd
-from typing import Union
 
 from scipy.sparse import csr_matrix
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 logger = logging.getLogger(__name__)
+
 
 def get_super_documents(x_train, y_train) -> tuple[np.array, np.array]:
     '''Transform the documents to super documents
@@ -108,6 +106,7 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         '''
         self.fit(raw_documents, y)
         return self.transform(raw_documents)
+
 
 if __name__ == '__main__':
     logger.error("This script is not stand alone but belongs to a package that has to be imported.")

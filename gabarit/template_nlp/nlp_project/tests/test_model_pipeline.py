@@ -23,6 +23,7 @@ from unittest.mock import patch
 import os
 import json
 import shutil
+import pickle
 import numpy as np
 import pandas as pd
 

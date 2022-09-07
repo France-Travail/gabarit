@@ -79,7 +79,7 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         if not self.multi_label:
             # If not multi-classes : no impact
             if multiclass_strategy in ['ovr', 'ovo']:
-                raise ValueError("The TFIDF naive super_documents can't do", self.multiclass_strategy)
+                raise ValueError("The TFIDF naive super_documents can't do", multiclass_strategy)
             else:
                 self.pipeline = Pipeline([('tfidf', self.tfidf)])
 
@@ -114,7 +114,7 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         if not self.multi_label:
             # Normalize tfidf to "proba"
             trans = self.tfidf.transform(x_test).toarray()
-            probas = np.array([col/sum(col) for col in trans])
+            probas = np.array([col / sum(col) for col in trans])
         else:
             raise ValueError("The TFIDF Naive does not support multi label")
         return probas

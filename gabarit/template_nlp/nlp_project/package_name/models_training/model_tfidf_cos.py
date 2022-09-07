@@ -176,7 +176,7 @@ class ModelTfidfCos(ModelPipeline):
         preds = self.predict_cosine_similarity(x_test, return_cos=True)
         index_dict = {target: [i for i, t in enumerate(self.array_target) if t == target] for target in self.list_classes}
 
-        probas_dict = {target:[] for target in set(self.array_target)}
+        probas_dict = {target: [] for target in set(self.array_target)}
         for col in preds:
             col_sum = col.sum()
             col_div = np.array([col[i] / col_sum for i in range(len(self.array_target))]) if col_sum != 0 else np.array([1 / len(col)] * len(self.array_target))

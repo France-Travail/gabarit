@@ -218,14 +218,6 @@ class ModelTfidfDense(ModelKeras):
                 confs[special_conf] = str(confs[special_conf])
         json_data['tfidf_confs'] = confs
 
-        # Save super documents
-        if self.with_super_documents:
-            self.pipeline[0].save(dir=self.model_dir, level_save=self.level_save)
-            tfidf_super_documents = self.pipeline[0].tfidf_super_documents
-            count_vec = self.pipeline[0].count_vec
-            delattr(self.pipeline[0], "tfidf_super_documents")
-            delattr(self.pipeline[0], "count_vec")
-
         # Save tfidf if not None & level_save > LOW
         if (self.tfidf is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
             # Manage paths
@@ -234,10 +226,6 @@ class ModelTfidfDense(ModelKeras):
             with open(tfidf_path, 'wb') as f:
                 # TODO: use dill to get rid of  "can't pickle ..." errors
                 pickle.dump(self.tfidf, f)
-
-        if self.with_super_documents:
-            setattr(self.pipeline[0], "tfidf_super_documents", tfidf_super_documents)
-            setattr(self.pipeline[0], "count_vec", count_vec)
 
         # Save
         super().save(json_data=json_data)
@@ -250,8 +238,6 @@ class ModelTfidfDense(ModelKeras):
             configuration_path (str): Path to configuration file
             hdf5_path (str): Path to hdf5 file
             tf_idf_path (str): Path to tfidf file
-            count_vectorizer_path (str): Path to countVectorizer (only with_super_documents = True)
-            tfidf_super_documents_path (str): Path to tfidf super documents (only with_super_documents = True)
         Raises:
             ValueError: If configuration_path is None
             ValueError: If hdf5_path is None
@@ -264,8 +250,6 @@ class ModelTfidfDense(ModelKeras):
         configuration_path = kwargs.get('configuration_path', None)
         hdf5_path = kwargs.get('hdf5_path', None)
         tfidf_path = kwargs.get('tfidf_path', None)
-        count_vectorizer_path = kwargs.get('count_vectorizer_path', None)
-        tfidf_super_documents_path = kwargs.get('tfidf_super_documents_path', None)
 
         # Checks
         if configuration_path is None:
@@ -280,13 +264,6 @@ class ModelTfidfDense(ModelKeras):
             raise FileNotFoundError(f"The file {hdf5_path} does not exist")
         if not os.path.exists(tfidf_path):
             raise FileNotFoundError(f"The file {tfidf_path} does not exist")
-
-        # Get the path of the super document if it is not given
-        dir = os.path.split(tfidf_path)[:-1]
-        if count_vectorizer_path == None:
-            count_vectorizer_path = os.path.join(dir[0], f"count_vectorizer.pkl")
-        if tfidf_super_documents_path == None:
-            tfidf_super_documents_path = os.path.join(dir[0], "tfidf_super_documents.pkl")
 
         # Load confs
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
@@ -320,10 +297,6 @@ class ModelTfidfDense(ModelKeras):
         # Reload tfidf
         with open(tfidf_path, 'rb') as f:
             self.tfidf = pickle.load(f)
-
-        # Reload utile super documents
-        if self.with_super_documents:
-            self.tfidf.reload_from_standalone(count_vectorizer_path=count_vectorizer_path, tfidf_super_documents_path=tfidf_super_documents_path)
 
 
 if __name__ == '__main__':
