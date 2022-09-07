@@ -361,7 +361,7 @@ class ModelTfidfCosTests(unittest.TestCase):
         model.fit(x_train, y_train_mono)
         model.save()
 
-        # Reload without path super documents
+        # Reload
         pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
         conf_path = os.path.join(model.model_dir, "configurations.json")
         matrix_train_path = os.path.join(model.model_dir, "matrix_train.pkl")
@@ -369,17 +369,7 @@ class ModelTfidfCosTests(unittest.TestCase):
         new_model = ModelTfidfCos()
         new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, matrix_train_path=matrix_train_path, array_target_path=array_target_path)
 
-        # Reload with path super documents
-        pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
-        conf_path = os.path.join(model.model_dir, "configurations.json")
-        matrix_train_path = os.path.join(model.model_dir, "matrix_train.pkl")
-        array_target_path = os.path.join(model.model_dir, "array_target.pkl")
-        count_vectorizer_path = os.path.join(model_dir, f"count_vectorizer.pkl")
-        tfidf_super_documents_path = os.path.join(model_dir, "tfidf_super_documents.pkl")
-        new_model_with_path_sup = ModelTfidfCos()
-        new_model_with_path_sup.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, matrix_train_path=matrix_train_path, array_target_path=array_target_path, count_vectorizer_path=count_vectorizer_path, tfidf_super_documents_path=tfidf_super_documents_path)
-
-        # Test without path super documents
+        # Test
         self.assertEqual(model.model_name, new_model.model_name)
         self.assertEqual(model.trained, new_model.trained)
         self.assertEqual(model.nb_fit, new_model.nb_fit)
@@ -391,37 +381,12 @@ class ModelTfidfCosTests(unittest.TestCase):
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
         self.assertTrue((model.tfidf.tfidf_super_documents == new_model.tfidf.tfidf_super_documents).all())
-        self.assertEqual(model.tfidf.count_vec.get_params(), new_model.tfidf.count_vec.get_params())
-        self.assertEqual(model.with_super_documents, new_model.with_super_documents)
         self.assertTrue((model.tfidf.classes_ == new_model.tfidf.classes_).all())
-        self.assertEqual(model.matrix_train.astype(np.float32).toarray().all(), new_model.matrix_train.astype(np.float32).toarray().all())
+        self.assertEqual(model.with_super_documents, new_model.with_super_documents)
         # We can't really test the pipeline so we test predictions
-        self.assertTrue(len(np.setdiff1d(model.predict(x_test), new_model.predict(x_test))) == 0)
-        self.assertTrue(len(np.setdiff1d(model.array_target, new_model.array_target)) == 0)
-
-        # Test with path super documents
-        self.assertEqual(model.model_name, new_model_with_path_sup.model_name)
-        self.assertEqual(model.trained, new_model_with_path_sup.trained)
-        self.assertEqual(model.nb_fit, new_model_with_path_sup.nb_fit)
-        self.assertEqual(model.x_col, new_model_with_path_sup.x_col)
-        self.assertEqual(model.y_col, new_model_with_path_sup.y_col)
-        self.assertEqual(model.list_classes, new_model_with_path_sup.list_classes)
-        self.assertEqual(model.dict_classes, new_model_with_path_sup.dict_classes)
-        self.assertEqual(model.multi_label, new_model_with_path_sup.multi_label)
-        self.assertEqual(model.level_save, new_model_with_path_sup.level_save)
-        self.assertEqual(model.multiclass_strategy, new_model_with_path_sup.multiclass_strategy)
-        self.assertTrue((model.tfidf.tfidf_super_documents == new_model_with_path_sup.tfidf.tfidf_super_documents).all())
-        self.assertEqual(model.tfidf.count_vec.get_params(), new_model_with_path_sup.tfidf.count_vec.get_params())
-        self.assertEqual(model.with_super_documents, new_model_with_path_sup.with_super_documents)
-        self.assertTrue((model.tfidf.classes_ == new_model_with_path_sup.tfidf.classes_).all())
-        self.assertEqual(model.matrix_train.astype(np.float32).toarray().all(), new_model_with_path_sup.matrix_train.astype(np.float32).toarray().all())
-        # We can't really test the pipeline so we test predictions
-        self.assertTrue(len(np.setdiff1d(model.predict(x_test), new_model_with_path_sup.predict(x_test))) == 0)
-        self.assertTrue(len(np.setdiff1d(model.array_target, new_model_with_path_sup.array_target)) == 0)
-
+        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
-        remove_dir(new_model_with_path_sup.model_dir)
 
         ############################################
         # Errors
