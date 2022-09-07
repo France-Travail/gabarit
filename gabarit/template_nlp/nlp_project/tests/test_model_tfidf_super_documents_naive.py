@@ -19,11 +19,9 @@ import unittest
 
 # Utils libs
 import os
-import json
 import shutil
 import numpy as np
 
-from {{package_name}} import utils
 from {{package_name}}.models_training.model_tfidf_super_documents_naive import ModelTfidfSuperDocumentsNaive
 from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
 
@@ -101,7 +99,7 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         self.assertTrue(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
         preds = model.predict(x_test, return_proba=False)
         self.assertEqual(preds.shape, (len(x_test),))
-        self.assertEqual(preds.all(), model.predict(x_test, return_proba=False).all())
+        self.assertTrue((preds == model.predict(x_test, return_proba=False)).all())
         remove_dir(model_dir)
 
         model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
@@ -169,8 +167,8 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Model needs to be fitted
+        model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
         with self.assertRaises(AttributeError):
-            model = ModelTfidfSuperDocumentsNaive(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
             model.compute_predict(x_train)
         remove_dir(model_dir)
 
@@ -199,10 +197,8 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         # Reload
         pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
         conf_path = os.path.join(model.model_dir, "configurations.json")
-        count_vectorizer_path = os.path.join(model_dir, f"count_vectorizer.pkl")
-        tfidf_super_documents_path = os.path.join(model_dir, "tfidf_super_documents.pkl")
         new_model = ModelTfidfSuperDocumentsNaive()
-        new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, count_vectorizer_path=count_vectorizer_path, tfidf_super_documents_path=tfidf_super_documents_path)
+        new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
 
         # Test
         self.assertEqual(model.model_name, new_model.model_name)
@@ -215,7 +211,7 @@ class ModelTfidfSuperDocumentsNaiveTests(unittest.TestCase):
         self.assertEqual(model.multi_label, new_model.multi_label)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertTrue((model.tfidf.tfidf_super_documents == new_model.tfidf.tfidf_super_documents).all())
-        self.assertEqual(model.tfidf.count_vec.get_params(), new_model.tfidf.count_vec.get_params())
+        self.assertTrue((model.tfidf.classes_ == new_model.tfidf.classes_).all())
         self.assertEqual(model.with_super_documents, new_model.with_super_documents)
         self.assertTrue((model.tfidf.classes_ == new_model.tfidf.classes_).all())
         # We can't really test the pipeline so we test predictions

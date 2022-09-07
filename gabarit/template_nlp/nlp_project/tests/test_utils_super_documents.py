@@ -91,14 +91,12 @@ class tfidfSuperDocumentsTests(unittest.TestCase):
         vec.fit(x_train, y_train)
         vec_trans = TfidfVectorizer().fit_transform(x_train_s).toarray().T
         self.assertTrue((vec.tfidf_super_documents == vec_trans).all())
-        count = CountVectorizer().fit(x_train_s)
         self.assertTrue((vec.classes_ == np.array(['s', 'p'])).all())
 
         vec = TfidfVectorizerSuperDocuments(**param)
         vec.fit(x_train, y_train)
         vec_trans = TfidfVectorizer(**param).fit_transform(x_train_s).toarray().T
         self.assertTrue((vec.tfidf_super_documents == vec_trans).all())
-        count = CountVectorizer(**param).fit(x_train_s)
         self.assertTrue((vec.classes_ == np.array(['s', 'p'])).all())
 
     def test04_TfidfVectorizerSuperDocuments_transform(self):
