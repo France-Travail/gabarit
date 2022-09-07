@@ -1,42 +1,41 @@
 # Data manipulation
-numpy==1.19.5
-pandas==1.3.5
+numpy==1.23.2
+pandas==1.4.4
 
 # Models
 tensorflow==2.6.2
-scikit_learn==0.24.2
-scipy<1.9  # Tmp fix. Scipy 1.9 removed linalg.pinv2 which is not compatible with scikit_learn 0.24.2
-lightgbm==2.3.0
-xgboost==1.4.2
+scikit_learn==1.1.2
+lightgbm==3.3.2
+xgboost==1.6.2
 
 # Plots
-matplotlib==3.3.3
-seaborn==0.11.0
-yellowbrick==1.3.post1
+matplotlib==3.5.3
+seaborn==0.12.0
+yellowbrick==1.5
 
 # Others
-dill==0.3.3
+dill==0.3.5.1
 # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
 protobuf==3.20.1
-mlflow==1.12.1
+mlflow==1.28.0
 
 # Optionnals - useless in prod.
-pydot==1.4.1 # Needed to plot models architecture
-lime==0.2.0.1 # Needed to get a model explanation
+pydot==1.4.1  # Needed to plot models architecture
+lime==0.2.0.1  # Needed to get a model explanation
 
 # Optionnals - streamlit POC
-streamlit==1.10.0
+streamlit==1.12.2
 altair==4.2.0
 
 # Optionnals - code quality & cie
-mypy==0.910
-types-setuptools==57.0.2
-flake8==3.7.9
-black==21.4b2
-isort==4.3.21
+mypy==0.971
+types-setuptools==65.3.0
+flake8==5.0.4
+black==22.8.0
+isort==5.10.1
 nose==1.3.7
 nose-exclude==0.5.0
-coverage==5.3
+coverage==6.4.4
 
 # Optionnals - DVC{% if dvc_config_ok is false %}
 # WARNING : you didn't set up a DVC config file when you generated the project. Hence this is useless and can be removed{% endif %}

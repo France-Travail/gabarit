@@ -35,18 +35,17 @@ setup(
     include_package_data=True,
     package_data={'': ['{{package_name}}/configs/**']},
     install_requires=[
-        'numpy==1.19.5',
-        'pandas==1.3.5',
-        'scikit_learn>=0.24.2,<0.25',
-        'scipy<1.9',  # Tmp fix. Scipy 1.9 removed linalg.pinv2 which is not compatible with scikit_learn 0.24.2
-        'lightgbm>=2.3.0,<2.3.1',  # Check if we can upgrade
-        'xgboost>=1.4.2,<1.4.3',
-        'matplotlib>=3.0.3,<3.4',
-        'seaborn>=0.9.0,<0.12',
-        'yellowbrick==1.3.post1',
-        'dill>=0.3.2,<0.3.4',
-        'mlflow>=1.11.0,<1.12.2',
-        'protobuf==3.20.1',  #https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+        'pandas>=1.3,<1.5',
+        'numpy>=1.19,<1.24',
+        'scikit_learn>=1.0.0,<1.2',
+        'lightgbm>=2.3.0,<3.4',
+        'xgboost>=1.4.2,<1.7',
+        'matplotlib>=3.0.3,<3.6',
+        'seaborn>=0.9.0,<0.13',
+        'yellowbrick>=1.3.post1,<1.6',
+        'dill>=0.3.2,<0.3.6',
+        'protobuf==3.20.1',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+        'mlflow>=1.11,<1.29',
     ],
     extras_require={
         "tensorflow": ["tensorflow==2.6.2"],

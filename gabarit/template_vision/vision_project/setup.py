@@ -35,18 +35,18 @@ setup(
     include_package_data=True,
     package_data={'': ['{{package_name}}/configs/**']},
     install_requires=[
-        'numpy==1.19.5',
-        'pandas==1.3.5',
-        'scikit_learn>=0.24.2,<0.25',
-        'matplotlib>=3.0.3,<3.4',
-        'seaborn>=0.9.0,<0.12',
+        'pandas>=1.3,<1.5',
+        'numpy>=1.19,<1.24',
+        'scikit_learn>=1.0.0,<1.2',
+        'matplotlib>=3.0.3,<3.6',
+        'seaborn>=0.9.0,<0.13',
         'opencv-python-headless==4.5.5.62',
-        'dill>=0.3.2,<0.3.4',
-        'mlflow>=1.11.0,<1.12.2',
+        'dill>=0.3.2,<0.3.6',
+        'protobuf==3.20.1',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+        'mlflow>=1.11,<1.29',
         'tensorflow==2.6.2',
         'pycocotools==2.0.4',
-        'tqdm==4.62.2',  #https://github.com/tqdm/tqdm/issues/780
-        'protobuf==3.20.1',  #https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+        'tqdm>=4.40,<4.65',
     ],
     extras_require={
         "detectron": ["torch==1.8.1+cpu", "detectron2==0.6+cpu", "torchvision==0.9.1+cpu"],  # If GPU with cuda 11.1 : replace +cpu by +cu111
