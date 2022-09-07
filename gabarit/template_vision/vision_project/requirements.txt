@@ -45,7 +45,7 @@ streamlit==1.10.0  # TODO: to be updated once tensorflow is updated too
 altair==4.2.0
 
 # Optionnals - code quality & cie
-mypy==0.971
+mypy==0.910  # TODO: to be updated once tensorflow is updated too
 types-setuptools==65.3.0
 flake8==5.0.4
 black==22.8.0
