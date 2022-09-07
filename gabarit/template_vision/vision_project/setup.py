@@ -13,25 +13,37 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import os
 from setuptools import setup
 
-# Get package version
-with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'version.txt'), 'r') as version_file:
-    version = version_file.read().strip()
+# Get package directory
+package_directory = os.path.dirname(os.path.abspath(__file__))
 
+# Get package version (env variable or version file + -local)
+version_path = os.path.join(package_directory, 'version.txt')
+with open(version_path, 'r') as version_file:
+    version = version_file.read().strip()
 version = os.getenv('VERSION') or f"{version}-local"
+
+# Get package description
+readme_path = os.path.join(package_directory, 'README.md')
+with open(readme_path, 'r') as readme_file:
+    long_description = readme_file.read()
+
 # Setup
 setup(
     name="{{package_name}}",
     version=version,
     packages=["{{package_name}}", "{{package_name}}.preprocessing", "{{package_name}}.models_training", "{{package_name}}.monitoring"],
-    url="",
-    license="",
-    author="Agence Data Services PE Aix / Nantes",
+    license='AGPL-3.0',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    author="",
     author_email="",
-    description="",
+    description="Generated using Gabarit",
+    url="",
+    platforms=['windows', 'linux'],
+    python_requires='>=3.7',
     include_package_data=True,
     package_data={'': ['{{package_name}}/configs/**']},
     install_requires=[
