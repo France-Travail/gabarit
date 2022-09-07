@@ -200,6 +200,7 @@ class ModelTfidfLgbm(ModelPipeline):
         else:
             self.lgbm = self.pipeline['lgbm'].estimator
 
+        # Reload utile super documents
         if self.with_super_documents:
             self.tfidf.reload_from_standalone(count_vectorizer_path=count_vectorizer_path, tfidf_super_documents_path=tfidf_super_documents_path)
 

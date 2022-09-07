@@ -56,36 +56,6 @@ def get_super_documents(x_train, y_train) -> tuple[np.array, np.array]:
 
     return np.array(super_train[x_train.name]), np.array(super_train.index)
 
-class TfidfTransformerSuperDocuments(TfidfTransformer):
-    '''TfidfTransformer for super documents'''
-
-    def get_super_documents_count_vectorizer(self, x_train: csr_matrix, y_train) -> tuple[np.array, np.array]:
-        '''Transform the document to super document
-
-        Args:
-            x_train (csr_matrix): shape = [n_samples, n_term]
-            y_train (?): Array-like, shape = [n_samples, n_targets]
-        Returns:
-            result(np.array): array, shape = [n_targets, n_term]
-            y_train(np.array): array, shape = [n_targets]
-        '''
-        index_array = np.array([np.where(y_train == x)[0] for x in np.unique(y_train)], dtype=object)
-        result = np.array([[sum(y) for y in x_train[x, :].transpose().toarray()] for x in index_array])
-        return result, np.unique(y_train)
-
-    def fit_transform(self, raw_documents, y=None) -> csr_matrix:
-        '''Trains and transform the model with super documents
-
-        Args:
-            raw_documents (?): Array-like, shape = [n_samples, n_targets]
-            y (?): Array-like, shape = [n_samples, n_targets]
-        Returns:
-            (csr_matrix): matrix, shape = [n_samples, n_term]
-        '''
-        raw_super_documents, target_super_documents = self.get_super_documents_count_vectorizer(raw_documents, y)
-        self.fit(raw_super_documents, y)
-        return self.transform(raw_documents)
-
 
 class TfidfVectorizerSuperDocuments(TfidfVectorizer):
     '''TfidfVectorize for super documents'''
@@ -99,8 +69,7 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         # Init.
         super().__init__(**kwargs)
         self.tfidf_super_documents = tfidf_super_documents
-        self.count_vec = CountVectorizer(**kwargs)
-
+        self.classes_ = None
 
     def fit(self, raw_documents, y=None) -> TfidfVectorizerSuperDocuments:
         '''Trains the model with super documents
@@ -111,10 +80,9 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         Returns:
             TfidfVectorizerSuperDocuments
         '''
-        array_super_documents, _ = get_super_documents(raw_documents, y)
+        array_super_documents, self.classes_ = get_super_documents(raw_documents, y)
         super().fit(array_super_documents)
         self.tfidf_super_documents = super().transform(array_super_documents).toarray().T
-        self.count_vec.fit(array_super_documents)
         return self
 
     def transform(self, raw_documents, y=None) -> csr_matrix:
@@ -126,7 +94,7 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         Returns:
             (csr_matrix): matrix, shape = [n_samples, n_term]
         '''
-        count = self.count_vec.transform(raw_documents).toarray()
+        count = super(TfidfVectorizer, self).transform(raw_documents).toarray()
         return csr_matrix(np.dot(count, self.tfidf_super_documents))
 
     def fit_transform(self, raw_documents, y=None) -> csr_matrix:
@@ -151,12 +119,6 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         if not os.path.exists(dir):
             os.mkdir(dir)
 
-        # Save CountVectorizer if wanted & self.count_vec is not None & level_save > 'LOW'
-        if self.count_vec is not None and level_save in ['MEDIUM', 'HIGH']:
-            pkl_path = os.path.join(dir, "count_vectorizer.pkl")
-            with open(pkl_path, 'wb') as f:
-                pickle.dump(self.count_vec, f)
-
         # Save array tfidf with super documents if wanted & self.tfidf_super_documents is not None & level_save > 'LOW'
         if self.tfidf_super_documents is not None and level_save in ['MEDIUM', 'HIGH']:
             pkl_path = os.path.join(dir, "tfidf_super_documents.pkl")
@@ -168,30 +130,20 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         - /!\\ Experimental /!\\ -
 
         Kwargs:
-            count_vectorizer_path (str): Path to count vectorizer
             tfidf_super_documents_path (str): Path to tfidf super documents
         Raises:
-            ValueError: If count_vectorizer_path is None
             ValueError: If tfidf_super_documents_path is None
-            FileNotFoundError: If the object count_vectorizer_path is not an existing file
             FileNotFoundError: If the object tfidf_super_documents_path is not an existing file
         '''
         # Retrieve args
-        count_vectorizer_path = kwargs.get('count_vectorizer_path', None)
         tfidf_super_documents_path = kwargs.get('tfidf_super_documents_path', None)
 
         # Checks
-        if count_vectorizer_path is None:
-            raise ValueError("The argument count_vectorizer_path can't be None")
         if tfidf_super_documents_path is None:
             raise ValueError("The argument tfidf_super_documents_path can't be None")
-        if not os.path.exists(count_vectorizer_path):
-            raise FileNotFoundError(f"The file {count_vectorizer_path} does not exist")
         if not os.path.exists(tfidf_super_documents_path):
             raise FileNotFoundError(f"The file {tfidf_super_documents_path} does not exist")
 
-        with open(count_vectorizer_path, 'rb') as f:
-            self.count_vec = pickle.load(f)
         with open(tfidf_super_documents_path, 'rb') as f:
             self.tfidf_super_documents = pickle.load(f)
 

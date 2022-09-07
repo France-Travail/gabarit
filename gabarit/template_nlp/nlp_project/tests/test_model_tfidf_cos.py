@@ -113,7 +113,7 @@ class ModelTfidfCosTests(unittest.TestCase):
         model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
         model.fit(x_train, y_train_mono)
 
-        self.assertEqual(model.tfidf.classes_, [0, 1, 2])
+        self.assertTrue((model.tfidf.classes_ == np.array([0, 1, 2])).all())
         self.assertEqual(model.matrix_train.astype(np.float32).toarray().shape[0], 5)
         self.assertEqual(model.array_target.all(), np.array(y_train_mono).all())
         remove_dir(model_dir)
@@ -393,7 +393,7 @@ class ModelTfidfCosTests(unittest.TestCase):
         self.assertTrue((model.tfidf.tfidf_super_documents == new_model.tfidf.tfidf_super_documents).all())
         self.assertEqual(model.tfidf.count_vec.get_params(), new_model.tfidf.count_vec.get_params())
         self.assertEqual(model.with_super_documents, new_model.with_super_documents)
-        self.assertEqual(model.tfidf.classes_, new_model.tfidf.classes_)
+        self.assertTrue((model.tfidf.classes_ == new_model.tfidf.classes_).all())
         self.assertEqual(model.matrix_train.astype(np.float32).toarray().all(), new_model.matrix_train.astype(np.float32).toarray().all())
         # We can't really test the pipeline so we test predictions
         self.assertTrue(len(np.setdiff1d(model.predict(x_test), new_model.predict(x_test))) == 0)
@@ -413,7 +413,7 @@ class ModelTfidfCosTests(unittest.TestCase):
         self.assertTrue((model.tfidf.tfidf_super_documents == new_model_with_path_sup.tfidf.tfidf_super_documents).all())
         self.assertEqual(model.tfidf.count_vec.get_params(), new_model_with_path_sup.tfidf.count_vec.get_params())
         self.assertEqual(model.with_super_documents, new_model_with_path_sup.with_super_documents)
-        self.assertEqual(model.tfidf.classes_, new_model_with_path_sup.tfidf.classes_)
+        self.assertTrue((model.tfidf.classes_ == new_model_with_path_sup.tfidf.classes_).all())
         self.assertEqual(model.matrix_train.astype(np.float32).toarray().all(), new_model_with_path_sup.matrix_train.astype(np.float32).toarray().all())
         # We can't really test the pipeline so we test predictions
         self.assertTrue(len(np.setdiff1d(model.predict(x_test), new_model_with_path_sup.predict(x_test))) == 0)

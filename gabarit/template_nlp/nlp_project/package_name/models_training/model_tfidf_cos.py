@@ -91,7 +91,8 @@ class ModelTfidfCos(ModelPipeline):
         Raises:
             RuntimeError: If the model is already fitted
         '''
-        self.tfidf.classes_ = list(np.unique(y_train))
+        if not hasattr(self.tfidf, 'classes_'):
+            setattr(self.tfidf, "classes_", list(np.unique(y_train)))
         self.array_target = np.array(y_train)
         super().fit(x_train, y_train)
         self.matrix_train = self.pipeline.transform(x_train).astype(np.float16)
@@ -129,7 +130,7 @@ class ModelTfidfCos(ModelPipeline):
             if self.matrix_train or self.array_target is None
         '''
         if self.matrix_train is None or self.array_target is None:
-            raise AttributeError('your fit is not valid')
+            raise AttributeError('Tfidf need fit')
 
         x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
         x_test = np.array(x_test) if isinstance(x_test, list) else x_test
@@ -168,7 +169,7 @@ class ModelTfidfCos(ModelPipeline):
             if self.matrix_train or self.array_target is None
         '''
         if self.matrix_train is None or self.array_target is None:
-            raise AttributeError('your fit is not valid')
+            raise AttributeError('The tfidf not fitted')
 
         x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
         x_test = np.array(x_test) if isinstance(x_test, list) else x_test
@@ -308,6 +309,7 @@ class ModelTfidfCos(ModelPipeline):
         with open(array_target_path, 'rb') as f:
             self.array_target = pickle.load(f)
 
+        # Reload utile super documents
         if self.with_super_documents:
             self.tfidf.reload_from_standalone(count_vectorizer_path=count_vectorizer_path, tfidf_super_documents_path=tfidf_super_documents_path)
 
