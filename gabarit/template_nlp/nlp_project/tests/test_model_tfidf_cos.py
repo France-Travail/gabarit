@@ -84,7 +84,6 @@ class ModelTfidfCosTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy='toto')
         remove_dir(model_dir)
-
         with self.assertRaises(ValueError):
             model = ModelTfidfCos(model_dir=model_dir, multi_label=True, with_super_documents=True)
         remove_dir(model_dir)
@@ -105,8 +104,8 @@ class ModelTfidfCosTests(unittest.TestCase):
         model.fit(x_train, y_train_mono)
         model_vec.fit(x_train, y_train_mono)
         self.assertEqual(model.tfidf.classes_, [0, 1, 2])
-        self.assertEqual(model.matrix_train.astype(np.float32).toarray().all(), model_vec.fit_transform(x_train).astype(np.float32).toarray().all())
-        self.assertEqual(model.array_target.all(), np.array(y_train_mono).all())
+        self.assertTrue((model.matrix_train.astype(np.float32).toarray() == model_vec.fit_transform(x_train).astype(np.float16).astype(np.float32).toarray()).all())
+        self.assertTrue((model.array_target == np.array(y_train_mono)).all())
         remove_dir(model_dir)
 
         # With super documents
@@ -115,13 +114,13 @@ class ModelTfidfCosTests(unittest.TestCase):
 
         self.assertTrue((model.tfidf.classes_ == np.array([0, 1, 2])).all())
         self.assertEqual(model.matrix_train.astype(np.float32).toarray().shape[0], 5)
-        self.assertEqual(model.array_target.all(), np.array(y_train_mono).all())
+        self.assertTrue((model.array_target == np.array(y_train_mono)).all())
         remove_dir(model_dir)
 
         # test Error
+        model = ModelTfidfCos(model_dir=model_dir)
+        model.fit(x_train, y_train_mono)
         with self.assertRaises(RuntimeError):
-            model = ModelTfidfCos(model_dir=model_dir)
-            model.fit(x_train, y_train_mono)
             model.fit(x_train, y_train_mono)
         remove_dir(model_dir)
 
@@ -154,8 +153,8 @@ class ModelTfidfCosTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Model needs to be fitted
+        model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
         with self.assertRaises(AttributeError):
-            model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
             model.predict('test')
         remove_dir(model_dir)
 
@@ -215,22 +214,22 @@ class ModelTfidfCosTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Model needs to be fitted
+        model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
         with self.assertRaises(AttributeError):
-            model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
             model.predict_cosine_similarity('test')
         remove_dir(model_dir)
 
         # fit invalid
+        model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
+        model.fit(x_train, y_train_mono)
+        model.matrix_train = None
         with self.assertRaises(AttributeError):
-            model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
-            model.fit(x_train, y_train_mono)
-            model.matrix_train = None
             model.predict_cosine_similarity('test')
         remove_dir(model_dir)
+        model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
+        model.fit(x_train, y_train_mono)
+        model.array_target = None
         with self.assertRaises(AttributeError):
-            model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
-            model.fit(x_train, y_train_mono)
-            model.array_target = None
             model.predict_cosine_similarity('test')
         remove_dir(model_dir)
 
@@ -255,16 +254,16 @@ class ModelTfidfCosTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # fit invalid
+        model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
+        model.fit(x_train, y_train_mono)
+        model.matrix_train = None
         with self.assertRaises(AttributeError):
-            model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
-            model.fit(x_train, y_train_mono)
-            model.matrix_train = None
             model.predict_proba('test')
         remove_dir(model_dir)
+        model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
+        model.fit(x_train, y_train_mono)
+        model.array_target = None
         with self.assertRaises(AttributeError):
-            model = ModelTfidfCos(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
-            model.fit(x_train, y_train_mono)
-            model.array_target = None
             model.predict_proba('test')
         remove_dir(model_dir)
 
@@ -340,7 +339,7 @@ class ModelTfidfCosTests(unittest.TestCase):
         self.assertEqual(model.tfidf.get_params(), new_model.tfidf.get_params())
         self.assertEqual(model.with_super_documents, new_model.with_super_documents)
         self.assertEqual(model.tfidf.classes_, new_model.tfidf.classes_)
-        self.assertEqual(model.matrix_train.astype(np.float32).toarray().all(), new_model.matrix_train.astype(np.float32).toarray().all())
+        self.assertTrue((model.matrix_train.astype(np.float32).toarray() == new_model.matrix_train.astype(np.float32).toarray()).all())
         # We can't really test the pipeline so we test predictions
         self.assertTrue(len(np.setdiff1d(model.predict(x_test), new_model.predict(x_test))) == 0)
         self.assertTrue(len(np.setdiff1d(model.array_target, new_model.array_target)) == 0)
@@ -392,18 +391,22 @@ class ModelTfidfCosTests(unittest.TestCase):
         # Errors
         ############################################
 
+        new_model = ModelTfidfCos(model_dir=model_dir)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfCos()
             new_model.reload_from_standalone(configuration_path='toto.json', sklearn_pipeline_path=pkl_path, matrix_train_path=matrix_train_path, array_target_path=array_target_path)
+        remove_dir(model_dir)
+        new_model = ModelTfidfCos(model_dir=model_dir)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfCos()
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path='toto.pkl', matrix_train_path=matrix_train_path, array_target_path=array_target_path)
+        remove_dir(model_dir)
+        new_model = ModelTfidfCos(model_dir=model_dir)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfCos()
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, matrix_train_path='toto.csv', array_target_path=array_target_path)
+        remove_dir(model_dir)
+        new_model = ModelTfidfCos(model_dir=model_dir)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfCos()
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, matrix_train_path=matrix_train_path, array_target_path='toto.csv')
+        remove_dir(model_dir)
 
 
 # Perform tests
