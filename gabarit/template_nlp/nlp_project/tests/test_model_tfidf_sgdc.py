@@ -639,21 +639,13 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         model.fit(x_train, y_train_mono)
         model.save()
 
-        # Reload without path super documents
+        # Reload
         pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
         conf_path = os.path.join(model.model_dir, "configurations.json")
         new_model = ModelTfidfSgdc()
         new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
 
-        # Reload with path super documents
-        pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
-        conf_path = os.path.join(model.model_dir, "configurations.json")
-        count_vectorizer_path = os.path.join(model_dir, f"count_vectorizer.pkl")
-        tfidf_super_documents_path = os.path.join(model_dir, "tfidf_super_documents.pkl")
-        new_model_with_path_sup = ModelTfidfSgdc()
-        new_model_with_path_sup.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path, count_vectorizer_path=count_vectorizer_path, tfidf_super_documents_path=tfidf_super_documents_path)
-
-        # Test without path super documents
+        # Test
         self.assertEqual(model.model_name, new_model.model_name)
         self.assertEqual(model.trained, new_model.trained)
         self.assertEqual(model.nb_fit, new_model.nb_fit)
@@ -664,34 +656,14 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         self.assertEqual(model.multi_label, new_model.multi_label)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
-        self.assertTrue((tfidf.tfidf_super_documents == new_model_with_path_sup.tfidf.tfidf_super_documents).all())
-        self.assertEqual(tfidf.count_vec.get_params(), new_model_with_path_sup.tfidf.count_vec.get_params())
+        self.assertTrue((tfidf.tfidf_super_documents == new_model.tfidf.tfidf_super_documents).all())
+        self.assertTrue((tfidf.classes_ == new_model.tfidf.classes_).all())
         self.assertEqual(sgdc.get_params(), new_model.sgdc.get_params())
         self.assertEqual(model.with_super_documents, new_model.with_super_documents)
         # We can't really test the pipeline so we test predictions
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
-
-        # Test with path super documents
-        self.assertEqual(model.model_name, new_model_with_path_sup.model_name)
-        self.assertEqual(model.trained, new_model_with_path_sup.trained)
-        self.assertEqual(model.nb_fit, new_model_with_path_sup.nb_fit)
-        self.assertEqual(model.x_col, new_model_with_path_sup.x_col)
-        self.assertEqual(model.y_col, new_model_with_path_sup.y_col)
-        self.assertEqual(model.list_classes, new_model_with_path_sup.list_classes)
-        self.assertEqual(model.dict_classes, new_model_with_path_sup.dict_classes)
-        self.assertEqual(model.multi_label, new_model_with_path_sup.multi_label)
-        self.assertEqual(model.level_save, new_model_with_path_sup.level_save)
-        self.assertEqual(model.multiclass_strategy, new_model_with_path_sup.multiclass_strategy)
-        self.assertTrue((tfidf.tfidf_super_documents == new_model_with_path_sup.tfidf.tfidf_super_documents).all())
-        self.assertEqual(tfidf.count_vec.get_params(), new_model_with_path_sup.tfidf.count_vec.get_params())
-        self.assertEqual(sgdc.get_params(), new_model_with_path_sup.sgdc.get_params())
-        self.assertEqual(model.with_super_documents, new_model_with_path_sup.with_super_documents)
-        # We can't really test the pipeline so we test predictions
-        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model_with_path_sup.predict_proba(x_test)])
-
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
-        remove_dir(new_model_with_path_sup.model_dir)
 
         ############################################
         # Errors
