@@ -113,8 +113,8 @@ class ModelXgboostClassifier(ModelClassifierMixin, ModelClass):
             x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, test_size=self.validation_split)
 
         # Gets the input columns
-        original_list_classes: Optional[List[Any]] = None  # None if no 'columns' attribute
-        if hasattr(y_train, 'columns'):
+        original_list_classes: Optional[List[Any]] = None  # None if no 'columns' attribute or mono-label
+        if self.multi_label and hasattr(y_train, 'columns'):
             original_list_classes = list(y_train.columns)
 
         # Shuffle x, y if wanted
@@ -131,6 +131,29 @@ class ModelXgboostClassifier(ModelClassifierMixin, ModelClass):
         x_valid = np.array(x_valid)
         y_valid = np.array(y_valid)
 
+        # NEW from XGBOOST 1.3.2 : class columns should start from 0
+        # https://stackoverflow.com/questions/71996617/invalid-classes-inferred-from-unique-values-of-y-expected-0-1-2-3-4-5-got
+        # We set list_classes and dict_classes now + replace target for mono-label cases (multi-label should already be OHE with 0s and 1s)
+        if not self.multi_label:
+            self.list_classes = list(np.unique(y_train))
+            # Set dict_classes based on list classes
+            self.dict_classes = {i: col for i, col in enumerate(self.list_classes)}
+            inv_dict_classes = {v: k for k, v in self.dict_classes.items()}
+            # Update y_train and y_valid
+            map_func = lambda x: inv_dict_classes[x]
+            y_train = np.vectorize(map_func)(y_train)
+            y_valid = np.vectorize(map_func)(y_valid)
+        else:
+            if original_list_classes is not None:
+                self.list_classes = original_list_classes
+            else:
+                self.logger.warning("Can't read the name of the columns of y_train -> inverse transformation won't be possible")
+                # We still create a list of classes in order to be compatible with other functions
+                self.list_classes = [str(_) for _ in range(pd.DataFrame(y_train).shape[1])]
+            # Set dict_classes based on list classes
+            self.dict_classes = {i: col for i, col in enumerate(self.list_classes)}
+            # Nothing to update as targets are already OHE
+
         # Set eval set and train
         eval_set = [(x_train, y_train), (x_valid, y_valid)]  # If there’s more than one item in eval_set, the last entry will be used for early stopping.
         prior_objective = self.model.objective if not self.multi_label else self.model.estimator.objective
@@ -140,22 +163,6 @@ class ModelXgboostClassifier(ModelClassifierMixin, ModelClass):
             self.logger.warning("Warning: the objective function was automatically changed by XGBOOST")
             self.logger.warning(f"Before: {prior_objective}")
             self.logger.warning(f"After: {post_objective}")
-
-        # Set list classes
-        if not self.multi_label:
-            self.list_classes = list(self.model.classes_)
-        else:
-            if original_list_classes is not None:
-                self.list_classes = original_list_classes
-            else:
-                self.logger.warning(
-                    "Can't read the name of the columns of y_train -> inverse transformation won't be possible"
-                )
-                # We still create a list of classes in order to be compatible with other functions
-                self.list_classes = [str(_) for _ in range(pd.DataFrame(y_train).shape[1])]
-
-        # Set dict_classes based on list classes
-        self.dict_classes = {i: col for i, col in enumerate(self.list_classes)}
 
         # Set trained
         self.trained = True
