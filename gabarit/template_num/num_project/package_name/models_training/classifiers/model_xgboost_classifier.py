@@ -190,7 +190,7 @@ class ModelXgboostClassifier(ModelClassifierMixin, ModelClass):
             x_test, _ = self._check_input_format(x_test)
             # Warning, "The method returns the model from the last iteration"
             # But : "Predict with X. If the model is trained with early stopping, then best_iteration is used automatically."
-            y_proba = self.model.predict_proba(x_test)
+            y_proba = self.predict_proba(x_test)
             y_pred = self.get_classes_from_proba(y_proba)
             return y_pred
 
