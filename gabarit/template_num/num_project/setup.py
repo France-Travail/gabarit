@@ -13,40 +13,53 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-
 import os
 from setuptools import setup
 
-# Get package version
-with open(os.path.join(os.path.dirname(os.path.abspath(__file__)), 'version.txt'), 'r') as version_file:
-    version = version_file.read().strip()
+# Get package directory
+package_directory = os.path.dirname(os.path.abspath(__file__))
 
+# Get package version (env variable or version file + -local)
+version_path = os.path.join(package_directory, 'version.txt')
+with open(version_path, 'r') as version_file:
+    version = version_file.read().strip()
 version = os.getenv('VERSION') or f"{version}-local"
+
+# Get package description
+readme_path = os.path.join(package_directory, 'README.md')
+with open(readme_path, 'r') as readme_file:
+    long_description = readme_file.read()
+
 # Setup
 setup(
     name="{{package_name}}",
     version=version,
     packages=["{{package_name}}", "{{package_name}}.preprocessing", "{{package_name}}.models_training", "{{package_name}}.monitoring"],
-    url="",
-    license="",
-    author="Agence Data Services PE Aix / Nantes",
+    license='AGPL-3.0',
+    long_description=long_description,
+    long_description_content_type='text/markdown',
+    author="",
     author_email="",
-    description="",
+    description="Generated using Gabarit",
+    url="",
+    platforms=['windows', 'linux'],
+    python_requires='>=3.7',
     include_package_data=True,
     package_data={'': ['{{package_name}}/configs/**']},
     install_requires=[
-        'numpy==1.19.5',
-        'pandas==1.3.5',
-        'scikit_learn>=0.24.2,<0.25',
-        'scipy<1.9',  # Tmp fix. Scipy 1.9 removed linalg.pinv2 which is not compatible with scikit_learn 0.24.2
-        'lightgbm>=2.3.0,<2.3.1',  # Check if we can upgrade
-        'xgboost>=1.4.2,<1.4.3',
-        'matplotlib>=3.0.3,<3.4',
-        'seaborn>=0.9.0,<0.12',
-        'yellowbrick==1.3.post1',
-        'dill>=0.3.2,<0.3.4',
-        'mlflow>=1.11.0,<1.12.2',
-        'protobuf==3.20.1',  #https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+        'pandas>=1.3,<1.4; python_version < "3.8"',
+        'pandas>=1.3,<1.5; python_version >= "3.8"',
+        'numpy~=1.19.2',  # TODO: to be updated once we tensorflow is updated too
+        'scikit_learn>=1.0.0,<1.1; python_version < "3.8"',
+        'scikit_learn>=1.0.0,<1.2; python_version >= "3.8"',
+        'lightgbm>=2.3.0,<3.4',
+        'xgboost>=1.4.2,<1.7',
+        'matplotlib>=3.0.3,<3.6',
+        'seaborn>=0.9.0,<0.13',
+        'yellowbrick>=1.3.post1,<1.6',
+        'dill>=0.3.2,<0.3.6',
+        'protobuf==3.20.1',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+        'mlflow>=1.11,<1.29',
     ],
     extras_require={
         "tensorflow": ["tensorflow==2.6.2"],

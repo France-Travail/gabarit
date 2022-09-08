@@ -316,7 +316,7 @@ def get_columns_pipeline(preprocess_pipeline: ColumnTransformer) -> Tuple[list, 
     # Checks if the pipeline is fitted
     check_is_fitted(preprocess_pipeline)
     # Gets the names of input columns
-    columns_in = preprocess_pipeline._feature_names_in.tolist()
+    columns_in = preprocess_pipeline.feature_names_in_.tolist()
     # Gets the names of the "mandatory" columns
     if preprocess_pipeline._remainder[1] == 'drop':
         # If drop, we get from _columns
