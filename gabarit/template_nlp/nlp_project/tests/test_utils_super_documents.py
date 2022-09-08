@@ -24,7 +24,6 @@ import numpy as np
 
 from sklearn.feature_extraction.text import TfidfVectorizer, CountVectorizer
 from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
-from {{package_name}}.models_training import utils_super_documents
 
 # Disable logging
 import logging
@@ -45,23 +44,7 @@ class tfidfSuperDocumentsTests(unittest.TestCase):
         dname = os.path.dirname(abspath)
         os.chdir(dname)
 
-    def test01_get_super_documents(self):
-        '''Test the fit and fit_transform of {{package_name}}.models_training.utils_super_documents.get_super_documents'''
-
-        x_train = np.array(["Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
-                           "Covid - le point sur des chiffres qui s'envolent en France",
-                           "Carte des résultats des législatives : les qualifiés circonscription par circonscription"])
-        y_train = np.array(['a', 'a', 'b'])
-
-        x_train_s = np.array(["Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023 Covid - le point sur des chiffres qui s'envolent en France",
-                             "Carte des résultats des législatives : les qualifiés circonscription par circonscription"])
-        y_train_s = np.array(['a', 'b'])
-
-        super_documents, y_super_documents = utils_super_documents.get_super_documents(x_train, y_train)
-        self.assertTrue((super_documents == x_train_s).all())
-        self.assertTrue((y_super_documents == y_train_s).all())
-
-    def test02_TfidfVectorizerSuperDocuments_init(self):
+    def test01_TfidfVectorizerSuperDocuments_init(self):
         '''Test the fit and fit_transform of {{package_name}}.models_training.utils_super_documents.TfidfVectorizerSuperDocuments.init'''
 
         param = {'ngram_range': [2, 3], 'min_df': 0.02, 'max_df': 0.8, 'binary': False}
@@ -73,6 +56,22 @@ class tfidfSuperDocumentsTests(unittest.TestCase):
         self.assertEqual(vec.max_df, param['max_df'])
         self.assertEqual(vec.binary, param['binary'])
         self.assertTrue(vec.classes_ is None)
+
+    def test02_get_super_documents(self):
+        '''Test the get_super_documents of {{package_name}}.models_training.utils_super_documents.TfidfVectorizerSuperDocuments.get_super_documents'''
+
+        x_train = np.array(["Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023",
+                           "Covid - le point sur des chiffres qui s'envolent en France",
+                           "Carte des résultats des législatives : les qualifiés circonscription par circonscription"])
+        y_train = np.array(['a', 'a', 'b'])
+
+        x_train_s = np.array(["Covid - Omicron : l'Europe veut prolonger le certificat Covid jusqu'en 2023 Covid - le point sur des chiffres qui s'envolent en France",
+                             "Carte des résultats des législatives : les qualifiés circonscription par circonscription"])
+        y_train_s = np.array(['a', 'b'])
+
+        super_documents, y_super_documents = TfidfVectorizerSuperDocuments().get_super_documents(x_train, y_train)
+        self.assertTrue((super_documents == x_train_s).all())
+        self.assertTrue((y_super_documents == y_train_s).all())
 
     def test03_TfidfVectorizerSuperDocuments_fit(self):
         '''Test the fit of {{package_name}}.models_training.utils_super_documents.TfidfVectorizerSuperDocuments.fit'''

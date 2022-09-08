@@ -112,6 +112,8 @@ class ModelTfidfDense(ModelKeras):
             AssertionError: If different classes when comparing an already fitted model and a new dataset
         '''
         self.tfidf.fit(x_train, y_train)
+        # if self.with_super_documents:
+        #     x_train, y_train = self.tfidf.get_super_documents(x_train, y_train)
         super().fit(x_train, y_train, x_valid, y_valid, with_shuffle)
 
     def _prepare_x_train(self, x_train) -> np.ndarray:
@@ -155,7 +157,10 @@ class ModelTfidfDense(ModelKeras):
             (Model): a Keras model
         '''
         # Get input/output dimensions
-        input_dim = len(self.tfidf.get_feature_names())
+        if not self.with_super_documents:
+            input_dim = len(self.tfidf.get_feature_names())
+        else:
+            input_dim = len(self.tfidf.classes_)
         num_classes = len(self.list_classes)
 
         # Process
@@ -209,6 +214,8 @@ class ModelTfidfDense(ModelKeras):
         # Save configuration JSON
         if json_data is None:
             json_data = {}
+
+        json_data['with_super_documents'] = self.with_super_documents
 
         # Add tfidf params
         confs = self.tfidf.get_params()

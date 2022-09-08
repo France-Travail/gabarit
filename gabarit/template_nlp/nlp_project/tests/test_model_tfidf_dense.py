@@ -390,23 +390,14 @@ class ModelTfidfDenseTests(unittest.TestCase):
         model.fit(x_train, y_train_mono)
         model.save()
 
-        # Reload without path super documents
+        # Reload
         conf_path = os.path.join(model.model_dir, "configurations.json")
         hdf5_path = os.path.join(model.model_dir, "best.hdf5")
         tfidf_path = os.path.join(model.model_dir, f"tfidf_standalone.pkl")
         new_model = ModelTfidfDense()
         new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tfidf_path=tfidf_path)
 
-        # Reload with path super documents
-        conf_path = os.path.join(model.model_dir, "configurations.json")
-        hdf5_path = os.path.join(model.model_dir, "best.hdf5")
-        tfidf_path = os.path.join(model.model_dir, f"tfidf_standalone.pkl")
-        count_vectorizer_path = os.path.join(model_dir, f"count_vectorizer.pkl")
-        tfidf_super_documents_path = os.path.join(model_dir, "tfidf_super_documents.pkl")
-        new_model_with_path_sup = ModelTfidfDense()
-        new_model_with_path_sup.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tfidf_path=tfidf_path, count_vectorizer_path=count_vectorizer_path, tfidf_super_documents_path=tfidf_super_documents_path)
-
-        # Test without path super documents
+        # Test
         self.assertEqual(model.model_name, new_model.model_name)
         self.assertEqual(model.x_col, new_model.x_col)
         self.assertEqual(model.y_col, new_model.y_col)
@@ -423,31 +414,10 @@ class ModelTfidfDenseTests(unittest.TestCase):
         self.assertEqual(model.embedding_name, new_model.embedding_name)
         self.assertEqual(model.with_super_documents, new_model.with_super_documents)
         self.assertTrue((model.tfidf.tfidf_super_documents == new_model.tfidf.tfidf_super_documents).all())
-        self.assertEqual(model.tfidf.count_vec.get_params(), new_model.tfidf.count_vec.get_params())
+        self.assertTrue((model.tfidf.classes_ == new_model.tfidf.classes_).all())
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
-
-        # Test with path super documents
-        self.assertEqual(model.model_name, new_model_with_path_sup.model_name)
-        self.assertEqual(model.x_col, new_model_with_path_sup.x_col)
-        self.assertEqual(model.y_col, new_model_with_path_sup.y_col)
-        self.assertEqual(model.list_classes, new_model_with_path_sup.list_classes)
-        self.assertEqual(model.dict_classes, new_model_with_path_sup.dict_classes)
-        self.assertEqual(model.multi_label, new_model_with_path_sup.multi_label)
-        self.assertEqual(model.level_save, new_model_with_path_sup.level_save)
-        self.assertEqual(model.nb_fit, new_model_with_path_sup.nb_fit)
-        self.assertEqual(model.trained, new_model_with_path_sup.trained)
-        self.assertEqual(model.batch_size, new_model_with_path_sup.batch_size)
-        self.assertEqual(model.epochs, new_model_with_path_sup.epochs)
-        self.assertEqual(model.validation_split, new_model_with_path_sup.validation_split)
-        self.assertEqual(model.patience, new_model_with_path_sup.patience)
-        self.assertEqual(model.embedding_name, new_model_with_path_sup.embedding_name)
-        self.assertEqual(model.with_super_documents, new_model_with_path_sup.with_super_documents)
-        self.assertTrue((model.tfidf.tfidf_super_documents == new_model_with_path_sup.tfidf.tfidf_super_documents).all())
-        self.assertEqual(model.tfidf.count_vec.get_params(), new_model_with_path_sup.tfidf.count_vec.get_params())
-        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model_with_path_sup.predict_proba(x_test)])
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
-        remove_dir(new_model_with_path_sup.model_dir)
 
         # Check errors
         with self.assertRaises(FileNotFoundError):
@@ -459,6 +429,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             new_model = ModelTfidfDense()
             new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tfidf_path='toto.pkl')
+
 
 # Perform tests
 if __name__ == '__main__':

@@ -36,25 +36,6 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 logger = logging.getLogger(__name__)
 
 
-def get_super_documents(x_train, y_train) -> tuple[np.array, np.array]:
-    '''Transform the documents to super documents
-
-    Args:
-        x_train (?): Array-like, shape = [n_samples, n_targets]
-        y_train (?): Array-like, shape = [n_samples, n_targets]
-    Returns:
-        super_train(np.array): array, shape = [n_targets]
-        y_train(np.array): array, shape = [n_targets]
-    '''
-    x_train = pd.Series(x_train, name='x_train')
-    y_train = pd.Series(y_train, name='y_train')
-
-    df_train = pd.concat([x_train, y_train], axis=1)
-    super_train = df_train.groupby(y_train.name, sort=False).agg({x_train.name: lambda sentence: ' '.join((sentence))})
-
-    return np.array(super_train[x_train.name]), np.array(super_train.index)
-
-
 class TfidfVectorizerSuperDocuments(TfidfVectorizer):
     '''TfidfVectorize for super documents'''
 
@@ -69,6 +50,24 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         self.tfidf_super_documents = None
         self.classes_ = None
 
+    def get_super_documents(self, x_train, y_train) -> tuple[np.array, np.array]:
+        '''Transform the documents to super documents
+
+        Args:
+            x_train (?): Array-like, shape = [n_samples, n_targets]
+            y_train (?): Array-like, shape = [n_samples, n_targets]
+        Returns:
+            super_train(np.array): array, shape = [n_targets]
+            y_train(np.array): array, shape = [n_targets]
+        '''
+        x_train = pd.Series(x_train, name='x_train')
+        y_train = pd.Series(y_train, name='y_train')
+
+        df_train = pd.concat([x_train, y_train], axis=1)
+        super_train = df_train.groupby(y_train.name, sort=False).agg({x_train.name: lambda sentence: ' '.join((sentence))})
+
+        return np.array(super_train[x_train.name]), np.array(super_train.index)
+
     def fit(self, raw_documents, y=None) -> TfidfVectorizerSuperDocuments:
         '''Trains the model with super documents
 
@@ -78,7 +77,7 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         Returns:
             TfidfVectorizerSuperDocuments
         '''
-        array_super_documents, self.classes_ = get_super_documents(raw_documents, y)
+        array_super_documents, self.classes_ = self.get_super_documents(raw_documents, y)
         super().fit(array_super_documents)
         self.tfidf_super_documents = super().transform(array_super_documents).toarray().T
         return self
