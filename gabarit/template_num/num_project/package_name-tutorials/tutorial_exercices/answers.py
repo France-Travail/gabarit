@@ -151,7 +151,44 @@ python {{package_name}}-scripts/4_predict.py -f wine_test.csv -y target -m "$mod
     )
 
 
-def answer_exercice_9():
+def answer_exercice_9_preprocess_P3():
+
+    return print_answer(
+        f"""
+def get_pipelines_dict() -> dict:
+    '''Gets a dictionary of available preprocessing pipelines
+
+    Returns:
+        dict: Dictionary of preprocessing pipelines
+    '''
+    pipelines_dict = {{ '{{' }}
+        'no_preprocess': ColumnTransformer([('identity', FunctionTransformer(lambda x: x), make_column_selector())]),
+        'preprocess_P1': preprocess_P1(),
+        'preprocess_P2': preprocess_P2(),
+        'preprocess_P3': preprocess_P3()
+    {{ '}}' }}
+    return pipelines_dict
+
+
+def preprocess_P3() -> ColumnTransformer:
+    '''Gets "default" preprocessing pipeline
+    Returns:
+        ColumnTransformer: The pipeline
+    '''
+    numeric_pipeline = make_pipeline(SimpleImputer(strategy="median"), MinMaxScaler())
+    transformers = [
+        ("num", numeric_pipeline, make_column_selector(dtype_include="number")),
+        ("cat", FunctionTransformer(lambda x: x), make_column_selector(pattern="cultivar")),
+    ]
+    pipeline = ColumnTransformer(transformers, sparse_threshold=0, remainder="drop")
+    return pipeline
+""",
+        language="python",
+    )
+
+
+def answer_exercice_9_scripts():
+
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
@@ -161,16 +198,16 @@ def answer_exercice_9():
 python {{package_name}}-scripts/utils/0_split_train_valid_test.py -f wine_reg.csv --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --overwrite
 
 ### preprocessing training data
-python {{package_name}}-scripts/1_preprocess_data.py -f wine_reg_train.csv -p preprocess_P1 --target_cols alcohol
+python {{package_name}}-scripts/1_preprocess_data.py -f wine_reg_train.csv -p preprocess_P3 --target_cols alcohol
 
 ### preprocessing validation data
 # Get last pipeline fitted in {{package_name}}-pipelines
-pipeline="$(ls {{package_name}}-pipelines | grep preprocess_P1 | tail -n 1)"
+pipeline="$(ls {{package_name}}-pipelines | grep preprocess_P3 | tail -n 1)"
 
 python {{package_name}}-scripts/2_apply_existing_pipeline.py -f wine_reg_valid.csv -p "$pipeline" --target_cols alcohol
 
 ### train a regressor
-python {{package_name}}-scripts/3_training_regression.py -f wine_reg_train_preprocess_P1.csv --filename_valid  wine_reg_valid_preprocess_P1.csv -y alcohol
+python {{package_name}}-scripts/3_training_regression.py -f wine_reg_train_preprocess_P3.csv --filename_valid  wine_reg_valid_preprocess_P3.csv -y alcohol
 
 ### predict test data
 model="$(ls {{package_name}}-models/model_knn_regressor | grep model_knn_regressor_ | tail -n 1)"
