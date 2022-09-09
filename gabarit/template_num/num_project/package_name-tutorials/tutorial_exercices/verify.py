@@ -3,7 +3,7 @@ import os
 from pathlib import Path
 
 import pandas as pd
-from IPython import display
+from PIL import Image
 from sklearn.compose import ColumnTransformer
 from {{package_name}}.utils import get_data_path, get_models_path
 
@@ -190,16 +190,13 @@ def verify_exercice_6():
     print("Exercice 6 : OK ✔")
 
     confusion_matrix = last_model / "plots" / "valid_confusion_matrix.png"
-    return display.HTML(
-        f"""
-    A confusion matrix plot has been automatically produced :
 
-    <figure style="max-width: 35rem;">
-        <img src="{confusion_matrix}" alt="confusion matrix">
-        <figcaption>{confusion_matrix}</figcaption>
-    </figure>
-    """
-    )
+    print("A confusion matrix plot has been automatically produced : \n")
+
+    confusion_matrixt_img = Image.open(confusion_matrix)
+    confusion_matrixt_img.show()
+
+    print("\n", confusion_matrix)
 
 
 def verify_exercice_7():
@@ -231,16 +228,13 @@ def verify_exercice_7():
     print("Exercice 7 : OK ✔")
 
     confusion_matrix = last_model / "plots" / "valid_confusion_matrix.png"
-    return display.HTML(
-        f"""
-    A confusion matrix plot has been automatically produced :
 
-    <figure style="max-width: 35rem;">
-        <img src="{confusion_matrix}" alt="confusion matrix">
-        <figcaption>{confusion_matrix}</figcaption>
-    </figure>
-    """
-    )
+    print("A confusion matrix plot has been automatically produced : \n")
+
+    confusion_matrixt_img = Image.open(confusion_matrix)
+    confusion_matrixt_img.show()
+
+    print("\n", confusion_matrix)
 
 
 def verify_exercice_8():
@@ -280,16 +274,13 @@ def verify_exercice_8():
     print("Exercice 8 : OK ✔")
 
     confusion_matrix = last_predictions / "plots" / "with_y_true_confusion_matrix.png"
-    return display.HTML(
-        f"""
-    A confusion matrix plot has been automatically produced :
 
-    <figure style="max-width: 35rem;">
-        <img src="{confusion_matrix}" alt="confusion matrix">
-        <figcaption>{confusion_matrix}</figcaption>
-    </figure>
-    """
-    )
+    print("A confusion matrix plot has been automatically produced : \n")
+
+    confusion_matrixt_img = Image.open(confusion_matrix)
+    confusion_matrixt_img.show()
+
+    print("\n", confusion_matrix)
 
 
 def verify_exercice_9():
@@ -303,18 +294,18 @@ def verify_exercice_9():
             )
 
     # Verify preprocessing of train data
-    train_preprocess_path = DATA_PATH / f"{DATASET_REG_NAME}_train_preprocess_P1.csv"
+    train_preprocess_path = DATA_PATH / f"{DATASET_REG_NAME}_train_preprocess_P3.csv"
     if not train_preprocess_path.exists():
         raise FileNotFoundError(
-            f"{train_preprocess_path} not found. Did you run preprocess_P1 pipeline "
+            f"{train_preprocess_path} not found. Did you run preprocess_P3 pipeline "
             f"on {DATASET_REG_NAME}_train.csv thanks to 1_preprocess_data.py ?"
         )
 
     # Verify preprocess of validation data
-    valid_preprocess_path = DATA_PATH / f"{DATASET_REG_NAME}_valid_preprocess_P1.csv"
+    valid_preprocess_path = DATA_PATH / f"{DATASET_REG_NAME}_valid_preprocess_P3.csv"
     if not valid_preprocess_path.exists():
         raise FileNotFoundError(
-            f"{valid_preprocess_path} not found. Did you run previous preprocess_P1 "
+            f"{valid_preprocess_path} not found. Did you run previous preprocess_P3 "
             f"pipeline on {DATASET_REG_NAME}_valid.csv thanks to "
             f"2_apply_existing_pipeline.py ?"
         )
@@ -337,11 +328,11 @@ def verify_exercice_9():
         config = json.load(f)
 
     filename_valid = config.get("filename_valid", None)
-    if filename_valid != f"{DATASET_REG_NAME}_valid_preprocess_P1.csv":
+    if filename_valid != f"{DATASET_REG_NAME}_valid_preprocess_P3.csv":
         raise AssertionError(
             f"'filename_valid' is {filename_valid} but should be "
-            f"'{DATASET_REG_NAME}_valid_preprocess_P1.csv'. "
-            f"Did you use '--filename_valid {DATASET_REG_NAME}_valid_preprocess_P1.csv' ?"
+            f"'{DATASET_REG_NAME}_valid_preprocess_P3.csv'. "
+            f"Did you use '--filename_valid {DATASET_REG_NAME}_valid_preprocess_P3.csv' ?"
         )
 
     # Verify predictions
@@ -377,16 +368,16 @@ def verify_exercice_9():
             "Did you use this model to make your predictions ?"
         )
 
-    print("Exercice 8 : OK ✔")
+    print("Exercice 9 : OK ✔")
 
     error_plot = last_predictions / "plots" / "with_y_true_errors.png"
-    return display.HTML(
-        f"""
-    A plot of predicted values against actual values has been automatically produced :
 
-    <figure style="max-width: 40rem;">
-        <img src="{error_plot}" alt="Predicted values against actual values">
-        <figcaption>{error_plot}</figcaption>
-    </figure>
-    """
+    print(
+        "A plot of predicted values against actual values has been automatically produced :"
     )
+
+    error_plot_img = Image.open(error_plot)
+    error_plot_img.show()
+
+    print(error_plot)
+
