@@ -63,7 +63,7 @@ except ImportError as e:
 
 if not st._is_running_with_streamlit:
     logger.error('This script should not be run directly with python, but via streamlit')
-    logger.error('e.g. "streamlit run 4_demonstrateur.py')
+    logger.error('e.g. "streamlit run 5_demonstrateur.py')
     sys.exit("Streamlit not started")
 
 
@@ -346,10 +346,7 @@ if selected_model is not None:
     # TODO: TO BE CHANGED WITH YOUR DATA
     # TODO: Here is some examples with the "wine" dataset from tutorial
     form.write("Input data")
-    form_values = {
-        col: form.number_input(col)
-        for col in model.x_col
-    }
+    form_values = {col: form.number_input(col) for col in model.x_col}
     form.markdown("---  \n")
     # TODO TODO TODO TODO TODO
     # TODO TODO TODO TODO TODO
