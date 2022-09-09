@@ -377,7 +377,7 @@ def verify_exercice_9():
             "Did you use this model to make your predictions ?"
         )
 
-    print("Exercice 8 : OK ✔")
+    print("Exercice 9 : OK ✔")
 
     error_plot = last_predictions / "plots" / "with_y_true_errors.png"
     return display.HTML(
