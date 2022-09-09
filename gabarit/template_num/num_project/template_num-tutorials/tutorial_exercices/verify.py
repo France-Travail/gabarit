@@ -11,6 +11,7 @@ DATA_PATH = Path(get_data_path())
 MODELS_PATH = Path(get_models_path())
 
 DATASET_NAME = "wine"
+DATASET_REG_NAME = "wine_reg"
 
 
 def verify_exercice_1():
@@ -179,13 +180,26 @@ def verify_exercice_6():
         config = json.load(f)
 
     filename_valid = config.get("filename_valid", None)
-    if filename_valid != "wine_valid_preprocess_P1.csv":
+    if filename_valid != f"{DATASET_NAME}_valid_preprocess_P1.csv":
         raise AssertionError(
-            f"'filename_valid' is {filename_valid} but should be 'wine_valid_preprocess_P1.csv'. "
-            f"Did you use '--filename_valid  wine_valid_preprocess_P1.csv' ?"
+            f"'filename_valid' is {filename_valid} but should be "
+            f"'{DATASET_NAME}_valid_preprocess_P1.csv'. "
+            f"Did you use '--filename_valid {DATASET_NAME}_valid_preprocess_P1.csv' ?"
         )
 
     print("Exercice 6 : OK ✔")
+
+    confusion_matrix = last_model / "plots" / "valid_confusion_matrix.png"
+    return display.HTML(
+        f"""
+    A confusion matrix plot has been automatically produced :
+
+    <figure style="max-width: 35rem;">
+        <img src="{confusion_matrix}" alt="confusion matrix">
+        <figcaption>{confusion_matrix}</figcaption>
+    </figure>
+    """
+    )
 
 
 def verify_exercice_7():
@@ -207,29 +221,43 @@ def verify_exercice_7():
         config = json.load(f)
 
     filename_valid = config.get("filename_valid", None)
-    if filename_valid != "wine_valid_preprocess_P1.csv":
+    if filename_valid != f"{DATASET_NAME}_valid_preprocess_P1.csv":
         raise AssertionError(
-            f"'filename_valid' is {filename_valid} but should be 'wine_valid_preprocess_P1.csv'. "
-            f"Did you use '--filename_valid  wine_valid_preprocess_P1.csv' ?"
+            f"'filename_valid' is {filename_valid} but should be "
+            f"'{DATASET_NAME}_valid_preprocess_P1.csv'. "
+            f"Did you use '--filename_valid {DATASET_NAME}_valid_preprocess_P1.csv' ?"
         )
 
     print("Exercice 7 : OK ✔")
 
+    confusion_matrix = last_model / "plots" / "valid_confusion_matrix.png"
+    return display.HTML(
+        f"""
+    A confusion matrix plot has been automatically produced :
+
+    <figure style="max-width: 35rem;">
+        <img src="{confusion_matrix}" alt="confusion matrix">
+        <figcaption>{confusion_matrix}</figcaption>
+    </figure>
+    """
+    )
+
 
 def verify_exercice_8():
     """Verify eighth exercice"""
-    predictions_folder = DATA_PATH / "predictions" / "wine_test"
+    predictions_folder = DATA_PATH / "predictions" / f"{DATASET_NAME}_test"
 
     if not predictions_folder.exists():
         raise AssertionError(
-            f"No folder {predictions_folder}. Did you run 4_predict.py on wine_test ?"
+            f"No folder {predictions_folder}. "
+            f"Did you run 4_predict.py on {DATASET_NAME}_test ?"
         )
 
     predictions = sorted(predictions_folder.glob("predictions_*"))
 
     if not predictions:
         raise AssertionError(
-            "No prediction found. Did you run 4_predict.py on wine_test ?"
+            f"No prediction found. Did you run 4_predict.py on {DATASET_NAME}_test ?"
         )
 
     predictions_found = False
@@ -251,4 +279,114 @@ def verify_exercice_8():
 
     print("Exercice 8 : OK ✔")
 
-    display.Image(last_predictions / "plots" / "with_y_true_confusion_matrix.png")
+    confusion_matrix = last_predictions / "plots" / "with_y_true_confusion_matrix.png"
+    return display.HTML(
+        f"""
+    A confusion matrix plot has been automatically produced :
+
+    <figure style="max-width: 35rem;">
+        <img src="{confusion_matrix}" alt="confusion matrix">
+        <figcaption>{confusion_matrix}</figcaption>
+    </figure>
+    """
+    )
+
+
+def verify_exercice_9():
+    """Verify nineth exercice"""
+    # Verify presence of train, valid test splits
+    for split in ("train", "valid", "test"):
+        split_path = DATA_PATH / f"{DATASET_REG_NAME}_{split}.csv"
+        if not split_path.exists():
+            raise FileNotFoundError(
+                f"{split_path} not found. Did you run 0_split_train_valid_test.py ?"
+            )
+
+    # Verify preprocessing of train data
+    train_preprocess_path = DATA_PATH / f"{DATASET_REG_NAME}_train_preprocess_P1.csv"
+    if not train_preprocess_path.exists():
+        raise FileNotFoundError(
+            f"{train_preprocess_path} not found. Did you run preprocess_P1 pipeline "
+            f"on {DATASET_REG_NAME}_train.csv thanks to 1_preprocess_data.py ?"
+        )
+
+    # Verify preprocess of validation data
+    valid_preprocess_path = DATA_PATH / f"{DATASET_REG_NAME}_valid_preprocess_P1.csv"
+    if not valid_preprocess_path.exists():
+        raise FileNotFoundError(
+            f"{valid_preprocess_path} not found. Did you run previous preprocess_P1 "
+            f"pipeline on {DATASET_REG_NAME}_valid.csv thanks to "
+            f"2_apply_existing_pipeline.py ?"
+        )
+
+    # Verify training
+    models_folders = sorted(
+        MODELS_PATH.glob("model_knn_regressor/model_knn_regressor_*")
+    )
+
+    if not models_folders:
+        raise AssertionError(
+            "No model_knn_regressor found. Did you properly uncomment "
+            "ModelKNNRegressor model and run 3_training_regression.py ?"
+        )
+
+    last_model = models_folders[-1]
+    last_model_config = last_model / "configurations.json"
+
+    with last_model_config.open("r") as f:
+        config = json.load(f)
+
+    filename_valid = config.get("filename_valid", None)
+    if filename_valid != f"{DATASET_REG_NAME}_valid_preprocess_P1.csv":
+        raise AssertionError(
+            f"'filename_valid' is {filename_valid} but should be "
+            f"'{DATASET_REG_NAME}_valid_preprocess_P1.csv'. "
+            f"Did you use '--filename_valid {DATASET_REG_NAME}_valid_preprocess_P1.csv' ?"
+        )
+
+    # Verify predictions
+    predictions_folder = DATA_PATH / "predictions" / f"{DATASET_REG_NAME}_test"
+
+    if not predictions_folder.exists():
+        raise AssertionError(
+            f"No folder {predictions_folder}. "
+            f"Did you run 4_predict.py on {DATASET_REG_NAME}_test ?"
+        )
+
+    predictions = sorted(predictions_folder.glob("predictions_*"))
+
+    if not predictions:
+        raise AssertionError(
+            f"No prediction found. Did you run 4_predict.py on {DATASET_REG_NAME}_test ?"
+        )
+
+    predictions_found = False
+    for last_predictions in predictions:
+        last_predictions_config = last_predictions / "configurations.json"
+
+        with last_predictions_config.open("r") as f:
+            config = json.load(f)
+
+        if config["model_name"] == "model_knn_regressor":
+            predictions_found = True
+            break
+
+    if not predictions_found:
+        raise AssertionError(
+            "No predictions found for model_knn_regressor. "
+            "Did you use this model to make your predictions ?"
+        )
+
+    print("Exercice 8 : OK ✔")
+
+    error_plot = last_predictions / "plots" / "with_y_true_errors.png"
+    return display.HTML(
+        f"""
+    A plot of predicted values against actual values has been automatically produced :
+
+    <figure style="max-width: 40rem;">
+        <img src="{error_plot}" alt="Predicted values against actual values">
+        <figcaption>{error_plot}</figcaption>
+    </figure>
+    """
+    )

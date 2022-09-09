@@ -147,6 +147,34 @@ def answer_exercice_8():
 model="$(ls {{package_name}}-models/model_ridge_classifier | grep model_ridge_classifier_ | tail -n 1)"
 
 python {{package_name}}-scripts/4_predict.py -f wine_test.csv -y target -m "$model"
-""",
-        language="python",
+"""
+    )
+
+
+def answer_exercice_9():
+    return print_answer(
+        f"""
+# do not forget to activate your virtual environment
+# source venv_num_template/bin/activate 
+
+### train / valid / test splits
+python {{package_name}}-scripts/utils/0_split_train_valid_test.py -f wine_reg.csv --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --overwrite
+
+### preprocessing training data
+python {{package_name}}-scripts/1_preprocess_data.py -f wine_reg_train.csv -p preprocess_P1 --target_cols alcohol
+
+### preprocessing validation data
+# Get last pipeline fitted in {{package_name}}-pipelines
+pipeline="$(ls {{package_name}}-pipelines | grep preprocess_P1 | tail -n 1)"
+
+python {{package_name}}-scripts/2_apply_existing_pipeline.py -f wine_reg_valid.csv -p "$pipeline" --target_cols alcohol
+
+### train a regressor
+python {{package_name}}-scripts/3_training_regression.py -f wine_reg_train_preprocess_P1.csv --filename_valid  wine_reg_valid_preprocess_P1.csv -y alcohol
+
+### predict test data
+model="$(ls {{package_name}}-models/model_knn_regressor | grep model_knn_regressor_ | tail -n 1)"
+
+python {{package_name}}-scripts/4_predict.py -f wine_reg_test.csv -y alcohol -m "$model"
+"""
     )
