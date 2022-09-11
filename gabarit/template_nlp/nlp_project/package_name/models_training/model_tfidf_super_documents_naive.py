@@ -51,7 +51,6 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         '''Initialization of the class (see ModelPipeline & ModelClass for more arguments)
 
         Kwargs:
-            tfidf_count_params (dict): Parameters for the countVectorize
             tfidf_params (dict): Parameters for the tfidf TfidfVectorizerSuperDocuments
             multiclass_strategy (str): Multi-classes strategy, only can be None
         Raises:
@@ -114,7 +113,7 @@ class ModelTfidfSuperDocumentsNaive(ModelPipeline):
         if not self.multi_label:
             # Normalize tfidf to "proba"
             trans = self.tfidf.transform(x_test).toarray()
-            probas = np.array([col / sum(col) for col in trans])
+            probas = trans/np.sum(trans , axis=1)[:, None]
         else:
             raise ValueError("The TFIDF Naive does not support multi label")
         return probas

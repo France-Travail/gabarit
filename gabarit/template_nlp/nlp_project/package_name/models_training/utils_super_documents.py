@@ -17,12 +17,11 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - TfidfTransformerSuperDocuments -> TfidfTransformer for super documents
 # - TfidfVectorizerSuperDocuments -> TfidfVectorizer for super documents
 #
 # Super documents collects all documents and concatenate them by label.
 # Unlike standard tfidf model fitting with [n_samples, n_terms],
-# Super documents fits with [n_label, n_terms] and transforms with [n_samples, n_terms].
+# Super documents fits with [n_label, n_terms] and transforms with [n_samples, n_label].
 
 from __future__ import annotations
 
@@ -42,8 +41,6 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
     def __init__(self, **kwargs) -> None:
         '''Initialization of the class
 
-        Args:
-            tfidf_super_documents (np.array): shape = [n_terme, n_label]
         '''
         # Init.
         super().__init__(**kwargs)

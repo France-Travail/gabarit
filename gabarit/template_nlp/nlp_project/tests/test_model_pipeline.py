@@ -129,6 +129,20 @@ class ModelPipelineTests(unittest.TestCase):
         self.assertTrue(hasattr(model.pipeline['svc'], "classes_"))
         remove_dir(model_dir)
 
+        # Mono-label super documents
+        tfidf = TfidfVectorizer()
+        svc = LinearSVC()
+        pipeline = Pipeline([('tfidf', tfidf), ('svc', svc)])
+        model = ModelPipeline(model_dir=model_dir, pipeline=pipeline, multi_label=False, with_super_documents=True)
+        self.assertFalse(model.trained)
+        self.assertEqual(model.nb_fit, 0)
+        self.assertFalse(hasattr(model.pipeline['svc'], "classes_"))
+        model.fit(x_train, y_train_mono)
+        self.assertTrue(model.trained)
+        self.assertEqual(model.nb_fit, 1)
+        self.assertTrue(hasattr(model.pipeline['svc'], "classes_"))
+        remove_dir(model_dir)
+
         # Multi-labels
         tfidf = TfidfVectorizer()
         svc = LinearSVC()

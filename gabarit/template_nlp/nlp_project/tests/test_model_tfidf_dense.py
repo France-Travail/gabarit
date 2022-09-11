@@ -270,16 +270,28 @@ class ModelTfidfDenseTests(unittest.TestCase):
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
-        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
 
         # Nominal case
+        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         x_train = ['test titi toto', 'toto', 'titi test test toto']
         model._prepare_x_train(x_train)  # We force the creation of the tokenizer
         model.list_classes = ['a', 'b']  # We force the creation of a list of classes
         model_res = model._get_model()
         self.assertTrue(isinstance(model_res, keras.Model))
+        remove_dir(model_dir)
 
-        # Clean
+        # with super documents
+        model = ModelTfidfDense(model_dir=model_dir, with_super_documents=True)
+        x_train = ['test titi toto', 'toto', 'titi test test toto']
+        y_train = ['a', 'b', 'a']
+        model.list_classes = ['a', 'b']  # We force the creation of a list of classes
+        # TypeError because need model tfidf fitted, it try to input_dim = len(model.tfidf.classes_)
+        with self.assertRaises(TypeError):
+            model_res = model._get_model()
+        model.tfidf.fit(x_train, y_train)
+        model._prepare_x_train(x_train)  # We force the creation of the tokenizer
+        model_res = model._get_model()
+        self.assertTrue(isinstance(model_res, keras.Model))
         remove_dir(model_dir)
 
     def test08_model_tfidf_dense_save(self):

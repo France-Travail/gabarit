@@ -45,7 +45,7 @@ class tfidfSuperDocumentsTests(unittest.TestCase):
         os.chdir(dname)
 
     def test01_TfidfVectorizerSuperDocuments_init(self):
-        '''Test the fit and fit_transform of {{package_name}}.models_training.utils_super_documents.TfidfVectorizerSuperDocuments.init'''
+        '''Test the init of {{package_name}}.models_training.utils_super_documents.TfidfVectorizerSuperDocuments.init'''
 
         param = {'ngram_range': [2, 3], 'min_df': 0.02, 'max_df': 0.8, 'binary': False}
 

@@ -335,6 +335,15 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual([elem for elem in preds], [elem for elem in model.decision_function(['test'])[0]])
         remove_dir(model_dir)
 
+        # Mono-label - no strategy - with super documents
+        model = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model.fit(x_train, y_train_mono)
+        preds = model.decision_function(x_train)
+        self.assertEqual(preds.shape, (len(x_train), n_classes))
+        preds = model.decision_function('test')
+        self.assertEqual([elem for elem in preds], [elem for elem in model.decision_function(['test'])[0]])
+        remove_dir(model_dir)
+
         # Multi-labels - do not support decision_function
         model = ModelTfidfSvm(model_dir=model_dir, multi_label=True, multiclass_strategy=None)
         model.fit(x_train, y_train_multi[cols])

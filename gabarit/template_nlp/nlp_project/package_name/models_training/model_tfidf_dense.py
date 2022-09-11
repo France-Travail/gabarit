@@ -112,8 +112,6 @@ class ModelTfidfDense(ModelKeras):
             AssertionError: If different classes when comparing an already fitted model and a new dataset
         '''
         self.tfidf.fit(x_train, y_train)
-        # if self.with_super_documents:
-        #     x_train, y_train = self.tfidf.get_super_documents(x_train, y_train)
         super().fit(x_train, y_train, x_valid, y_valid, with_shuffle)
 
     def _prepare_x_train(self, x_train) -> np.ndarray:
