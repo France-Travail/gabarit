@@ -88,8 +88,8 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         Returns:
             (csr_matrix): matrix, shape = [n_samples, n_term]
         '''
-        count = super(TfidfVectorizer, self).transform(raw_documents).toarray()
-        return csr_matrix(np.dot(count, self.tfidf_super_documents))
+        count = super(TfidfVectorizer, self).transform(raw_documents)
+        return csr_matrix(count.dot(self.tfidf_super_documents))
 
     def fit_transform(self, raw_documents, y=None) -> csr_matrix:
         '''Trains and transform the model with super documents
