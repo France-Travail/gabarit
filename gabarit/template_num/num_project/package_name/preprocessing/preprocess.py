@@ -143,6 +143,7 @@ def retrieve_columns_from_pipeline(df: pd.DataFrame, pipeline: ColumnTransformer
         assert len(new_columns) == df.shape[1], "There is a discrepancy in the number of columns" +\
                                                 f" between the preprocessed DataFrame ({df.shape[1]})" +\
                                                 f" and the pipeline ({len(new_columns)})."
+        # TODO : check for duplicates ?!
         df.columns = new_columns
     except Exception as e:
         logger.error("Can't get the names of the columns. Cancel it (experimental)")

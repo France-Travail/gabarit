@@ -13,7 +13,7 @@ def answer_exercice_1():
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
-# source venv_num_template/bin/activate 
+# source venv_num_template/bin/activate
 
 python {{package_name}}-scripts/utils/0_split_train_valid_test.py -f wine.csv --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --seed 42 --overwrite
 """
@@ -24,7 +24,7 @@ def answer_exercice_2():
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
-# source venv_num_template/bin/activate 
+# source venv_num_template/bin/activate
 
 python {{package_name}}-scripts/utils/0_create_samples.py -f wine.csv -n 10
 """
@@ -35,7 +35,7 @@ def answer_exercice_3():
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
-# source venv_num_template/bin/activate 
+# source venv_num_template/bin/activate
 
 python {{package_name}}-scripts/1_preprocess_data.py -f wine.csv --target_cols target
 """
@@ -80,7 +80,7 @@ def answer_exercice_4_preprocess_script():
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
-# source venv_num_template/bin/activate 
+# source venv_num_template/bin/activate
 
 python {{package_name}}-scripts/1_preprocess_data.py -f wine.csv -p preprocess_P2 --target_cols target
 """
@@ -91,7 +91,7 @@ def answer_exercice_5():
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
-# source venv_num_template/bin/activate 
+# source venv_num_template/bin/activate
 
 python {{package_name}}-scripts/1_preprocess_data.py -f wine_train.csv -p preprocess_P1 --target_cols target
 
@@ -107,7 +107,7 @@ def answer_exercice_6():
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
-# source venv_num_template/bin/activate 
+# source venv_num_template/bin/activate
 
 python {{package_name}}-scripts/3_training_classification.py -f wine_train_preprocess_P1.csv --filename_valid  wine_valid_preprocess_P1.csv -y target
 """
@@ -142,7 +142,7 @@ def answer_exercice_8():
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
-# source venv_num_template/bin/activate 
+# source venv_num_template/bin/activate
 
 model="$(ls {{package_name}}-models/model_ridge_classifier | grep model_ridge_classifier_ | tail -n 1)"
 
@@ -176,9 +176,10 @@ def preprocess_P3() -> ColumnTransformer:
         ColumnTransformer: The pipeline
     '''
     numeric_pipeline = make_pipeline(SimpleImputer(strategy="median"), MinMaxScaler())
+    cat_pipeline = make_pipeline(SimpleImputer(strategy='most_frequent'), OneHotEncoder(handle_unknown='ignore'))
     transformers = [
-        ("num", numeric_pipeline, make_column_selector(dtype_include="number")),
-        ("cat", FunctionTransformer(lambda x: x), make_column_selector(pattern="cultivar")),
+        ("num", numeric_pipeline, make_column_selector(pattern="^(?!cultivar).*$", dtype_include="number")),
+        ("cat", cat_pipeline, make_column_selector(pattern="cultivar")),
     ]
     pipeline = ColumnTransformer(transformers, sparse_threshold=0, remainder="drop")
     return pipeline
@@ -192,7 +193,7 @@ def answer_exercice_9_scripts():
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
-# source venv_num_template/bin/activate 
+# source venv_num_template/bin/activate
 
 ### train / valid / test splits
 python {{package_name}}-scripts/utils/0_split_train_valid_test.py -f wine_reg.csv --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --overwrite
