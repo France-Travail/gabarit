@@ -48,8 +48,8 @@ altair==4.2.0
 # Optionnals - code quality & cie
 mypy==0.971
 types-setuptools==65.3.0
-flake8==5.0.
-4black==22.8.0
+flake8==5.0.4
+black==22.8.0
 isort==5.10.1
 nose==1.3.7
 nose-exclude==0.5.0

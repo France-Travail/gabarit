@@ -210,7 +210,7 @@ class ModelPyTorch(ModelClass):
         if y_valid is None:
             self.logger.info(f"No validation set, we split the train set : ({round((1 - self.validation_split) * 100, 2)} % train, {round((self.validation_split) * 100, 2)} % validation)")
             p = np.random.permutation(int(len(x_train) * (1 - self.validation_split)))
-            mask = np.ones(len(x_train), np.bool)
+            mask = np.ones(len(x_train), np.bool_)
             mask[p] = 0
             x_valid = x_train[mask]
             y_valid_dummies = y_train_dummies[mask]
