@@ -49,7 +49,8 @@ setup(
     install_requires=[
         'pandas>=1.3,<1.4; python_version < "3.8"',
         'pandas>=1.3,<1.5; python_version >= "3.8"',
-        'numpy~=1.19.2',  # TODO: to be updated once we tensorflow is updated too
+        'numpy>=1.19,<1.22; python_version < "3.8"',
+        'numpy>=1.19,<1.24; python_version >= "3.8"',
         'scikit_learn>=1.0.0,<1.1; python_version < "3.8"',
         'scikit_learn>=1.0.0,<1.2; python_version >= "3.8"',
         'lightgbm>=2.3.0,<3.4',
@@ -62,7 +63,7 @@ setup(
         'mlflow>=1.11,<1.29',
     ],
     extras_require={
-        "tensorflow": ["tensorflow==2.6.2"],
+        "tensorflow": ["tensorflow==2.10.0"],
     }
     # pip install {{package_name}} || pip install {{package_name}}[tensorflow]
 )
