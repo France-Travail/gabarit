@@ -59,7 +59,7 @@ setup(
         'matplotlib>=3.0.3,<3.6',
         'seaborn>=0.9.0,<0.13',
         'dill>=0.3.2,<0.3.6',
-        'protobuf==3.20.1',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+        'protobuf>=3.9.2,<3.20',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
         'mlflow>=1.11,<1.29',
     ],
     extras_require={
