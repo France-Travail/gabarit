@@ -97,3 +97,23 @@ model="$(ls {{package_name}}-models/model_transfer_learning_classifier | grep mo
 python {{package_name}}-scripts/3_predict.py -m "$model" -d dataset_v3_test_preprocess_convert_rgb
 """
     )
+
+
+def answer_exercice_7():
+    return print_answer(
+        f"""
+# do not forget to activate your virtual environment
+# source venv_num_template/bin/activate 
+
+# Train / Validation / Test splits
+python {{package_name}}-scripts/utils/0_split_train_valid_test.py -d dataset_object_detection
+
+# Training
+python {{package_name}}-scripts/2_training_object_detector.py -d dataset_object_detection_train --directory_valid dataset_object_detection_valid
+
+# Prediction
+model="$(ls {{package_name}}-models/model_detectron_faster_rcnn_object_detector | grep model_detectron_faster_rcnn_object_detector_ | tail -n 1)"
+
+python {{package_name}}-scripts/3_predict.py -m "$model" -d dataset_object_detection_test
+"""
+    )

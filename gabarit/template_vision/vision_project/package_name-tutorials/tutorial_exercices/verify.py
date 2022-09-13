@@ -8,16 +8,17 @@ from {{package_name}}.utils import get_data_path, get_models_path
 DATA_PATH = Path(get_data_path())
 MODELS_PATH = Path(get_models_path())
 
-DATASET_NAME = "dataset_v3"
+DATASET_CLASSIF = "dataset_v3"
+DATASET_OBJ_DETECT = "dataset_object_detection"
 
 
 def verify_exercice_1():
     """Verify first exercice"""
-    dataset_path = DATA_PATH / DATASET_NAME
+    dataset_path = DATA_PATH / DATASET_CLASSIF
 
-    dataset_train_path = DATA_PATH / (DATASET_NAME + "_train")
-    dataset_valid_path = DATA_PATH / (DATASET_NAME + "_valid")
-    dataset_test_path = DATA_PATH / (DATASET_NAME + "_test")
+    dataset_train_path = DATA_PATH / (DATASET_CLASSIF + "_train")
+    dataset_valid_path = DATA_PATH / (DATASET_CLASSIF + "_valid")
+    dataset_test_path = DATA_PATH / (DATASET_CLASSIF + "_test")
 
     for path in (
         dataset_path,
@@ -68,8 +69,8 @@ def verify_exercice_1():
 
 def verify_exercice_2():
     """Verify second exercice"""
-    dataset_train_sample_path = DATA_PATH / (DATASET_NAME + "_train_3_samples")
-    dataset_test_sample_path = DATA_PATH / (DATASET_NAME + "_test_3_samples")
+    dataset_train_sample_path = DATA_PATH / (DATASET_CLASSIF + "_train_3_samples")
+    dataset_test_sample_path = DATA_PATH / (DATASET_CLASSIF + "_test_3_samples")
 
     for path in (dataset_train_sample_path, dataset_test_sample_path):
         assert path.exists(), f"{path} not found. Did you run 0_create_samples.py ?"
@@ -80,13 +81,13 @@ def verify_exercice_2():
 def verify_exercice_3():
     """Verify second exercice"""
     dataset_train_sample_path = DATA_PATH / (
-        DATASET_NAME + "_train_preprocess_convert_rgb"
+        DATASET_CLASSIF + "_train_preprocess_convert_rgb"
     )
     dataset_valid_sample_path = DATA_PATH / (
-        DATASET_NAME + "_valid_preprocess_convert_rgb"
+        DATASET_CLASSIF + "_valid_preprocess_convert_rgb"
     )
     dataset_test_sample_path = DATA_PATH / (
-        DATASET_NAME + "_test_preprocess_convert_rgb"
+        DATASET_CLASSIF + "_test_preprocess_convert_rgb"
     )
 
     for path in (
@@ -117,7 +118,7 @@ def verify_exercice_4():
         config = json.load(f)
 
     directory_valid = config.get("directory_valid", None)
-    directory_valid_expected = f"{DATASET_NAME}_valid_preprocess_convert_rgb"
+    directory_valid_expected = f"{DATASET_CLASSIF}_valid_preprocess_convert_rgb"
 
     if directory_valid != directory_valid_expected:
         raise AssertionError(
@@ -158,7 +159,7 @@ def verify_exercice_5():
         config = json.load(f)
 
     directory_valid = config.get("directory_valid", None)
-    directory_valid_expected = f"{DATASET_NAME}_valid_preprocess_convert_rgb"
+    directory_valid_expected = f"{DATASET_CLASSIF}_valid_preprocess_convert_rgb"
 
     if directory_valid != directory_valid_expected:
         raise AssertionError(
@@ -182,13 +183,13 @@ def verify_exercice_5():
 def verify_exercice_6():
     """Verify sixth exercice"""
     predictions_folder = (
-        DATA_PATH / "predictions" / f"{DATASET_NAME}_test_preprocess_convert_rgb"
+        DATA_PATH / "predictions" / f"{DATASET_CLASSIF}_test_preprocess_convert_rgb"
     )
 
     if not predictions_folder.exists():
         raise AssertionError(
             f"No folder {predictions_folder}. "
-            f"Did you run 3_predict.py on {DATASET_NAME}_test ?"
+            f"Did you run 3_predict.py on {DATASET_CLASSIF}_test ?"
         )
 
     predictions = sorted(predictions_folder.glob("predictions_*"))
@@ -196,7 +197,7 @@ def verify_exercice_6():
     if not predictions:
         raise AssertionError(
             f"No prediction found. Did you run 3_predict.py on "
-            f"{DATASET_NAME}_test_preprocess_convert_rgb ?"
+            f"{DATASET_CLASSIF}_test_preprocess_convert_rgb ?"
         )
 
     predictions_found = False
@@ -228,3 +229,65 @@ def verify_exercice_6():
     confusion_matrixt_img.show()
 
     print("\n", confusion_matrix)
+
+
+def verify_exercice_7():
+    """Verify second exercice"""
+    # Train / Validation / Test splits
+    train_path = DATA_PATH / (DATASET_OBJ_DETECT + "_train")
+    valid_path = DATA_PATH / (DATASET_OBJ_DETECT + "_valid")
+    test_path = DATA_PATH / (DATASET_OBJ_DETECT + "_test")
+
+    for path in (train_path, valid_path, test_path):
+        assert (
+            path.exists()
+        ), f"{path} not found. Did you run 0_split_train_valid_test.py ?"
+
+    # Training
+    models_folders = sorted(
+        MODELS_PATH.glob(
+            "model_detectron_faster_rcnn_object_detector/"
+            "model_detectron_faster_rcnn_object_detector_*"
+        )
+    )
+
+    if not models_folders:
+        raise AssertionError(
+            "No model_detectron_faster_rcnn_object_detector found. "
+            "Did you run 2_training_object_detector.py ?"
+        )
+
+    # Prediction
+    predictions_folder = DATA_PATH / "predictions" / f"{DATASET_OBJ_DETECT}_test"
+
+    if not predictions_folder.exists():
+        raise AssertionError(
+            f"No folder {predictions_folder}. "
+            f"Did you run 3_predict.py on {DATASET_CLASSIF}_test ?"
+        )
+
+    predictions = sorted(predictions_folder.glob("predictions_*"))
+
+    if not predictions:
+        raise AssertionError(
+            f"No prediction found. Did you run 3_predict.py on {DATASET_CLASSIF}_test ?"
+        )
+
+    predictions_found = False
+    for last_predictions in predictions:
+        last_predictions_config = last_predictions / "configurations.json"
+
+        with last_predictions_config.open("r") as f:
+            config = json.load(f)
+
+        if config["model_name"] == "model_detectron_faster_rcnn_object_detector":
+            predictions_found = True
+            break
+
+    if not predictions_found:
+        raise AssertionError(
+            "No predictions found for model_detectron_faster_rcnn_object_detector. "
+            "Did you use this model to make your predictions ?"
+        )
+
+    print("Exercice 7 : OK ✔")

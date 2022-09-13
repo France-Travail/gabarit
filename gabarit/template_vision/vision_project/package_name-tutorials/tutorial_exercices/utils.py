@@ -9,14 +9,23 @@ from urllib.parse import urlparse
 
 import requests
 from IPython import display
+from PIL import Image, UnidentifiedImageError
 from {{package_name}}.utils import get_data_path
 from tqdm import tqdm
 
 DATA_PATH = get_data_path()
-VISION_DATASET_URL = (
+CLASSIF_DATA_URL = (
     "https://api.github.com/repos/OSS-Pole-Emploi/"
     "gabarit/contents/gabarit/template_vision/vision_data/dataset_v3"
 )
+OBJ_DETECT_DATA_URL = (
+    "https://api.github.com/repos/OSS-Pole-Emploi/"
+    "gabarit/contents/gabarit/template_vision/vision_data/dataset_object_detection"
+)
+
+IMAGE_EXTS = {
+    ex[1:] for ex, f in Image.registered_extensions().items() if f in Image.OPEN
+}
 
 comment_pattern = re.compile(r"#")
 
@@ -68,7 +77,13 @@ def display_source(function, strip_comments=True) -> None:
     )
 
 
-def download_file(url: str, output_path: str = None, override: bool = False) -> None:
+def download_file(
+    url: str,
+    output_path: str = None,
+    override: bool = False,
+    verify_image: bool = True,
+    nb_retry: int = 2,
+) -> None:
     """Download file and URL"""
 
     if output_path is None:
@@ -76,13 +91,38 @@ def download_file(url: str, output_path: str = None, override: bool = False) -> 
         filename = filename.rsplit(".", 1)[0]
         output_path = os.path.join(get_data_path(), filename)
 
+    if isinstance(output_path, Path):
+        ext = output_path.name.rsplit(".", 1)[-1]
+    else:
+        ext = output_path.rsplit(".", 1)[-1]
+
     if os.path.exists(output_path) and not override:
         return None
 
-    with open(output_path, "wb") as fd:
-        r = requests.get(url, stream=True)
-        for chunk in r.iter_content(chunk_size=128):
-            fd.write(chunk)
+    if not verify_image or ext not in IMAGE_EXTS:
+        nb_retry = 0
+    else:
+        nb_retry = max(0, nb_retry)
+
+    while nb_retry >= 0:
+        with open(output_path, "wb") as fd:
+            r = requests.get(url, stream=True)
+            for chunk in r.iter_content(chunk_size=1024):
+                fd.write(chunk)
+
+        if verify_image and ext in IMAGE_EXTS:
+            try:
+                with Image.open(output_path):
+                    break
+            except UnidentifiedImageError:
+                if nb_retry > 0:
+                    print(f"Download {url} failed. Number of retry : {nb_retry}")
+                else:
+                    print(f"WARNING : {url} could not be downloaded.")
+                    os.remove(output_path)
+                pass
+
+        nb_retry -= 1
 
 
 def get_relative_path(path: str, base_path: str):
@@ -196,6 +236,11 @@ def github_download_folder(
         download_file(file["download_url"], file_path, override=override)
 
 
-def github_download_vision_dataset(override=False):
+def github_download_classification_dataset(override=False):
     """Download the vision dataset for classification"""
-    return github_download_folder(VISION_DATASET_URL, DATA_PATH, override=override)
+    return github_download_folder(CLASSIF_DATA_URL, DATA_PATH, override=override)
+
+
+def github_download_object_detection_dataset(override=False):
+    """Download the vision dataset for object detection"""
+    return github_download_folder(OBJ_DETECT_DATA_URL, DATA_PATH, override=override)
