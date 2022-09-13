@@ -404,6 +404,7 @@ def predict(content: pd.DataFrame, model, **kwargs) -> Union[float, str, tuple, 
     predictions = model.inverse_transform(predictions)
 
     # Return only first element if dataframe has one row
+    # TODO: Shouldn't we return the full prediction even if one row ?
     if content.shape[0] == 1:
         predictions = predictions[0]
 

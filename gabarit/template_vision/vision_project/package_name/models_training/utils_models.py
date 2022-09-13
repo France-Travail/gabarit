@@ -341,6 +341,7 @@ def predict(data_input: Union[str, List[str], np.ndarray, pd.DataFrame], model, 
     # Return result
     ##############################################
 
+    # TODO: Shouldn't we return the full prediction even if one element ?
     # Return one element if only one input, else return all
     if return_proba:
         return probas[0] if len(probas) == 1 else probas
@@ -364,6 +365,7 @@ def predict_with_proba(data_input: Union[str, List[str], np.ndarray, pd.DataFram
         model_conf (dict): Model configurations
     Raises:
         NotImplementedError: If model is object detection task
+        ValueError : If predict does not return an np.ndarray
     Returns:
         str: prediction
         float: probability
@@ -374,21 +376,25 @@ def predict_with_proba(data_input: Union[str, List[str], np.ndarray, pd.DataFram
         raise NotImplementedError("`predict_with_proba` is not yet implemented for object detection task")
 
     # Get probas
-    probas: np.ndarray = predict(data_input, model, model_conf, return_proba=True)
+    probas = predict(data_input, model, model_conf, return_proba=True)
+
+    # Check type
+    if type(probas) != np.ndarray:
+        raise ValueError("Internal error - probas should be an np.ndarray.")
 
     # Manage cases with only one element
     if len(probas.shape) == 1:
         predictions = model.get_classes_from_proba(np.expand_dims(probas, 0))
         predictions = model.inverse_transform(predictions)[0]
-        probas = max(probas)
+        max_probas = max(probas)
     # Several elements
     else:
         predictions = model.get_classes_from_proba(probas)
         predictions = model.inverse_transform(predictions)
-        probas = list(probas.max(axis=1))
+        max_probas = list(probas.max(axis=1))
 
     # Return
-    return predictions, probas
+    return predictions, max_probas
 
 
 if __name__ == '__main__':
