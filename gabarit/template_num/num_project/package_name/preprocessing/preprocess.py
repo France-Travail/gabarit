@@ -152,6 +152,8 @@ def retrieve_columns_from_pipeline(df: pd.DataFrame, pipeline: ColumnTransformer
     return df
 
 
+# TODO: Use new get_feature_names_out functionality
+# https://scikit-learn.org/stable/auto_examples/release_highlights/plot_release_highlights_1_0_0.html#feature-names-support
 def get_ct_feature_names(ct: ColumnTransformer) -> list:
     '''Gets the names of the columns when considering a fitted ColumnTransfomer
     From: https://stackoverflow.com/questions/57528350/can-you-consistently-keep-track-of-column-labels-using-sklearns-transformer-api
@@ -179,7 +181,7 @@ def get_ct_feature_names(ct: ColumnTransformer) -> list:
                 features_out = get_feature_out(estimator, features)
             output_features.extend(features_out)
         elif estimator == 'passthrough':
-            output_features.extend(ct._feature_names_in[features])
+            output_features.extend(ct.feature_names_in_[features])
 
     return output_features
 

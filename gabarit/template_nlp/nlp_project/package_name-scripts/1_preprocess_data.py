@@ -109,7 +109,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filenames', nargs='+', required=True, help='Datasets filenames (actually paths relative to {{package_name}}-data).')
     parser.add_argument('-p', '--preprocessing', default=None, help='Preprocessing to be applied. All preprocessings are applied if None.')
-    parser.add_argument('--input_col', default=None, help='Column to be preprocessed')
+    parser.add_argument('--input_col', default=None, required=True, help='Column to be preprocessed')
     parser.add_argument('--sep', default='{{default_sep}}', help="Separator to use with the .csv files.")
     parser.add_argument('--encoding', default="{{default_encoding}}", help="Encoding to use with the .csv files.")
     args = parser.parse_args()

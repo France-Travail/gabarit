@@ -13,7 +13,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-# Ex: streamlit run 5_demonstrateur.py
+# Ex: streamlit run 5_demonstrator.py
 
 
 import os
@@ -63,7 +63,7 @@ except ImportError as e:
 
 if not st._is_running_with_streamlit:
     logger.error('This script should not be run directly with python, but via streamlit')
-    logger.error('e.g. "streamlit run 5_demonstrateur.py')
+    logger.error('e.g. "streamlit run 5_demonstrator.py')
     sys.exit("Streamlit not started")
 
 

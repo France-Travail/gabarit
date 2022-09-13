@@ -515,7 +515,7 @@ class ModelClassTests(unittest.TestCase):
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
             configs = json.load(f)
         self.assertEqual(configs['test'], 8)
-        self.assertTrue('mainteners' in configs.keys())
+        self.assertTrue('maintainers' in configs.keys())
         self.assertTrue('date' in configs.keys())
         self.assertTrue('package_version' in configs.keys())
         self.assertEqual(configs['package_version'], utils.get_package_version())
@@ -555,7 +555,7 @@ class ModelClassTests(unittest.TestCase):
 
         # Nominal case
         json_dict = {
-            "mainteners": "c'est nous",
+            "maintainers": "c'est nous",
             "date": "01/01/1970 - 00:00:00",
             "bruit": "toto",
             "package_version": "0.0.8",
@@ -576,8 +576,8 @@ class ModelClassTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'proprietes.json')))
         with open(os.path.join(model.model_dir, 'proprietes.json'), 'r', encoding='{{default_encoding}}') as f:
             proprietes = json.load(f)
-        self.assertTrue('mainteners' in proprietes.keys())
-        self.assertEqual(proprietes['mainteners'], "c'est nous")
+        self.assertTrue('maintainers' in proprietes.keys())
+        self.assertEqual(proprietes['maintainers'], "c'est nous")
         self.assertTrue('date' in proprietes.keys())
         self.assertEqual(proprietes['date'], "01/01/1970 - 00:00:00")
         self.assertTrue('package_version' in proprietes.keys())
@@ -596,7 +596,7 @@ class ModelClassTests(unittest.TestCase):
 
         # Same, mais via la fonction save
         json_dict = {
-            "mainteners": "c'est nous",
+            "maintainers": "c'est nous",
             "date": "01/01/1970 - 00:00:00",
             "bruit": "toto",
             "package_version": "0.0.8",
@@ -617,8 +617,8 @@ class ModelClassTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'proprietes.json')))
         with open(os.path.join(model.model_dir, 'proprietes.json'), 'r', encoding='{{default_encoding}}') as f:
             proprietes = json.load(f)
-        self.assertTrue('mainteners' in proprietes.keys())
-        self.assertEqual(proprietes['mainteners'], "c'est nous")
+        self.assertTrue('maintainers' in proprietes.keys())
+        self.assertEqual(proprietes['maintainers'], "c'est nous")
         self.assertTrue('date' in proprietes.keys())
         self.assertEqual(proprietes['date'], "01/01/1970 - 00:00:00")
         self.assertTrue('package_version' in proprietes.keys())
@@ -648,7 +648,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'proprietes.json')))
         with open(os.path.join(model.model_dir, 'proprietes.json'), 'r', encoding='{{default_encoding}}') as f:
             proprietes = json.load(f)
-        self.assertFalse('mainteners' in proprietes.keys())
+        self.assertFalse('maintainers' in proprietes.keys())
         self.assertFalse('date' in proprietes.keys())
         self.assertFalse('package_version' in proprietes.keys())
         self.assertFalse('model_name' in proprietes.keys())

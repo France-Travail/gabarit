@@ -347,7 +347,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
             configs = json.load(f)
         self.assertEqual(configs['test'], 8)
-        self.assertTrue('mainteners' in configs.keys())
+        self.assertTrue('maintainers' in configs.keys())
         self.assertTrue('date' in configs.keys())
         self.assertTrue('package_version' in configs.keys())
         self.assertEqual(configs['package_version'], utils.get_package_version())
