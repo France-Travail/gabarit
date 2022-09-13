@@ -37,6 +37,9 @@ from test_template_nlp.models_training import (model_tfidf_svm, model_tfidf_gbt,
                                                model_embedding_cnn, model_pytorch_transformers,
                                                utils_models)
 
+def remove_dir(path):
+    if os.path.isdir(path): shutil.rmtree(path)
+
 
 class Case1_e2e_pipeline(unittest.TestCase):
     '''Class to test the project end to end'''
@@ -276,6 +279,9 @@ def test_model_mono_class_mono_label(test_class, test_model):
     test_class.assertEqual([list(_) for _ in top_n_proba], [[probas[0][index_non], probas[0][index_oui]], [probas[1][index_oui], probas[1][index_non]]])
     # inverse_transform
     test_class.assertEqual(list(test_model.inverse_transform(preds)), ['non', 'oui'])
+
+    # Remove dir
+    remove_dir(test_model.model_dir)
 
 
 class Case2_MonoClassMonoLabel(unittest.TestCase):
@@ -793,6 +799,9 @@ def test_model_mono_class_multi_label(test_class, test_model):
         test_model.get_top_n_from_proba(probas, n=2)  # Does not work with multi-labels
     # inverse_transform
     test_class.assertEqual(list(test_model.inverse_transform(preds)), [(), ('y_col_1',), ('y_col_2',), ('y_col_1', 'y_col_2')])
+
+    # Remove dir
+    remove_dir(test_model.model_dir)
 
 
 class Case3_MonoClassMultiLabel(unittest.TestCase):
@@ -1352,6 +1361,9 @@ def test_model_multi_class_mono_label(test_class, test_model):
     test_class.assertEqual([_[0] for _ in top_n_proba], [probas[0][index_none], probas[1][index_a], probas[2][index_b], probas[3][index_both]])
     # inverse_transform
     test_class.assertEqual(list(test_model.inverse_transform(preds)), ['none', 'a', 'b', 'both'])
+
+    # Remove dir
+    remove_dir(test_model.model_dir)
 
 
 class Case4_MultiClassMonoLabel(unittest.TestCase):

@@ -42,6 +42,10 @@ from test_template_num.models_training.regressors import (model_rf_regressor, mo
                                                           model_sgd_regressor, model_knn_regressor, model_pls_regressor,
                                                           model_gbt_regressor, model_xgboost_regressor, model_lgbm_regressor)
 
+def remove_dir(path):
+    if os.path.isdir(path): shutil.rmtree(path)
+
+
 class Case1_e2e_pipeline(unittest.TestCase):
     '''Class to test the project end to end'''
 
@@ -420,6 +424,9 @@ def test_model_mono_class_mono_label(test_class, test_model):
     test_class.assertEqual([list(_) for _ in top_n_proba], [[probas[0][index_non], probas[0][index_oui]], [probas[1][index_oui], probas[1][index_non]]])
     # inverse_transform
     test_class.assertEqual(list(test_model.inverse_transform(preds)), ['non', 'oui'])
+
+    # Remove dir
+    remove_dir(test_model.model_dir)
 
 
 class Case2_MonoClassMonoLabel(unittest.TestCase):
@@ -1081,6 +1088,9 @@ def test_model_mono_class_multi_label(test_class, test_model):
     # inverse_transform
     test_class.assertEqual(list(test_model.inverse_transform(preds)), [(), ('y_col_1',), ('y_col_2',), ('y_col_1', 'y_col_2')])
 
+    # Remove dir
+    remove_dir(test_model.model_dir)
+
 
 class Case3_MonoClassMultiLabel(unittest.TestCase):
     '''Class to test the mono-class / multi-labels case'''
@@ -1546,6 +1556,9 @@ def test_model_multi_class_mono_label(test_class, test_model):
     test_class.assertEqual([_[0] for _ in top_n_proba], [probas[0][index_none], probas[1][index_a], probas[2][index_b], probas[3][index_both]])
     # inverse_transform
     test_class.assertEqual(list(test_model.inverse_transform(preds)), ['none', 'a', 'b', 'both'])
+
+    # Remove dir
+    remove_dir(test_model.model_dir)
 
 
 class Case4_MultiClassMonoLabel(unittest.TestCase):
@@ -2167,6 +2180,9 @@ def test_model_mono_output_regression(test_class, test_model):
         probas2 = test_model.predict(df_input_preds_prep, return_proba=True)
     # inverse_transform
     test_class.assertEqual(list(test_model.inverse_transform(preds)), list(preds))
+
+    # Remove dir
+    remove_dir(test_model.model_dir)
 
 
 class Case5_MonoOutputRegression(unittest.TestCase):

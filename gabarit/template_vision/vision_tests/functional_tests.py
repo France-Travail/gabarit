@@ -44,6 +44,10 @@ from test_template_vision.models_training.classifiers.model_transfer_learning_cl
 from test_template_vision.models_training.object_detectors.model_detectron_faster_rcnn import ModelDetectronFasterRcnnObjectDetector
 
 
+def remove_dir(path):
+    if os.path.isdir(path): shutil.rmtree(path)
+
+
 class Case1_e2e_pipeline(unittest.TestCase):
     '''Class to test the project end to end'''
 
@@ -662,6 +666,9 @@ def test_model_mono_class_mono_label(test_class, test_model):
     # inverse_transform
     test_class.assertEqual(list(test_model.inverse_transform(preds)), ['Un', 'Zero'])
 
+    # Remove dir
+    remove_dir(test_model.model_dir)
+
 
 class Case2_MonoClassMonoLabel(unittest.TestCase):
     '''Class to test the mono-class / mono-label case'''
@@ -845,6 +852,9 @@ def test_model_multi_class_mono_label(test_class, test_model):
     # inverse_transform
     test_class.assertEqual(list(test_model.inverse_transform(preds)), ['Quatre', 'Un', 'Zero'])
 
+    # Remove dir
+    remove_dir(test_model.model_dir)
+
 
 class Case3_MultiClassMonoLabel(unittest.TestCase):
     '''Class to test the multi-classes / mono-label case'''
@@ -942,6 +952,9 @@ def test_model_object_detector(test_class, test_model):
     test_class.assertEqual(len(test_model.list_classes), 3)
     # For now, we have not identified suitable performance test sufficiently "fast"
     # Thus, we prefer to do fast training and skip the performances tests
+
+    # Remove dir
+    remove_dir(test_model.model_dir)
 
 
 class Case4_ObjectDetection(unittest.TestCase):
