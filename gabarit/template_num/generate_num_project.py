@@ -39,13 +39,17 @@ def main() -> None:
     parser.add_argument('--upload', '--upload_intructions', default=os.path.join(ROOT_DIR, 'default_model_upload_instructions.md'),
                         help='Markdown file with models upload instructions (relative or absolute).')
     parser.add_argument('--dvc', '--dvc_config', default=None, help='DVC configuration file to use (relative or absolute).')
+    parser.add_argument('--without_tutorials', dest='include_tutorials', action='store_false', help="If tutorials should NOT be included.")
+    parser.set_defaults(include_tutorials=True)
     args = parser.parse_args()
     # Generate project
-    generate(project_name=args.name, project_path=args.path, config_path=args.config, upload_intructions_path=args.upload, dvc_config_path=args.dvc)
+    generate(project_name=args.name, project_path=args.path, config_path=args.config, upload_intructions_path=args.upload,
+             dvc_config_path=args.dvc, include_tutorials=args.include_tutorials)
 
 
 def generate(project_name: str, project_path: str, config_path: str,
-             upload_intructions_path: str, dvc_config_path: Union[str, None] = None) -> None:
+             upload_intructions_path: str, dvc_config_path: Union[str, None] = None,
+             include_tutorials: bool = True) -> None:
     '''Generates a Numeric python template from arguments.
 
     Args:
@@ -56,6 +60,7 @@ def generate(project_name: str, project_path: str, config_path: str,
             The value `model_dir_path_identifier` will be automatically updated for each model with its directory path
     Kwargs:
         dvc_config_path (str): DVC configuration filepath
+        include_tutorials (bool): whether the tutorials should be included
     Raises:
         FileNotFoundError: If configuration path does not exists
         FileNotFoundError: If upload instructions path does not exists
@@ -98,6 +103,12 @@ def generate(project_name: str, project_path: str, config_path: str,
         # Copy main folder to be rendered
         template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'num_project')
         copy_tree(template_dir, tmp_folder)
+
+        # Remove tutorials if not wanted
+        if not include_tutorials:
+            tutorials_path = os.path.join(tmp_folder, 'package_name-tutorials')
+            if os.path.exists(tutorials_path):
+                rmtree(tutorials_path)
 
         # Copy models upload instructions
         ressources_path = os.path.join(tmp_folder, f'{project_name}-ressources')
