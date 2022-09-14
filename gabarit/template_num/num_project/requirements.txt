@@ -1,10 +1,11 @@
 # Data manipulation
-numpy~=1.19.2  # TODO: to be updated once tensorflow is updated too
+numpy==1.21.6; python_version < "3.8"
+numpy==1.23.2; python_version >= "3.8"
 pandas==1.3.5; python_version < "3.8"
 pandas==1.4.4; python_version >= "3.8"
 
 # Models
-tensorflow==2.6.2
+tensorflow==2.10.0
 scikit_learn==1.0.2; python_version < "3.8"
 scikit_learn==1.1.2; python_version >= "3.8"
 lightgbm==3.3.2
@@ -18,7 +19,7 @@ yellowbrick==1.5
 # Others
 dill==0.3.5.1
 # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
-protobuf==3.20.1
+protobuf==3.19.4  # Latest available version for tensorflow 2.10
 mlflow==1.28.0
 
 # Optionnals - useless in prod.
@@ -26,14 +27,14 @@ pydot==1.4.1  # Needed to plot models architecture
 lime==0.2.0.1  # Needed to get a model explanation
 
 # Optionnals - streamlit POC
-streamlit==1.10.0  # TODO: to be updated once tensorflow is updated too
+streamlit==1.12.2
 altair==4.2.0
 
 # Optionnals - code quality & cie
-mypy==0.910  # TODO: to be updated once tensorflow is updated too
+mypy==0.971
 types-setuptools==65.3.0
 flake8==5.0.4
-black==21.4b2  # TODO: to be updated once tensorflow is updated too
+black==22.8.0
 isort==5.10.1
 nose==1.3.7
 nose-exclude==0.5.0

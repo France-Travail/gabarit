@@ -329,7 +329,8 @@ class ModelClass:
                 self.logger.warning("Warning, the attribute x_col was not given when creating the model")
                 self.logger.warning("We set it now with the input data of the fit function")
                 if hasattr(x_input, 'columns'):
-                    self.x_col = list(x_input.columns)
+                    # TODO : tmp mypy fix https://github.com/python/mypy/pull/13544
+                    self.x_col = list(x_input.columns)  # type: ignore
                 else:
                     self.x_col = [_ for _ in range(x_input_shape)]
             # Same thing for y_col
@@ -337,7 +338,8 @@ class ModelClass:
                 self.logger.warning("Warning, the attribute y_col was not given when creating the model")
                 self.logger.warning("We set it now with the input data of the fit function")
                 if hasattr(y_input, 'columns'):
-                    self.y_col = list(y_input.columns)
+                    # TODO : tmp mypy fix https://github.com/python/mypy/pull/13544
+                    self.y_col = list(y_input.columns)  # type: ignore
                 else:
                     self.y_col = [_ for _ in range(y_input_shape)]
                 # If there is only one element, we get rid of the list
@@ -363,14 +365,16 @@ class ModelClass:
             if hasattr(x_input, 'columns'):
                 can_reorder = True
                 for col in self.x_col:
-                    if col not in x_input.columns:
+                    # TODO : tmp mypy fix https://github.com/python/mypy/pull/13544
+                    if col not in x_input.columns:  # type: ignore
                         can_reorder = False
                         self.logger.warning(f"The column {col} is missing from the input (x)")
                 # If we can't reorder, we write a warning message, otherwise we check if it is needed
                 if not can_reorder:
                     self.logger.warning("The names of the columns do not match. The process continues since there is the right number of columns")
                 else:
-                    if list(x_input.columns) != self.x_col:
+                    # TODO : tmp mypy fix https://github.com/python/mypy/pull/13544
+                    if list(x_input.columns) != self.x_col:  # type: ignore
                         self.logger.warning("The input columns (x) are not in the right order -> automatic reordering !")
                         x_input = x_input[self.x_col]
             else:
@@ -390,14 +394,16 @@ class ModelClass:
                     can_reorder = True
                     target_cols = self.y_col if type(self.y_col) == list else [self.y_col]
                     for col in target_cols:
-                        if col not in y_input.columns:
+                        # TODO : tmp mypy fix https://github.com/python/mypy/pull/13544
+                        if col not in y_input.columns:  # type: ignore
                             can_reorder = False
                             self.logger.warning(f"The column {col} is missing from the input (y)")
                     # If can't reorder we write a warning message, otherwise we check if it is needed
                     if not can_reorder:
                         self.logger.warning("The names of the columns do not match. The process continues since there is the right number of columns")
                     else:
-                        if list(y_input.columns) != target_cols:
+                        # TODO : tmp mypy fix https://github.com/python/mypy/pull/13544
+                        if list(y_input.columns) != target_cols:  # type: ignore
                             self.logger.warning("The input columns (y) are not in the right order -> automatic reordering !")
                             y_input = y_input[target_cols]
                 else:

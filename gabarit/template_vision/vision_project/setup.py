@@ -49,16 +49,17 @@ setup(
     install_requires=[
         'pandas>=1.3,<1.4; python_version < "3.8"',
         'pandas>=1.3,<1.5; python_version >= "3.8"',
-        'numpy~=1.19.2',  # TODO: to be updated once we tensorflow is updated too
+        'numpy>=1.19,<1.22; python_version < "3.8"',
+        'numpy>=1.19,<1.24; python_version >= "3.8"',
         'scikit_learn>=1.0.0,<1.1; python_version < "3.8"',
         'scikit_learn>=1.0.0,<1.2; python_version >= "3.8"',
         'matplotlib>=3.0.3,<3.6',
         'seaborn>=0.9.0,<0.13',
         'opencv-python-headless==4.5.5.62',
         'dill>=0.3.2,<0.3.6',
-        'protobuf==3.20.1',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+        'protobuf>=3.9.2,<3.20',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
         'mlflow>=1.11,<1.29',
-        'tensorflow==2.6.2',
+        'tensorflow==2.9.2',  # Issue with serialization of transfer learning models. Can't upgrade to 2.10.x so far.
         'pycocotools==2.0.4',
         'tqdm>=4.40,<4.65',
     ],

@@ -194,7 +194,8 @@ class ModelKeras(ModelClass):
                 y_train = y_train
                 y_valid = y_valid
                 if hasattr(y_train, 'columns'):
-                    list_classes = list(y_train.columns)
+                    # TODO : tmp mypy fix https://github.com/python/mypy/pull/13544
+                    list_classes = list(y_train.columns)  # type: ignore
                 else:
                     self.logger.warning(
                         "Can't read the name of the columns of y_train -> inverse transformation won't be possible"

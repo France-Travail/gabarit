@@ -326,6 +326,7 @@ def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
     return model, configs
 
 
+# TODO: Shouldn't content be an iterable & shouldn't we return a list ?
 def predict(content: str, model, model_conf: dict, **kwargs) -> Union[str, tuple]:
     '''Gets predictions of a model on a content
 

@@ -115,7 +115,8 @@ class ModelXgboostClassifier(ModelClassifierMixin, ModelClass):
         # Gets the input columns
         original_list_classes: Optional[List[Any]] = None  # None if no 'columns' attribute or mono-label
         if self.multi_label and hasattr(y_train, 'columns'):
-            original_list_classes = list(y_train.columns)
+            # TODO : tmp mypy fix https://github.com/python/mypy/pull/13544
+            original_list_classes = list(y_train.columns)  # type: ignore
 
         # Shuffle x, y if wanted
         if with_shuffle:
