@@ -219,7 +219,7 @@ def verify_exercice_6():
 
 
 def verify_exercice_7():
-    """Verify second exercice"""
+    """Verify seventh exercice"""
     # Train / Validation / Test splits
     train_path = DATA_PATH / (DATASET_OBJ_DETECT + "_train")
     valid_path = DATA_PATH / (DATASET_OBJ_DETECT + "_valid")
@@ -250,14 +250,14 @@ def verify_exercice_7():
     if not predictions_folder.exists():
         raise AssertionError(
             f"No folder {predictions_folder}. "
-            f"Did you run 3_predict.py on {DATASET_CLASSIF}_test ?"
+            f"Did you run 3_predict.py on {DATASET_OBJ_DETECT}_test ?"
         )
 
     predictions = sorted(predictions_folder.glob("predictions_*"))
 
     if not predictions:
         raise AssertionError(
-            f"No prediction found. Did you run 3_predict.py on {DATASET_CLASSIF}_test ?"
+            f"No prediction found. Did you run 3_predict.py on {DATASET_OBJ_DETECT}_test ?"
         )
 
     predictions_found = False
