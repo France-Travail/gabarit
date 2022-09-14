@@ -257,8 +257,6 @@ class UtilsModelsTests(unittest.TestCase):
         self.assertEqual([list(_) for _ in new_model.predict_proba(['test', 'toto', 'a'])], [list(_) for _ in model.predict_proba(['test', 'toto', 'a'])])
         remove_dir(model_dir)
 
-        # TODO: test pytorch models ?
-
         # Check errors
         with self.assertRaises(FileNotFoundError):
             utils_models.load_model(model_dir='tototo')

@@ -90,7 +90,6 @@ class Case1_Env(unittest.TestCase):
             returncodes = [0]
         self.assertTrue(subprocess.run(copy_data, shell=True).returncode in returncodes)
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label.csv')))
-        # TODO: Try to load flaubert small for torch tests
 
 
 class Case2_functionals_tests(unittest.TestCase):
@@ -242,34 +241,6 @@ class Case3_unit_tests(unittest.TestCase):
     def test19_test_model_explainer(self):
         '''Launches tests of file model_explainer.py'''
         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_explainer.py', shell=True).returncode, 0)
-
-    def test20_test_pytorch_transformers(self):
-        '''Launches tests of file model_pytorch_transformers.py'''
-        # Run only if transformer loaded locally
-        transformers_path = os.path.join(full_path_lib, 'test_template_nlp-transformers')
-        transformer_path = os.path.join(transformers_path, 'flaubert', 'flaubert_small_cased')
-        # TODO: add flaubert_small_cased download
-        if not os.path.exists(transformer_path):
-            print("WARNING : Can't test the Pytorch Transformer model -> can't find transformer")
-            print("How to use : download flaubert_small_cased in the folder of the module to test")
-            print("We ignore this test.")
-            return None
-        # If available, run the test
-        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_pytorch_transformers.py', shell=True).returncode, 0)
-
-    def test21_test_pytorch_light(self):
-        '''Launches tests of file model_pytorch_light.py'''
-        # Run only if transformer loaded locally
-        transformers_path = os.path.join(full_path_lib, 'test_template_nlp-transformers')
-        transformer_path = os.path.join(transformers_path, 'flaubert', 'flaubert_small_cased')
-        # TODO: add flaubert_small_cased download
-        if not os.path.exists(transformer_path):
-            print("WARNING : Can't test the Pytorch Transformer model -> can't find transformer")
-            print("How to use : download flaubert_small_cased in the folder of the module to test")
-            print("We ignore this test.")
-            return None
-        # If available, run the test
-        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_pytorch_light.py', shell=True).returncode, 0)
 
 
 if __name__ == '__main__':
