@@ -303,21 +303,10 @@ def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
 
     # Load specifics
     hdf5_path = os.path.join(model_path, 'best.hdf5')
-    ckpt_path = os.path.join(model_path, 'best_model.ckpt')
-    pytorch_bin = os.path.join(model_path, 'pytorch_model.bin')
 
     # Check for keras model
     if os.path.exists(hdf5_path):
         model.model = model.reload_model(hdf5_path)
-    # Check for pytorch lightning model
-    elif os.path.exists(ckpt_path):
-        model.model = model.reload_model(ckpt_path)
-        model.model.freeze()  # Do not forget to freeze !
-    # Check for pytorch light model
-    elif os.path.exists(pytorch_bin):
-        model.model = model.reload_model(model_path)
-        model.tokenizer = model.reload_tokenizer(model_path)
-        model.freeze()  # Do not forget to freeze !
 
     # Display if GPU is being used
     model.display_if_gpu_activated()

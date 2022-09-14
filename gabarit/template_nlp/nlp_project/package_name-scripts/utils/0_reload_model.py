@@ -39,11 +39,8 @@ from {{package_name}}.models_training import (model_tfidf_dense,
                                               model_embedding_lstm_attention,
                                               model_embedding_lstm_structured_attention,
                                               model_embedding_lstm_gru_gpu,
-                                              model_pytorch_light,
-                                              model_pytorch_transformers,
                                               utils_models,
-                                              utils_deep_keras,
-                                              utils_deep_torch)
+                                              utils_deep_keras)
 
 # Get logger
 logger = logging.getLogger('{{package_name}}.0_reload_model')
@@ -52,8 +49,7 @@ logger = logging.getLogger('{{package_name}}.0_reload_model')
 def main(model_dir: str, config_file: str = 'configurations.json',
          sklearn_pipeline_file: str = 'sklearn_pipeline_standalone.pkl',
          weights_file: str = 'best.hdf5', tokenizer_file: str = 'embedding_tokenizer.pkl',
-         tfidf_file: str = 'tfidf_standalone.pkl', checkpoint_path: str = 'best_model.ckpt',
-         torch_dir: Union[str, None] = None) -> None:
+         tfidf_file: str = 'tfidf_standalone.pkl') -> None:
     '''Reloads a model
 
     The idea here is to reload a model that was trained on another package version.
@@ -67,8 +63,6 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         weights_file (str): Neural Network weights file name (keras models)
         tokenizer_file (str): Tokenizer file name (models with embeddings)
         tfidf_file (str): TFIDF file name (models with tfidf)
-        checkpoint_path (str): Pytorch lightning checkpoint name (models pytorch)
-        torch_dir (str): Pytorch lightning directory name (models pytorch)
     Raises:
         FileNotFoundError: If model can't be found
         FileNotFoundError: If model's configuration does not exist
@@ -114,8 +108,6 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'model_embedding_lstm_attention': model_embedding_lstm_attention.ModelEmbeddingLstmAttention,
         'model_embedding_lstm_structured_attention': model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention,
         'model_embedding_lstm_gru_gpu': model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu,
-        'model_pytorch_light': model_pytorch_light.ModelPyTorchTransformersLight,
-        'model_pytorch_transformers': model_pytorch_transformers.ModelPyTorchTransformers,
     }
     model_type = configs['model_name']
     if model_type not in model_type_dicts:
@@ -136,8 +128,6 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'hdf5_path': os.path.join(model_path, weights_file) if weights_file is not None else None,
         'tokenizer_path': os.path.join(model_path, tokenizer_file) if tokenizer_file is not None else None,
         'tfidf_path': os.path.join(model_path, tfidf_file) if tfidf_file is not None else None,
-        'checkpoint_path': os.path.join(model_path, checkpoint_path) if checkpoint_path is not None else None,
-        'torch_dir': os.path.join(model_path, torch_dir) if torch_dir is not None else None,
     }
     model.reload_from_standalone(**files_dict)
 
@@ -184,9 +174,7 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--weights_file', default='best.hdf5', help="Neural Network weights file name (keras models)")
     parser.add_argument('--tokenizer_file', default='embedding_tokenizer.pkl', help="Tokenizer file name (models with embeddings)")
     parser.add_argument('--tfidf_file', default='tfidf_standalone.pkl', help="TFIDF file name (models with tfidf)")
-    parser.add_argument('--checkpoint_path', default='best_model.ckpt', help="Pytorch lightning checkpoint name (models pytorch)")
-    parser.add_argument('--torch_dir', default=None, help="Pytorch lightning directory name (models pytorch)")
     args = parser.parse_args()
     main(model_dir=args.model_dir, config_file=args.config_file, weights_file=args.weights_file,
          sklearn_pipeline_file=args.sklearn_pipeline_file, tokenizer_file=args.tokenizer_file,
-         tfidf_file=args.tfidf_file, checkpoint_path=args.checkpoint_path, torch_dir=args.torch_dir)
+         tfidf_file=args.tfidf_file)

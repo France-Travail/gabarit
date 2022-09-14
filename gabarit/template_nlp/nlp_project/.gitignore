@@ -9,7 +9,6 @@ __pycache__
 # Unignore .dvc files
 !{{package_name}}-data/**/*.dvc
 {{package_name}}-models/**
-{{package_name}}-transformers/**
 **/*egg-info*
 nosetests.xml
 .coverage
