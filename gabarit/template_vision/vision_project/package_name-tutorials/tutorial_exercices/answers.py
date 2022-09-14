@@ -15,7 +15,7 @@ def answer_exercice_1():
 # do not forget to activate your virtual environment
 # source venv_num_template/bin/activate 
 
-python {{package_name}}-scripts/utils/0_split_train_valid_test.py -d dataset_v3 --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2  --seed 42 --overwrite
+python {{package_name}}-scripts/utils/0_split_train_valid_test.py -d dataset_v3 --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2
 """
     )
 
