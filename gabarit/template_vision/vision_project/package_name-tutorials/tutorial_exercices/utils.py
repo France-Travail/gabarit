@@ -6,6 +6,7 @@ from pathlib import Path
 from tokenize import COMMENT, tokenize, untokenize
 from typing import List
 from urllib.parse import urlparse
+from urllib.request import urlretrieve
 
 import requests
 from IPython import display
@@ -80,7 +81,7 @@ def display_source(function, strip_comments=True) -> None:
 def download_file(
     url: str,
     output_path: str = None,
-    override: bool = False,
+    overwrite: bool = False,
     verify_image: bool = True,
     nb_retry: int = 2,
 ) -> None:
@@ -96,7 +97,7 @@ def download_file(
     else:
         ext = output_path.rsplit(".", 1)[-1]
 
-    if os.path.exists(output_path) and not override:
+    if os.path.exists(output_path) and not overwrite:
         return None
 
     if not verify_image or ext not in IMAGE_EXTS:
@@ -105,10 +106,7 @@ def download_file(
         nb_retry = max(0, nb_retry)
 
     while nb_retry >= 0:
-        with open(output_path, "wb") as fd:
-            r = requests.get(url, stream=True)
-            for chunk in r.iter_content(chunk_size=1024):
-                fd.write(chunk)
+        urlretrieve(url, filename=output_path)
 
         if verify_image and ext in IMAGE_EXTS:
             try:
@@ -220,7 +218,7 @@ def github_download_folder(
     github_url: str,
     dest_dir: str,
     files_extensions: list = None,
-    override: bool = False,
+    overwrite: bool = False,
 ) -> None:
     """Download a github repo folder"""
     files = github_folder_tree(github_url, files_extensions=files_extensions)
@@ -233,14 +231,14 @@ def github_download_folder(
 
         os.makedirs(file_path.parent, exist_ok=True)
 
-        download_file(file["download_url"], file_path, override=override)
+        download_file(file["download_url"], file_path, overwrite=overwrite)
 
 
-def github_download_classification_dataset(override=False):
+def github_download_classification_dataset(overwrite=False):
     """Download the vision dataset for classification"""
-    return github_download_folder(CLASSIF_DATA_URL, DATA_PATH, override=override)
+    return github_download_folder(CLASSIF_DATA_URL, DATA_PATH, overwrite=overwrite)
 
 
-def github_download_object_detection_dataset(override=False):
+def github_download_object_detection_dataset(overwrite=False):
     """Download the vision dataset for object detection"""
-    return github_download_folder(OBJ_DETECT_DATA_URL, DATA_PATH, override=override)
+    return github_download_folder(OBJ_DETECT_DATA_URL, DATA_PATH, overwrite=overwrite)

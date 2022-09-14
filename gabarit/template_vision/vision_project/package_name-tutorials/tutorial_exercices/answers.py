@@ -67,7 +67,7 @@ if model is None:
         depth=3,
         color_mode="rgb",
         in_memory=False,
-        with_fine_tune=False,
+        with_fine_tune=False, # fine-tunning chews up memory
         level_save=level_save,
     )
 """,

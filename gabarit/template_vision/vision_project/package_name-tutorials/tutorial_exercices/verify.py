@@ -30,38 +30,25 @@ def verify_exercice_1():
             path.exists()
         ), f"{path} not found. Did you run 0_split_train_valid_test.py ?"
 
-    # Verify folders content by checking three first image ids from each folder
-    expected_contents = {
-        dataset_train_path: {
-            "birman": [1, 3, 4],
-            "bombay": [1, 3, 5],
-            "shiba": [4, 5, 7],
-        },
-        dataset_valid_path: {
-            "birman": [5, 10, 11],
-            "bombay": [4, 8, 12],
-            "shiba": [3, 6, 9],
-        },
-        dataset_test_path: {
-            "birman": [2, 6, 22],
-            "bombay": [2, 9, 16],
-            "shiba": [1, 15, 20],
-        },
+    # Verify folders content by checking ratios
+    expected_ratios = {
+        dataset_train_path: 0.6,
+        dataset_valid_path: 0.2,
+        dataset_test_path: 0.2,
     }
 
+    img_counts = {path: sum(1 for _ in path.glob("*/*")) for path in expected_ratios}
+    img_ratios = {path: n / sum(img_counts.values()) for path, n in img_counts.items()}
+
     try:
-        for path, expected_categories in expected_contents.items():
-            for category, expected_ids in expected_categories.items():
-                files = sorted(
-                    [
-                        int(re.findall(r"_(\d+)\.", file.name)[0])
-                        for file in (path / category).glob("*")
-                    ]
-                )
-                assert files[: len(expected_ids)] == expected_ids
+        for path, expected_ratio in expected_ratios.items():
+            assert abs(expected_ratio - img_ratios[path]) < 1e-2
+
     except AssertionError:
         raise AssertionError(
-            f"Unexpected files in {path}\n\nDid you used '--seed 42' ?"
+            f"{path} contains {img_ratios[path]:.0%} of images whereas it "
+            f"should contains {expected_ratio:.0%}. Did you use '--perc_train 0.6' "
+            f"'--perc_valid 0.2' and '--perc_test 0.2' ?"
         )
 
     print("Exercice 1 : OK ✔")
