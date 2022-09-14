@@ -73,14 +73,10 @@ def verify_exercice_3():
     dataset_valid_sample_path = DATA_PATH / (
         DATASET_CLASSIF + "_valid_preprocess_convert_rgb"
     )
-    dataset_test_sample_path = DATA_PATH / (
-        DATASET_CLASSIF + "_test_preprocess_convert_rgb"
-    )
 
     for path in (
         dataset_train_sample_path,
         dataset_valid_sample_path,
-        dataset_test_sample_path,
     ):
         assert path.exists(), f"{path} not found. Did you run 1_preprocess_data.py ?"
 
@@ -170,7 +166,7 @@ def verify_exercice_5():
 def verify_exercice_6():
     """Verify sixth exercice"""
     predictions_folder = (
-        DATA_PATH / "predictions" / f"{DATASET_CLASSIF}_test_preprocess_convert_rgb"
+        DATA_PATH / "predictions" / f"{DATASET_CLASSIF}_test"
     )
 
     if not predictions_folder.exists():

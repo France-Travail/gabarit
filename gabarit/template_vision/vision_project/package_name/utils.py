@@ -317,7 +317,7 @@ def rebuild_metadata_object_detection(filenames_list: list, bboxes_list: list) -
     for filename, bboxes in zip(filenames_list, bboxes_list):
         for bbox in bboxes:
             new_row = {'filename': filename, 'class': bbox['class'], 'x1': bbox['x1'], 'x2': bbox['x2'], 'y1': bbox['y1'], 'y2': bbox['y2']}
-            metadata_df = metadata_df.append(new_row, ignore_index=True)
+            metadata_df = metadata_df.append(new_row, ignore_index=True)  # TODO : append deprecated, change it
     return metadata_df
 
 
