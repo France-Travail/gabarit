@@ -580,18 +580,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(checkpoint.filepath, os.path.join(model.model_dir, 'best.hdf5'))
         self.assertEqual(csv_logger.filename, os.path.join(model.model_dir, 'logger.csv'))
 
-        # iter > 0
-        callbacks = model._get_callbacks(2)
-        callbacks_types = [type(_) for _ in callbacks]
-        self.assertTrue(keras.callbacks.EarlyStopping in callbacks_types)
-        self.assertTrue(keras.callbacks.ModelCheckpoint in callbacks_types)
-        self.assertTrue(keras.callbacks.CSVLogger in callbacks_types)
-        self.assertTrue(keras.callbacks.TerminateOnNaN in callbacks_types)
-        checkpoint = callbacks[callbacks_types.index(keras.callbacks.ModelCheckpoint)]
-        csv_logger = callbacks[callbacks_types.index(keras.callbacks.CSVLogger)]
-        self.assertEqual(checkpoint.filepath, os.path.join(model.model_dir, 'best_2.hdf5'))
-        self.assertEqual(csv_logger.filename, os.path.join(model.model_dir, 'logger_2.csv'))
-
         # level save 'LOW'
         model.level_save = 'LOW'
         callbacks = model._get_callbacks()
