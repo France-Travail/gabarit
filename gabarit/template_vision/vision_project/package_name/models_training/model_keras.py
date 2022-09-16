@@ -536,7 +536,7 @@ class ModelKeras(ModelClass):
 
     @utils.trained_needed
     def predict_proba(self, df_test, batch_size: int = None) -> np.ndarray:
-        '''Probabilities predicted on the test set
+        '''Predicts probabilities on the test dataset
 
         Args:
             df_test (pd.DataFrame): DataFrame to be predicted, with column file_path

@@ -84,29 +84,6 @@ class ModelEmbeddingLstm(ModelKeras):
         self.tokenizer: Any = None
         self.tokenizer_filters = tokenizer_filters
 
-    @utils.data_agnostic_str_to_list
-    @utils.trained_needed
-    def predict_proba(self, x_test, experimental_version: bool = False, **kwargs) -> np.ndarray:
-        '''Predicts probabilities on the test dataset
-
-        Warning, this provides probabilities for a single model.
-
-        Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
-        Kwargs:
-            experimental_version (bool): If an experimental (but faster) version must be used
-        Returns:
-            (np.ndarray): Array, shape = [n_samples, n_classes]
-        '''
-        # Prepare input
-        x_test = self._prepare_x_test(x_test)
-        # Process
-        if experimental_version:
-            return self.experimental_predict_proba(x_test)
-        else:
-            return self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
-
-
     def _prepare_x_train(self, x_train) -> np.ndarray:
         '''Prepares the input data for the model. Called when fitting the model
 
