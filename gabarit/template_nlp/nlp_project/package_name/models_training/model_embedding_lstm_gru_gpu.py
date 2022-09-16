@@ -91,7 +91,7 @@ class ModelEmbeddingLstmGruGpu(ModelKeras):
     def predict_proba(self, x_test, experimental_version: bool = False, **kwargs) -> np.ndarray:
         '''Predicts probabilities on the test dataset
 
-        Warning, this provides probabilities for a single model. If we use nb_iter > 1, we must use predict(return_proba=True)
+        Warning, this provides probabilities for a single model.
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
@@ -107,7 +107,7 @@ class ModelEmbeddingLstmGruGpu(ModelKeras):
             return self.experimental_predict_proba(x_test)
         else:
             return self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
-       
+
 
     def _prepare_x_train(self, x_train) -> np.ndarray:
         '''Prepares the input data for the model. Called when fitting the model
@@ -293,7 +293,7 @@ class ModelEmbeddingLstmGruGpu(ModelKeras):
         for attribute in ['x_col', 'y_col',
                           'list_classes', 'dict_classes', 'multi_label', 'level_save',
                           'batch_size', 'epochs', 'validation_split', 'patience',
-                          'nb_iter_keras', 'keras_params', 'embedding_name', 'max_sequence_length',
+                          'keras_params', 'embedding_name', 'max_sequence_length',
                           'max_words', 'padding', 'truncating', 'tokenizer_filters']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 

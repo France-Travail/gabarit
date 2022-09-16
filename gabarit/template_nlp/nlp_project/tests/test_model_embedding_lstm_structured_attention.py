@@ -194,18 +194,6 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
         self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'], experimental_version=True)[0]])
         remove_dir(model_dir)
 
-        #
-        model = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                                      max_sequence_length=10, max_words=100,
-                                                      padding='pre', truncating='post',
-                                                      embedding_name='fake_embedding.pkl', nb_iter_keras=3)
-        model.fit(x_train, y_train_mono)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), 3))
-        preds = model.predict_proba('test')
-        self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'])[0]])
-        remove_dir(model_dir)
-
         # Multi-labels
         model = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
                                                       max_sequence_length=10, max_words=100,
@@ -228,18 +216,6 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train), len(cols)))
         preds = model.predict_proba('test', experimental_version=True)
         self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'], experimental_version=True)[0]])
-        remove_dir(model_dir)
-
-        #
-        model = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
-                                                      max_sequence_length=10, max_words=100,
-                                                      padding='pre', truncating='post',
-                                                      embedding_name='fake_embedding.pkl', nb_iter_keras=3)
-        model.fit(x_train, y_train_multi[cols])
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), len(cols)))
-        preds = model.predict_proba('test')
-        self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'])[0]])
         remove_dir(model_dir)
 
         # Model needs to be fitted

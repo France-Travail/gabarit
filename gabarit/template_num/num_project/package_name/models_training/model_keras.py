@@ -57,8 +57,8 @@ class ModelKeras(ModelClass):
     # -> _get_model
     # -> reload_from_standalone
 
-    def __init__(self, batch_size: int = 64, epochs: int = 99, validation_split: float = 0.2, patience: int = 5,
-                 nb_iter_keras: int = 1, keras_params: Union[dict, None] = None, **kwargs) -> None:
+    def __init__(self, batch_size: int = 64, epochs: int = 99, validation_split: float = 0.2,
+                 patience: int = 5, keras_params: Union[dict, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelClass for more arguments)
 
         Kwargs:
@@ -67,10 +67,6 @@ class ModelKeras(ModelClass):
             validation_split (float): Percentage for the validation set split
                 Only used if no input validation set when fitting
             patience (int): Early stopping patience
-            nb_iter_keras (int): Number of iteration done when fitting (default: 1)
-                If != 1, one fits several times the same model (but with different initializations),
-                which gives a better stability
-                Can't fit again if > 1.
             keras_params (dict): Parameters used by keras models.
                 e.g. learning_rate, nb_lstm_units, etc...
                 The purpose of this dictionary is for the user to use it as they wants in the _get_model function
@@ -97,9 +93,6 @@ class ModelKeras(ModelClass):
         # Model set on fit
         self.model: Any = None
 
-        # Keras number of iteration
-        self.nb_iter_keras = nb_iter_keras
-
         # Keras params
         if keras_params is None:
             keras_params = {}
@@ -121,7 +114,6 @@ class ModelKeras(ModelClass):
                 This should be used if y is not shuffled as the split_validation takes the lines in order.
                 Thus, the validation set might get classes which are not in the train set ...
         Raises:
-            RuntimeError: If one tries to fit again a model with nb_iter_keras > 1
             AssertionError: If different classes when comparing an already fitted model and a new dataset
         '''
 
@@ -129,12 +121,9 @@ class ModelKeras(ModelClass):
         # Manage retrain
         ##############################################
 
-        if self.trained and self.nb_iter_keras > 1:
-            self.logger.error("We can't fit again a Keras model if nb_iter_keras > 1")
-            raise RuntimeError("We can't fit again a Keras model if nb_iter_keras > 1")
         # If a model has already been fitted, we make a new folder in order not to overwrite the existing one !
         # And we save the old conf
-        elif self.trained:
+        if self.trained:
             # Get src files to save
             src_files = [os.path.join(self.model_dir, "configurations.json")]
             if self.nb_fit > 1:
@@ -241,80 +230,75 @@ class ModelKeras(ModelClass):
         # Fit
         ##############################################
 
-        # Fit for each iteration wanted
-        for iter in range(self.nb_iter_keras):
-            if self.nb_iter_keras > 1:
-                self.logger.info(f"Training of iteration {iter}")
+        # Get model (if already fitted we do not load a new one)
+        if not self.trained:
+            self.model = self._get_model()
 
-            # Get model (if already fitted we do not load a new one)
-            if not self.trained:
-                self.model = self._get_model()
+        # Get callbacks (early stopping & checkpoint)
+        callbacks = self._get_callbacks()
 
-            # Get callbacks (early stopping & checkpoint)
-            callbacks = self._get_callbacks(iter)
+        # Fit
+        # We use a try...except in order to save the model if an error arises
+        # after more than a minute into training
+        start_time = time.time()
+        try:
+            fit_history = self.model.fit(  # type: ignore
+                x_train,
+                y_train,
+                batch_size=self.batch_size,
+                epochs=self.epochs,
+                validation_split=self.validation_split if validation_data is None else None,
+                validation_data=validation_data,
+                callbacks=callbacks,
+                verbose=1,
+            )
+        except (RuntimeError, SystemError, SystemExit, EnvironmentError, KeyboardInterrupt, tf.errors.ResourceExhaustedError, tf.errors.InternalError,
+                tf.errors.UnavailableError, tf.errors.UnimplementedError, tf.errors.UnknownError, Exception) as e:
+            # Steps:
+            # 1. Display tensor flow error
+            # 2. Check if more than one minute elapsed & existence best.hdf5
+            # 3. Reload best model
+            # 4. We consider that a fit occured (trained = True, nb_fit += 1)
+            # 5. Save & create a warning file
+            # 6. Display error messages
+            # 7. Raise an error
 
-            # Fit
-            # We use a try...except in order to save the model if an error arises
-            # after more than a minute into training
-            start_time = time.time()
-            try:
-                fit_history = self.model.fit(  # type: ignore
-                    x_train,
-                    y_train,
-                    batch_size=self.batch_size,
-                    epochs=self.epochs,
-                    validation_split=self.validation_split if validation_data is None else None,
-                    validation_data=validation_data,
-                    callbacks=callbacks,
-                    verbose=1,
-                )
-            except (RuntimeError, SystemError, SystemExit, EnvironmentError, KeyboardInterrupt, tf.errors.ResourceExhaustedError, tf.errors.InternalError,
-                    tf.errors.UnavailableError, tf.errors.UnimplementedError, tf.errors.UnknownError, Exception) as e:
-                # Steps:
-                # 1. Display tensor flow error
-                # 2. Check if more than one minute elapsed & not several iterations & existence best.hdf5
-                # 3. Reload best model
-                # 4. We consider that a fit occured (trained = True, nb_fit += 1)
-                # 5. Save & create a warning file
-                # 6. Display error messages
-                # 7. Raise an error
+            # 1.
+            self.logger.error(repr(e))
 
-                # 1.
-                self.logger.error(repr(e))
+            # 2.
+            best_path = os.path.join(self.model_dir, 'best.hdf5')
+            time_spent = time.time() - start_time
+            if time_spent >= 60 and os.path.exists(best_path):
+                # 3.
+                self.model = load_model(best_path, custom_objects=self.custom_objects)
+                # 4.
+                self.trained = True
+                self.nb_fit += 1
+                # 5.
+                self.save()
+                with open(os.path.join(self.model_dir, "0_MODEL_INCOMPLETE"), 'w'):
+                    pass
+                with open(os.path.join(self.model_dir, "1_TRAINING_NEEDS_TO_BE_RESUMED"), 'w'):
+                    pass
+                # 6.
+                self.logger.error("[EXPERIMENTAL] Error during model training")
+                self.logger.error(f"[EXPERIMENTAL] The error happened after {round(time_spent, 2)}s of training")
+                self.logger.error("[EXPERIMENTAL] A saving of the model is done but this model won't be usable as is.")
+                self.logger.error(f"[EXPERIMENTAL] In order to resume the training, we have to specify this model ({ntpath.basename(self.model_dir)}) in the file 2_training.py")
+                self.logger.error("[EXPERIMENTAL] Warning, the preprocessing is not saved in the configuration file")
+                self.logger.error("[EXPERIMENTAL] Warning, the best model might be corrupted in some cases")
+            # 7.
+            raise RuntimeError("Error during model training")
 
-                # 2.
-                best_path = os.path.join(self.model_dir, 'best.hdf5')
-                time_spent = time.time() - start_time
-                if time_spent >= 60 and self.nb_iter_keras == 1 and os.path.exists(best_path):
-                    # 3.
-                    self.model = load_model(best_path, custom_objects=self.custom_objects)
-                    # 4.
-                    self.trained = True
-                    self.nb_fit += 1
-                    # 5.
-                    self.save()
-                    with open(os.path.join(self.model_dir, "0_MODEL_INCOMPLETE"), 'w'):
-                        pass
-                    with open(os.path.join(self.model_dir, "1_TRAINING_NEEDS_TO_BE_RESUMED"), 'w'):
-                        pass
-                    # 6.
-                    self.logger.error("[EXPERIMENTAL] Error during model training")
-                    self.logger.error(f"[EXPERIMENTAL] The error happened after {round(time_spent, 2)}s of training")
-                    self.logger.error("[EXPERIMENTAL] A saving of the model is done but this model won't be usable as is.")
-                    self.logger.error(f"[EXPERIMENTAL] In order to resume the training, we have to specify this model ({ntpath.basename(self.model_dir)}) in the file 2_training.py")
-                    self.logger.error("[EXPERIMENTAL] Warning, the preprocessing is not saved in the configuration file")
-                    self.logger.error("[EXPERIMENTAL] Warning, the best model might be corrupted in some cases")
-                # 7.
-                raise RuntimeError("Error during model training")
-
-            # Print accuracy & loss if level_save > 'LOW'
-            if self.level_save in ['MEDIUM', 'HIGH']:
-                self._plot_metrics_and_loss(fit_history, iter)
-                # Reload best model
-                self.model = load_model(
-                    os.path.join(self.model_dir, 'best.hdf5'),
-                    custom_objects=self.custom_objects
-                )
+        # Print accuracy & loss if level_save > 'LOW'
+        if self.level_save in ['MEDIUM', 'HIGH']:
+            self._plot_metrics_and_loss(fit_history)
+            # Reload best model
+            self.model = load_model(
+                os.path.join(self.model_dir, 'best.hdf5'),
+                custom_objects=self.custom_objects
+            )
 
         # Set trained
         self.trained = True
@@ -344,45 +328,23 @@ class ModelKeras(ModelClass):
         # We check input format
         x_test, _ = self._check_input_format(x_test)
 
-        # Process
-        if self.nb_iter_keras <= 1:
-            with_iter = False
-        elif self.nb_iter_keras > 1 and self.level_save == 'LOW':
-            self.logger.warning("- *************** -")
-            self.logger.warning("Can't make a prediction with all iterations if level_save is LOW (no savings of the model).")
-            self.logger.warning("We only make prediction with the saved model.")
-            self.logger.warning("- *************** -")
-            with_iter = False
-        else:
-            with_iter = True
-
-        # Getting the available iterations
-        if with_iter:
-            list_file_hdf5 = [f for f in os.listdir(self.model_dir) if f.endswith('.hdf5')]
-            nb_iter_keras = len(list_file_hdf5)
-        else:
-            nb_iter_keras = 1
-
         # Predict depends on model type
         if self.model_type == 'classifier':
             return self._predict_classifier(x_test, return_proba=return_proba,
-                                            experimental_version=experimental_version,
-                                            nb_iter_keras=nb_iter_keras)
+                                            experimental_version=experimental_version)
         elif self.model_type == 'regressor':
-            return self._predict_regressor(x_test, experimental_version=experimental_version,
-                                           nb_iter_keras=nb_iter_keras)
+            return self._predict_regressor(x_test, experimental_version=experimental_version)
         else:
             raise ValueError(f"The model type ({self.model_type}) must be 'classifier' or 'regressor'")
 
     @utils.trained_needed
-    def _predict_classifier(self, x_test: pd.DataFrame, return_proba: bool = False, nb_iter_keras: int = 1,
+    def _predict_classifier(self, x_test: pd.DataFrame, return_proba: bool = False,
                             experimental_version: bool = False) -> np.ndarray:
         '''Predictions on test
         Args:
             x_test (pd.DataFrame): DataFrame with the test data to be predicted
         Kwargs:
             return_proba (boolean): If the function should return the probabilities instead of the classes
-            nb_iter_keras (int): Number of iterations to do (give the mean of results)
             experimental_version (bool): If an experimental (but faster) version must be used
         Raises:
             ValueError: If the model is not of classifier type
@@ -394,30 +356,12 @@ class ModelKeras(ModelClass):
         if self.model_type != 'classifier':
             raise ValueError(f"Models of type {self.model_type} do not implement the method predict_classifier")
 
-        # Predict per iteration
-        predicted_proba = np.zeros((x_test.shape[0], len(self.list_classes)))
-        for iter in range(nb_iter_keras):
-            # We get the model corresponding to the current iteration if there are more than one available model.
-            # Otherwise, we keep the model already set on the class (useful when save_level is LOW)
-            if nb_iter_keras > 1:
-                filename = 'best.hdf5' if iter == 0 else f'best_{iter}.hdf5'
-                self.logger.info(f"Prediction with {filename}")
-                self.model = load_model(
-                    os.path.join(self.model_dir, f'{filename}'),
-                    custom_objects=self.custom_objects
-                )
+        # Getting the predictions
+        if experimental_version:
+            predicted_proba = self.experimental_predict_proba(x_test)
+        else:
+            predicted_proba = self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
-            # Getting the predictions for each iteration
-            if experimental_version:
-                preds_iter = self.experimental_predict_proba(x_test)
-            else:
-                preds_iter = self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
-
-            # We sums the probabilities ...
-            predicted_proba = predicted_proba + preds_iter
-
-        # ... then we divide by the number of iterations in order to get a probability in [0, 1]
-        predicted_proba = predicted_proba / nb_iter_keras
         # We return the probabilities if wanted
         if return_proba:
             return predicted_proba
@@ -426,12 +370,11 @@ class ModelKeras(ModelClass):
         return self.get_classes_from_proba(predicted_proba)  # type: ignore
 
     @utils.trained_needed
-    def _predict_regressor(self, x_test, nb_iter_keras: int = 1, experimental_version: bool = False) -> np.ndarray:
+    def _predict_regressor(self, x_test, experimental_version: bool = False) -> np.ndarray:
         '''Predictions on test
         Args:
             x_test (pd.DataFrame): DataFrame with the test data to be predicted
         Kwargs:
-            nb_iter_keras (int): Number of iterations to do (give the mean of results)
             experimental_version (bool): If an experimental (but faster) version must be used
         Raises:
             ValueError: If the model is not of regressor type
@@ -441,30 +384,11 @@ class ModelKeras(ModelClass):
         if self.model_type != 'regressor':
             raise ValueError(f"Models of type {self.model_type} do not implement the method predict_regressor")
 
-        # Predict per iteration
-        predictions = np.zeros((x_test.shape[0], 1))  # TODO: later, manage multi-output
-        for iter in range(nb_iter_keras):
-            # We get the model corresponding to the current iteration if there are more than one available model.
-            # Otherwise, we keep the model already set on the class (useful when save_level is LOW)
-            if nb_iter_keras > 1:
-                filename = 'best.hdf5' if iter == 0 else f'best_{iter}.hdf5'
-                self.logger.info(f"Prediction with {filename}")
-                self.model = load_model(
-                    os.path.join(self.model_dir, f'{filename}'),
-                    custom_objects=self.custom_objects
-                )
-
-            # Getting the predictions for each iteration
-            if experimental_version:
-                preds_iter = self.experimental_predict_proba(x_test)
-            else:
-                preds_iter = self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
-
-            # We sum the prediction ...
-            predictions = predictions + preds_iter
-
-        # ... then we divides by the number of iterations in order to get the mean
-        predictions = predictions / nb_iter_keras
+        # Getting the predictions
+        if experimental_version:
+            predictions = self.experimental_predict_proba(x_test)
+        else:
+            predictions = self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
         # Finally, we get the final format
         # TODO : should certainly be changed for multi-output
@@ -514,24 +438,21 @@ class ModelKeras(ModelClass):
         '''
         raise NotImplementedError("'_get_model' needs to be overridden")
 
-    def _get_callbacks(self, iter: int = 0) -> list:
+    def _get_callbacks(self) -> list:
         '''Gets model callbacks
 
-        Kwargs:
-            iter (int): Number of the current iteration, by default is 0
         Returns:
             list: List of callbacks
         '''
         # Get classic callbacks
         callbacks = [EarlyStopping(monitor='val_loss', patience=self.patience, restore_best_weights=True)]
-        suff = '' if iter == 0 else f'_{iter}'
         if self.level_save in ['MEDIUM', 'HIGH']:
             callbacks.append(
                 ModelCheckpoint(
-                    filepath=os.path.join(self.model_dir, f'best{suff}.hdf5'), monitor='val_loss', save_best_only=True, mode='auto'
+                    filepath=os.path.join(self.model_dir, f'best.hdf5'), monitor='val_loss', save_best_only=True, mode='auto'
                 )
             )
-        callbacks.append(CSVLogger(filename=os.path.join(self.model_dir, f'logger{suff}.csv'), separator='{{default_sep}}', append=False))
+        callbacks.append(CSVLogger(filename=os.path.join(self.model_dir, f'logger.csv'), separator='{{default_sep}}', append=False))
         callbacks.append(TerminateOnNaN())
 
         # Get LearningRateScheduler
@@ -545,7 +466,7 @@ class ModelKeras(ModelClass):
             models_path = utils.get_models_path()
             tensorboard_dir = os.path.join(models_path, 'tensorboard_logs')
             # We add a prefix so that the function load_model works correctly (it looks for a sub-folder with model name)
-            log_dir = os.path.join(tensorboard_dir, f"tensorboard_{ntpath.basename(self.model_dir)}_{iter}")
+            log_dir = os.path.join(tensorboard_dir, f"tensorboard_{ntpath.basename(self.model_dir)}")
             if not os.path.exists(log_dir):
                 os.makedirs(log_dir)
 
@@ -599,12 +520,11 @@ class ModelKeras(ModelClass):
         scheduler = None
         return scheduler
 
-    def _plot_metrics_and_loss(self, fit_history, iter: int) -> None:
+    def _plot_metrics_and_loss(self, fit_history) -> None:
         '''Plots some metrics & loss
 
         Arguments:
             fit_history (?) : fit history
-            iter (int): current iteration
         '''
         # Manage dir
         plots_path = os.path.join(self.model_dir, 'plots')
@@ -640,7 +560,7 @@ class ModelKeras(ModelClass):
                 plt.xlabel('Epoch')
                 plt.legend(['Train', 'Validation'], loc='upper left')
                 # Save
-                filename == f"{filename}.jpeg" if iter == 0 else f"{filename}_{iter}.jpeg"
+                filename == f"{filename}.jpeg"
                 plt.savefig(os.path.join(plots_path, filename))
 
                 # Close figures
@@ -677,7 +597,6 @@ class ModelKeras(ModelClass):
         json_data['epochs'] = self.epochs
         json_data['validation_split'] = self.validation_split
         json_data['patience'] = self.patience
-        json_data['nb_iter_keras'] = self.nb_iter_keras
         json_data['keras_params'] = self.keras_params
         if self.model is not None:
             json_data['keras_model'] = json.loads(self.model.to_json())

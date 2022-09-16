@@ -95,11 +95,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(model.patience, 65)
         remove_dir(model_dir)
 
-        #
-        model = ModelKeras(model_dir=model_dir, nb_iter_keras=2)
-        self.assertEqual(model.nb_iter_keras, 2)
-        remove_dir(model_dir)
-
         # keras_params must accept anything !
         model = ModelKeras(model_dir=model_dir, keras_params={'toto': 5})
         self.assertEqual(model.keras_params, {'toto': 5})
@@ -162,19 +157,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(sorted(model.list_classes), [0, 1])
         self.assertTrue(model.model._is_compiled)
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        # With several iterations
-        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, nb_iter_keras=3)
-        self.assertFalse(model.trained)
-        self.assertEqual(model.nb_fit, 0)
-        self.assertEqual(model.nb_iter_keras, 3)
-        model.fit(x_train, y_train_mono_2, x_valid=x_train, y_valid=y_train_mono_2, with_shuffle=False)
-        self.assertTrue(model.trained)
-        self.assertEqual(model.nb_fit, 1)
-        self.assertEqual(sorted(model.list_classes), [0, 1])
-        self.assertTrue(model.model._is_compiled)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best_1.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best_2.hdf5')))
         # Wrong x_col
         with self.assertRaises(ValueError):
             model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, x_col=['toto'])
@@ -212,20 +194,6 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
         remove_dir(model_dir_2)
         remove_dir(model_dir_3)
-        # Test iterations error
-        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, nb_iter_keras=2)
-        self.assertFalse(model.trained)
-        self.assertEqual(model.nb_fit, 0)
-        model.fit(x_train, y_train_mono_2, x_valid=x_train, y_valid=y_train_mono_2, with_shuffle=False)
-        model.save()
-        self.assertTrue(model.trained)
-        self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
-        with self.assertRaises(RuntimeError):
-            model.fit(x_train, y_train_mono_2, x_valid=x_train, y_valid=y_train_mono_2, with_shuffle=False)
-        self.assertEqual(model_dir, model.model_dir)
-        remove_dir(model_dir)
         # Test data errors
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         self.assertFalse(model.trained)
@@ -275,19 +243,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
         self.assertTrue(model.model._is_compiled)
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        # With several iterations
-        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, nb_iter_keras=3)
-        self.assertFalse(model.trained)
-        self.assertEqual(model.nb_fit, 0)
-        self.assertEqual(model.nb_iter_keras, 3)
-        model.fit(x_train, y_train_mono_3, x_valid=x_train, y_valid=y_train_mono_3, with_shuffle=False)
-        self.assertTrue(model.trained)
-        self.assertEqual(model.nb_fit, 1)
-        self.assertEqual(sorted(model.list_classes), [0, 1, 2])
-        self.assertTrue(model.model._is_compiled)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best_1.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best_2.hdf5')))
         # Wrong x_col
         with self.assertRaises(ValueError):
             model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, x_col=['toto'])
@@ -325,20 +280,6 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
         remove_dir(model_dir_2)
         remove_dir(model_dir_3)
-        # Test iterations error
-        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, nb_iter_keras=2)
-        self.assertFalse(model.trained)
-        self.assertEqual(model.nb_fit, 0)
-        model.fit(x_train, y_train_mono_3, x_valid=x_train, y_valid=y_train_mono_3, with_shuffle=False)
-        model.save()
-        self.assertTrue(model.trained)
-        self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
-        with self.assertRaises(RuntimeError):
-            model.fit(x_train, y_train_mono_3, x_valid=x_train, y_valid=y_train_mono_3, with_shuffle=False)
-        self.assertEqual(model_dir, model.model_dir)
-        remove_dir(model_dir)
         # Test data errors
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         self.assertFalse(model.trained)
@@ -403,20 +344,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(sorted(model.list_classes), y_col_multi)
         self.assertTrue(model.model._is_compiled)
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        # With several iterations
-        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True, nb_iter_keras=3)
-        self.assertFalse(model.trained)
-        self.assertEqual(model.nb_fit, 0)
-        self.assertTrue(model.multi_label)
-        self.assertEqual(model.nb_iter_keras, 3)
-        model.fit(x_train, y_train_multi, x_valid=x_train, y_valid=y_train_multi, with_shuffle=False)
-        self.assertTrue(model.trained)
-        self.assertEqual(model.nb_fit, 1)
-        self.assertEqual(sorted(model.list_classes), y_col_multi)
-        self.assertTrue(model.model._is_compiled)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best_1.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best_2.hdf5')))
         # Wrong x_col
         with self.assertRaises(ValueError):
             model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True, x_col=['toto'])
@@ -454,21 +381,6 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
         remove_dir(model_dir_2)
         remove_dir(model_dir_3)
-        # Test iterations error
-        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True, nb_iter_keras=2)
-        self.assertFalse(model.trained)
-        self.assertEqual(model.nb_fit, 0)
-        model.fit(x_train, y_train_multi, x_valid=x_train, y_valid=y_train_multi, with_shuffle=False)
-        model.save()
-        self.assertTrue(model.trained)
-        self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
-        with self.assertRaises(RuntimeError):
-            model.fit(x_train, y_train_multi, x_valid=x_train, y_valid=y_train_multi, with_shuffle=False)
-        self.assertEqual(model_dir, model.model_dir)
-        remove_dir(model_dir)
-
 
         ## Regression
         model = ModelDenseRegressor(model_dir=model_dir, batch_size=8, epochs=2, keras_params={'learning_rate': lr, 'decay': 0.0})
@@ -500,18 +412,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(model.nb_fit, 1)
         self.assertTrue(model.model._is_compiled)
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        # With several iterations
-        model = ModelDenseRegressor(model_dir=model_dir, batch_size=8, epochs=2, nb_iter_keras=3)
-        self.assertFalse(model.trained)
-        self.assertEqual(model.nb_fit, 0)
-        self.assertEqual(model.nb_iter_keras, 3)
-        model.fit(x_train, y_train_regressor, x_valid=x_train, y_valid=y_train_regressor, with_shuffle=False)
-        self.assertTrue(model.trained)
-        self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(model.model._is_compiled)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best_1.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best_2.hdf5')))
         # Wrong x_col
         with self.assertRaises(ValueError):
             model = ModelDenseRegressor(model_dir=model_dir, batch_size=8, epochs=2, x_col=['toto'])
@@ -549,20 +449,6 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
         remove_dir(model_dir_2)
         remove_dir(model_dir_3)
-        # Test iterations error
-        model = ModelDenseRegressor(model_dir=model_dir, batch_size=8, epochs=2, nb_iter_keras=2)
-        self.assertFalse(model.trained)
-        self.assertEqual(model.nb_fit, 0)
-        model.fit(x_train, y_train_regressor, x_valid=x_train, y_valid=y_train_regressor, with_shuffle=False)
-        model.save()
-        self.assertTrue(model.trained)
-        self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
-        with self.assertRaises(RuntimeError):
-            model.fit(x_train, y_train_regressor, x_valid=x_train, y_valid=y_train_regressor, with_shuffle=False)
-        self.assertEqual(model_dir, model.model_dir)
-        remove_dir(model_dir)
 
 
     def test03_model_keras_predict(self):
@@ -593,33 +479,9 @@ class ModelKerasTests(unittest.TestCase):
         proba = model.predict(x_train, return_proba=True, experimental_version=True)
         self.assertEqual(proba.shape, (len(x_train), 2)) # 2 classes
         remove_dir(model_dir)
-        # nb iter > 0
-        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, nb_iter_keras=3)
-        model.fit(x_train, y_train_mono_2)
-        preds = model.predict(x_train, return_proba=False)
-        self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 2)) # 2 classes
-        preds = model.predict(x_train, return_proba=False, experimental_version=True)
-        self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True, experimental_version=True)
-        self.assertEqual(proba.shape, (len(x_train), 2)) # 2 classes
-        remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
-        model.fit(x_train, y_train_mono_3)
-        preds = model.predict(x_train, return_proba=False)
-        self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 3)) # 3 classes
-        preds = model.predict(x_train, return_proba=False, experimental_version=True)
-        self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True, experimental_version=True)
-        self.assertEqual(proba.shape, (len(x_train), 3)) # 3 classes
-        remove_dir(model_dir)
-        # nb iter > 0
-        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, nb_iter_keras=3)
         model.fit(x_train, y_train_mono_3)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
@@ -643,33 +505,9 @@ class ModelKerasTests(unittest.TestCase):
         proba = model.predict(x_train, return_proba=True, experimental_version=True)
         self.assertEqual(proba.shape, (len(x_train), len(y_col_multi)))
         remove_dir(model_dir)
-        # nb iter > 0
-        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True, nb_iter_keras=3)
-        model.fit(x_train, y_train_multi)
-        preds = model.predict(x_train)
-        self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), len(y_col_multi)))
-        preds = model.predict(x_train, return_proba=False, experimental_version=True)
-        self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        proba = model.predict(x_train, return_proba=True, experimental_version=True)
-        self.assertEqual(proba.shape, (len(x_train), len(y_col_multi)))
-        remove_dir(model_dir)
 
         # Regressor
         model = ModelDenseRegressor(model_dir=model_dir, batch_size=8, epochs=2)
-        model.fit(x_train, y_train_regressor)
-        preds = model.predict(x_train)
-        self.assertEqual(preds.shape, (len(x_train),))
-        with self.assertRaises(ValueError):
-            proba = model.predict(x_train, return_proba=True)
-        preds = model.predict(x_train, experimental_version=True)
-        self.assertEqual(preds.shape, (len(x_train),))
-        with self.assertRaises(ValueError):
-            proba = model.predict(x_train, return_proba=True, experimental_version=True)
-        remove_dir(model_dir)
-        # nb iter > 0
-        model = ModelDenseRegressor(model_dir=model_dir, batch_size=8, epochs=2, nb_iter_keras=3)
         model.fit(x_train, y_train_regressor)
         preds = model.predict(x_train)
         self.assertEqual(preds.shape, (len(x_train),))
@@ -762,18 +600,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(checkpoint.filepath, os.path.join(model.model_dir, 'best.hdf5'))
         self.assertEqual(csv_logger.filename, os.path.join(model.model_dir, 'logger.csv'))
 
-        # iter > 0
-        callbacks = model._get_callbacks(2)
-        callbacks_types = [type(_) for _ in callbacks]
-        self.assertTrue(keras.callbacks.EarlyStopping in callbacks_types)
-        self.assertTrue(keras.callbacks.ModelCheckpoint in callbacks_types)
-        self.assertTrue(keras.callbacks.CSVLogger in callbacks_types)
-        self.assertTrue(keras.callbacks.TerminateOnNaN in callbacks_types)
-        checkpoint = callbacks[callbacks_types.index(keras.callbacks.ModelCheckpoint)]
-        csv_logger = callbacks[callbacks_types.index(keras.callbacks.CSVLogger)]
-        self.assertEqual(checkpoint.filepath, os.path.join(model.model_dir, 'best_2.hdf5'))
-        self.assertEqual(csv_logger.filename, os.path.join(model.model_dir, 'logger_2.csv'))
-
         # level save 'LOW'
         model.level_save = 'LOW'
         callbacks = model._get_callbacks()
@@ -840,7 +666,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue('epochs' in configs.keys())
         self.assertTrue('validation_split' in configs.keys())
         self.assertTrue('patience' in configs.keys())
-        self.assertTrue('nb_iter_keras' in configs.keys())
         self.assertTrue('keras_params' in configs.keys())
         self.assertTrue('_get_model' in configs.keys())
         self.assertTrue('_get_learning_rate_scheduler' in configs.keys())
@@ -884,7 +709,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue('epochs' in configs.keys())
         self.assertTrue('validation_split' in configs.keys())
         self.assertTrue('patience' in configs.keys())
-        self.assertTrue('nb_iter_keras' in configs.keys())
         self.assertTrue('keras_params' in configs.keys())
         self.assertTrue('_get_model' in configs.keys())
         self.assertTrue('_get_learning_rate_scheduler' in configs.keys())

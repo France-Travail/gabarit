@@ -90,11 +90,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertEqual(model.patience, 65)
         remove_dir(model_dir)
 
-        #
-        model = ModelDenseClassifier(model_dir=model_dir, nb_iter_keras=2)
-        self.assertEqual(model.nb_iter_keras, 2)
-        remove_dir(model_dir)
-
         # keras_params must accept anything !
         model = ModelDenseClassifier(model_dir=model_dir, keras_params={'toto': 5})
         self.assertEqual(model.keras_params, {'toto': 5})
@@ -129,18 +124,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
         proba = model.predict(x_train, return_proba=True, experimental_version=True)
         self.assertEqual(proba.shape, (len(x_train), 2)) # 2 classes
         remove_dir(model_dir)
-        # nb iter > 0
-        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, nb_iter_keras=3)
-        model.fit(x_train, y_train_mono_2)
-        preds = model.predict(x_train, return_proba=False)
-        self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 2)) # 2 classes
-        preds = model.predict(x_train, return_proba=False, experimental_version=True)
-        self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True, experimental_version=True)
-        self.assertEqual(proba.shape, (len(x_train), 2)) # 2 classes
-        remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
@@ -154,33 +137,9 @@ class ModelDenseClassifierTests(unittest.TestCase):
         proba = model.predict(x_train, return_proba=True, experimental_version=True)
         self.assertEqual(proba.shape, (len(x_train), 3)) # 3 classes
         remove_dir(model_dir)
-        # nb iter > 0
-        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, nb_iter_keras=3)
-        model.fit(x_train, y_train_mono_3)
-        preds = model.predict(x_train, return_proba=False)
-        self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 3)) # 3 classes
-        preds = model.predict(x_train, return_proba=False, experimental_version=True)
-        self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True, experimental_version=True)
-        self.assertEqual(proba.shape, (len(x_train), 3)) # 3 classes
-        remove_dir(model_dir)
 
         # Classification - Multi-labels
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
-        model.fit(x_train, y_train_multi)
-        preds = model.predict(x_train)
-        self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), len(y_col_multi)))
-        preds = model.predict(x_train, return_proba=False, experimental_version=True)
-        self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        proba = model.predict(x_train, return_proba=True, experimental_version=True)
-        self.assertEqual(proba.shape, (len(x_train), len(y_col_multi)))
-        remove_dir(model_dir)
-        # nb iter > 0
-        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True, nb_iter_keras=3)
         model.fit(x_train, y_train_multi)
         preds = model.predict(x_train)
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
@@ -361,7 +320,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertTrue('epochs' in configs.keys())
         self.assertTrue('validation_split' in configs.keys())
         self.assertTrue('patience' in configs.keys())
-        self.assertTrue('nb_iter_keras' in configs.keys())
         self.assertTrue('keras_params' in configs.keys())
         self.assertTrue('_get_model' in configs.keys())
         self.assertTrue('_get_learning_rate_scheduler' in configs.keys())
@@ -405,7 +363,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertTrue('epochs' in configs.keys())
         self.assertTrue('validation_split' in configs.keys())
         self.assertTrue('patience' in configs.keys())
-        self.assertTrue('nb_iter_keras' in configs.keys())
         self.assertTrue('keras_params' in configs.keys())
         self.assertTrue('_get_model' in configs.keys())
         self.assertTrue('_get_learning_rate_scheduler' in configs.keys())
@@ -524,7 +481,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertEqual(model.epochs, new_model.epochs)
         self.assertEqual(model.validation_split, new_model.validation_split)
         self.assertEqual(model.patience, new_model.patience)
-        self.assertEqual(model.nb_iter_keras, new_model.nb_iter_keras)
         self.assertEqual(model.keras_params, new_model.keras_params)
         self.assertEqual(model.custom_objects, new_model.custom_objects)
         self.assertTrue(new_model.preprocess_pipeline is not None)
@@ -565,7 +521,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertEqual(model.epochs, new_model.epochs)
         self.assertEqual(model.validation_split, new_model.validation_split)
         self.assertEqual(model.patience, new_model.patience)
-        self.assertEqual(model.nb_iter_keras, new_model.nb_iter_keras)
         self.assertEqual(model.keras_params, new_model.keras_params)
         self.assertEqual(model.custom_objects, new_model.custom_objects)
         self.assertTrue(new_model.preprocess_pipeline is not None)

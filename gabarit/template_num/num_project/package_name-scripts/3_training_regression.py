@@ -60,7 +60,7 @@ logger = logging.getLogger('{{package_name}}.3_training_regression')
 
 
 def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[str, int]], None] = None,
-         filename_valid: Union[str, None] = None, nb_iter_keras: int = 1, level_save: str = 'HIGH',
+         filename_valid: Union[str, None] = None, level_save: str = 'HIGH',
          sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}',
          model: Union[Type[ModelClass], None] = None) -> None:
     '''Trains a model
@@ -76,7 +76,6 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
         filename_valid (str): Name of the validation dataset (actually a path relative to {{package_name}}-data)
             If None, we do not use a validation dataset.
                 -> for keras models (i.e. Neural Networks), we'll use a portion of the training dataset as the validation.
-        nb_iter_keras (int): For Keras models, number of models to train to improve stability (default 1).
         level_save (str): Save level
             LOW: statistics + configurations + logger keras - /!\\ the model won't be reusable /!\\ -
             MEDIUM: LOW + hdf5 + pkl + plots
@@ -225,8 +224,7 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
         #                                                              'learning_rate': 0.1, 'n_estimators': 100})
         # model = model_dense_regressor.ModelDenseRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                   preprocess_pipeline=preprocess_pipeline,
-        #                                                   batch_size=64, epochs=99, patience=5,
-        #                                                   nb_iter_keras=nb_iter_keras)
+        #                                                   batch_size=64, epochs=99, patience=5)
 
     # Display if GPU is being used
     model.display_if_gpu_activated()
@@ -351,7 +349,6 @@ if __name__ == '__main__':
     parser.add_argument('-y', '--y_col', required=True, help="Name of the model's target column - y")
     parser.add_argument('--excluded_cols', nargs='+', default=None, help="List of columns NOT to use as model's input")
     parser.add_argument('--filename_valid', default=None, help="Name of the validation dataset (actually a path relative to {{package_name}}-data)")
-    parser.add_argument('-i', '--nb_iter_keras', type=int, default=1, help="For Keras models, number of models to train to increase stability")
     parser.add_argument('-l', '--level_save', default='HIGH', help="Save level -> ['LOW', 'MEDIUM', 'HIGH']")
     parser.add_argument('--sep', default='{{default_sep}}', help="Separator to use with the .csv files.")
     parser.add_argument('--encoding', default="{{default_encoding}}", help="Encoding to use with the .csv files.")
@@ -366,5 +363,5 @@ if __name__ == '__main__':
         logger.info("----------------------------")
     # Main
     main(filename=args.filename, y_col=args.y_col, excluded_cols=args.excluded_cols,
-         filename_valid=args.filename_valid, nb_iter_keras=args.nb_iter_keras,
-         level_save=args.level_save, sep=args.sep, encoding=args.encoding)
+         filename_valid=args.filename_valid, level_save=args.level_save,
+         sep=args.sep, encoding=args.encoding)
