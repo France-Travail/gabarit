@@ -335,6 +335,15 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual([elem for elem in preds], [elem for elem in model.decision_function(['test'])[0]])
         remove_dir(model_dir)
 
+        # Mono-label - no strategy - with super documents
+        model = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True)
+        model.fit(x_train, y_train_mono)
+        preds = model.decision_function(x_train)
+        self.assertEqual(preds.shape, (len(x_train), n_classes))
+        preds = model.decision_function('test')
+        self.assertEqual([elem for elem in preds], [elem for elem in model.decision_function(['test'])[0]])
+        remove_dir(model_dir)
+
         # Multi-labels - do not support decision_function
         model = ModelTfidfSvm(model_dir=model_dir, multi_label=True, multiclass_strategy=None)
         model.fit(x_train, y_train_multi[cols])
@@ -498,8 +507,8 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual(model.multi_label, new_model.multi_label)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
-        self.assertEqual(model.tfidf.get_params(), tfidf.get_params())
-        self.assertEqual(model.svc.get_params(), svc.get_params())
+        self.assertEqual(tfidf.get_params(), new_model.tfidf.get_params())
+        self.assertEqual(svc.get_params(), new_model.svc.get_params())
         self.assertEqual(model.with_super_documents, new_model.with_super_documents)
         # We can't really test the pipeline so we test predictions
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
@@ -538,8 +547,8 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual(model.multi_label, new_model.multi_label)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
-        self.assertEqual(model.tfidf.get_params(), tfidf.get_params())
-        self.assertEqual(model.svc.get_params(), svc.get_params())
+        self.assertEqual(tfidf.get_params(), new_model.tfidf.get_params())
+        self.assertEqual(svc.get_params(), new_model.svc.get_params())
         # We can't really test the pipeline so we test predictions
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
         remove_dir(model_dir)
@@ -578,8 +587,8 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual(model.multi_label, new_model.multi_label)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
-        self.assertEqual(model.tfidf.get_params(), tfidf.get_params())
-        self.assertEqual(model.svc.get_params(), svc.get_params())
+        self.assertEqual(tfidf.get_params(), new_model.tfidf.get_params())
+        self.assertEqual(svc.get_params(), new_model.svc.get_params())
         # We can't really test the pipeline so we test predictions
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
         remove_dir(model_dir)
@@ -620,8 +629,50 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual(model.nb_fit, new_model.nb_fit)
         self.assertEqual(model.trained, new_model.trained)
         self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
-        self.assertEqual(model.tfidf.get_params(), tfidf.get_params())
-        self.assertEqual(model.svc.get_params(), svc.get_params())
+        self.assertEqual(tfidf.get_params(), new_model.tfidf.get_params())
+        self.assertEqual(svc.get_params(), new_model.svc.get_params())
+        # We can't really test the pipeline so we test predictions
+        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        ########################################################################
+        # mono_label & without multi-classes strategy & with_super_documents
+        ########################################################################
+
+        # Create model
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
+        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
+        y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
+        param = {'ngram_range': [2, 3], 'min_df': 0.02, 'max_df': 0.8, 'binary': False}
+        model = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy=None, with_super_documents=True, tfidf_params=param)
+        tfidf = model.tfidf
+        svc = model.svc
+        model.fit(x_train, y_train_mono)
+        model.save()
+
+        # Reload
+        pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
+        conf_path = os.path.join(model.model_dir, "configurations.json")
+        new_model = ModelTfidfSvm()
+        new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
+
+        # Test
+        self.assertEqual(model.model_name, new_model.model_name)
+        self.assertEqual(model.trained, new_model.trained)
+        self.assertEqual(model.nb_fit, new_model.nb_fit)
+        self.assertEqual(model.x_col, new_model.x_col)
+        self.assertEqual(model.y_col, new_model.y_col)
+        self.assertEqual(model.list_classes, new_model.list_classes)
+        self.assertEqual(model.dict_classes, new_model.dict_classes)
+        self.assertEqual(model.multi_label, new_model.multi_label)
+        self.assertEqual(model.level_save, new_model.level_save)
+        self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
+        self.assertTrue((tfidf.tfidf_super_documents == new_model.tfidf.tfidf_super_documents).all())
+        self.assertTrue((tfidf.classes_ == new_model.tfidf.classes_).all())
+        self.assertEqual(svc.get_params(), new_model.svc.get_params())
+        self.assertEqual(model.with_super_documents, new_model.with_super_documents)
         # We can't really test the pipeline so we test predictions
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
         remove_dir(model_dir)

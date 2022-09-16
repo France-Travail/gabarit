@@ -155,7 +155,10 @@ class ModelTfidfDense(ModelKeras):
             (Model): a Keras model
         '''
         # Get input/output dimensions
-        input_dim = len(self.tfidf.get_feature_names())
+        if not self.with_super_documents:
+            input_dim = len(self.tfidf.get_feature_names())
+        else:
+            input_dim = len(self.tfidf.classes_)
         num_classes = len(self.list_classes)
 
         # Process
@@ -209,6 +212,8 @@ class ModelTfidfDense(ModelKeras):
         # Save configuration JSON
         if json_data is None:
             json_data = {}
+
+        json_data['with_super_documents'] = self.with_super_documents
 
         # Add tfidf params
         confs = self.tfidf.get_params()

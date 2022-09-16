@@ -91,7 +91,8 @@ class ModelTfidfCos(ModelPipeline):
         Raises:
             RuntimeError: If the model is already fitted
         '''
-        self.tfidf.classes_ = list(np.unique(y_train))
+        if not hasattr(self.tfidf, 'classes_'):
+            setattr(self.tfidf, "classes_", list(np.unique(y_train)))
         self.array_target = np.array(y_train)
         super().fit(x_train, y_train)
         self.matrix_train = self.pipeline.transform(x_train).astype(np.float16)
@@ -121,7 +122,7 @@ class ModelTfidfCos(ModelPipeline):
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Kwargs:
-            return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
+            return_cos (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
         Returns:
             (np.ndarray): Array, shape = [n_samples]
             return_proba (np.ndarray): Array, shape = [n_samples, n_train]
@@ -129,7 +130,7 @@ class ModelTfidfCos(ModelPipeline):
             if self.matrix_train or self.array_target is None
         '''
         if self.matrix_train is None or self.array_target is None:
-            raise AttributeError('your fit is not valid')
+            raise AttributeError('Tfidf need fit')
 
         x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
         x_test = np.array(x_test) if isinstance(x_test, list) else x_test
@@ -168,14 +169,14 @@ class ModelTfidfCos(ModelPipeline):
             if self.matrix_train or self.array_target is None
         '''
         if self.matrix_train is None or self.array_target is None:
-            raise AttributeError('your fit is not valid')
+            raise AttributeError('The tfidf not fitted')
 
         x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
         x_test = np.array(x_test) if isinstance(x_test, list) else x_test
         preds = self.predict_cosine_similarity(x_test, return_cos=True)
         index_dict = {target: [i for i, t in enumerate(self.array_target) if t == target] for target in self.list_classes}
 
-        probas_dict = {target:[] for target in set(self.array_target)}
+        probas_dict = {target: [] for target in set(self.array_target)}
         for col in preds:
             col_sum = col.sum()
             col_div = np.array([col[i] / col_sum for i in range(len(self.array_target))]) if col_sum != 0 else np.array([1 / len(col)] * len(self.array_target))
@@ -281,7 +282,7 @@ class ModelTfidfCos(ModelPipeline):
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['x_col', 'y_col',
                           'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'multiclass_strategy', 'with_super_documents', 'with_super_documents']:
+                          'multiclass_strategy', 'with_super_documents']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload pipeline
