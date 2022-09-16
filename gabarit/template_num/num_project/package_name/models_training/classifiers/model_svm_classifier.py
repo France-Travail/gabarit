@@ -91,7 +91,8 @@ class ModelSVMClassifier(ModelClassifierMixin, ModelPipeline):
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        # Uses super() of the ModelPipeline class if != 'ovo' or multi-labels
+        # We check input format
+        x_test, _ = self._check_input_format(x_test)
         if not self.multi_label:
             preds = self.pipeline.predict(x_test)
             # Format ['a', 'b', 'c', 'a', ..., 'b']

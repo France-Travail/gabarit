@@ -92,6 +92,9 @@ class ModelSGDClassifier(ModelClassifierMixin, ModelPipeline):
         '''
         # Can't use probabilities if loss not in ['log', 'modified_huber'] or 'ovo' and not multi-labels
         if self.sgd.loss not in ['log', 'modified_huber'] or (self.multiclass_strategy == 'ovo' and not self.multi_label):
+            # We check input format
+            x_test, _ = self._check_input_format(x_test)
+            # Get preds
             if not self.multi_label:
                 preds = self.pipeline.predict(x_test)
                 # Format ['a', 'b', 'c', 'a', ..., 'b']

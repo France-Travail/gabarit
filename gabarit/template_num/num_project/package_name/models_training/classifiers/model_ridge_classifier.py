@@ -90,6 +90,9 @@ class ModelRidgeClassifier(ModelClassifierMixin, ModelPipeline):
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
+        # We check input format
+        x_test, _ = self._check_input_format(x_test)
+        # Get preds
         if not self.multi_label:
             preds = self.pipeline.predict(x_test)
             # Format ['a', 'b', 'c', 'a', ..., 'b']
