@@ -60,7 +60,6 @@ class ModelKeras(ModelClass):
     '''Generic model for Keras NN'''
 
     _default_name = 'model_keras'
-    nb_iter_keras: int
     # Not implemented :
     # -> _get_model
     # -> reload_from_standalone
@@ -396,7 +395,7 @@ class ModelKeras(ModelClass):
             # 2.
             best_path = os.path.join(self.model_dir, 'best.hdf5')
             time_spent = time.time() - start_time
-            if time_spent >= 60 and self.nb_iter_keras == 1 and os.path.exists(best_path):
+            if time_spent >= 60 and os.path.exists(best_path):
                 # 3.
                 self.model = load_model(best_path, custom_objects=self.custom_objects)
                 # 4.
