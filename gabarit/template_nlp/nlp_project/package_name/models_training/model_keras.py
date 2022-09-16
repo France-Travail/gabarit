@@ -462,7 +462,7 @@ class ModelKeras(ModelClass):
                     filepath=os.path.join(self.model_dir, f'best.hdf5'), monitor='val_loss', save_best_only=True, mode='auto'
                 )
             )
-        callbacks.append(CSVLogger(filename=os.path.join(self.model_dir, f'logger{suff}.csv'), separator='{{default_sep}}', append=False))
+        callbacks.append(CSVLogger(filename=os.path.join(self.model_dir, f'logger.csv'), separator='{{default_sep}}', append=False))
         callbacks.append(TerminateOnNaN())
 
         # Get LearningRateScheduler
