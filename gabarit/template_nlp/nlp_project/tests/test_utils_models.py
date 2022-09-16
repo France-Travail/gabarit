@@ -266,7 +266,7 @@ class UtilsModelsTests(unittest.TestCase):
             utils_models.load_model(model_dir='./tototo', is_path=True)
 
     def test09_predict(self):
-        '''Test of the function demo_torch.models_training.utils_models.predict'''
+        '''Test of the function {{package_name}}.models_training.utils_models.predict'''
         # Data
         x_train_base = ['Ceci est un test', 'Ceci est un test', 'Ceci est un test', 'Test "deux" !', 'Toto "deux" !', 'Test "deux" !', 'deux'] * 10
         y_train_mono = ['test', 'test', 'test', 'deux', 'deux', 'deux', 'deux'] * 10
@@ -299,7 +299,7 @@ class UtilsModelsTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test10_predict_with_proba(self):
-        '''Test of the function demo_torch.models_training.utils_models.predict_with_proba'''
+        '''Test of the function {{package_name}}.models_training.utils_models.predict_with_proba'''
         # Data
         x_train_base = ['Ceci est un test', 'Ceci est un test', 'Ceci est un test', 'Test "deux" !', 'Toto "deux" !', 'Test "deux" !', 'deux'] * 10
         y_train_mono = ['test', 'test', 'test', 'deux', 'deux', 'deux', 'deux'] * 10

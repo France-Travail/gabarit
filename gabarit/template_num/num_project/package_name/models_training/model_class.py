@@ -59,7 +59,7 @@ class ModelClass:
 
     def __init__(self, model_dir: Union[str, None] = None, model_name: Union[str, None] = None,
                  x_col: Union[list, None] = None, y_col: Union[str, int, list, None] = None,
-                 preprocess_pipeline: Union[ColumnTransformer, None] = None, level_save: str = 'HIGH') -> None:
+                 preprocess_pipeline: Union[ColumnTransformer, None] = None, level_save: str = 'HIGH', **kwargs) -> None:
         '''Initialization of the parent class.
 
         Kwargs:

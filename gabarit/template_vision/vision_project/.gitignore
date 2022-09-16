@@ -2,9 +2,12 @@
 __pycache__
 .vscode
 {{package_name}}-data/**
-!{{package_name}}-data/**/*/  # Unignore subfolders
-!{{package_name}}-data/sources/*  # Unignore all files in sources subfolder
-!{{package_name}}-data/**/*.dvc  # Unignore .dvc files
+# Unignore subfolders
+!{{package_name}}-data/**/*/
+# Unignore all files in sources subfolder
+!{{package_name}}-data/sources/*
+# Unignore .dvc files
+!{{package_name}}-data/**/*.dvc
 {{package_name}}-models/**
 **/*egg-info*
 nosetests.xml

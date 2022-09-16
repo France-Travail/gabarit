@@ -217,6 +217,9 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(type(version), str)
 
 
+# TODO: test trained_needed & data_agnostic_str_to_list
+
+
 # Perform tests
 if __name__ == '__main__':
     # Start tests

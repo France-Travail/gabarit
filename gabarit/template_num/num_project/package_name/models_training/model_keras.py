@@ -182,6 +182,13 @@ class ModelKeras(ModelClass):
                 # Important : get_dummies reorder the columns in alphabetical order
                 # Thus, there is no problem if we fit again on a new dataframe with shuffled data
                 list_classes = list(y_train.columns)
+                # FIX: valid test might miss some classes, hence we need to add them back to y_valid
+                if y_valid is not None and y_train.shape[1] != y_valid.shape[1]:
+                    for cl in list_classes:
+                        # Add missing columns
+                        if cl not in y_valid.columns:
+                            y_valid[cl] = 0
+                    y_valid = y_valid[list_classes]  # Reorder
             # Else keep it as it is
             else:
                 y_train = y_train

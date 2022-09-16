@@ -529,5 +529,8 @@ class NpEncoder(json.JSONEncoder):
             return super(NpEncoder, self).default(obj)
 
 
+# TODO: test trained_needed
+
+
 if __name__ == '__main__':
     logger.error("This script is not stand alone but belongs to a package that has to be imported.")

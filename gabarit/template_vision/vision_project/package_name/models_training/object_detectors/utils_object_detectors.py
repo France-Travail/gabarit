@@ -555,7 +555,7 @@ def get_rpn_targets(model, img_data_batch: List[dict]) -> Tuple[np.ndarray, np.n
     Returns:
         np.ndarray: Classification targets : [y_is_box_valid] + [y_rpn_overlap] for each image with :
                     - y_is_box_valid -> if a box is valid (and thus, should enter in the classification loss)
-                    - y_rpn_overlap -> target of the classification ('pos', 'neg' ou 'neutral')
+                    - y_rpn_overlap -> target of the classification ('pos', 'neg' or 'neutral')
             # Shape (batch_size, feature_map_height, feature_map_width, nb_anchors * 2)
         np.ndarray: Regression targets : [y_rpn_overlap (repeated x 4)] + [y_rpn_regr] for each image with :
                     - y_rpn_overlap -> if a box is an object (and thus, should enter in the regression loss)
