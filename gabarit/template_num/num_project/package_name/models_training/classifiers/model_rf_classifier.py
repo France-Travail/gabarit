@@ -93,6 +93,9 @@ class ModelRFClassifier(ModelClassifierMixin, ModelPipeline):
         if self.multi_label or self.multiclass_strategy != 'ovo':
             return super().predict_proba(x_test=x_test, **kwargs)
         else:
+            # We check input format
+            x_test, _ = self._check_input_format(x_test)
+            # Get preds
             preds = self.pipeline.predict(x_test)
             # Format ['a', 'b', 'c', 'a', ..., 'b']
             # Transform to "proba"

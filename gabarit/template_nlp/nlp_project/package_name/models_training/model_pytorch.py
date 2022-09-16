@@ -331,7 +331,7 @@ class ModelPyTorch(ModelClass):
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
     def predict_proba(self, x_test, **kwargs) -> np.ndarray:
-        '''Probabilities predicted on the test set
+        '''Predicts probabilities on the test dataset
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples]

@@ -121,7 +121,7 @@ class ModelClass:
         raise NotImplementedError("'predict' needs to be overridden")
 
     def predict_proba(self, df_test: pd.DataFrame, **kwargs) -> np.ndarray:
-        '''Probabilities predicted on the test set
+        '''Predicts probabilities on the test dataset
 
         Args:
             df_test (pd.DataFrame): DataFrame to be predicted, with column file_path

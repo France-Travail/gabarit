@@ -55,7 +55,6 @@ class ModelKeras(ModelClass):
     _default_name = 'model_keras'
 
     # Not implemented :
-    # -> predict_proba
     # -> _prepare_x_train
     # -> _prepare_x_test
     # -> _get_model
@@ -334,19 +333,27 @@ class ModelKeras(ModelClass):
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict_proba(self, x_test) -> np.ndarray:
-        '''Probabilities predicted on the test set
+    def predict_proba(self, x_test, experimental_version: bool = False, **kwargs) -> np.ndarray:
+        '''Predicts probabilities on the test dataset
 
         Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples]
+            x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
+        Kwargs:
+            experimental_version (bool): If an experimental (but faster) version must be used
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        raise NotImplementedError("'predict_proba' needs to be overridden")
+        # Prepare input
+        x_test = self._prepare_x_test(x_test)
+        # Process
+        if experimental_version:
+            return self.experimental_predict_proba(x_test)
+        else:
+            return self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
     @utils.trained_needed
     def experimental_predict_proba(self, x_test, **kwargs) -> np.ndarray:
-        '''Probabilities predicted on the test set - Experimental function
+        '''Predicts probabilities on the test dataset - Experimental function
         Preprocessings must be done before (in predict_proba)
         Here we only do the prediction and return the result
 
