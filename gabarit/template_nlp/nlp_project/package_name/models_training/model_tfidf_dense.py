@@ -244,7 +244,7 @@ class ModelTfidfDense(ModelKeras):
         for attribute in ['x_col', 'y_col',
                           'list_classes', 'dict_classes', 'multi_label', 'level_save',
                           'batch_size', 'epochs', 'validation_split', 'patience',
-                          'nb_iter_keras', 'keras_params', 'embedding_name']:
+                          'keras_params', 'embedding_name']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload model

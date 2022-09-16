@@ -119,11 +119,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(model.embedding_name, 'toto')
         remove_dir(model_dir)
 
-        #
-        model = ModelKeras(model_dir=model_dir, nb_iter_keras=2)
-        self.assertEqual(model.nb_iter_keras, 2)
-        remove_dir(model_dir)
-
         # keras_params must accept anything !
         model = ModelKeras(model_dir=model_dir, keras_params={'toto': 5})
         self.assertEqual(model.keras_params, {'toto': 5})
@@ -203,22 +198,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
         self.assertTrue(model.model._is_compiled)
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        remove_dir(model_dir)
-
-        #
-        model = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                   max_sequence_length=10, max_words=100,
-                                   embedding_name='fake_embedding.pkl', nb_iter_keras=3)
-        self.assertFalse(model.trained)
-        self.assertEqual(model.nb_fit, 0)
-        model.fit(x_train, y_train_mono, x_valid=x_valid, y_valid=y_valid_mono, with_shuffle=True)
-        self.assertTrue(model.trained)
-        self.assertEqual(model.nb_fit, 1)
-        self.assertEqual(sorted(model.list_classes), [0, 1, 2])
-        self.assertTrue(model.model._is_compiled)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best_1.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best_2.hdf5')))
         remove_dir(model_dir)
 
         # Validation with y_train & y_valid of shape 2
@@ -307,22 +286,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
         remove_dir(model_dir)
 
-        #
-        model = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
-                                   max_sequence_length=10, max_words=100,
-                                   embedding_name='fake_embedding.pkl', nb_iter_keras=3)
-        self.assertFalse(model.trained)
-        self.assertEqual(model.nb_fit, 0)
-        model.fit(x_train, y_train_multi, x_valid=x_valid, y_valid=y_valid_multi, with_shuffle=True)
-        self.assertTrue(model.trained)
-        self.assertEqual(model.nb_fit, 1)
-        self.assertEqual(sorted(model.list_classes), ['test1', 'test2', 'test3'])
-        self.assertTrue(model.model._is_compiled)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best_1.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best_2.hdf5')))
-        remove_dir(model_dir)
-
 
         ###########
         # Test continue training
@@ -376,24 +339,6 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir_2)
         remove_dir(model_dir_3)
         remove_dir(model_dir_4)
-
-        # Test iterations error mono-label
-        model = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                   max_sequence_length=10, max_words=100,
-                                   embedding_name='fake_embedding.pkl', nb_iter_keras=2)
-        self.assertFalse(model.trained)
-        self.assertEqual(model.nb_fit, 0)
-        model.fit(x_train, y_train_mono, x_valid=None, y_valid=None, with_shuffle=True)
-        model.save()
-        self.assertTrue(model.trained)
-        self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
-        # Second fit
-        with self.assertRaises(RuntimeError):
-            model.fit(x_train[:50], y_train_mono[:50], x_valid=None, y_valid=None, with_shuffle=True)
-        self.assertEqual(model_dir, model.model_dir)
-        remove_dir(model_dir)
 
         # Test data errors mono-label
         model = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
@@ -461,24 +406,6 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir_3)
         remove_dir(model_dir_4)
 
-        # Test iterations error multi-labels
-        model = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
-                                   max_sequence_length=10, max_words=100,
-                                   embedding_name='fake_embedding.pkl', nb_iter_keras=2)
-        self.assertFalse(model.trained)
-        self.assertEqual(model.nb_fit, 0)
-        model.fit(x_train, y_train_multi, x_valid=None, y_valid=None, with_shuffle=True)
-        model.save()
-        self.assertTrue(model.trained)
-        self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
-        # Second fit
-        with self.assertRaises(RuntimeError):
-            model.fit(x_train[:50], y_train_multi[:50], x_valid=None, y_valid=None, with_shuffle=True)
-        self.assertEqual(model_dir, model.model_dir)
-        remove_dir(model_dir)
-
         # Test data errors multi-labels
         model = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
                                    max_sequence_length=10, max_words=100,
@@ -527,40 +454,10 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
         remove_dir(model_dir)
 
-        #
-        model = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                   max_sequence_length=10, max_words=100,
-                                   embedding_name='fake_embedding.pkl', nb_iter_keras=3)
-        model.fit(x_train, y_train_mono)
-        preds = model.predict(x_train, return_proba=False)
-        self.assertEqual(preds.shape, (len(x_train),))
-        preds = model.predict('test', return_proba=False)
-        self.assertEqual(preds, model.predict(['test'], return_proba=False)[0])
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 3))
-        proba = model.predict('test', return_proba=True)
-        self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
-        remove_dir(model_dir)
-
         # Multi-labels
         model = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
                                    max_sequence_length=10, max_words=100,
                                    embedding_name='fake_embedding.pkl')
-        model.fit(x_train, y_train_multi)
-        preds = model.predict(x_train, return_proba=False)
-        self.assertEqual(preds.shape, (len(x_train), len(cols)))
-        preds = model.predict('test', return_proba=False)
-        self.assertEqual([elem for elem in preds], [elem for elem in model.predict(['test'], return_proba=False)[0]])
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), len(cols)))
-        proba = model.predict('test', return_proba=True)
-        self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
-        remove_dir(model_dir)
-
-        #
-        model = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
-                                   max_sequence_length=10, max_words=100,
-                                   embedding_name='fake_embedding.pkl', nb_iter_keras=3)
         model.fit(x_train, y_train_multi)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train), len(cols)))
@@ -756,7 +653,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue('validation_split' in configs.keys())
         self.assertTrue('patience' in configs.keys())
         self.assertTrue('embedding_name' in configs.keys())
-        self.assertTrue('nb_iter_keras' in configs.keys())
         self.assertTrue('keras_params' in configs.keys())
         self.assertTrue('_get_model' in configs.keys())
         self.assertTrue('_get_learning_rate_scheduler' in configs.keys())
@@ -793,7 +689,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue('validation_split' in configs.keys())
         self.assertTrue('patience' in configs.keys())
         self.assertTrue('embedding_name' in configs.keys())
-        self.assertTrue('nb_iter_keras' in configs.keys())
         self.assertTrue('keras_params' in configs.keys())
         self.assertTrue('_get_model' in configs.keys())
         self.assertTrue('_get_learning_rate_scheduler' in configs.keys())
