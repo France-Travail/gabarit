@@ -33,6 +33,7 @@ import copy
 import json
 import shutil
 import logging
+import yaml
 import numpy as np
 import pandas as pd
 from functools import partial
@@ -191,6 +192,16 @@ class ModelDetectronFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelClas
                 self.logger.warning("The configuration file of the faster RCNN of detectron2 is not present in your data folder.")
                 self.logger.warning("Trying to download the file.")
                 utils.download_url(detectron_config_backup_urls, detectron_config_path)
+                
+                # Configure _BASE_ keyword from detectron_config_path
+                with open(detectron_config_path, "r") as f:
+                    detectron_config = yaml.load(f, yaml.CLoader)
+
+                detectron_config["_BASE_"] = self.detectron_config_base_filename
+
+                with open(detectron_config_path, "w") as f:
+                    yaml.dump(detectron_config, f)
+
             except ConnectionError:
                 self.logger.warning("Can't download the file. You can try to get it manually.")
                 self.logger.warning("You can find it here https://github.com/facebookresearch/detectron2/blob/main/configs/COCO-Detection/faster_rcnn_R_50_FPN_3x.yaml")
