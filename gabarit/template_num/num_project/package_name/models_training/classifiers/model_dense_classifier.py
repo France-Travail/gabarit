@@ -169,8 +169,7 @@ class ModelDenseClassifier(ModelClassifierMixin, ModelKeras):
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['model_type', 'x_col', 'y_col', 'columns_in', 'mandatory_columns',
                           'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'batch_size', 'epochs', 'validation_split', 'patience',
-                          'nb_iter_keras', 'keras_params']:
+                          'batch_size', 'epochs', 'validation_split', 'patience', 'keras_params']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload model
