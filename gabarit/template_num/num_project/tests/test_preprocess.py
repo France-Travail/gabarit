@@ -97,7 +97,7 @@ class PreprocessTests(unittest.TestCase):
             ('col_2', col_2_pipeline, ['col_2']),
             ('text', text_pipeline, 'text'),
         ]
-        pipeline = ColumnTransformer(transformers, remainder='drop')
+        pipeline = ColumnTransformer(transformers, remainder='drop', verbose_feature_names_out=False)
         # DataFrame
         df = pd.DataFrame({'col_1': [1, 5, 8, 4], 'col_2': [0.0, None, 1.0, 1.0], 'col_3': [-5, 6, 8, 6],
                            'toto': [4, 8, 9, 4],
@@ -111,10 +111,10 @@ class PreprocessTests(unittest.TestCase):
 
         # Nominal case
         new_transformed_df = preprocess.retrieve_columns_from_pipeline(transformed_df, pipeline)
-        self.assertEqual(list(new_transformed_df.columns), ['col_1', 'col_3', 'col_2_0.0', 'col_2_1.0', 'vec_dernier', 'vec_test'])
+        self.assertEqual(list(new_transformed_df.columns), ['col_1', 'col_3', 'col_2_0.0', 'col_2_1.0', 'dernier', 'test'])
 
         # If unfitted pipeline, no modifications
-        tmp_pipeline = ColumnTransformer(transformers, remainder='drop')
+        tmp_pipeline = ColumnTransformer(transformers, remainder='drop', verbose_feature_names_out=False)
         new_transformed_df = preprocess.retrieve_columns_from_pipeline(transformed_df, tmp_pipeline)
         pd.testing.assert_frame_equal(new_transformed_df, transformed_df)
 
@@ -145,38 +145,6 @@ class PreprocessTests(unittest.TestCase):
         estimator.fit(pd.DataFrame({'col_1': [0, 0, 1, 1, 1], 'col_2': [1, 1, 0, 0, 0], 'col_3': [0, 0, 0, 0, 0]}), pd.Series([-1, -1, 1, 1, 1]))
         feature_out = preprocess.get_feature_out(estimator, ['col_1', 'col_2', 'col_3'])
         self.assertEqual(list(feature_out), ['col_1', 'col_2'])
-
-
-    def test05_get_ct_feature_names(self):
-        '''Test of the function preprocess.get_ct_feature_names'''
-        # Pipeline
-        col_1_3_pipeline = make_pipeline(SimpleImputer(strategy='median'), StandardScaler())
-        col_2_pipeline = make_pipeline(SimpleImputer(strategy='most_frequent'), OneHotEncoder(handle_unknown='ignore'))
-        text_pipeline = make_pipeline(CountVectorizer(), SelectKBest(k=2))
-        transformers = [
-            ('col_1_3', col_1_3_pipeline, ['col_1', 'col_3']),
-            ('col_2', col_2_pipeline, ['col_2']),
-            ('text', text_pipeline, 'text'),
-        ]
-        pipeline = ColumnTransformer(transformers, remainder='drop')
-        # DataFrame
-        df = pd.DataFrame({'col_1': [1, 5, 8, 4], 'col_2': [0.0, None, 1.0, 1.0], 'col_3': [-5, 6, 8, 6],
-                           'toto': [4, 8, 9, 4],
-                           'text': ['ceci est un test', 'un autre test', 'et un troisième test', 'et un dernier']})
-        # Target
-        y = pd.Series([1, 1, 1, 0])
-        # Fit
-        pipeline.fit(df, y)
-
-        # Nominal case
-        output_features = preprocess.get_ct_feature_names(pipeline)
-        self.assertEqual(output_features, ['col_1', 'col_3', 'col_2_0.0', 'col_2_1.0', 'vec_dernier', 'vec_test'])
-
-        # remainder == 'passthrough'
-        pipeline = ColumnTransformer(transformers, remainder='passthrough')
-        pipeline.fit(df, y)
-        output_features = preprocess.get_ct_feature_names(pipeline)
-        self.assertEqual(output_features, ['col_1', 'col_3', 'col_2_0.0', 'col_2_1.0', 'vec_dernier', 'vec_test', 'toto'])
 
 
 # Perform tests

@@ -139,7 +139,7 @@ def retrieve_columns_from_pipeline(df: pd.DataFrame, pipeline: ColumnTransformer
         # Check if fitted:
         if not hasattr(pipeline, '_columns'):
             raise AttributeError("The pipeline must be fitted to use the function retrieve_columns_from_pipeline")
-        new_columns = get_ct_feature_names(pipeline)
+        new_columns = pipeline.get_feature_names_out()
         assert len(new_columns) == df.shape[1], "There is a discrepancy in the number of columns" +\
                                                 f" between the preprocessed DataFrame ({df.shape[1]})" +\
                                                 f" and the pipeline ({len(new_columns)})."
@@ -150,40 +150,6 @@ def retrieve_columns_from_pipeline(df: pd.DataFrame, pipeline: ColumnTransformer
         logger.error("Continue the process")
         logger.error(repr(e))
     return df
-
-
-# TODO: Use new get_feature_names_out functionality
-# https://scikit-learn.org/stable/auto_examples/release_highlights/plot_release_highlights_1_0_0.html#feature-names-support
-def get_ct_feature_names(ct: ColumnTransformer) -> list:
-    '''Gets the names of the columns when considering a fitted ColumnTransfomer
-    From: https://stackoverflow.com/questions/57528350/can-you-consistently-keep-track-of-column-labels-using-sklearns-transformer-api
-
-    Args:
-        ColumnTransformer: Column tranformer to be processed
-    Returns:
-        list: List of new feature names
-    '''
-    # Handles all estimators, pipelines inside ColumnTransfomer
-    # does not work when remainder =='passthrough'
-    # which requires the input column names.
-    output_features = []
-
-    for name, estimator, features in ct.transformers_:
-        if name != 'remainder':
-            if isinstance(estimator, Pipeline):
-                current_features = features
-                for step in estimator:
-                    if type(step) == tuple:
-                        step = step[1]
-                    current_features = get_feature_out(step, current_features)
-                features_out = current_features
-            else:
-                features_out = get_feature_out(estimator, features)
-            output_features.extend(features_out)
-        elif estimator == 'passthrough':
-            output_features.extend(ct.feature_names_in_[features])
-
-    return output_features
 
 
 # TODO: Check if the estimators all have the method get_feature_names_out implemented (https://github.com/scikit-learn/scikit-learn/issues/21308)
