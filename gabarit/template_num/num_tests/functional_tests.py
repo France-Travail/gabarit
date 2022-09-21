@@ -152,12 +152,12 @@ class Case1_e2e_pipeline(unittest.TestCase):
         # Check if exists
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_num-data', 'mono_class_mono_label_train_preprocess_P1.csv')))
         df_train = pd.read_csv(os.path.join(full_path_lib, 'test_template_num-data', 'mono_class_mono_label_train_preprocess_P1.csv'), sep=';', encoding='utf-8', skiprows=1)
-        # Check col col_1, col_2 & y_col exists
-        self.assertTrue('col_1' in df_train.columns)
-        self.assertTrue('col_2' in df_train.columns)
+        # Check col num__col_1, num__col_2 & y_col exists, num is the transformer name
+        self.assertTrue('num__col_1' in df_train.columns)
+        self.assertTrue('num__col_2' in df_train.columns)
         self.assertTrue('y_col' in df_train.columns)
         # Check col x_col_1 value
-        self.assertTrue(df_train['col_1'].values[2], 0.4142585780542456)
+        self.assertTrue(df_train['num__col_1'].values[2], 0.4142585780542456)
         # Check col y_col values
         self.assertEqual(sorted(df_train.y_col.unique()), ["non", "oui"])
         # Check pipeline has been saved
@@ -174,12 +174,12 @@ class Case1_e2e_pipeline(unittest.TestCase):
         # Check if exists
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_num-data', 'mono_output_regression_train_preprocess_P1.csv')))
         df_train = pd.read_csv(os.path.join(full_path_lib, 'test_template_num-data', 'mono_output_regression_train_preprocess_P1.csv'), sep=';', encoding='utf-8', skiprows=1)
-        # Check col col_1, col_2 & y_col exists
-        self.assertTrue('col_1' in df_train.columns)
-        self.assertTrue('col_2' in df_train.columns)
+        # Check col num__col_1, num__col_2 & y_col exists, num is the transformer name
+        self.assertTrue('num__col_1' in df_train.columns)
+        self.assertTrue('num__col_2' in df_train.columns)
         self.assertTrue('y_col' in df_train.columns)
         # Check col x_col_1 value
-        self.assertTrue(df_train['col_1'].values[2], 0.4142585780542456)
+        self.assertTrue(df_train['num__col_1'].values[2], 0.4142585780542456)
         # Check pipeline has been saved
         pipelines_dirpath = os.path.join(full_path_lib, 'test_template_num-pipelines')
         self.assertTrue(os.path.exists(pipelines_dirpath))
@@ -212,8 +212,8 @@ class Case1_e2e_pipeline(unittest.TestCase):
         # Check same preprocess (we test unique values)
         df_train = pd.read_csv(train_path, sep=';', encoding='utf-8', skiprows=1)
         df_valid = pd.read_csv(valid_path, sep=';', encoding='utf-8', skiprows=1)
-        self.assertEqual(sorted(df_train.col_1.unique()), sorted(df_valid.col_1.unique()))
-        self.assertEqual(sorted(df_train.col_2.unique()), sorted(df_valid.col_2.unique()))
+        self.assertEqual(sorted(df_train.num__col_1.unique()), sorted(df_valid.num__col_1.unique()))
+        self.assertEqual(sorted(df_train.num__col_2.unique()), sorted(df_valid.num__col_2.unique()))
         self.assertEqual(sorted(df_train.y_col.unique()), sorted(df_valid.y_col.unique()))
 
         # "Basic" case - regression
@@ -232,8 +232,8 @@ class Case1_e2e_pipeline(unittest.TestCase):
         # Check same preprocess (we test unique values)
         df_train = pd.read_csv(train_path, sep=';', encoding='utf-8', skiprows=1)
         df_valid = pd.read_csv(valid_path, sep=';', encoding='utf-8', skiprows=1)
-        self.assertEqual(sorted(df_train.col_1.unique()), sorted(df_valid.col_1.unique()))
-        self.assertEqual(sorted(df_train.col_2.unique()), sorted(df_valid.col_2.unique()))
+        self.assertEqual(sorted(df_train.num__col_1.unique()), sorted(df_valid.num__col_1.unique()))
+        self.assertEqual(sorted(df_train.num__col_2.unique()), sorted(df_valid.num__col_2.unique()))
         self.assertEqual(sorted(df_train.y_col.unique()), sorted(df_valid.y_col.unique()))
 
     def test06_TrainingE2E(self):
