@@ -82,9 +82,18 @@ def preprocess_P1() -> ColumnTransformer:
     # and https://pandas.pydata.org/pandas-docs/stable/reference/api/pandas.DataFrame.select_dtypes.html#pandas.DataFrame.select_dtypes
     # to understand make_column_selector
 
+    # /!\
+    # BE VERY CAUTIOUS WHEN USING FunctionTransformer !
+    # A pickled pipeline can still depends on a module definition. Hence, even when pickled, you may not have consistent results !
+    # Please try to use lambdas or local function, without any dependency. It reduces risk of changes.
+    # If you still have to use a module function, try to never change it later on.
+    # https://stackoverflow.com/questions/73788824/how-can-i-save-reload-a-functiontransformer-object-and-expect-it-to-always-wor
+    # https://github.com/OSS-Pole-Emploi/gabarit/issues/63
+    # /!\
+
     # /!\ EXEMPLE HERE /!\
     # Good practice: Use directly the names of the columns instead of a "selector"
-    # WARNING: The text pipeline is supposed to work on a column 'text' -> Please adapt it to your project
+    # WARNING: The text pipeline is supposed to work on a column 'text' -> Please adapt it to your project if you want to use it
 
     # By default, we only keep the preprocess on numerical columns
     transformers = [
@@ -94,7 +103,7 @@ def preprocess_P1() -> ColumnTransformer:
     ]
 
     # TODO: add sparse compatibility !
-    # Use somethings like these:
+    # Use somethings like this :
     # - After applying a pipeline ...
     # if scipy.sparse.issparse(preprocessed_x):
     #     preprocessed_df = pd.DataFrame.sparse.from_spmatrix(preprocessed_x)
