@@ -191,7 +191,8 @@ def get_ct_feature_names(ct: ColumnTransformer) -> list:
                 features_out = get_feature_out(estimator, features)
             output_features.extend([f'{name}__{feat}' for feat in features_out])
         elif estimator == 'passthrough':
-            output_features.extend([f'remainder__{feat}' for feat in features])
+            # features is indexes in case of passthrough
+            output_features.extend([f'remainder__{feat}' for feat in ct.feature_names_in_[features]])
 
     return output_features
 
