@@ -31,6 +31,17 @@ python {{package_name}}-scripts/utils/0_create_samples.py -f wine.csv -n 10
     )
 
 
+def answer_exercice_2_5():
+    return print_answer(
+        f"""
+# do not forget to activate your virtual environment
+# source venv_num_template/bin/activate
+
+python template_num-scripts/utils/0_generate_report.py -s wine_train.csv -c wine_test.csv 
+"""
+    )
+
+
 def answer_exercice_3():
     return print_answer(
         f"""

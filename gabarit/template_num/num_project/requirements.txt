@@ -21,6 +21,7 @@ dill==0.3.5.1
 # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
 protobuf==3.19.4  # Latest available version for tensorflow 2.10
 mlflow==1.28.0
+sweetviz>=2.0,<3.0
 
 # Optionnals - useless in prod.
 pydot==1.4.1  # Needed to plot models architecture

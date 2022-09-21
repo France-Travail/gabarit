@@ -1,8 +1,10 @@
+import html
 import json
 import os
 from pathlib import Path
 
 import pandas as pd
+from IPython import display
 from PIL import Image
 from sklearn.compose import ColumnTransformer
 from {{package_name}}.utils import get_data_path, get_models_path
@@ -62,6 +64,23 @@ def verify_exercice_2():
     assert os.path.exists(DATA_PATH / f"{DATASET_NAME}_10_samples.csv")
 
     print("Exercice 2 : OK ✔")
+
+
+def verify_exercice_2_5():
+    """Verify exercice 2.5"""
+    report_path = DATA_PATH / "reports" / "report_wine_train_wine_test.html"
+    assert report_path.exists(), f"{report_path} not found"
+
+    with report_path.open("r") as f:
+        report_content = f.read()
+
+    report_html = html.escape(report_content)
+    iframe = (
+        f'<iframe width="100%" height="750px" srcdoc="{report_html}" '
+        f'frameborder="0" allowfullscreen></iframe>'
+    )
+
+    display.display_html(iframe, raw=True)
 
 
 def verify_exercice_3():
