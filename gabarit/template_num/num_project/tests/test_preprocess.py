@@ -123,30 +123,6 @@ class PreprocessTests(unittest.TestCase):
         pd.testing.assert_frame_equal(new_transformed_df, df)
 
 
-    def test04_get_feature_out(self):
-        '''Test of the function preprocess.get_feature_out'''
-
-        # Nominal case - non _VectorizerMixin - non SelectorMixin
-        estimator = SimpleImputer(strategy='median')
-        estimator.fit(pd.DataFrame({'col': [1, 0, 1, 1, None]}))
-        feature_out = preprocess.get_feature_out(estimator, 'toto')
-        self.assertEqual(feature_out, 'toto')
-        feature_out = preprocess.get_feature_out(estimator, ['toto', 'tata'])
-        self.assertEqual(feature_out, ['toto', 'tata'])
-
-        # Nominal case - _VectorizerMixin
-        estimator = OneHotEncoder(handle_unknown='ignore')
-        estimator.fit(pd.DataFrame({'col': [0, 0, 1, 1, 0]}))
-        feature_out = preprocess.get_feature_out(estimator, ['toto'])
-        self.assertEqual(list(feature_out), ['toto_0', 'toto_1'])
-
-        # Nominal case - SelectorMixin
-        estimator = SelectKBest(k=2)
-        estimator.fit(pd.DataFrame({'col_1': [0, 0, 1, 1, 1], 'col_2': [1, 1, 0, 0, 0], 'col_3': [0, 0, 0, 0, 0]}), pd.Series([-1, -1, 1, 1, 1]))
-        feature_out = preprocess.get_feature_out(estimator, ['col_1', 'col_2', 'col_3'])
-        self.assertEqual(list(feature_out), ['col_1', 'col_2'])
-
-
 # Perform tests
 if __name__ == '__main__':
     # Start tests

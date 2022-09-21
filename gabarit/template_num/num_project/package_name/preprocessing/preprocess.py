@@ -152,29 +152,5 @@ def retrieve_columns_from_pipeline(df: pd.DataFrame, pipeline: ColumnTransformer
     return df
 
 
-# TODO: Check if the estimators all have the method get_feature_names_out implemented (https://github.com/scikit-learn/scikit-learn/issues/21308)
-# to replace these functions
-def get_feature_out(estimator, features_in: list) -> list:
-    '''Gets the name of a column when considering a fitted estimator
-    From: https://stackoverflow.com/questions/57528350/can-you-consistently-keep-track-of-column-labels-using-sklearns-transformer-api
-
-    Args:
-        (?): Estimator to be processed
-        (list): Input columns
-    Returns:
-        list: List of new feature names
-    '''
-    if hasattr(estimator, 'get_feature_names'):
-        if isinstance(estimator, _VectorizerMixin):
-            # handling all vectorizers
-            return [f'vec_{f}' for f in estimator.get_feature_names()]
-        else:
-            return estimator.get_feature_names(features_in)
-    elif isinstance(estimator, SelectorMixin):
-        return np.array(features_in)[estimator.get_support()]
-    else:
-        return features_in
-
-
 if __name__ == '__main__':
     logger.error("This script is not stand alone but belongs to a package that has to be imported.")
