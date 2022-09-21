@@ -93,11 +93,12 @@ class PreprocessTests(unittest.TestCase):
         col_2_pipeline = make_pipeline(SimpleImputer(strategy='most_frequent'), OneHotEncoder(handle_unknown='ignore'))
         text_pipeline = make_pipeline(CountVectorizer(), SelectKBest(k=2))
         transformers = [
-            ('col_1_3', col_1_3_pipeline, ['col_1', 'col_3']),
-            ('col_2', col_2_pipeline, ['col_2']),
-            ('text', text_pipeline, 'text'),
+            ('tr1', col_1_3_pipeline, ['col_1', 'col_3']),
+            ('tr2', col_2_pipeline, ['col_2']),
+            ('tr3', text_pipeline, 'text'),
         ]
         pipeline = ColumnTransformer(transformers, remainder='drop', verbose_feature_names_out=False)
+        pipeline_verbose = ColumnTransformer(transformers, remainder='drop', verbose_feature_names_out=True)
         # DataFrame
         df = pd.DataFrame({'col_1': [1, 5, 8, 4], 'col_2': [0.0, None, 1.0, 1.0], 'col_3': [-5, 6, 8, 6],
                            'toto': [4, 8, 9, 4],
@@ -106,21 +107,30 @@ class PreprocessTests(unittest.TestCase):
         y = pd.Series([1, 1, 1, 0])
         # Fit
         pipeline.fit(df, y)
+        pipeline_verbose.fit(df, y)
         # transform
         transformed_df = pd.DataFrame(pipeline.transform(df))
+        transformed_df_verbose = pd.DataFrame(pipeline_verbose.transform(df))
 
         # Nominal case
         new_transformed_df = preprocess.retrieve_columns_from_pipeline(transformed_df, pipeline)
+        new_transformed_df_verbose = preprocess.retrieve_columns_from_pipeline(transformed_df_verbose, pipeline_verbose)
         self.assertEqual(list(new_transformed_df.columns), ['col_1', 'col_3', 'col_2_0.0', 'col_2_1.0', 'dernier', 'test'])
+        self.assertEqual(list(new_transformed_df_verbose.columns), ['tr1__col_1', 'tr1__col_3', 'tr2__col_2_0.0', 'tr2__col_2_1.0', 'tr3__dernier', 'tr3__test'])
 
         # If unfitted pipeline, no modifications
         tmp_pipeline = ColumnTransformer(transformers, remainder='drop', verbose_feature_names_out=False)
-        new_transformed_df = preprocess.retrieve_columns_from_pipeline(transformed_df, tmp_pipeline)
-        pd.testing.assert_frame_equal(new_transformed_df, transformed_df)
+        tmp_pipeline_verbose = ColumnTransformer(transformers, remainder='drop', verbose_feature_names_out=True)
+        new_transformed_df = preprocess.retrieve_columns_from_pipeline(df, tmp_pipeline)
+        new_transformed_df_verbose = preprocess.retrieve_columns_from_pipeline(df, tmp_pipeline_verbose)
+        pd.testing.assert_frame_equal(new_transformed_df, df)
+        pd.testing.assert_frame_equal(new_transformed_df_verbose, df)
 
         # If there is not the right number of columns, no modifications
         new_transformed_df = preprocess.retrieve_columns_from_pipeline(df, pipeline)
+        new_transformed_df_verbose = preprocess.retrieve_columns_from_pipeline(df, pipeline_verbose)
         pd.testing.assert_frame_equal(new_transformed_df, df)
+        pd.testing.assert_frame_equal(new_transformed_df_verbose, df)
 
 
 # Perform tests
