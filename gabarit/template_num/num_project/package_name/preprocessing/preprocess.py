@@ -134,22 +134,89 @@ def retrieve_columns_from_pipeline(df: pd.DataFrame, pipeline: ColumnTransformer
     Returns:
         pd.DataFrame: Dataframe with columns' name
     '''
+    # Use deepcopy !
+    new_df = df.copy(deep=True)
+    # Check if fitted:
+    if not hasattr(pipeline, 'transformers_'):
+        raise AttributeError("The pipeline must be fitted to use the function retrieve_columns_from_pipeline")
     # EXPERIMENTAL: We do a try... except... if we can't get the names
+    # First try : use sklearn get_feature_names_out function (might crash)
+    # Second try : backup on old custom method
+    # Third solution : ['x0', 'x1', ...]
     try:
-        # Check if fitted:
-        if not hasattr(pipeline, '_columns'):
-            raise AttributeError("The pipeline must be fitted to use the function retrieve_columns_from_pipeline")
-        new_columns = pipeline.get_feature_names_out()
-        assert len(new_columns) == df.shape[1], "There is a discrepancy in the number of columns" +\
-                                                f" between the preprocessed DataFrame ({df.shape[1]})" +\
+        try:
+            new_columns = pipeline.get_feature_names_out()
+        # Backup on old custom method
+        except:
+            new_columns = get_ct_feature_names(pipeline)
+        assert len(new_columns) == new_df.shape[1], "There is a discrepancy in the number of columns" +\
+                                                f" between the preprocessed DataFrame ({new_df.shape[1]})" +\
                                                 f" and the pipeline ({len(new_columns)})."
-        # TODO : check for duplicates ?!
-        df.columns = new_columns
+    # No solution
     except Exception as e:
-        logger.error("Can't get the names of the columns. Cancel it (experimental)")
-        logger.error("Continue the process")
+        logger.error("Can't get the names of the columns. Backup on ['x0', 'x1', ...]")
         logger.error(repr(e))
-    return df
+        new_columns = [f'x{i}' for i in range(len(new_df.columns))]
+    # TODO : check for duplicates in new_columns ???
+    new_df.columns = new_columns
+    return new_df
+
+
+# Backup solution if get_feature_names_out does not work
+# https://scikit-learn.org/stable/auto_examples/release_highlights/plot_release_highlights_1_0_0.html#feature-names-support
+def get_ct_feature_names(ct: ColumnTransformer) -> list:
+    '''Gets the names of the columns when considering a fitted ColumnTransfomer
+    From: https://stackoverflow.com/questions/57528350/can-you-consistently-keep-track-of-column-labels-using-sklearns-transformer-api
+
+    Args:
+        ColumnTransformer: Column tranformer to be processed
+    Returns:
+        list: List of new feature names
+    '''
+    # Handles all estimators, pipelines inside ColumnTransfomer
+    # does not work when remainder =='passthrough'
+    # which requires the input column names.
+    output_features = []
+
+    for name, estimator, features in ct.transformers_:
+        if name != 'remainder':
+            if isinstance(estimator, Pipeline):
+                current_features = features
+                for step in estimator:
+                    if type(step) == tuple:
+                        step = step[1]
+                    current_features = get_feature_out(step, current_features)
+                features_out = current_features
+            else:
+                features_out = get_feature_out(estimator, features)
+            output_features.extend([f'{name}__{feat}' for feat in features_out])
+        elif estimator == 'passthrough':
+            output_features.extend([f'remainder__{feat}' for feat in features])
+
+    return output_features
+
+
+# Backup solution if get_feature_names_out does not work
+def get_feature_out(estimator, features_in: list) -> list:
+    '''Gets the name of a column when considering a fitted estimator
+    From: https://stackoverflow.com/questions/57528350/can-you-consistently-keep-track-of-column-labels-using-sklearns-transformer-api
+
+    Args:
+        (?): Estimator to be processed
+        (list): Input columns
+    Returns:
+        list: List of new feature names
+    '''
+    if hasattr(estimator, 'get_feature_names'):
+        if isinstance(estimator, _VectorizerMixin):
+            # handling all vectorizers
+            return estimator.get_feature_names()
+        else:
+            return estimator.get_feature_names(features_in)
+    elif isinstance(estimator, SelectorMixin):
+        return np.array(features_in)[estimator.get_support()]
+    else:
+        return features_in
 
 
 if __name__ == '__main__':
