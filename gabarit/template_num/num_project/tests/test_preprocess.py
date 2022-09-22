@@ -167,7 +167,8 @@ class PreprocessTests(unittest.TestCase):
             ('tr2', col_2_pipeline, ['col_2']),
             ('tr3', text_pipeline, 'text'),
         ]
-        pipeline = ColumnTransformer(transformers, remainder='drop')
+        pipeline = ColumnTransformer(transformers, remainder='drop', verbose_feature_names_out=False)
+        pipeline_verbose = ColumnTransformer(transformers, remainder='drop', verbose_feature_names_out=True)
         # DataFrame
         df = pd.DataFrame({'col_1': [1, 5, 8, 4], 'col_2': [0.0, None, 1.0, 1.0], 'col_3': [-5, 6, 8, 6],
                            'toto': [4, 8, 9, 4],
@@ -176,16 +177,23 @@ class PreprocessTests(unittest.TestCase):
         y = pd.Series([1, 1, 1, 0])
         # Fit
         pipeline.fit(df, y)
+        pipeline_verbose.fit(df, y)
 
         # Nominal case
         output_features = preprocess.get_ct_feature_names(pipeline)
-        self.assertEqual(output_features, ['tr1__col_1', 'tr1__col_3', 'tr2__col_2_0.0', 'tr2__col_2_1.0', 'tr3__dernier', 'tr3__test'])
+        output_features_verbose = preprocess.get_ct_feature_names(pipeline_verbose)
+        self.assertEqual(output_features, ['col_1', 'col_3', 'col_2_0.0', 'col_2_1.0', 'dernier', 'test'])
+        self.assertEqual(output_features_verbose, ['tr1__col_1', 'tr1__col_3', 'tr2__col_2_0.0', 'tr2__col_2_1.0', 'tr3__dernier', 'tr3__test'])
 
         # remainder == 'passthrough'
-        pipeline = ColumnTransformer(transformers, remainder='passthrough')
+        pipeline = ColumnTransformer(transformers, remainder='passthrough', verbose_feature_names_out=False)
+        pipeline_verbose = ColumnTransformer(transformers, remainder='passthrough', verbose_feature_names_out=True)
         pipeline.fit(df, y)
+        pipeline_verbose.fit(df, y)
         output_features = preprocess.get_ct_feature_names(pipeline)
-        self.assertEqual(output_features, ['tr1__col_1', 'tr1__col_3', 'tr2__col_2_0.0', 'tr2__col_2_1.0', 'tr3__dernier', 'tr3__test', 'remainder__toto'])
+        output_features_verbose = preprocess.get_ct_feature_names(pipeline_verbose)
+        self.assertEqual(output_features, ['col_1', 'col_3', 'col_2_0.0', 'col_2_1.0', 'dernier', 'test', 'toto'])
+        self.assertEqual(output_features_verbose, ['tr1__col_1', 'tr1__col_3', 'tr2__col_2_0.0', 'tr2__col_2_1.0', 'tr3__dernier', 'tr3__test', 'remainder__toto'])
 
 
     def test05_get_feature_out(self):
