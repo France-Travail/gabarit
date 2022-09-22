@@ -135,7 +135,7 @@ class ModelTfidfCos(ModelPipeline):
         x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
         x_test = np.array(x_test) if isinstance(x_test, list) else x_test
 
-        chunk_size = 5000
+        chunk_size = 2000
         vec = self.pipeline.transform(x_test).astype(np.float16)
         vec_size = math.ceil((vec.shape[0]) / chunk_size)
         train_size = math.ceil((self.matrix_train.shape[0]) / chunk_size)
