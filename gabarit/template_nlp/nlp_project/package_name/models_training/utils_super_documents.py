@@ -21,7 +21,7 @@
 #
 # Super documents collects all documents and concatenate them by label.
 # Unlike standard tfidf model fitting with [n_samples, n_terms],
-# Super documents fits with [n_label, n_terms] and transforms with [n_samples, n_label].
+# Super documents fits with [n_label, n_terms] and transforms with [n_samples, n_labels].
 
 from __future__ import annotations
 
