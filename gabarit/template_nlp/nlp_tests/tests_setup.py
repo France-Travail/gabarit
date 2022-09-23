@@ -271,6 +271,13 @@ class Case3_unit_tests(unittest.TestCase):
         # If available, run the test
         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_pytorch_light.py', shell=True).returncode, 0)
 
+    def test22_test_model_aggregation(self):
+        '''Launches tests of file model_aggregation.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_aggregation.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
 if __name__ == '__main__':
     # Retrieve pip params

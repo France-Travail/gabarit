@@ -49,7 +49,8 @@ from {{package_name}}.models_training import (model_tfidf_dense,
                                               model_embedding_lstm_structured_attention,
                                               model_embedding_lstm_gru_gpu,
                                               model_pytorch_transformers,
-                                              utils_models)
+                                              utils_models,
+                                              model_aggregation)
 
 # Disable some warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -274,6 +275,9 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
         #                                                             tokenizer_special_tokens=tuple(),
         #                                                             padding="max_length", truncation=True,
         #                                                             multi_label=multi_label)
+        # modle = model_aggregation(x_col=x_col, y_col=y_col, level_save=level_save,
+        #                             list_models=[ModelTfidfSvm(), ModelTfidfSvm()],
+        #                             multi_label=multi_label)
 
     # Display if GPU is being used
     model.display_if_gpu_activated()
