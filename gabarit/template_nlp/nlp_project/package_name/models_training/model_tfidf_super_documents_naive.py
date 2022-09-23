@@ -19,13 +19,11 @@
 #
 # Classes :
 # - ModelTfidfSuperDocumentsNaive -> Model for predictions TF-IDF naive with super documents
+# Model_super_documents_naive return the label with the highest tfidf in tfidf_super_documents.
 #
 # Super documents collects all documents and concatenate them by label.
 # Unlike standard tfidf model fitting with [n_samples, n_terms],
-# Super documents fits with [n_label, n_terms] and transforms with [n_samples, n_terms].
-#
-# Model_super_documents adds each term's tfidf*count for each document and returns the label with the highest value
-
+# Super documents fits with [n_labels, n_terms] and transforms with [n_samples, n_labels].
 
 import os
 import json
