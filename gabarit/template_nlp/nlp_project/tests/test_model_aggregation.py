@@ -170,7 +170,7 @@ class Modelaggregation(unittest.TestCase):
             remove_dir(os.path.split(submodel.model_dir)[-1])
         remove_dir(model_dir)
 
-        # list_models = [model_name, model]
+        # list_models = [model_name, model_name]
         # aggregation_function: Callable
         # not using_proba
         # not multi_label
@@ -261,7 +261,6 @@ class Modelaggregation(unittest.TestCase):
         with self.assertRaises(ValueError):
             model = ModelAggregation(model_dir=model_dir, multi_label=None, aggregation_function=lambda predictions: np.sum(predictions, axis=0, dtype=bool).astype(int))
         remove_dir(model_dir)
-
 
         # if 'multi_label' inconsistent
         svm, gbt, _, _ = self.create_svm_gbt(svm_param={'multi_label': True})
