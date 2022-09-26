@@ -37,7 +37,7 @@ def answer_exercice_3():
 # do not forget to activate your virtual environment
 # source venv_num_template/bin/activate
 
-python template_num-scripts/utils/0_generate_report.py -s wine_train.csv -c wine_test.csv
+python {{package_name}}-scripts/utils/0_generate_report.py -s wine_train.csv -c wine_test.csv
 """
     )
 
