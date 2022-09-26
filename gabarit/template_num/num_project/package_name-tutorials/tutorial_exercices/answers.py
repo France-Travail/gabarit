@@ -31,18 +31,18 @@ python {{package_name}}-scripts/utils/0_create_samples.py -f wine.csv -n 10
     )
 
 
-def answer_exercice_2_5():
+def answer_exercice_3():
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
 # source venv_num_template/bin/activate
 
-python template_num-scripts/utils/0_generate_report.py -s wine_train.csv -c wine_test.csv 
+python template_num-scripts/utils/0_generate_report.py -s wine_train.csv -c wine_test.csv
 """
     )
 
 
-def answer_exercice_3():
+def answer_exercice_4():
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
@@ -53,7 +53,7 @@ python {{package_name}}-scripts/1_preprocess_data.py -f wine.csv --target_cols t
     )
 
 
-def answer_exercice_4_preprocess_P2():
+def answer_exercice_5_preprocess_P2():
     return print_answer(
         f"""
 from sklearn.preprocessing import MinMaxScaler
@@ -87,7 +87,7 @@ def preprocess_P2() -> ColumnTransformer:
     )
 
 
-def answer_exercice_4_preprocess_script():
+def answer_exercice_5_preprocess_script():
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
@@ -98,7 +98,7 @@ python {{package_name}}-scripts/1_preprocess_data.py -f wine.csv -p preprocess_P
     )
 
 
-def answer_exercice_5():
+def answer_exercice_6():
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
@@ -114,7 +114,7 @@ python {{package_name}}-scripts/2_apply_existing_pipeline.py -f wine_valid.csv -
     )
 
 
-def answer_exercice_6():
+def answer_exercice_7():
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
@@ -125,7 +125,7 @@ python {{package_name}}-scripts/3_training_classification.py -f wine_train_prepr
     )
 
 
-def answer_exercice_7():
+def answer_exercice_8():
     return print_answer(
         f"""
 # in {{package_name}}-scripts/3_training_classification.py :
@@ -149,7 +149,7 @@ if model is None:
     )
 
 
-def answer_exercice_8():
+def answer_exercice_9():
     return print_answer(
         f"""
 # do not forget to activate your virtual environment
@@ -162,7 +162,7 @@ python {{package_name}}-scripts/4_predict.py -f wine_test.csv -y target -m "$mod
     )
 
 
-def answer_exercice_9_preprocess_P3():
+def answer_exercice_10_preprocess_P3():
 
     return print_answer(
         f"""
@@ -199,7 +199,7 @@ def preprocess_P3() -> ColumnTransformer:
     )
 
 
-def answer_exercice_9_scripts():
+def answer_exercice_10_scripts():
 
     return print_answer(
         f"""
