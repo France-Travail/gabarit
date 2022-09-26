@@ -23,6 +23,7 @@ from unittest.mock import patch
 # utils libs
 import os
 import sys
+import json
 import shutil
 import subprocess
 import pandas as pd
@@ -1819,6 +1820,63 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_EmbeddingLstmStructuredAttention failed')
 
+class EDAReportTest(unittest.TestCase):
+    '''Class to test the EDA report generation'''
+    def test_generate_report(self):
+        '''Test of the script utils/0_generate_report.py'''   
+        script = os.path.join(
+            full_path_lib, "test_template_nlp-scripts", "utils", "0_generate_report.py"
+        )
+
+        # Sweetviz configuration
+        config_path = os.path.join(full_path_lib, "test_config.json")
+
+        with open(config_path, "w") as f:
+            json.dump({"open_browser": False}, f)
+
+        result_source = subprocess.run(
+            [
+                f"{activate_venv}python",
+                script,
+                "-s",
+                "dataset_jvc.csv",
+                "--source_names",
+                "source",
+                "--config",
+                config_path,
+            ]
+        )
+
+        assert result_source.returncode == 0
+        assert os.path.exists(
+            os.path.join(
+                full_path_lib, "test_template_nlp-data", "reports", "report_source.html"
+            )
+        )
+
+        result_compare = subprocess.run(
+            [
+                f"{activate_venv}python",
+                script,
+                "-s",
+                "dataset_jvc.csv",
+                "-c",
+                "dataset_jvc.csv",
+                "--source_names",
+                "source",
+                "--compare_names",
+                "test",
+                "--config",
+                config_path,
+            ]
+        )
+
+        assert result_compare.returncode == 0
+        assert os.path.exists(
+            os.path.join(
+                full_path_lib, "test_template_nlp-data", "reports", "report_source_test.html"
+            )
+        )
 
 if __name__ == '__main__':
     # Change directory to script directory parent
