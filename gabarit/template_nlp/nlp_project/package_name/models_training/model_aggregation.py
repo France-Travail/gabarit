@@ -43,16 +43,16 @@ class ModelAggregation(ModelClass):
         '''Initialization of the class (see ModelClass for more arguments)
 
         Kwargs:
-            list_models (list) : list of model to be aggregated
-            aggregation_function (Callable or str) : aggregation function used
-            using_proba (bool) : which object is being aggregated (the probas or the predictions).
+            list_models (list) : The list of model to be aggregated
+            aggregation_function (Callable or str) : The aggregation function used
+            using_proba (bool) : Which object is being aggregated (the probas or the predictions).
             multi_label (bool): If the classification is multi-labels
 
         Raises:
-            ValueError : if aggregation_function object is Callable and using_proba/multi_label is None
-            ValueError : if the object aggregation_function is a str but not found in the dictionary dict_aggregation_function
-            ValueError : if the object aggregation_function is not compatible with value using_proba
-            ValueError : if the object aggregation_function is not compatible with value multi_label
+            ValueError : If aggregation_function object is Callable and using_proba/multi_label is None
+            ValueError : If the object aggregation_function is a str but not found in the dictionary dict_aggregation_function
+            ValueError : If the object aggregation_function is not compatible with value using_proba
+            ValueError : If the object aggregation_function is not compatible with value multi_label
             ValueError : The 'multi_label' parameters of the list models are inconsistent with the model_aggregation
         '''
         # Init.
@@ -65,9 +65,9 @@ class ModelAggregation(ModelClass):
         self.using_proba = using_proba
         self.multi_label = multi_label
         dict_aggregation_function = {'majority_vote': {'function': self.majority_vote, 'using_proba': False, 'multi_label': False},
-                                                                        'proba_argmax': {'function': self.proba_argmax, 'using_proba': True, 'multi_label': False},
-                                                                        'all_predictions': {'function': self.all_predictions, 'using_proba': False, 'multi_label': True},
-                                                                        'vote_labels': {'function': self.vote_labels, 'using_proba': False, 'multi_label': True}}
+                                     'proba_argmax': {'function': self.proba_argmax, 'using_proba': True, 'multi_label': False},
+                                     'all_predictions': {'function': self.all_predictions, 'using_proba': False, 'multi_label': True},
+                                     'vote_labels': {'function': self.vote_labels, 'using_proba': False, 'multi_label': True}}
         if isinstance(aggregation_function, (FunctionType, MethodType)):
             if using_proba is None or multi_label is None:
                 raise ValueError(f"When aggregation_function is Callable, using_proba(bool) and multi_label(bool) cannot be None ")
