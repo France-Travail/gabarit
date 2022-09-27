@@ -33,7 +33,7 @@ from pathlib import Path
 from datetime import datetime
 
 from test_template_num import utils
-from test_template_num.models_training import utils_models
+from test_template_num.models_training import utils_models, model_aggregation
 from test_template_num.models_training.classifiers import (model_rf_classifier, model_dense_classifier,
                                                            model_ridge_classifier, model_logistic_regression_classifier,
                                                            model_sgd_classifier, model_svm_classifier, model_knn_classifier,
@@ -1173,6 +1173,126 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_DenseClassifier failed')
 
+    def test12_Model_Aggregation(self):
+        '''Test of the model aggregation'''
+        print('            ------------------ >     Test of the model aggregation     /   Mono-class & Mono-label')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+
+            # Set model with function majority_vote and list_models=[model, model, model]
+            model_name = 'aggregation_mono_class_mono_label'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_svm2 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='majority_vote',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function median_predict and list_models=[model_name, model_name, model_name]
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1)
+            svm1.save()
+            svm2 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2)
+            svm2.save()
+            gbt = model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)
+            gbt.save()
+
+            list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
+            model_name = 'aggregation_mono_class_mono_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='median_predict',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function mean_predict and list_models=[model_name, model, model]
+            model_name = 'aggregation_mono_class_mono_label'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1)
+            svm1.save()
+            list_models = [os.path.split(model_dir_svm1)[-1], model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='mean_predict',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function proba_argmax
+            model_name = 'aggregation_mono_class_mono_label'
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=True, aggregation_function='proba_argmax',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function given
+            model_name = 'aggregation_mono_class_mono_label'
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+
+            # This function is a copy of majority_vote function
+            def function_test(predictions:pd.Series) -> list:
+                labels, counts = np.unique(predictions, return_counts=True)
+                votes = [(label, count) for label, count in zip(labels, counts)]
+                votes = sorted(votes, key=lambda x: x[1], reverse=True)
+                if len(votes) > 1 and votes[0][1] == votes[1][1]:
+                    return predictions[0]
+                else:
+                    return votes[0][0]
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function=function_test,
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+        except Exception:
+            self.fail('testModel_Aggregation failed')
 
 def test_model_mono_class_multi_label(test_class, test_model):
     '''Generic fonction to test a given model for mono-class/multi-labels'''
@@ -1598,6 +1718,121 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_DenseClassifier failed')
 
+    def test12_Model_Aggregation(self):
+        '''Test of the model TF-IDF/Aggregation'''
+        print('            ------------------ >     Test of the model TF-IDF/Aggregation     /   Mono-class & Multi-labels')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+
+            # Set model function all_predictions and list_models=[model, model, model]
+            model_name = 'aggregation_mono_class_multi_label'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_svm2 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            list_models = [model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt)]
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='all_predictions',
+                                                            multi_label=True, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_multi_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function all_predictions and list_models=[model_name, model_name, model_name]
+            model_name = 'aggregation_mono_class_multi_label'
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, multi_label=True)
+            svm1.save()
+            svm2 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, multi_label=True)
+            svm2.save()
+            gbt = model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, multi_label=True)
+            gbt.save()
+
+            list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='all_predictions',
+                                                            multi_label=True, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_multi_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function all_predictions and list_models=[model_name, model, model]
+            model_name = 'aggregation_mono_class_multi_label'
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, multi_label=True)
+            svm1.save()
+            list_models = [os.path.split(model_dir_svm1)[-1], model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt)]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='all_predictions',
+                                                            multi_label=True, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_multi_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function vote_labels
+            model_name = 'aggregation_mono_class_multi_label'
+            list_models = [model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt)]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='vote_labels',
+                                                            multi_label=True, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_multi_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function given
+            model_name = 'aggregation_mono_class_multi_label'
+            list_models = [model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt)]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+
+            # This function is a copy of all_predictions function
+            def function_test(predictions:pd.Series) -> list:
+                return np.sum(predictions, axis=0, dtype=bool).astype(int)
+
+
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function=function_test,
+                                                            multi_label=True, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_multi_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+        except Exception:
+            self.fail('testModel_Aggregation failed')
 
 def test_model_multi_class_mono_label(test_class, test_model):
     '''Generic fonction to test a given model for multi-classes/mono-label'''
@@ -2305,6 +2540,127 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_DenseClassifier failed')
 
+    def test12_Model_Aggregation(self):
+        '''Test of the model aggregation'''
+        print('            ------------------ >     Test of the model aggregation     /   Mono-class & Mono-label')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+
+            # Set model with function majority_vote and list_models=[model, model, model]
+            model_name = 'aggregation_multi_class_mono_label'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_svm2 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='majority_vote',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function median_predict and list_models=[model_name, model_name, model_name]
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1)
+            svm1.save()
+            svm2 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2)
+            svm2.save()
+            gbt = model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)
+            gbt.save()
+
+            list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
+            model_name = 'aggregation_multi_class_mono_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='median_predict',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function mean_predict and list_models=[model_name, model, model]
+            model_name = 'aggregation_multi_class_mono_label'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1)
+            svm1.save()
+            list_models = [os.path.split(model_dir_svm1)[-1], model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='mean_predict',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function proba_argmax
+            model_name = 'aggregation_multi_class_mono_label'
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=True, aggregation_function='proba_argmax',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function given
+            model_name = 'aggregation_multi_class_mono_label'
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+
+            # This function is a copy of majority_vote function
+            def function_test(predictions:pd.Series) -> list:
+                labels, counts = np.unique(predictions, return_counts=True)
+                votes = [(label, count) for label, count in zip(labels, counts)]
+                votes = sorted(votes, key=lambda x: x[1], reverse=True)
+                if len(votes) > 1 and votes[0][1] == votes[1][1]:
+                    return predictions[0]
+                else:
+                    return votes[0][0]
+
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function=function_test,
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+        except Exception:
+            self.fail('testModel_Aggregation failed')
 
 def test_model_mono_output_regression(test_class, test_model):
     '''Generic fonction to test a given model for mono-output regression'''
@@ -2675,6 +3031,127 @@ class Case5_MonoOutputRegression(unittest.TestCase):
         except Exception:
             self.fail('testModel_DenseRegressor failed')
 
+    def test14_Model_Aggregation(self):
+        '''Test of the model aggregation'''
+        print('            ------------------ >     Test of the model aggregation     /   Mono-class & Mono-label')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+
+            # Set model with function majority_vote and list_models=[model, model, model]
+            model_name = 'aggregation_multi_class_mono_label'
+            model_dir_sgd1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_sgd2 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            list_models = [model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1), model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_sgd2), model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt)]
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='majority_vote',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_sgd1)
+            remove_dir(model_dir_sgd2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function majority_vote and list_models=[model_name, model_name, model_name]
+            svm1 = model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1)
+            svm1.save()
+            svm2 = model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2)
+            svm2.save()
+            gbt = model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt)
+            gbt.save()
+
+            list_models = [os.path.split(model_dir_sgd1)[-1], os.path.split(model_dir_sgd2)[-1], os.path.split(model_dir_gbt)[-1]]
+            model_name = 'aggregation_multi_class_mono_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='majority_vote',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_sgd1)
+            remove_dir(model_dir_sgd2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function mean_predict and list_models=[model_name, model, model]
+            model_name = 'aggregation_multi_class_mono_label'
+            model_dir_sgd1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            svm1 = model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1)
+            svm1.save()
+            list_models = [os.path.split(model_dir_sgd1)[-1], model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2), model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt)]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='mean_predict',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_sgd1)
+            remove_dir(model_dir_sgd2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function median_predict
+            model_name = 'aggregation_multi_class_mono_label'
+            list_models = [model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1), model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2), model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt)]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='median_predict',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_sgd1)
+            remove_dir(model_dir_sgd2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function given
+            model_name = 'aggregation_multi_class_mono_label'
+            list_models = [model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1), model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2), model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt)]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+
+            # This function is a copy of majority_vote function
+            def function_test(predictions:pd.Series) -> list:
+                labels, counts = np.unique(predictions, return_counts=True)
+                votes = [(label, count) for label, count in zip(labels, counts)]
+                votes = sorted(votes, key=lambda x: x[1], reverse=True)
+                if len(votes) > 1 and votes[0][1] == votes[1][1]:
+                    return predictions[0]
+                else:
+                    return votes[0][0]
+
+            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function=function_test,
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_sgd1)
+            remove_dir(model_dir_sgd2)
+            remove_dir(model_dir_gbt)
+
+        except Exception:
+            self.fail('testModel_Aggregation failed')
 
 if __name__ == '__main__':
     # Change directory to script directory parent
