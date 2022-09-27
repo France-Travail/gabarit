@@ -47,7 +47,7 @@ def verify_exercice_1():
                 f"Did you correctly use a 0.6 / 0.2 / 0.2 split ?"
             )
         try:
-            assert df["alcohol"].iloc[0] == expected_results[file]["alcohol"]
+            assert df["num__alcohol"].iloc[0] == expected_results[file]["alcohol"]
         except AssertionError:
             raise ValueError(
                 f"Unexpected value in {file_path}.  "
