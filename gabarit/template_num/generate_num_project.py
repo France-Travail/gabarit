@@ -22,7 +22,7 @@ import argparse
 import tempfile
 import configparser
 from typing import Union
-from shutil import copyfile
+from shutil import copyfile, rmtree
 from distutils.dir_util import copy_tree
 from jinja2 import Environment, FileSystemLoader
 
@@ -91,7 +91,7 @@ def generate(project_name: str, project_path: str, config_path: str,
     default_encoding = get_config(config, 'files', 'encoding', fallback=None)
     pip_trusted_host = get_config(config, 'pip', 'trusted-host', fallback=None)
     pip_index_url = get_config(config, 'pip', 'index-url', fallback=None)
-    mlflow_tracking_uri = get_config(config, 'mlflow', 'tracking_uri', fallback=None)
+    mlflow_tracking_uri = get_config(config, 'mlflow', 'tracking_uri', fallback='')
     additional_pip_packages = get_config(config, 'packages', 'additional_pip_packages', fallback=None)
     dvc_config_ok = True if dvc_config_path is not None else False
 

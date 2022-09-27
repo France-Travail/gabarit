@@ -235,6 +235,9 @@ class ModelClass:
             # Priority given to json_data !
             json_dict = {**json_dict, **json_data}
 
+        # Add conf to attributes
+        self.json_dict = json_dict
+
         # Save conf
         with open(conf_path, 'w', encoding='{{default_encoding}}') as json_file:
             json.dump(json_dict, json_file, indent=4, cls=utils.NpEncoder)

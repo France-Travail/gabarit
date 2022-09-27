@@ -36,7 +36,7 @@ from typing import Union, List, Type, Tuple
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
 from {{package_name}}.models_training import utils_models
-from {{package_name}}.monitoring.model_logger import ModelLogger
+from {{package_name}}.monitoring.model_logger import MLflowLogger
 from {{package_name}}.models_training.model_class import ModelClass
 from {{package_name}}.models_training.classifiers import (model_rf_classifier,
                                                           model_dense_classifier,
@@ -60,7 +60,7 @@ logger = logging.getLogger('{{package_name}}.3_training_classification')
 def main(filename: str, y_col: List[Union[str, int]], excluded_cols: Union[List[Union[str, int]], None] = None,
          filename_valid: Union[str, None] = None, min_rows: Union[int, None] = None, level_save: str = 'HIGH',
          sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}',
-         model: Union[Type[ModelClass], None] = None) -> None:
+         model: Union[Type[ModelClass], None] = None, mlflow_experiment: Union[str, None]= None) -> None:
     '''Trains a model
 
     /!\ By default, models are fitted on all available columns (except targets) /!\
@@ -83,6 +83,7 @@ def main(filename: str, y_col: List[Union[str, int]], excluded_cols: Union[List[
         sep (str): Separator to use with the .csv files
         encoding (str): Encoding to use with the .csv files
         model (ModelClass): A model to be fitted. This should only be used for testing purposes.
+        mlflow_experiment (str): Name of the current experiment.
     Raises:
         ValueError: If level_save value is not a valid option (['LOW', 'MEDIUM', 'HIGH'])
         ValueError: If multi-labels and bad OHE format
@@ -335,24 +336,16 @@ def main(filename: str, y_col: List[Union[str, int]], excluded_cols: Union[List[
     ##############################################
     # Model metrics
     ##############################################
-    {% if mlflow_tracking_uri is not none %}
+    model_logger=None
+    
     # Logging metrics on MLflow
-    model_logger = ModelLogger(
-        tracking_uri="{{mlflow_tracking_uri}}",
-        experiment_name=f"{{package_name}}",
-    )
-    model_logger.set_tag('model_name', f"{os.path.basename(model.model_dir)}")
-    # To log more tags/params, you can use model_logger.set_tag(key, value) or model_logger.log_param(key, value){% else %}
-    # No URI has been defined for MLflow
-    # Uncomment the following code if you want to use MLflow with a valid URI
-    # # Logging metrics on MLflow
-    # model_logger = ModelLogger(
-    #     tracking_uri=TO BE DEFINED,
-    #     experiment_name=f"{{package_name}}",
-    # )
-    # model_logger.set_tag('model_name', f"{os.path.basename(model.model_dir)}")
-    # # To log more tags/params, you can use model_logger.set_tag(key, value) or model_logger.log_param(key, value)
-    model_logger=None{% endif %}
+    if mlflow_experiment:
+        model_logger = MLflowLogger(
+            experiment_name=f"{{package_name}}/{mlflow_experiment}",
+            tracking_uri="{{mlflow_tracking_uri}}",
+        )
+        model_logger.set_tag('model_name', f"{os.path.basename(model.model_dir)}")
+        # To log more tags/params, you can use model_logger.set_tag(key, value) or model_logger.log_param(key, value)
 
     # Series to add
     cols_to_add: List[pd.Series] = []  # You can add columns to save here
@@ -375,6 +368,7 @@ def main(filename: str, y_col: List[Union[str, int]], excluded_cols: Union[List[
     # Stop MLflow if started
     if model_logger is not None:
         model_logger.log_df_stats(df_stats)
+        model_logger.log_dict(model.json_dict, "configurations.json")
         model_logger.stop_run()
 
 
@@ -425,6 +419,7 @@ if __name__ == '__main__':
     parser.add_argument('--sep', default='{{default_sep}}', help="Separator to use with the .csv files.")
     parser.add_argument('--encoding', default="{{default_encoding}}", help="Encoding to use with the .csv files.")
     parser.add_argument('--force_cpu', dest='on_cpu', action='store_true', help="Whether to force training on CPU (and not GPU)")
+    parser.add_argument('--mlflow_experiment', help="Name of the current experiment. MLflow tracking is activated only if fulfilled.")
     parser.set_defaults(on_cpu=False)
     args = parser.parse_args()
     # Check forced CPU usage
@@ -436,4 +431,5 @@ if __name__ == '__main__':
     # Main
     main(filename=args.filename, y_col=args.y_col, excluded_cols=args.excluded_cols,
          min_rows=args.min_rows, filename_valid=args.filename_valid,
-         level_save=args.level_save, sep=args.sep, encoding=args.encoding)
+         level_save=args.level_save, sep=args.sep, encoding=args.encoding,
+         mlflow_experiment=args.mlflow_experiment)

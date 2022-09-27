@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelLogger -> Abstracts how MlFlow works
+# - MLflowLogger -> Abstracts how MlFlow works
 
 
 import os
@@ -30,7 +30,7 @@ from typing import Union
 # Deactivation of GIT warning for mlflow
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 
-class ModelLogger:
+class MLflowLogger:
     '''Abstracts how MlFlow works'''
 
     def __init__(self, experiment_name: str, tracking_uri: Union[str, None] = None) -> None:
@@ -44,7 +44,7 @@ class ModelLogger:
         self.logger = logging.getLogger(__name__)
 
         # Set tracking URI & experiment name
-        if tracking_uri is not None:
+        if tracking_uri:
             self.tracking_uri = tracking_uri
 
         self.experiment_name = experiment_name
@@ -185,6 +185,15 @@ class ModelLogger:
         # Log metrics
         self.log_metrics(ml_flow_metrics)
 
+    def log_dict(self, dictionary:dict, artifact_file: str) -> None:
+        '''Logs a dictionary as an artifact in MLflow
+
+        Args:
+            dictionary (dict): A dictionary
+            artifact_file (str): The run-relative artifact file path in posixpath format to which the dictionary is saved
+        '''
+        # Log parameter
+        mlflow.log_dict(dictionary=dictionary, artifact_file=artifact_file)
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

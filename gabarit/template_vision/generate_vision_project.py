@@ -86,7 +86,7 @@ def generate(project_name: str, project_path: str, config_path: str,
     default_encoding = get_config(config, 'files', 'encoding', fallback=None)
     pip_trusted_host = get_config(config, 'pip', 'trusted-host', fallback=None)
     pip_index_url = get_config(config, 'pip', 'index-url', fallback=None)
-    mlflow_tracking_uri = get_config(config, 'mlflow', 'tracking_uri', fallback=None)
+    mlflow_tracking_uri = get_config(config, 'mlflow', 'tracking_uri', fallback='')
     additional_pip_packages = get_config(config, 'packages', 'additional_pip_packages', fallback=None)
     vgg16_weights_backup_urls = get_config(config, 'transfer_learning', 'vgg16_weights_backup_urls', fallback=None)
     efficientnetb6_weights_backup_urls = get_config(config, 'transfer_learning', 'efficientnetb6_weights_backup_urls', fallback=None)

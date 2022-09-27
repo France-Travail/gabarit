@@ -22,7 +22,7 @@ import os
 import shutil
 import mlflow
 
-from {{package_name}}.monitoring.model_logger import ModelLogger
+from {{package_name}}.monitoring.model_logger import MLflowLogger
 
 # Disable logging
 import logging
@@ -30,7 +30,7 @@ logging.disable(logging.CRITICAL)
 
 TEST_DIR = os.path.dirname(os.path.abspath(__file__))
 
-class ModelLoggerTests(unittest.TestCase):
+class MLflowLoggerTests(unittest.TestCase):
     '''Main class to test model_logger'''
     
     @classmethod
@@ -44,16 +44,16 @@ class ModelLoggerTests(unittest.TestCase):
         
 
     def test_model_logger_init(self):
-        '''Test of the initialization of {{package_name}}.monitoring.model_logger.ModelLogger'''
+        '''Test of the initialization of {{package_name}}.monitoring.model_logger.MLflowLogger'''
         experiment_name = 'test_model_logger_init'
 
-        model = ModelLogger(experiment_name=experiment_name)
+        model = MLflowLogger(experiment_name=experiment_name)
         self.assertEqual(model.experiment_name, experiment_name)
 
     def test_model_logger_stop_run(self):
-        '''Test of {{package_name}}.monitoring.model_logger.ModelLogger.stop_run'''
+        '''Test of {{package_name}}.monitoring.model_logger.MLflowLogger.stop_run'''
         experiment_name = 'test_model_logger_stop_run'
-        model = ModelLogger(experiment_name=experiment_name)
+        model = MLflowLogger(experiment_name=experiment_name)
 
         # We activate a run via a log
         model.log_param('stop', 'toto')
@@ -65,9 +65,9 @@ class ModelLoggerTests(unittest.TestCase):
         self.assertEqual(mlflow.active_run(), None)
 
     def test_model_logger_log_metric(self):
-        '''Test of {{package_name}}.monitoring.model_logger.ModelLogger.log_metric'''
+        '''Test of {{package_name}}.monitoring.model_logger.MLflowLogger.log_metric'''
         experiment_name = 'test_model_logger_log_metric'
-        model = ModelLogger(experiment_name=experiment_name)
+        model = MLflowLogger(experiment_name=experiment_name)
 
         # Nominal case
         model.log_metric('test', 5)
@@ -77,42 +77,42 @@ class ModelLoggerTests(unittest.TestCase):
         model.stop_run()
 
     def test_model_logger_log_metrics(self):
-        '''Test of {{package_name}}.monitoring.model_logger.ModelLogger.log_metrics'''
+        '''Test of {{package_name}}.monitoring.model_logger.MLflowLogger.log_metrics'''
         experiment_name = 'test_model_logger_log_metrics'
-        model = ModelLogger(experiment_name=experiment_name)
+        model = MLflowLogger(experiment_name=experiment_name)
 
         # Nominal case
         model.log_metrics({'test': 5})
         model.log_metrics({'test': 5}, step=2)
 
     def test_model_logger_log_param(self):
-        '''Test of {{package_name}}.monitoring.model_logger.ModelLogger.log_param'''
+        '''Test of {{package_name}}.monitoring.model_logger.MLflowLogger.log_param'''
         experiment_name = 'test_model_logger_log_param'
-        model = ModelLogger(experiment_name=experiment_name)
+        model = MLflowLogger(experiment_name=experiment_name)
 
         # Nominal case
         model.log_param('test', 5)
 
     def test_model_logger_log_params(self):
-        '''Test of {{package_name}}.monitoring.model_logger.ModelLogger.log_params'''    
+        '''Test of {{package_name}}.monitoring.model_logger.MLflowLogger.log_params'''    
         experiment_name = 'test_model_logger_log_params'
-        model = ModelLogger(experiment_name=experiment_name)
+        model = MLflowLogger(experiment_name=experiment_name)
 
         # Nominal case
         model.log_params({'test': 5})
 
     def test_model_logger_set_tag(self):
-        '''Test of {{package_name}}.monitoring.model_logger.ModelLogger.set_tag'''
+        '''Test of {{package_name}}.monitoring.model_logger.MLflowLogger.set_tag'''
         experiment_name = 'test_model_logger_set_tag'
-        model = ModelLogger(experiment_name=experiment_name)
+        model = MLflowLogger(experiment_name=experiment_name)
 
         # Nominal case
         model.set_tag('test', 5)
 
     def test_model_logger_set_tags(self):
-        '''Test of {{package_name}}.monitoring.model_logger.ModelLogger.set_tags'''
+        '''Test of {{package_name}}.monitoring.model_logger.MLflowLogger.set_tags'''
         experiment_name = 'test_model_logger_set_tags'
-        model = ModelLogger(experiment_name=experiment_name)
+        model = MLflowLogger(experiment_name=experiment_name)
 
         # Nominal case
         model.set_tags({'test': 5})
