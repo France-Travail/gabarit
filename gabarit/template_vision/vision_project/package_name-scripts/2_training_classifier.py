@@ -204,17 +204,18 @@ def main(directory: str, directory_valid: str = None, level_save: str = 'HIGH',
     # Get results
     y_pred_train = model.predict(df_train, return_proba=False)
     # model_logger.set_tag(key='type_metric', value='train')
-    model.get_and_save_metrics(classes_list, y_pred_train, list_files_x=path_list, type_data='train', model_logger=model_logger)
+    df_stats = model.get_and_save_metrics(classes_list, y_pred_train, list_files_x=path_list, type_data='train')
     gc.collect()  # In some cases, helps with OOMs
     # Get predictions on valid
     if df_valid is not None:
         y_pred_valid = model.predict(df_valid, return_proba=False)
         # model_logger.set_tag(key='type_metric', value='valid')
-        model.get_and_save_metrics(classes_list_valid, y_pred_valid, list_files_x=path_list_valid, type_data='valid', model_logger=model_logger)
+        df_stats = model.get_and_save_metrics(classes_list_valid, y_pred_valid, list_files_x=path_list_valid, type_data='valid')
         gc.collect()  # In some cases, helps with OOMs
 
     # Stop MLflow if started
     if model_logger is not None:
+        model_logger.log_df_stats(df_stats)
         model_logger.stop_run()
 
 

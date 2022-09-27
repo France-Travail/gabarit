@@ -31,7 +31,6 @@ from typing import Union
 from datetime import datetime
 
 from {{package_name}} import utils
-from {{package_name}}.monitoring.model_logger import ModelLogger
 
 
 class ModelClass:
@@ -143,8 +142,7 @@ class ModelClass:
         '''
         raise NotImplementedError("'inverse_transform' needs to be overridden")
 
-    def get_and_save_metrics(self, y_true, y_pred, list_files_x: Union[list, None] = None, type_data: str = '',
-                             model_logger: Union[ModelLogger, None] = None) -> pd.DataFrame:
+    def get_and_save_metrics(self, y_true, y_pred, list_files_x: Union[list, None] = None, type_data: str = '') -> pd.DataFrame:
         '''Gets and saves the metrics of a model
 
         Args:
@@ -159,7 +157,6 @@ class ModelClass:
         Kwargs:
             list_files_x (list): Input images file paths
             type_data (str): Type of dataset (validation, test, ...)
-            model_logger (ModelLogger): Custom class to log the metrics with MLflow
         Returns:
             pd.DataFrame: The dataframe containing statistics
         '''

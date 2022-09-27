@@ -30,7 +30,6 @@ import pandas as pd
 
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.monitoring.model_logger import ModelLogger
 from {{package_name}}.models_training.object_detectors import model_detectron_faster_rcnn
 from {{package_name}}.models_training.object_detectors.model_detectron_faster_rcnn import ModelDetectronFasterRcnnObjectDetector, TrainerRCNN
 

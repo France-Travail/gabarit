@@ -21,131 +21,47 @@
 
 
 import os
-import re
 import math
-import uuid
 import mlflow
-import socket
 import logging
-from typing import Callable, Union
+import pandas as pd
+from typing import Union
 
 # Deactivation of GIT warning for mlflow
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 
-
-def is_running(host: str, port: int, logger: logging.Logger) -> bool:
-    '''Checks if a host is up & running
-
-    Args:
-        host (str): URI of the host
-        port (int): Port to check
-        logger (logging.Logger): Logger of a  ModelLogger instance
-    Returns:
-        bool: If the host is reachable
-    '''
-    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
-    sock.settimeout(5)
-    reachable = False
-    try:
-        host = re.sub(r'(?i)http(s)*://', '', host)  # Remove http:// to test connexion
-        sock.connect((host, port))
-        sock.shutdown(socket.SHUT_RDWR)
-        reachable = True
-    except Exception:
-        logger.error(f'Monitoring - MlFlow  @ {host} not reachable => nothing will be stored')
-    finally:
-        sock.close()
-
-    # Return state
-    return reachable
-
-
-def is_local(host: str) -> bool:
-    '''Checks if mlflow is running in local
-
-    Args:
-        host (str): URI of the host
-    Returns:
-        bool: If mlflow is running in local
-    '''
-    l1 = len(host)
-    host = re.sub(r'(?i)http(s)*://', '', host)
-    l2 = len(host)
-    if l1 == l2:  # no http
-        return True
-    else:
-        return False
-
-
-def is_mlflow_up(func: Callable) -> Callable:
-    '''Checks if mlflow server is up & running before calling the decorated function
-
-    Args:
-        func (Callable): Function to decorate
-    Returns:
-        Callable: Wrapper
-    '''
-
-    # Define wrapper to check if mlflow is up
-    def wrapper(self, *args, **kwargs):
-
-        # We run only if running == True (ie. initial connection ok)
-        if self.running:
-
-            # Check if we can run
-            if is_local(self.tracking_uri):
-                to_run = True  # OK because local
-            elif is_running(self.tracking_uri, 80, self.logger):
-                to_run = True  # OK because still running
-            else:
-                to_run = False  # KO
-
-            # run if possible
-            if to_run:
-                try:
-                    func(self, *args, **kwargs)
-                except Exception as e:  # Manage mlflow errors (but continues process)
-                    self.logger.error("Can't log on mlflow")
-                    self.logger.error(repr(e))
-            # Else : do nothing (error already logged)
-
-    # For test purposes (ignore wrapper)
-    wrapper.wrapped_fn = func  # type: ignore
-
-    return wrapper
-
-
 class ModelLogger:
     '''Abstracts how MlFlow works'''
 
-    _default_name = f'{{package_name}}-approche-{uuid.uuid4()}'
-    _default_tracking_uri = ''
-
-    def __init__(self, tracking_uri: Union[str, None] = None, experiment_name: Union[str, None] = None) -> None:
+    def __init__(self, experiment_name: str, tracking_uri: Union[str, None] = None) -> None:
         '''Class initialization
-
+        Args:
+            experiment_name (str):  Name of the experiment to activate
         Kwargs:
             tracking_uri (str): URI of the tracking server
-            experiment_name (str): Name of the experiment to activate
         '''
-
         # Get logger
         self.logger = logging.getLogger(__name__)
+
         # Set tracking URI & experiment name
-        self.tracking_uri = tracking_uri if tracking_uri is not None else self._default_tracking_uri
-        self.experiment_name = experiment_name if experiment_name is not None else self._default_name
-        # Initiate tracking
-        # There is a try...except in order to test if mlflow is reachable
-        try:
-            mlflow.set_tracking_uri(self.tracking_uri)
-            mlflow.set_experiment(f'/{self.experiment_name}')
-            self.logger.info(f'Ml Flow running, metrics available @ {self.tracking_uri}')
-            self.running = True
-        except Exception:
-            self.logger.warning(f"Host {self.tracking_uri} is not reachable. ML flow won't run")
-            self.logger.warning("Warning, for a local process, mlflow only accepts relative paths ...")
-            self.logger.warning("Take care to use os.path.relpath()")
-            self.running = False
+        if tracking_uri is not None:
+            self.tracking_uri = tracking_uri
+
+        self.experiment_name = experiment_name
+
+        mlflow.set_experiment(experiment_name)
+
+        self.logger.info(f'Ml Flow running, metrics available @ {self.tracking_uri}')
+
+    @property
+    def tracking_uri(self) -> str:
+        '''Current tracking uri'''
+        return mlflow.get_tracking_uri()
+
+    @tracking_uri.setter
+    def tracking_uri(self, uri:str) -> None:
+        '''Set tracking uri'''
+        mlflow.set_tracking_uri(uri)
 
     def stop_run(self) -> None:
         '''Stop an MLflow run'''
@@ -154,7 +70,6 @@ class ModelLogger:
         except Exception:
             self.logger.error("Can't stop mlflow run")
 
-    @is_mlflow_up
     def log_metric(self, key: str, value, step: Union[int, None] = None) -> None:
         '''Logs a metric on mlflow
 
@@ -170,7 +85,6 @@ class ModelLogger:
         # Log metric
         mlflow.log_metric(key, value, step)
 
-    @is_mlflow_up
     def log_metrics(self, metrics: dict, step: Union[int, None] = None) -> None:
         '''Logs a set of metrics in mlflow
 
@@ -186,7 +100,6 @@ class ModelLogger:
         # Log metrics
         mlflow.log_metrics(metrics, step)
 
-    @is_mlflow_up
     def log_param(self, key: str, value) -> None:
         '''Logs a parameter in mlflow
 
@@ -199,7 +112,6 @@ class ModelLogger:
         # Log parameter
         mlflow.log_param(key, value)
 
-    @is_mlflow_up
     def log_params(self, params: dict) -> None:
         '''Logs a set of parameters in mlflow
 
@@ -213,7 +125,6 @@ class ModelLogger:
         # Log parameters
         mlflow.log_params(params)
 
-    @is_mlflow_up
     def set_tag(self, key: str, value) -> None:
         '''Logs a tag in mlflow
 
@@ -228,7 +139,6 @@ class ModelLogger:
         # Log tag
         mlflow.set_tag(key, value)
 
-    @is_mlflow_up
     def set_tags(self, tags: dict) -> None:
         '''Logs a set of tags in mlflow
 
@@ -247,6 +157,33 @@ class ModelLogger:
             bool: If key is a valid mlflow key
         '''
         return mlflow.mlflow.utils.validation._VALID_PARAM_AND_METRIC_NAMES.match(key)
+
+    def log_df_stats(self, df_stats:pd.DataFrame) -> None:
+        '''Log a dataframe containing metrics from a training
+        
+        Args:
+            df_stats (pd.Dataframe): Dataframe containing metrics from a training
+        '''
+        label_col = 'Label'
+        metrics_columns = [col for col in df_stats.columns if col != label_col]
+
+        # Log labels
+        labels = df_stats[label_col].values
+        for i, label in enumerate(labels):  # type: ignore
+            self.log_param(f'Label {i}', label)
+
+        # Log metrics
+        ml_flow_metrics = {}
+        for i, row in df_stats.iterrows():
+            for c in metrics_columns:
+                metric_key = f"{row[label_col]} --- {c}"
+                # Check that mlflow accepts the key, otherwise, replace it
+                if not self.valid_name(metric_key):
+                    metric_key = f"Label {i} --- {c}"
+                ml_flow_metrics[metric_key] = row[c]
+
+        # Log metrics
+        self.log_metrics(ml_flow_metrics)
 
 
 if __name__ == '__main__':

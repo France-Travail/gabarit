@@ -37,7 +37,6 @@ from sklearn.utils.validation import check_is_fitted
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
 from {{package_name}}.models_training import utils_models
-from {{package_name}}.monitoring.model_logger import ModelLogger
 
 
 class ModelClass:
@@ -178,8 +177,8 @@ class ModelClass:
         raise NotImplementedError("'inverse_transform' needs to be overridden")
 
     def get_and_save_metrics(self, y_true, y_pred, df_x: Union[pd.DataFrame, None] = None,
-                             series_to_add: Union[List[pd.Series], None] = None, type_data: str = '',
-                             model_logger: Union[ModelLogger, None] = None) -> pd.DataFrame:
+                             series_to_add: Union[List[pd.Series], None] = None, type_data: str = ''
+                            ) -> pd.DataFrame:
         '''Gets and saves the metrics of a model
 
         Args:
@@ -189,7 +188,6 @@ class ModelClass:
             df_x (pd.DataFrame or None): Input dataFrame used for the prediction
             series_to_add (list): List of pd.Series to add to the dataframe
             type_data (str): Type of dataset (validation, test, ...)
-            model_logger (ModelLogger): Custom class to log the metrics with MLflow
         Returns:
             pd.DataFrame: The dataframe containing the statistics
         '''

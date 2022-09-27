@@ -36,7 +36,6 @@ from typing import Union, Tuple
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score
 
 from {{package_name}} import utils
-from {{package_name}}.monitoring.model_logger import ModelLogger
 
 sns.set(style="darkgrid")
 
@@ -156,8 +155,7 @@ class ModelClassifierMixin:
         '''
         return list(y) if type(y) == np.ndarray else y
 
-    def get_and_save_metrics(self, y_true, y_pred, list_files_x: Union[list, None] = None, type_data: str = '',
-                             model_logger: Union[ModelLogger, None] = None) -> pd.DataFrame:
+    def get_and_save_metrics(self, y_true, y_pred, list_files_x: Union[list, None] = None, type_data: str = '') -> pd.DataFrame:
         '''Gets and saves the metrics of a model
 
         Args:
@@ -172,7 +170,6 @@ class ModelClassifierMixin:
         Kwargs:
             list_files_x (list): Input images file paths
             type_data (str): Type of dataset (validation, test, ...)
-            model_logger (ModelLogger): Custom class to log the metrics with MLflow
         Returns:
             pd.DataFrame: The d
         '''
@@ -292,29 +289,6 @@ class ModelClassifierMixin:
         acc_path = os.path.join(self.model_dir, f"acc{'_' + type_data if len(type_data) > 0 else ''}@{round(acc_tot, 5)}")
         with open(acc_path, 'w'):
             pass
-
-        # Upload metrics in mlflow (or another)
-        if model_logger is not None:
-            # TODO : To put in a function
-            # Prepare parameters
-            label_col = 'Label'
-            metrics_columns = [col for col in df_stats.columns if col != label_col]
-
-            # Log labels
-            labels = df_stats[label_col].values
-            for i, label in enumerate(labels):
-                model_logger.log_param(f'Label {i}', label)
-            # Log metrics
-            ml_flow_metrics = {}
-            for i, row in df_stats.iterrows():
-                for c in metrics_columns:
-                    metric_key = f"{row[label_col]} --- {c}"
-                    # Check that mlflow accepts the key, otherwise, replace it
-                    if not model_logger.valid_name(metric_key):
-                        metric_key = f"Label {i} --- {c}"
-                    ml_flow_metrics[metric_key] = row[c]
-            # Log metrics
-            model_logger.log_metrics(ml_flow_metrics)
 
         return df_stats
 

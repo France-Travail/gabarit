@@ -34,8 +34,6 @@ from yellowbrick.regressor import ResidualsPlot, PredictionError
 from sklearn.linear_model import LinearRegression
 from sklearn.metrics import explained_variance_score, mean_absolute_error, mean_squared_error, r2_score
 
-from {{package_name}}.monitoring.model_logger import ModelLogger
-
 sns.set(style="darkgrid")
 
 
@@ -80,8 +78,7 @@ class ModelRegressorMixin:
         return list(y) if isinstance(y, np.ndarray) else y
 
     def get_and_save_metrics(self, y_true, y_pred, df_x: Union[pd.DataFrame, None] = None,
-                             series_to_add: Union[List[pd.Series], None] = None, type_data: str = '',
-                             model_logger: Union[ModelLogger, None] = None) -> pd.DataFrame:
+                             series_to_add: Union[List[pd.Series], None] = None, type_data: str = '') -> pd.DataFrame:
         '''Gets and saves the metrics of a model
 
         Args:
@@ -91,7 +88,6 @@ class ModelRegressorMixin:
             df_x (pd.DataFrame or None): Input dataFrame used for the prediction
             series_to_add (list<pd.Series>): List of pd.Series to add to the dataframe
             type_data (str): Type of dataset (validation, test, ...)
-            model_logger (ModelLogger): Custom class to log the metrics with MLflow
         Returns:
             pd.DataFrame: The dataframe containing the statistics
         '''
@@ -182,29 +178,6 @@ class ModelRegressorMixin:
         r2_path = os.path.join(self.model_dir, f"r2{'_' + type_data if len(type_data) > 0 else ''}@{round(metric_r2, 5)}")
         with open(r2_path, 'w'):
             pass
-
-        # Upload metrics in mlflow (or another)
-        if model_logger is not None:
-            # TODO : To put in a function
-            # Prepare parameters
-            label_col = 'Label'
-            metrics_columns = [col for col in df_stats.columns if col != label_col]
-
-            # Log labels
-            labels = df_stats[label_col].values
-            for i, label in enumerate(labels):
-                model_logger.log_param(f'Label {i}', label)
-            # Log metrics
-            ml_flow_metrics = {}
-            for i, row in df_stats.iterrows():
-                for c in metrics_columns:
-                    metric_key = f"{row[label_col]} --- {c}"
-                    # Check that mlflow accepts the key, otherwise, replace it
-                    if not model_logger.valid_name(metric_key):
-                        metric_key = f"Label {i} --- {c}"
-                    ml_flow_metrics[metric_key] = row[c]
-            # Log metrics
-            model_logger.log_metrics(ml_flow_metrics)
 
         # Plots
         if self.level_save in ['MEDIUM', 'HIGH']:

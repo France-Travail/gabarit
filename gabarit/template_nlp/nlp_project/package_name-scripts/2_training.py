@@ -333,17 +333,18 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
     # Get results
     y_pred_train = model.predict(x_train, return_proba=False)
     # model_logger.set_tag(key='type_metric', value='train')
-    model.get_and_save_metrics(y_train, y_pred_train, x=x_train, series_to_add=series_to_add_train, type_data='train', model_logger=model_logger)
+    df_stats = model.get_and_save_metrics(y_train, y_pred_train, x=x_train, series_to_add=series_to_add_train, type_data='train')
     gc.collect()  # In some cases, helps with OOMs
     # Get predictions on valid if exists
     if x_valid is not None:
         y_pred_valid = model.predict(x_valid, return_proba=False)
         # model_logger.set_tag(key='type_metric', value='valid')
-        model.get_and_save_metrics(y_valid, y_pred_valid, x=x_valid, series_to_add=series_to_add_valid, type_data='valid', model_logger=model_logger)
+        df_stats = model.get_and_save_metrics(y_valid, y_pred_valid, x=x_valid, series_to_add=series_to_add_valid, type_data='valid')
         gc.collect()  # In some cases, helps with OOMs
 
     # Stop MLflow if started
     if model_logger is not None:
+        model_logger.log_df_stats(df_stats)
         model_logger.stop_run()
 
 
