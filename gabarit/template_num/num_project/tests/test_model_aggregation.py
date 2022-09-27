@@ -400,9 +400,9 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(model_dir)
 
         # set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        y_train_int = np.array([0, 1, 0, 1, 2])
-        y_train_str = np.array(['oui', 'non', 'oui', 'non', 'oui'])
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        y_train_int = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
+        y_train_str = pd.Series(['non', 'non', 'non', 'non', 'oui', 'oui', 'oui'] * 10)
         n_classes_int = 3
         n_classes_str = 2
         list_classes_int = [0, 1, 2]
@@ -432,8 +432,8 @@ class Modelaggregation(unittest.TestCase):
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregation(model_dir=model_dir)
         self.assertFalse(model.trained)
-        self.assertTrue(model.list_classes is None)
-        self.assertTrue(model.dict_classes is None)
+        self.assertFalse(hasattr(model, 'list_classes'))
+        self.assertFalse(hasattr(model, 'dict_classes'))
         gbt.fit(x_train, y_train_str)
         sgd.fit(x_train, y_train_str)
         model._sort_model_type([gbt, sgd])
@@ -450,13 +450,13 @@ class Modelaggregation(unittest.TestCase):
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregation(model_dir=model_dir)
         self.assertFalse(model.trained)
-        self.assertTrue(model.list_classes is None)
-        self.assertTrue(model.dict_classes is None)
+        self.assertFalse(hasattr(model, 'list_classes'))
+        self.assertFalse(hasattr(model, 'dict_classes'))
         model._sort_model_type([gbt, sgd])
         model._check_trained()
         self.assertFalse(model.trained)
-        self.assertTrue(model.list_classes is None)
-        self.assertTrue(model.dict_classes is None)
+        self.assertFalse(hasattr(model, 'list_classes'))
+        self.assertFalse(hasattr(model, 'dict_classes'))
         for submodel in model.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
         remove_dir(model_dir)
@@ -464,22 +464,22 @@ class Modelaggregation(unittest.TestCase):
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregation(model_dir=model_dir)
         self.assertFalse(model.trained)
-        self.assertTrue(model.list_classes is None)
-        self.assertTrue(model.dict_classes is None)
+        self.assertFalse(hasattr(model, 'list_classes'))
+        self.assertFalse(hasattr(model, 'dict_classes'))
         sgd.fit(x_train, y_train_int)
         model._sort_model_type([gbt, sgd])
         model._check_trained()
         self.assertFalse(model.trained)
-        self.assertTrue(model.list_classes is None)
-        self.assertTrue(model.dict_classes is None)
+        self.assertFalse(hasattr(model, 'list_classes'))
+        self.assertFalse(hasattr(model, 'dict_classes'))
         for submodel in model.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
         remove_dir(model_dir)
 
         # Error
         gbt, sgd, _, _ = self.create_models()
-        gbt.fit(['int1', 'int2'], [1, 0])
-        sgd.fit(['str1', 'str2'], ['non', 'oui'])
+        gbt.fit(x_train, y_train_int)
+        sgd.fit(x_train, y_train_str)
         model = ModelAggregation(model_dir=model_dir)
         model._sort_model_type([gbt, sgd])
         with self.assertRaises(TypeError):
@@ -502,7 +502,7 @@ class Modelaggregation(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
-        y_train_mono = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
+        y_train_mono = pd.Series(['y1', 'y1', 'y1', 'y2', 'y3', 'y3', 'y3'] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
 
         # Not trained
@@ -558,7 +558,7 @@ class Modelaggregation(unittest.TestCase):
 
         # Some sub-models are mono_label
         gbt, sgd, _, _ = self.create_models(gbt_param={'multi_label': True})
-        gbt.fit(x_train, y_train_mono)
+        sgd.fit(x_train, y_train_mono)
         model = ModelAggregation(model_dir=model_dir, list_models=[gbt, sgd], multi_label=True, aggregation_function='all_predictions')
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
@@ -636,25 +636,8 @@ class Modelaggregation(unittest.TestCase):
         # Set vars mono_label
         #################################################
 
-        # dic_mono = {'x_train': np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"]),
-        #             'x_test': np.array(["ici test", "là, rien!"]),
-        #             'y_train_1': np.array([1, 2, 1, 2, 3]),
-        #             'y_train_2': np.array([2, 1, 1, 0, 4]),
-        #             'y_train_9': np.array([1, 9, 9, 9, 9]),
-        #             'target_1': np.array([2, 3]),
-        #             'target_2': np.array([0, 4]),
-        #             'target_9': np.array([9, 9]),
-        #             'target_median': np.array([0, 4]),
-        #             'target_mean': np.array([np.mean(2, 0, 0), np.mean(3, 4, 4)]),
-        #             'target_probas_1': np.array([[0, 1, 0], [0, 0, 1]]),
-        #             'target_probas_1_2_2': np.array([[2/3, 0, 1/3, 0, 0], [0, 0, 0, 1/3, 2/3]]),
-        #             'target_probas_9': np.array([[2/5, 0, 2/5, 0, 0, 1/5], [0, 0, 0, 2/5, 2/5, 1/5]]),
-        #             'target_multi_1': np.array([[0, 1, 0], [0, 0, 1]]),
-        #             'target_multi_1_2_2_all': np.array([[1, 0, 1, 0, 0], [0, 0, 0, 1, 1]]),
-        #             'target_multi_1_2_2_vote': np.array([[1, 0, 0, 0, 0], [0, 0, 0, 0, 1]])}
-
-        dic_mono = {'x_train': pd.DataFrame({'col_1': [-5, -1, -1, 0, 2, 6, 3] * 10, 'col_2': [-2, -1, -8, 0, 3, 12, 2] * 10}),
-                    'x_test': pd.DataFrame({'col_1': [-5, 2] * 10, 'col_2': [-2, 1] * 10}),
+        dic_mono = {'x_train': pd.DataFrame({'col_1': [-5, -1, -1, 0, 4, 6, 3] * 10, 'col_2': [-2, -1, -8, 0, 4, 12, 2] * 10}),
+                    'x_test': pd.DataFrame({'col_1': [-5, 2], 'col_2': [-2, 3]}),
                     'y_train_1': pd.Series([0, 0, 0, 2, 1, 1, 1] * 10),
                     'y_train_2': pd.Series([3, 3, 3, 2, 4, 4, 4] * 10),
                     'y_train_9': pd.Series([9, 9, 9, 1, 9, 9, 9] * 10),
@@ -663,9 +646,13 @@ class Modelaggregation(unittest.TestCase):
                     'target_9': np.array([9, 9]),
                     'target_median': np.array([3, 4]),
                     'target_mean': np.array([np.mean(np.array([0, 3, 3])), np.mean(np.array([1, 4, 4]))]),
-                    'y_train_multi': pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
-
-                    }
+                    'target_probas_1_shape': (2, 3),
+                    'target_probas_1_2_2_shape': (2, 5),
+                    'target_probas_9_shape': (2, 6),
+                    'y_train_multi': pd.DataFrame({'y1': [0, 0, 0, 2, 1, 1, 1] * 10, 'y2': [1, 0, 0, 0, 0, 0, 0] * 10, 'y3': [1, 1, 1, 2, 1, 1, 1] * 10}),
+                    'target_multi_1': np.array([[1, 0, 0], [0, 1, 0]]),
+                    'target_multi_1_2_2_all': np.array([[1, 0, 0, 1, 0], [0, 1, 0, 0, 1]]),
+                    'target_multi_1_2_2_vote': np.array([[0, 0, 0, 1, 0], [0, 0, 0, 0, 1]])}
 
         model_path = utils.get_models_path()
         list_model_mono = [ModelGBTClassifier(model_dir=os.path.join(model_path, 'model_test_123456789_gbt_1')),
@@ -678,11 +665,11 @@ class Modelaggregation(unittest.TestCase):
             list_model_mono[i + 2].fit(dic_mono['x_train'], dic_mono['y_train_2'])
         list_model_mono[4].fit(dic_mono['x_train'], dic_mono['y_train_9'])
 
-        def test_method(model, x_test, target_predict, target_probas):
+        def test_method(model, x_test, target_predict, target_probas_shape):
             preds = model.predict(x_test)
             probas = model.predict(x_test, return_proba=True)
             self.assertEqual(preds.shape, target_predict.shape)
-            self.assertEqual(probas.shape, target_probas.shape)
+            self.assertEqual(probas.shape, target_probas_shape)
             if not model.multi_label:
                 self.assertAlmostEqual(probas.sum(), len(x_test))
             self.assertTrue((preds == target_predict).all())
@@ -696,19 +683,19 @@ class Modelaggregation(unittest.TestCase):
         # All models have the same labels
         list_models = [list_model_mono[0], list_model_mono[1]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='majority_vote')
-        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas=dic_mono['target_probas_1'])
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas_shape=dic_mono['target_probas_1_shape'])
         remove_dir(model_dir)
 
         # The models have different labels
         list_models = [list_model_mono[0], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='majority_vote')
-        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_2'], target_probas=dic_mono['target_probas_1_2_2'])
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_2'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'])
         remove_dir(model_dir)
 
         # Equality case
         list_models = [list_model_mono[4], list_model_mono[0], list_model_mono[1], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='majority_vote')
-        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_9'], target_probas=dic_mono['target_probas_9'])
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_9'], target_probas_shape=dic_mono['target_probas_9_shape'])
         remove_dir(model_dir)
 
         #################################################
@@ -720,13 +707,13 @@ class Modelaggregation(unittest.TestCase):
         # All models have the same labels
         list_models = [list_model_mono[0], list_model_mono[1]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='proba_argmax')
-        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas=dic_mono['target_probas_1'])
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas_shape=dic_mono['target_probas_1_shape'])
         remove_dir(model_dir)
 
         # The models have different labels
         list_models = [list_model_mono[0], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='proba_argmax')
-        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_2'], target_probas=dic_mono['target_probas_1_2_2'])
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_2'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'])
         remove_dir(model_dir)
 
         #################################################
@@ -738,13 +725,13 @@ class Modelaggregation(unittest.TestCase):
         # All models have the same labels
         list_models = [list_model_mono[0], list_model_mono[1]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='median_predict')
-        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas=dic_mono['target_probas_1'])
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas_shape=dic_mono['target_probas_1_shape'])
         remove_dir(model_dir)
 
         # The models have different labels
         list_models = [list_model_mono[0], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='median_predict')
-        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_median'], target_probas=dic_mono['target_probas_1_2_2'])
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_median'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'])
         remove_dir(model_dir)
 
         #################################################
@@ -756,13 +743,13 @@ class Modelaggregation(unittest.TestCase):
         # All models have the same labels
         list_models = [list_model_mono[0], list_model_mono[1]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='mean_predict')
-        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas=dic_mono['target_probas_1'])
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas_shape=dic_mono['target_probas_1_shape'])
         remove_dir(model_dir)
 
         # The models have different labels
         list_models = [list_model_mono[0], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='mean_predict')
-        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_mean'], target_probas=dic_mono['target_probas_1_2_2'])
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_mean'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'])
         remove_dir(model_dir)
 
         #################################################
@@ -784,43 +771,43 @@ class Modelaggregation(unittest.TestCase):
         # All models have the same labels
         list_models = [list_model_mono[0], list_model_mono[1]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, using_proba=False, multi_label=False, aggregation_function=function_test)
-        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas=dic_mono['target_probas_1'])
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas_shape=dic_mono['target_probas_1_shape'])
         remove_dir(model_dir)
 
         # The models have different labels
         list_models = [list_model_mono[0], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, using_proba=False, multi_label=False, aggregation_function=function_test)
-        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_2'], target_probas=dic_mono['target_probas_1_2_2'])
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_2'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'])
         remove_dir(model_dir)
 
         # Equality case
         list_models = [list_model_mono[4], list_model_mono[0], list_model_mono[1], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='majority_vote')
-        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_9'], target_probas=dic_mono['target_probas_9'])
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_9'], target_probas_shape=dic_mono['target_probas_9_shape'])
         remove_dir(model_dir)
 
         #################################################
         # Set vars multi_label
         #################################################
 
-        dic_multi = {'x_train': np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"]),
-                     'x_test': np.array(["ici test", "là, rien!"]),
-                     'y_train_1': pd.DataFrame({'test1': [0, 1, 0, 1, 0], 'test2': [1, 0, 0, 1, 0], 'test3': [0, 0, 0, 1, 1]}),
-                     'y_train_2': pd.DataFrame({'oui': [1, 1, 0, 1, 0], 'non': [1, 0, 1, 0, 0]}),
-                     'y_train_mono': np.array(['test3', 'test3', 'test3', 'test3', 'test4']),
-                     'y_train_9': np.array(['test3', 'test9', 'test9', 'test9', 'test9']),
+        dic_multi = {'x_train': pd.DataFrame({'col_1': [-5, -1, -1, 0, 4, 6, 3] * 10, 'col_2': [-2, -1, -8, 0, 4, 12, 2] * 10}),
+                     'x_test': pd.DataFrame({'col_1': [-5, 2], 'col_2': [-2, 3]}),
+                     'y_train_1': pd.DataFrame({'test1': [0, 0, 0, 1, 1, 1, 1] * 10, 'test2': [0, 0, 0, 0, 0, 1, 1] * 10, 'test3': [1, 0, 0, 0, 1, 1, 1] * 10}),
+                     'y_train_2': pd.DataFrame({'oui': [1, 1, 1, 0, 0, 0, 0] * 10, 'non': [0, 0, 0, 0, 1, 1, 1] * 10}),
+                     'y_train_mono': pd.Series(['test1', 'test3', 'test3', 'test3', 'test3', 'test3', 'test4'] * 10),
+                     'y_train_9': pd.Series(['test9', 'test9', 'test9', 'test1', 'test9', 'test9', 'test9'] * 10),
                      'cols_1': ['test1', 'test2', 'test3'],
                      'cols_2': ['oui', 'non'],
-                     'target_1': np.array([[1, 1, 1], [0, 0, 1]]),
-                     'target_1_mono_all': np.array([[1, 1, 1, 0], [0, 0, 1, 1]]),
-                     'target_1_mono_vote': np.array([[1, 1, 1, 0], [0, 0, 1, 0]]),
+                     'target_1': np.array([[0, 0, 1], [1, 1, 1]]),
+                     'target_1_mono_all': np.array([[1, 0, 1, 0], [1, 1, 1, 1]]),
+                     'target_1_mono_vote': np.array([[0, 0, 1, 0], [1, 1, 1, 0]]),
                      'target_9': np.array([[0, 0, 0, 0, 0, 0], [0, 0, 0, 0, 0, 0]]),
-                     'target_2_all': np.array([[0, 1, 1, 1, 1], [0, 0, 0, 0, 1]]),
-                     'target_2_vote': np.array([[0, 1, 0, 0, 0], [0, 0, 0, 0, 0]]),
-                     'target_probas_1': np.array([[1, 1, 1], [0, 0, 1]]),
-                     'target_probas_1_1_mono': np.array([[2/3, 2/3, 1, 0], [0, 0, 2/3, 1/3]]),
-                     'target_probas_1_2_2': np.array([[0, 2/3, 1/3, 1/3, 1/3], [0, 0, 0, 0, 1/3]]),
-                     'target_probas_9': np.array([[0, 2/5, 2/5, 2/5, 2/5, 1/5], [0, 0, 0, 0, 2/5, 1/5]])}
+                     'target_2_all': np.array([[0, 1, 0, 0, 1], [1, 0, 1, 1, 1]]),
+                     'target_2_vote': np.array([[0, 1, 0, 0, 0], [1, 0, 0, 0, 0]]),
+                     'target_probas_1_shape': (2, 3),
+                     'target_probas_1_2_2_shape': (2, 5),
+                     'target_probas_9_shape': (2, 6),
+                     'target_probas_1_1_mono_shape': (2, 4)}
 
         model_path = utils.get_models_path()
         list_model_multi = [ModelGBTClassifier(multi_label=True, model_dir=os.path.join(model_path, 'model_test_123456789_gbt_multi_1')),
@@ -844,31 +831,31 @@ class Modelaggregation(unittest.TestCase):
         ##### All models have the same labels (mono_label)
         list_models = [list_model_mono[0], list_model_mono[1]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='all_predictions')
-        test_method(model, dic_multi['x_test'], target_predict=dic_mono['target_multi_1'], target_probas=dic_mono['target_probas_1'])
+        test_method(model, dic_multi['x_test'], target_predict=dic_mono['target_multi_1'], target_probas_shape=dic_mono['target_probas_1_shape'])
         remove_dir(model_dir)
 
         ##### The models have different labels (mono_label)
         list_models = [list_model_mono[0], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='all_predictions')
-        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_multi_1_2_2_all'], target_probas=dic_mono['target_probas_1_2_2'])
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_multi_1_2_2_all'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'])
         remove_dir(model_dir)
 
         ##### All models have the same labels (multi_label)
         list_models = [list_model_multi[0], list_model_multi[1]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='all_predictions')
-        test_method(model, dic_multi['x_test'], target_predict=dic_multi['target_1'], target_probas=dic_multi['target_probas_1'])
+        test_method(model, dic_multi['x_test'], target_predict=dic_multi['target_1'], target_probas_shape=dic_multi['target_probas_1_shape'])
         remove_dir(model_dir)
 
         ##### The models have different labels (multi_label)
         list_models = [list_model_multi[0], list_model_multi[2], list_model_multi[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='all_predictions')
-        test_method(model, dic_multi['x_test'], target_predict=dic_multi['target_2_all'], target_probas=dic_multi['target_probas_1_2_2'])
+        test_method(model, dic_multi['x_test'], target_predict=dic_multi['target_2_all'], target_probas_shape=dic_multi['target_probas_1_2_2_shape'])
         remove_dir(model_dir)
 
         ##### The models have different labels (mono_label and multi_label)
         list_models = [list_model_multi[0], list_model_multi[1], gbt_mono]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='all_predictions')
-        test_method(model, dic_multi['x_test'], target_predict=dic_multi['target_1_mono_all'], target_probas=dic_multi['target_probas_1_1_mono'])
+        test_method(model, dic_multi['x_test'], target_predict=dic_multi['target_1_mono_all'], target_probas_shape=dic_multi['target_probas_1_1_mono_shape'])
         remove_dir(model_dir)
 
         #################################################
@@ -880,37 +867,37 @@ class Modelaggregation(unittest.TestCase):
         ##### All models have the same labels (mono_label)
         list_models = [list_model_mono[0], list_model_mono[1]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='vote_labels')
-        test_method(model, dic_multi['x_test'], target_predict=dic_mono['target_multi_1'], target_probas=dic_mono['target_probas_1'])
+        test_method(model, dic_multi['x_test'], target_predict=dic_mono['target_multi_1'], target_probas_shape=dic_mono['target_probas_1_shape'])
         remove_dir(model_dir)
 
         ##### The models have different labels (mono_label)
         list_models = [list_model_mono[0], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='vote_labels')
-        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_multi_1_2_2_vote'], target_probas=dic_mono['target_probas_1_2_2'])
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_multi_1_2_2_vote'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'])
         remove_dir(model_dir)
 
         ##### All models have the same labels (multi_label)
         list_models = [list_model_multi[0], list_model_multi[1]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='vote_labels')
-        test_method(model, dic_multi['x_test'], target_predict=dic_multi['target_1'], target_probas=dic_multi['target_probas_1'])
+        test_method(model, dic_multi['x_test'], target_predict=dic_multi['target_1'], target_probas_shape=dic_multi['target_probas_1_shape'])
         remove_dir(model_dir)
 
         ##### The models have different labels (multi_label)
         list_models = [list_model_multi[0], list_model_multi[2], list_model_multi[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='vote_labels')
-        test_method(model, dic_multi['x_test'], target_predict=dic_multi['target_2_vote'], target_probas=dic_multi['target_probas_1_2_2'])
+        test_method(model, dic_multi['x_test'], target_predict=dic_multi['target_2_vote'], target_probas_shape=dic_multi['target_probas_1_2_2_shape'])
         remove_dir(model_dir)
 
         ##### The models have different labels (mono_label and multi_label)
         list_models = [list_model_multi[0], list_model_multi[1], gbt_mono]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='vote_labels')
-        test_method(model, dic_multi['x_test'], target_predict=dic_multi['target_1_mono_vote'], target_probas=dic_multi['target_probas_1_1_mono'])
+        test_method(model, dic_multi['x_test'], target_predict=dic_multi['target_1_mono_vote'], target_probas_shape=dic_multi['target_probas_1_1_mono_shape'])
         remove_dir(model_dir)
 
         # Equality case
         list_models = [gbt_9, list_model_multi[0], list_model_multi[1], list_model_multi[2], list_model_multi[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='vote_labels')
-        test_method(model, dic_multi['x_test'], target_predict=dic_multi['target_9'], target_probas=dic_multi['target_probas_9'])
+        test_method(model, dic_multi['x_test'], target_predict=dic_multi['target_9'], target_probas_shape=dic_multi['target_probas_9_shape'])
         remove_dir(model_dir)
 
         for i in range(len(list_model_mono)):
