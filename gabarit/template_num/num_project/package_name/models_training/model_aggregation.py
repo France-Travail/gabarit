@@ -55,16 +55,16 @@ class ModelAggregation(ModelClass):
             ValueError : If the object aggregation_function is a str but not found in the dictionary dict_aggregation_function
             ValueError : If the object aggregation_function is not compatible with value using_proba
             ValueError : If the object aggregation_function is not compatible with value multi_label
-            ValueError : The 'multi_label' parameters of the list models are inconsistent with the model_aggregation
             ValueError : Mix the classifiers model and the regressors model in the list model
+            ValueError : If the regressor model in list_models and multi_label is True
+            ValueError : If the regressor model in list_models and using_proba is True
+            ValueError : The 'multi_label' parameters of the list models are inconsistent with the model_aggregation
         '''
         # Init.
         super().__init__(**kwargs)
 
         # Get logger (must be done after super init)
         self.logger = logging.getLogger(__name__)
-        self.list_classes: Optional[List[Any]] = None
-        self.dict_classes: Optional[Dict[Any, Any]] = None
 
         # Get the aggregation function
         self.using_proba = using_proba
@@ -108,7 +108,15 @@ class ModelAggregation(ModelClass):
             set_multi_label = {model.multi_label for model in self.list_real_models}
             if True in set_multi_label and not self.multi_label:
                 raise ValueError(f"The 'multi_label' parameters of the list models are inconsistent with the model_aggregation.")
+            # Error for the regressor model in list_models and multi_label is True
+            if self._has_model_regressor() and multi_label:
+                raise ValueError(f"The regressor model is not compatible with multi_label")
+            # Error for the regressor model in list_models and using_proba is True
+            if self._has_model_regressor() and using_proba:
+                raise ValueError(f"The regressor model is not compatible with using_proba")
 
+        self.list_classes: Optional[List[Any]] = None
+        self.dict_classes: Optional[Dict[Any, Any]] = None
         self._check_trained()
 
     def _sort_model_type(self, list_models: list) -> None:
@@ -163,16 +171,17 @@ class ModelAggregation(ModelClass):
                 self.trained = True
                 self.nb_fit += 1
 
-                # Set list_classes
-                self.list_classes = list({label for model in self.list_real_models for label in model.list_classes})
-                list_label_str = [label for label in self.list_classes if isinstance(label, str)]
-                list_label_other = [int(label) for label in self.list_classes if label not in list_label_str]
-                if len(list_label_str) > 0 and len(list_label_other) > 0:
-                    raise TypeError('There are more than one type of labels in the list models.')
-                self.list_classes.sort()
+                if self._has_model_classifier():
+                    # Set list_classes
+                    self.list_classes = list({label for model in self.list_real_models for label in model.list_classes})
+                    list_label_str = [label for label in self.list_classes if isinstance(label, str)]
+                    list_label_other = [int(label) for label in self.list_classes if label not in list_label_str]
+                    if len(list_label_str) > 0 and len(list_label_other) > 0:
+                        raise TypeError('There are more than one type of labels in the list models.')
+                    self.list_classes.sort()
 
-                # Set dict_classes based on list classes
-                self.dict_classes = {i: col for i, col in enumerate(self.list_classes)}
+                    # Set dict_classes based on list classes
+                    self.dict_classes = {i: col for i, col in enumerate(self.list_classes)}
 
     def fit(self, x_train, y_train, **kwargs) -> None:
         '''Trains the model

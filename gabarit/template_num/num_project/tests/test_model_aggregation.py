@@ -275,15 +275,6 @@ class Modelaggregation(unittest.TestCase):
             model = ModelAggregation(model_dir=model_dir, multi_label=None, aggregation_function=lambda predictions: np.sum(predictions, axis=0, dtype=bool).astype(int))
         remove_dir(model_dir)
 
-        # if 'multi_label' inconsistent
-        gbt, sgd, _, _ = self.create_models(bool_models_regressor=False, gbt_param={'multi_label': True})
-        list_models = [gbt, sgd]
-        with self.assertRaises(ValueError):
-            model = ModelAggregation(model_dir=model_dir, list_models=list_models, multi_label=False)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
-
         # mix the classifiers model and the regressors model in the list model
         gbt, _, _, _ = self.create_models(bool_models_regressor=False)
         model_dir_regressor = os.path.join(utils.get_models_path(), 'model_test_123456789_regressor')
@@ -294,9 +285,36 @@ class Modelaggregation(unittest.TestCase):
         for submodel in model.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
         remove_dir(model_dir)
-        remove_dir(sgd.model_dir)
-        remove_dir(sgd.model_dir)
         remove_dir(sgd_regressor.model_dir)
+
+        # if the regressor model in list_models and multi_label is True
+        gbt, sgd, _, _ = self.create_models(bool_models_regressor=True)
+        list_models = [gbt, sgd]
+        with self.assertRaises(ValueError):
+            model = ModelAggregation(model_dir=model_dir, list_models=list_models, multi_label=True)
+        for submodel in model.list_real_models:
+            remove_dir(os.path.split(submodel.model_dir)[-1])
+        remove_dir(model_dir)
+
+        # if the regressor model in list_models and using_proba is True
+        gbt, sgd, _, _ = self.create_models(bool_models_regressor=True)
+        list_models = [gbt, sgd]
+        with self.assertRaises(ValueError):
+            model = ModelAggregation(model_dir=model_dir, list_models=list_models, using_proba=True)
+        for submodel in model.list_real_models:
+            remove_dir(os.path.split(submodel.model_dir)[-1])
+        remove_dir(model_dir)
+
+        # if 'multi_label' inconsistent
+        gbt, sgd, _, _ = self.create_models(bool_models_regressor=False, gbt_param={'multi_label': True})
+        list_models = [gbt, sgd]
+        with self.assertRaises(ValueError):
+            model = ModelAggregation(model_dir=model_dir, list_models=list_models, multi_label=False)
+        for submodel in model.list_real_models:
+            remove_dir(os.path.split(submodel.model_dir)[-1])
+        remove_dir(model_dir)
+        remove_dir(sgd.model_dir)
+        remove_dir(sgd.model_dir)
 
     def test02_model_aggregation_sort_model_type(self):
         '''Test of the method _sort_model_type of {{package_name}}.models_training.model_aggregation.ModelAggregation._sort_model_type'''
@@ -627,7 +645,6 @@ class Modelaggregation(unittest.TestCase):
 
     def test07_model_aggregation_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_aggregation.ModelAggregation.predict'''
-
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
@@ -659,19 +676,33 @@ class Modelaggregation(unittest.TestCase):
                            ModelGBTClassifier(model_dir=os.path.join(model_path, 'model_test_123456789_gbt_3')),
                            ModelGBTClassifier(model_dir=os.path.join(model_path, 'model_test_123456789_gbt_4')),
                            ModelGBTClassifier(model_dir=os.path.join(model_path, 'model_test_123456789_gbt_5'))]
+
+        list_model_regressor = [ModelGBTRegressor(model_dir=os.path.join(model_path, 'model_test_123456789_gbt_regressor_1')),
+                                ModelGBTRegressor(model_dir=os.path.join(model_path, 'model_test_123456789_gbt_regressor_2')),
+                                ModelGBTRegressor(model_dir=os.path.join(model_path, 'model_test_123456789_gbt_regressor_3')),
+                                ModelGBTRegressor(model_dir=os.path.join(model_path, 'model_test_123456789_gbt_regressor_4')),
+                                ModelGBTRegressor(model_dir=os.path.join(model_path, 'model_test_123456789_gbt_regressor_5'))]
+
         for i in range(2):
             list_model_mono[i].fit(dic_mono['x_train'], dic_mono['y_train_1'])
             list_model_mono[i + 2].fit(dic_mono['x_train'], dic_mono['y_train_2'])
+            list_model_regressor[i].fit(dic_mono['x_train'], dic_mono['y_train_1'])
+            list_model_regressor[i + 2].fit(dic_mono['x_train'], dic_mono['y_train_2'])
         list_model_mono[4].fit(dic_mono['x_train'], dic_mono['y_train_9'])
+        list_model_regressor[4].fit(dic_mono['x_train'], dic_mono['y_train_9'])
 
-        def test_method(model, x_test, target_predict, target_probas_shape):
+        def test_method(model, x_test, target_predict, target_probas_shape, bool_regressor=False):
             preds = model.predict(x_test)
-            probas = model.predict(x_test, return_proba=True)
             self.assertEqual(preds.shape, target_predict.shape)
-            self.assertEqual(probas.shape, target_probas_shape)
-            if not model.multi_label:
-                self.assertAlmostEqual(probas.sum(), len(x_test))
-            self.assertTrue((preds == target_predict).all())
+            if bool_regressor:
+                for i in range(len(preds)):
+                    self.assertAlmostEqual(preds[i], target_predict[i], places=4)
+            else:
+                probas = model.predict(x_test, return_proba=True)
+                self.assertEqual(probas.shape, target_probas_shape)
+                if not model.multi_label:
+                    self.assertAlmostEqual(probas.sum(), len(x_test))
+                self.assertTrue((preds == target_predict).all())
 
         #################################################
         # aggregation_function: majority_vote
@@ -685,16 +716,31 @@ class Modelaggregation(unittest.TestCase):
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas_shape=dic_mono['target_probas_1_shape'])
         remove_dir(model_dir)
 
+        list_models = [list_model_regressor[0], list_model_regressor[1]]
+        model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='majority_vote')
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas_shape=dic_mono['target_probas_1_shape'], bool_regressor=True)
+        remove_dir(model_dir)
+
         # The models have different labels
         list_models = [list_model_mono[0], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='majority_vote')
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_2'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'])
         remove_dir(model_dir)
 
+        list_models = [list_model_regressor[0], list_model_regressor[2], list_model_regressor[3]]
+        model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='majority_vote')
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_2'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'], bool_regressor=True)
+        remove_dir(model_dir)
+
         # Equality case
         list_models = [list_model_mono[4], list_model_mono[0], list_model_mono[1], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='majority_vote')
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_9'], target_probas_shape=dic_mono['target_probas_9_shape'])
+        remove_dir(model_dir)
+
+        list_models = [list_model_regressor[4], list_model_regressor[0], list_model_regressor[1], list_model_regressor[2], list_model_regressor[3]]
+        model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='majority_vote')
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_9'], target_probas_shape=dic_mono['target_probas_9_shape'], bool_regressor=True)
         remove_dir(model_dir)
 
         #################################################
@@ -727,10 +773,20 @@ class Modelaggregation(unittest.TestCase):
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas_shape=dic_mono['target_probas_1_shape'])
         remove_dir(model_dir)
 
+        list_models = [list_model_regressor[0], list_model_regressor[1]]
+        model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='median_predict')
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas_shape=dic_mono['target_probas_1_shape'], bool_regressor=True)
+        remove_dir(model_dir)
+
         # The models have different labels
         list_models = [list_model_mono[0], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='median_predict')
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_median'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'])
+        remove_dir(model_dir)
+
+        list_models = [list_model_regressor[0], list_model_regressor[2], list_model_regressor[3]]
+        model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='median_predict')
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_median'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'], bool_regressor=True)
         remove_dir(model_dir)
 
         #################################################
@@ -745,10 +801,20 @@ class Modelaggregation(unittest.TestCase):
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas_shape=dic_mono['target_probas_1_shape'])
         remove_dir(model_dir)
 
+        list_models = [list_model_regressor[0], list_model_regressor[1]]
+        model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='mean_predict')
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas_shape=dic_mono['target_probas_1_shape'], bool_regressor=True)
+        remove_dir(model_dir)
+
         # The models have different labels
         list_models = [list_model_mono[0], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='mean_predict')
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_mean'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'])
+        remove_dir(model_dir)
+
+        list_models = [list_model_regressor[0], list_model_regressor[2], list_model_regressor[3]]
+        model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='mean_predict')
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_mean'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'], bool_regressor=True)
         remove_dir(model_dir)
 
         #################################################
@@ -773,16 +839,31 @@ class Modelaggregation(unittest.TestCase):
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas_shape=dic_mono['target_probas_1_shape'])
         remove_dir(model_dir)
 
+        list_models = [list_model_regressor[0], list_model_regressor[1]]
+        model = ModelAggregation(model_dir=model_dir, list_models=list_models, using_proba=False, multi_label=False, aggregation_function=function_test)
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'], target_probas_shape=dic_mono['target_probas_1_shape'], bool_regressor=True)
+        remove_dir(model_dir)
+
         # The models have different labels
         list_models = [list_model_mono[0], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, using_proba=False, multi_label=False, aggregation_function=function_test)
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_2'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'])
         remove_dir(model_dir)
 
+        list_models = [list_model_regressor[0], list_model_regressor[2], list_model_regressor[3]]
+        model = ModelAggregation(model_dir=model_dir, list_models=list_models, using_proba=False, multi_label=False, aggregation_function=function_test)
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_2'], target_probas_shape=dic_mono['target_probas_1_2_2_shape'], bool_regressor=True)
+        remove_dir(model_dir)
+
         # Equality case
         list_models = [list_model_mono[4], list_model_mono[0], list_model_mono[1], list_model_mono[2], list_model_mono[3]]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='majority_vote')
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_9'], target_probas_shape=dic_mono['target_probas_9_shape'])
+        remove_dir(model_dir)
+
+        list_models = [list_model_regressor[4], list_model_regressor[0], list_model_regressor[1], list_model_regressor[2], list_model_regressor[3]]
+        model = ModelAggregation(model_dir=model_dir, list_models=list_models, aggregation_function='majority_vote')
+        test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_9'], target_probas_shape=dic_mono['target_probas_9_shape'], bool_regressor=True)
         remove_dir(model_dir)
 
         #################################################
@@ -901,6 +982,8 @@ class Modelaggregation(unittest.TestCase):
 
         for i in range(len(list_model_mono)):
             remove_dir(list_model_mono[i].model_dir)
+        for i in range(len(list_model_regressor)):
+            remove_dir(list_model_regressor[i].model_dir)
         for i in range(len(list_model_multi)):
             remove_dir(list_model_multi[i].model_dir)
         remove_dir(gbt_mono.model_dir)
@@ -970,6 +1053,18 @@ class Modelaggregation(unittest.TestCase):
 
         # mono_label
         gbt, sgd, _, _= self.create_models()
+        model = ModelAggregation(model_dir=model_dir, list_models=[gbt, sgd])
+        model.fit(x_train, y_train_mono)
+        preds = model._get_predictions(x_train)
+        self.assertTrue(isinstance(preds, np.ndarray))
+        self.assertEqual(len(preds), len(x_train))
+        self.assertTrue(([preds[i][0] for i in range(len(x_train))] == gbt.predict(x_train)).all())
+        self.assertTrue(([preds[i][1] for i in range(len(x_train))] == sgd.predict(x_train)).all())
+        for submodel in model.list_real_models:
+            remove_dir(os.path.split(submodel.model_dir)[-1])
+        remove_dir(model_dir)
+
+        gbt, sgd, _, _= self.create_models(bool_models_regressor=True)
         model = ModelAggregation(model_dir=model_dir, list_models=[gbt, sgd])
         model.fit(x_train, y_train_mono)
         preds = model._get_predictions(x_train)
