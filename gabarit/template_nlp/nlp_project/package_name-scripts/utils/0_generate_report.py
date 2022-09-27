@@ -213,19 +213,19 @@ class SweetvizConfig:
 
 
 if __name__ == "__main__":
-    parser = argparse.ArgumentParser("generate_report", description=(
+    parser = argparse.ArgumentParser('generate_report', description=(
             "Generate report between one or many source dataset(s) and none, "
             "or many compare dataset(s). Reports are store in {{package_name}}-data/reports."
         ),
     )
-    parser.add_argument("-s", "--source_paths", nargs="+", required=True, help="Source dataset paths (actually paths relative to {{package_name}}-data)")
-    parser.add_argument("--source_names", default=None, nargs="+", help="Source dataset names")
-    parser.add_argument("-c", "--compare_paths", default=None, nargs="+", help="Target dataset paths (actually paths relative to {{package_name}}-data)")
-    parser.add_argument("--compare_names", default=None, nargs="+", help="Target dataset names")
-    parser.add_argument("-t", "--target", default=None, help="Target variable")
-    parser.add_argument("--config", default=None, help="JSON Sweetviz configuration for compare and show_html arguments, cf. https://github.com/fbdesignpro/sweetviz")
+    parser.add_argument('-s', '--source_paths', nargs='+', required=True, help="Source dataset paths (actually paths relative to {{package_name}}-data)")
+    parser.add_argument('--source_names', default=None, nargs='+', help="Source dataset names")
+    parser.add_argument('-c', '--compare_paths', default=None, nargs='+', help="Target dataset paths (actually paths relative to {{package_name}}-data)")
+    parser.add_argument('--compare_names', default=None, nargs='+', help="Target dataset names")
+    parser.add_argument('-t', '--target', default=None, help="Target variable")
+    parser.add_argument('--config', default=None, help="JSON Sweetviz configuration for compare and show_html arguments, cf. https://github.com/fbdesignpro/sweetviz")
     parser.add_argument('--sep', default='{{default_sep}}', help="Separator to use with the .csv files.")
-    parser.add_argument('--encoding', default="{{default_encoding}}", help="Encoding to use with the .csv files.")
+    parser.add_argument('--encoding', default='{{default_encoding}}', help="Encoding to use with the .csv files.")
     #TODO: add --overwrite, cf. https://github.com/OSS-Pole-Emploi/gabarit/issues/71
     args = parser.parse_args()
     main(source_paths=args.source_paths, source_names=args.source_names, compare_paths=args.compare_paths,
