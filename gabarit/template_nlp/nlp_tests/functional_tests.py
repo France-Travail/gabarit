@@ -46,8 +46,8 @@ class Case1_e2e_pipeline(unittest.TestCase):
     '''Class to test the project end to end'''
 
     def test01_CreateSamples(self):
-        '''Test of the file 0_create_samples.py'''
-        print("Test of the file 0_create_samples.py")
+        '''Test of the file utils/0_create_samples.py'''
+        print("Test of the file utils/0_create_samples.py")
 
         # "Basic" case
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv -n 15"
@@ -67,8 +67,8 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(df2.shape[0], 200)  # 200 row max
 
     def test02_GetEmbeddingDict(self):
-        '''Test of the file 0_get_embedding_dict.py'''
-        print("Test of the file 0_get_embedding_dict.py")
+        '''Test of the file utils/0_get_embedding_dict.py'''
+        print("Test of the file utils/0_get_embedding_dict.py")
 
         # "Basic" case
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py -f custom.300.vec"
@@ -76,8 +76,8 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'custom.300.pkl')))
 
     def test03_MergeFiles(self):
-        '''Test of the file 0_merge_files.py'''
-        print("Test of the file 0_merge_files.py")
+        '''Test of the file utils/0_merge_files.py'''
+        print("Test of the file utils/0_merge_files.py")
 
         # "Basic" case
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_merge_files.py -f mono_class_mono_label.csv multi_class_mono_label.csv -c x_col y_col -o merged_file.csv"
@@ -87,8 +87,8 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertGreater(df.shape[0], 200)  # We check that there are more than 200 elements (ie. the size of one of the two files)
 
     def test04_SplitTrainValidTest(self):
-        '''Test of the file 0_split_train_valid_test.py'''
-        print("Test of the file 0_split_train_valid_test.py")
+        '''Test of the file utils/0_split_train_valid_test.py'''
+        print("Test of the file utils/0_split_train_valid_test.py")
 
         # "Basic" case
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
@@ -152,7 +152,37 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertFalse(any([_ in df_test.x_col.values for _ in df_train.x_col.values]))
         self.assertFalse(any([_ in df_valid.x_col.values for _ in df_test.x_col.values]))
 
-    def test05_PreProcessData(self):
+    def test05_GenerateReport(self):
+        '''Test of the file utils/0_generate_report.py'''
+        print("Test of the file utils/0_generate_report.py")
+
+        # We first create a sweetviz configuration file
+        config_path = os.path.join(full_path_lib, "test_config.json")
+        if os.path.exists(config_path):
+            os.remove(config_path)
+        with open(config_path, 'w') as f:
+            json.dump({"open_browser": False}, f)
+
+        # "Basic" case
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_generate_report.py -s mono_class_mono_label.csv --source_names source --config {config_path}"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_nlp-data", "reports", "report_source.html")))
+
+        # Compare datasets
+        test_compare = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_generate_report.py -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path}"
+        self.assertEqual(subprocess.run(test_compare, shell=True).returncode, 0)
+        self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_nlp-data", "reports", "report_train_valid.html")))
+        self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_nlp-data", "reports", "report_train_test.html")))
+
+        # With target
+        test_target = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_generate_report.py -s mono_class_mono_label.csv --source_names source_with_target -t y_col --config {config_path}"
+        self.assertEqual(subprocess.run(test_target, shell=True).returncode, 0)
+        self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_nlp-data", "reports", "report_source_with_target.html")))
+
+        # Clean up sweetviz config path (useful ?)
+        os.remove(config_path)
+
+    def test06_PreProcessData(self):
         '''Test of the file 1_preprocess_data.py'''
         print("Test of the file 1_preprocess_data.py")
 
@@ -171,7 +201,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(list(df_train.preprocessed_text.str.lower().values), list(df_train.preprocessed_text.values))
         self.assertEqual(list(df_valid.preprocessed_text.str.lower().values), list(df_valid.preprocessed_text.values))
 
-    def test06_TrainingE2E(self):
+    def test07_TrainingE2E(self):
         '''Test of the file 2_training.py'''
         print("Test of the file 2_training.py")
 
@@ -193,7 +223,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         listdir = os.listdir(os.path.join(save_model_dir))
         self.assertEqual(len(listdir), 2)
 
-    def test07_PredictE2E(self):
+    def test08_PredictE2E(self):
         '''Test of the file 3_predict.py'''
         print("Test of the file 3_predict.py")
 
@@ -1820,63 +1850,6 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_EmbeddingLstmStructuredAttention failed')
 
-class EDAReportTest(unittest.TestCase):
-    '''Class to test the EDA report generation'''
-    def test_generate_report(self):
-        '''Test of the script utils/0_generate_report.py'''   
-        script = os.path.join(
-            full_path_lib, "test_template_nlp-scripts", "utils", "0_generate_report.py"
-        )
-
-        # Sweetviz configuration
-        config_path = os.path.join(full_path_lib, "test_config.json")
-
-        with open(config_path, "w") as f:
-            json.dump({"open_browser": False}, f)
-
-        result_source = subprocess.run(
-            [
-                f"{activate_venv}python",
-                script,
-                "-s",
-                "dataset_jvc.csv",
-                "--source_names",
-                "source",
-                "--config",
-                config_path,
-            ]
-        )
-
-        assert result_source.returncode == 0
-        assert os.path.exists(
-            os.path.join(
-                full_path_lib, "test_template_nlp-data", "reports", "report_source.html"
-            )
-        )
-
-        result_compare = subprocess.run(
-            [
-                f"{activate_venv}python",
-                script,
-                "-s",
-                "dataset_jvc.csv",
-                "-c",
-                "dataset_jvc.csv",
-                "--source_names",
-                "source",
-                "--compare_names",
-                "test",
-                "--config",
-                config_path,
-            ]
-        )
-
-        assert result_compare.returncode == 0
-        assert os.path.exists(
-            os.path.join(
-                full_path_lib, "test_template_nlp-data", "reports", "report_source_test.html"
-            )
-        )
 
 if __name__ == '__main__':
     # Change directory to script directory parent
