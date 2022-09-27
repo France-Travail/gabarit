@@ -141,7 +141,7 @@ class ModelAggregation(ModelClass):
             self.list_real_models = list_real_models
             self.list_models = new_list_models
 
-    def _has_model_classifier(self) -> bool:
+    def _has_model_classifier(self) -> np.bool_:
         '''Checke has a classification model in list_real_models
 
         Args:
@@ -150,7 +150,7 @@ class ModelAggregation(ModelClass):
         list_type_model = np.array([ModelClassifierMixin in model.__class__.__bases__ for model in self.list_real_models])
         return list_type_model.any()
 
-    def _has_model_regressor(self) -> bool:
+    def _has_model_regressor(self) -> np.bool_:
         '''Checke has a regressor model in list_real_models
 
         Args:
@@ -216,7 +216,7 @@ class ModelAggregation(ModelClass):
         self._check_trained()
 
     @utils.trained_needed
-    def predict(self, x_test, return_proba: Union[bool, None] = False, **kwargs) -> np.array:
+    def predict(self, x_test, return_proba: Union[bool, None] = False, **kwargs) -> np.ndarray:
         '''Prediction
 
         Args:
@@ -266,7 +266,7 @@ class ModelAggregation(ModelClass):
         return array_predict
 
     @utils.trained_needed
-    def predict_proba(self, x_test, **kwargs) -> np.array:
+    def predict_proba(self, x_test, **kwargs) -> np.ndarray:
         '''Predicts the probabilities on the test set
 
         Args:
@@ -278,7 +278,7 @@ class ModelAggregation(ModelClass):
         # The probas of all models are averaged.
         return np.sum(probas, axis=1) / probas.shape[1]
 
-    def _predict_model_with_full_list_classes(self, model, x_test, return_proba: Union[bool, None] = False) -> np.array:
+    def _predict_model_with_full_list_classes(self, model, x_test, return_proba: Union[bool, None] = False) -> np.ndarray:
         '''For multi_label: Complete columns missing in the prediction of model (label missing in their list_classes)
 
         Args:

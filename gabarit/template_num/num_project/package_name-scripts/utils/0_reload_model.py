@@ -29,7 +29,7 @@ from typing import Union
 
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.models_training import utils_models, utils_deep_keras
+from {{package_name}}.models_training import utils_models, utils_deep_keras, model_aggregation
 from {{package_name}}.models_training.classifiers import (model_rf_classifier,
                                                           model_dense_classifier,
                                                           model_ridge_classifier,
@@ -60,7 +60,7 @@ logger = logging.getLogger('{{package_name}}.0_reload_model')
 def main(model_dir: str, config_file: str = 'configurations.json',
          sklearn_pipeline_file: str = 'sklearn_pipeline_standalone.pkl',
          weights_file: str = 'best.hdf5', xgboost_file: str = 'xbgoost_standalone.model',
-         preprocess_pipeline_file: str = 'preprocess_pipeline.pkl') -> None:
+         preprocess_pipeline_file: str = 'preprocess_pipeline.pkl', aggregation_function_file: str = 'aggregation_function.pkl') -> None:
     '''Reloads a model
 
     The idea here is to reload a model that was trained on another package version.
@@ -74,6 +74,7 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         weights_file (str): Neural Network weights file name (keras models)
         xgboost_file (str): Standalone XGBoost file name (xgboost models)
         preprocess_pipeline_file (str): Name of the preprocessing pipeline file (all models)
+        aggregation_function_path (str): aggregation_function file name (model aggregation)
     Raises:
         FileNotFoundError: If model can't be found
         FileNotFoundError: If model's configuration does not exist
@@ -151,6 +152,7 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'hdf5_path': os.path.join(model_path, weights_file) if weights_file is not None else None,
         'xgboost_path': os.path.join(model_path, xgboost_file) if xgboost_file is not None else None,
         'preprocess_pipeline_path': os.path.join(model_path, preprocess_pipeline_file) if preprocess_pipeline_file is not None else None,
+        'aggregation_function_path': os.path.join(model_path, aggregation_function_file) if aggregation_function_file is not None else None,
     }
     model.reload_from_standalone(**files_dict)
 
@@ -192,7 +194,9 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--weights_file', default='best.hdf5', help="Neural Network weights file name (keras models)")
     parser.add_argument('--xgboost_file', default='xbgoost_standalone.model', help="Standalone XGBoost file name (xgboost models)")
     parser.add_argument('-p', '--preprocess_pipeline_file', default='preprocess_pipeline.pkl', help="Name of the preprocessing pipeline file (all models)")
+    parser.add_argument('--aggregation_function_file', default='aggregation_function.pkl', help="aggregation_function_file file name (models aggregation)")
     args = parser.parse_args()
     main(model_dir=args.model_dir, config_file=args.config_file,
          sklearn_pipeline_file=args.sklearn_pipeline_file, weights_file=args.weights_file,
-         xgboost_file=args.xgboost_file, preprocess_pipeline_file=args.preprocess_pipeline_file)
+         xgboost_file=args.xgboost_file, preprocess_pipeline_file=args.preprocess_pipeline_file,
+         aggregation_function_file=args.aggregation_function)
