@@ -28,7 +28,7 @@ import dill as pickle
 import numpy as np
 import pandas as pd
 from types import FunctionType, MethodType
-from typing import Callable, Union, Dict
+from typing import Callable, Union, Dict, Optional, List, Any
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_models
@@ -63,6 +63,8 @@ class ModelAggregation(ModelClass):
 
         # Get logger (must be done after super init)
         self.logger = logging.getLogger(__name__)
+        self.list_classes: Optional[List[Any]] = None
+        self.dict_classes: Optional[Dict[Any, Any]] = None
 
         # Get the aggregation function
         self.using_proba = using_proba
@@ -374,6 +376,9 @@ class ModelAggregation(ModelClass):
 
         json_data['list_models'] = self.list_models.copy()
         json_data['using_proba'] = self.using_proba
+        json_data['list_classes'] = self.list_classes
+        json_data['dict_classes'] = self.dict_classes
+        json_data['multi_label'] = self.multi_label
 
         aggregation_function = self.aggregation_function
 

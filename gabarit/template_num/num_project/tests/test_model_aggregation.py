@@ -392,7 +392,6 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(model_dir)        
         remove_dir(sgd.model_dir)
         remove_dir(sgd.model_dir)
-
     def test05_model_aggregation_check_trained(self):
         '''Test of the method _check_trained of {{package_name}}.models_training.model_aggregation.ModelAggregation._check_trained'''
 
@@ -414,8 +413,8 @@ class Modelaggregation(unittest.TestCase):
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregation(model_dir=model_dir)
         self.assertFalse(model.trained)
-        self.assertFalse(hasattr(model, 'list_classes'))
-        self.assertFalse(hasattr(model, 'dict_classes'))
+        self.assertTrue(model.list_classes is None)
+        self.assertTrue(model.dict_classes is None)
         gbt.fit(x_train, y_train_int)
         sgd.fit(x_train, y_train_int)
         model._sort_model_type([gbt, sgd])
@@ -432,8 +431,8 @@ class Modelaggregation(unittest.TestCase):
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregation(model_dir=model_dir)
         self.assertFalse(model.trained)
-        self.assertFalse(hasattr(model, 'list_classes'))
-        self.assertFalse(hasattr(model, 'dict_classes'))
+        self.assertTrue(model.list_classes is None)
+        self.assertTrue(model.dict_classes is None)
         gbt.fit(x_train, y_train_str)
         sgd.fit(x_train, y_train_str)
         model._sort_model_type([gbt, sgd])
@@ -450,13 +449,13 @@ class Modelaggregation(unittest.TestCase):
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregation(model_dir=model_dir)
         self.assertFalse(model.trained)
-        self.assertFalse(hasattr(model, 'list_classes'))
-        self.assertFalse(hasattr(model, 'dict_classes'))
+        self.assertTrue(model.list_classes is None)
+        self.assertTrue(model.dict_classes is None)
         model._sort_model_type([gbt, sgd])
         model._check_trained()
         self.assertFalse(model.trained)
-        self.assertFalse(hasattr(model, 'list_classes'))
-        self.assertFalse(hasattr(model, 'dict_classes'))
+        self.assertTrue(model.list_classes is None)
+        self.assertTrue(model.dict_classes is None)
         for submodel in model.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
         remove_dir(model_dir)
@@ -464,14 +463,14 @@ class Modelaggregation(unittest.TestCase):
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregation(model_dir=model_dir)
         self.assertFalse(model.trained)
-        self.assertFalse(hasattr(model, 'list_classes'))
-        self.assertFalse(hasattr(model, 'dict_classes'))
+        self.assertTrue(model.list_classes is None)
+        self.assertTrue(model.dict_classes is None)
         sgd.fit(x_train, y_train_int)
         model._sort_model_type([gbt, sgd])
         model._check_trained()
         self.assertFalse(model.trained)
-        self.assertFalse(hasattr(model, 'list_classes'))
-        self.assertFalse(hasattr(model, 'dict_classes'))
+        self.assertTrue(model.list_classes is None)
+        self.assertTrue(model.dict_classes is None)
         for submodel in model.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
         remove_dir(model_dir)
@@ -929,8 +928,8 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(model_dir)
 
         # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        y_train_mono = np.array([0, 1, 0, 1, 2])
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        y_train_mono = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         n_classes = 3
 
         gbt, sgd, _, _= self.create_models()
@@ -941,7 +940,7 @@ class Modelaggregation(unittest.TestCase):
         self.assertTrue(isinstance(probas, np.ndarray))
         self.assertEqual(len(probas), len(x_train))
         self.assertEqual(probas.shape, (len(x_train), len(list_models), n_classes))
-        self.assertTrue(([probas[i][0] for i in range(len(probas))] == sgd.predict_proba(x_train)).all())
+        self.assertTrue(([probas[i][0] for i in range(len(probas))] == gbt.predict_proba(x_train)).all())
         self.assertTrue(([probas[i][1] for i in range(len(probas))] == sgd.predict_proba(x_train)).all())
         for submodel in model.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
@@ -962,12 +961,10 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(model_dir)
 
         # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        y_train_mono = np.array(['test1', 'test2', 'test1', 'test2', 'test0'])
-        y_train_multi_1 = pd.DataFrame({'test1': [0, 0, 0, 1, 0], 'test2': [1, 0, 0, 0, 0], 'test3': [0, 0, 0, 1, 0]})
-        y_train_multi_2 = pd.DataFrame({'test1': [0, 0, 0, 1, 0], 'test3': [1, 0, 0, 0, 0], 'test4': [0, 0, 0, 1, 0]})
-        cols_1 = ['test1', 'test2', 'test3']
-        cols_2 = ['test1', 'test3', 'test4']
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        y_train_mono = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
+        y_train_multi_1 = pd.DataFrame({'test1': [0, 0, 0, 0, 1, 1, 1] * 10, 'test2': [1, 0, 0, 1, 1, 1, 1] * 10, 'test3': [0, 0, 1, 0, 1, 0, 1] * 10})
+        y_train_multi_2 = pd.DataFrame({'test1': [0, 0, 0, 0, 1, 1, 1] * 10, 'test3': [1, 0, 0, 1, 1, 1, 1] * 10, 'test4': [0, 0, 1, 0, 1, 0, 1] * 10})
         list_classes = ['test1', 'test2', 'test3', 'test4']
         n_classes_all = len(list_classes)
 
@@ -986,10 +983,10 @@ class Modelaggregation(unittest.TestCase):
 
         # multi_label
         gbt, sgd, _, _ = self.create_models(gbt_param={'multi_label': True}, sgd_param={'multi_label': True})
-        gbt.fit(x_train, y_train_multi_1[cols_1])
+        gbt.fit(x_train, y_train_multi_1)
         list_models = [gbt, sgd]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, using_proba=False, aggregation_function='all_predictions', multi_label=True)
-        model.fit(x_train, y_train_multi_2[cols_2])
+        model.fit(x_train, y_train_multi_2)
         preds = model._get_predictions(x_train)
         self.assertTrue(isinstance(preds, np.ndarray))
         self.assertEqual(preds.shape, (len(x_train), len(list_models), n_classes_all))
@@ -1016,8 +1013,8 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(model_dir)
 
         # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        y_train_mono = np.array([0, 1, 0, 1, 2])
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        y_train_mono = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         n_classes = 3
 
         gbt, sgd, _, _= self.create_models()
@@ -1053,10 +1050,10 @@ class Modelaggregation(unittest.TestCase):
         ############################################
 
         # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test"])
-        x_test = np.array(['ceci est un test'])
-        y_mono_1 = ['test1', 'test2', 'test4', 'test1']
-        y_mono_2 = ['test1', 'test0', 'test3', 'test5']
+        x_train = pd.DataFrame({'col_1': [-5, -1, -1, 0, 4, 6, 3] * 10, 'col_2': [-2, -1, -8, 0, 4, 12, 2] * 10})
+        x_test = pd.DataFrame({'col_1': [-5], 'col_2': [-2]})
+        y_mono_1 = pd.Series(['test1', 'test1', 'test1', 'test2', 'test4', 'test4', 'test4'] * 10)
+        y_mono_2 = pd.Series(['test1', 'test1', 'test3', 'test5', 'test0', 'test2', 'test2'] * 10)
         cols_all = len(['test0', 'test1', 'test2', 'test3', 'test4', 'test5'])
         target_predict_model_with_full_list_classes = np.array([0, 1, 0, 0, 0, 0])
         target_predict_gbt1 = 'test1'
@@ -1071,7 +1068,8 @@ class Modelaggregation(unittest.TestCase):
         model = ModelAggregation(model_dir=model_dir, list_models=[gbt1, gbt2])
         gbt1_predict_full_classes = model._predict_model_with_full_list_classes(gbt1, x_test, return_proba=True)
         self.assertEqual(gbt1_predict_full_classes.shape, (len(x_test), cols_all))
-        self.assertTrue((gbt1_predict_full_classes == target_predict_model_with_full_list_classes).all())
+        for i in range(len(target_predict_model_with_full_list_classes)):
+            self.assertAlmostEqual(gbt1_predict_full_classes[0][i], target_predict_model_with_full_list_classes[i], places=2)
         # not return_proba
         gbt1_predict_full_classes = model._predict_model_with_full_list_classes(gbt1, x_test, return_proba=False)
         self.assertEqual(gbt1_predict_full_classes.shape, (len(x_test),))
@@ -1085,29 +1083,33 @@ class Modelaggregation(unittest.TestCase):
         ############################################
 
         # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test"])
-        y_multi_1 = pd.DataFrame({'test1': [1, 0, 1, 0], 'test2': [1, 1, 0, 0], 'test4': [0, 1, 0, 1]})
-        cols_1 = ['test1', 'test2', 'test4']
-        y_multi_2 = pd.DataFrame({'test0': [0, 1, 0, 0], 'test3': [0, 1, 1, 0], 'test5': [0, 1, 0, 0]})
-        cols_2 = ['test0', 'test3', 'test5']
+        x_train = pd.DataFrame({'col_1': [-5, -1, -2, 0, 4, 6, 3] * 10, 'col_2': [-2, -1, -8, 0, 4, 12, 2] * 10})
+        y_multi_1 = pd.DataFrame({'test1': [0, 0, 0, 1, 1, 1, 1] * 10, 'test2': [0, 0, 0, 0, 1, 1, 1] * 10, 'test4': [1, 1, 1, 0, 0, 0, 0] * 10})
+        y_multi_2 = pd.DataFrame({'test0': [0, 0, 0, 1, 1, 1, 1] * 10, 'test3': [0, 0, 0, 0, 1, 1, 1] * 10, 'test5': [1, 1, 1, 0, 0, 0, 0] * 10})
+        x_col = ['col_1', 'col_2']
+        y_col_multi_1 = ['test1', 'test2', 'test4']
+        y_col_multi_2 = ['test0', 'test3', 'test5']
         cols_all = len(['test0', 'test1', 'test2', 'test3', 'test4', 'test5'])
-        target_predict_model_with_full_list_classes = np.array([0, 1, 1, 0, 0, 0])
 
         model_path = utils.get_models_path()
-        gbt1 = ModelGBTClassifier(multi_label=True, model_dir=os.path.join(model_path, 'model_test_123456789_gbt_1'))
-        gbt2 = ModelGBTClassifier(multi_label=True, model_dir=os.path.join(model_path, 'model_test_123456789_gbt_2'))
-        gbt1.fit(x_train, y_multi_1[cols_1])
-        gbt2.fit(x_train, y_multi_2[cols_2])
+        gbt1 = ModelGBTClassifier(multi_label=True, model_dir=os.path.join(model_path, 'model_test_123456789_gbt_1'), x_col=x_col, y_col=y_col_multi_1)
+        gbt2 = ModelGBTClassifier(multi_label=True, model_dir=os.path.join(model_path, 'model_test_123456789_gbt_2'), x_col=x_col, y_col=y_col_multi_2)
+        gbt1.fit(x_train, y_multi_1)
+        gbt2.fit(x_train, y_multi_2)
 
         # return_proba
         model = ModelAggregation(model_dir=model_dir, list_models=[gbt1, gbt2], multi_label=True, aggregation_function='all_predictions')
         gbt1_predict_full_classes = model._predict_model_with_full_list_classes(gbt1, x_test, return_proba=True)
         self.assertEqual(gbt1_predict_full_classes.shape, (len(x_test), cols_all))
-        self.assertTrue((gbt1_predict_full_classes == target_predict_model_with_full_list_classes).all())
+        pred = gbt1.predict(x_test, return_proba=True)
+        target_predict_model_with_full_list_classes = np.array([0, pred[0][0], pred[0][1], 0, pred[0][2], 0])
+        for i in range(len(target_predict_model_with_full_list_classes)):
+            self.assertAlmostEqual(gbt1_predict_full_classes[0][i], target_predict_model_with_full_list_classes[i], places=2)
         # not return_proba
         gbt1_predict_full_classes = model._predict_model_with_full_list_classes(gbt1, x_test, return_proba=False)
         self.assertEqual(gbt1_predict_full_classes.shape, (len(x_test), cols_all))
-        self.assertEqual(gbt1_predict_full_classes.all(), target_predict_model_with_full_list_classes.all())
+        for i in range(len(target_predict_model_with_full_list_classes)):
+            self.assertAlmostEqual(gbt1_predict_full_classes[0][i], target_predict_model_with_full_list_classes[i], places=2)
         for submodel in model.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
         remove_dir(model_dir)
@@ -1335,9 +1337,9 @@ class Modelaggregation(unittest.TestCase):
         #######################
 
         # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ici test", "là, rien!"])
-        y_train_mono = np.array([0, 1, 0, 1, 2])
+        x_train = pd.DataFrame({'col_1': [-5, -1, -1, 0, 4, 6, 3] * 10, 'col_2': [-8, -1, -1, 0, 4, 12, 2] * 10})
+        x_test = pd.DataFrame({'col_1': [-5], 'col_2': [-8]})
+        y_train_mono = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
 
         # Create model
         gbt, sgd, _, _= self.create_models()
@@ -1380,17 +1382,16 @@ class Modelaggregation(unittest.TestCase):
         #######################
 
         # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
-        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0], 'test2': [1, 0, 0, 0, 0], 'test3': [0, 0, 0, 1, 0]})
-        y_train_mono = np.array(['test1', 'test1', 'test3', 'test2', 'test3'])
-        cols = ['test1', 'test2', 'test3']
+        x_train = pd.DataFrame({'col_1': [-5, -1, -1, 0, 4, 6, 3] * 10, 'col_2': [-8, -1, -1, 0, 4, 12, 2] * 10})
+        x_test = pd.DataFrame({'col_1': [-5], 'col_2': [-8]})
+        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 1, 1, 1] * 10, 'test2': [0, 0, 0, 0, 1, 1, 1] * 10, 'test4': [1, 1, 1, 0, 0, 0, 0] * 10})
+        y_train_mono = pd.Series(['test1', 'test1', 'test1', 'test3', 'test4', 'test0', 'test5'] * 10)
 
         # Create model
         gbt, sgd, gbt_name, sgd_name = self.create_models(gbt_param={'multi_label': True}, sgd_param={'multi_label': True})
         list_models = [gbt_name, sgd_name]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models, multi_label=True, aggregation_function='all_predictions')
-        model.fit(x_train, y_train_multi[cols])
+        model.fit(x_train, y_train_multi)
         model.save()
 
         # Reload
