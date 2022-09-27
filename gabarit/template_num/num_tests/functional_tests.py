@@ -173,7 +173,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         with tempfile.TemporaryFile(dir=data_path) as f:
             # Read dataset, add a tmp target as binary class & save it in the tmp file
             df = pd.read_csv(original_dataset_path, sep=';', encoding='utf-8')
-            df['tmp_target'] = df[y_col].apply(lambda x: 1 if x == 'oui' else 0)
+            df['tmp_target'] = df['y_col'].apply(lambda x: 1 if x == 'oui' else 0)
             df.to_csv(f.name, sep=';', encoding='utf-8', index=None)
             test_target = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_generate_report.py -s {f.name} --source_names source_with_target -t tmp_target --config {config_path}"
             self.assertEqual(subprocess.run(test_target, shell=True).returncode, 0)
