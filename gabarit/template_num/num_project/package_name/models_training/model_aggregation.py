@@ -98,7 +98,7 @@ class ModelAggregation(ModelClass):
         if list_models is not None:
             self._sort_model_type(list_models)
 
-        # Error for mix the classifiers model and the regressors model 
+        # Error for mix the classifiers model and the regressors model
         if self.list_real_models is not None:
             if self._has_model_classifier() and self._has_model_regressor():
                 raise ValueError(f"mix the classifiers model and theregressors model in the list models.")
@@ -223,7 +223,7 @@ class ModelAggregation(ModelClass):
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
             return_proba (bool): If the function should return the probabilities instead of the classes
         Returns:
-            (np.array): array of shape = [n_samples]
+            (np.ndarray): array of shape = [n_samples]
         '''
         # We decide whether to rely on each model's probas or their prediction
         if return_proba:
@@ -272,7 +272,7 @@ class ModelAggregation(ModelClass):
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
         Returns:
-            (np.array): array of shape = [n_samples, n_classes]
+            (np.ndarray): array of shape = [n_samples, n_classes]
         '''
         probas = self._get_probas(x_test, **kwargs)
         # The probas of all models are averaged.
@@ -286,7 +286,7 @@ class ModelAggregation(ModelClass):
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
             return_proba (bool): If the function should return the probabilities instead of the classes
         Returns:
-            (np.array): predict complete (0 for missing columns)
+            (np.ndarray): predict complete (0 for missing columns)
         '''
         pred = model.predict(x_test, return_proba=return_proba)
 
@@ -362,7 +362,7 @@ class ModelAggregation(ModelClass):
             (np.float64) : predict
         '''
         return np.median(predictions)
-    
+
     def mean_predict(self, predictions: np.ndarray) -> np.float64:
         '''Returns the mean predicted by predictions of each models
 

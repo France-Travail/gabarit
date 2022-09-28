@@ -383,7 +383,7 @@ class Modelaggregation(unittest.TestCase):
         self.assertFalse(model._has_model_classifier())
         for submodel in model.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)        
+        remove_dir(model_dir)
         remove_dir(sgd.model_dir)
         remove_dir(sgd.model_dir)
 
@@ -407,9 +407,10 @@ class Modelaggregation(unittest.TestCase):
         self.assertFalse(model._has_model_regressor())
         for submodel in model.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)        
+        remove_dir(model_dir)
         remove_dir(sgd.model_dir)
         remove_dir(sgd.model_dir)
+
     def test05_model_aggregation_check_trained(self):
         '''Test of the method _check_trained of {{package_name}}.models_training.model_aggregation.ModelAggregation._check_trained'''
 
@@ -994,7 +995,7 @@ class Modelaggregation(unittest.TestCase):
         ############################################
 
         # Model needs to be fitted
-        gbt, sgd, _, _= self.create_models()
+        gbt, sgd, _, _ = self.create_models()
         model = ModelAggregation(model_dir=model_dir, list_models=[gbt, sgd])
         with self.assertRaises(AttributeError):
             model.predict('test')
@@ -1015,7 +1016,7 @@ class Modelaggregation(unittest.TestCase):
         y_train_mono = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         n_classes = 3
 
-        gbt, sgd, _, _= self.create_models()
+        gbt, sgd, _, _ = self.create_models()
         list_models = [gbt, sgd]
         model = ModelAggregation(model_dir=model_dir, list_models=list_models)
         model.fit(x_train, y_train_mono)
@@ -1052,7 +1053,7 @@ class Modelaggregation(unittest.TestCase):
         n_classes_all = len(list_classes)
 
         # mono_label
-        gbt, sgd, _, _= self.create_models()
+        gbt, sgd, _, _ = self.create_models()
         model = ModelAggregation(model_dir=model_dir, list_models=[gbt, sgd])
         model.fit(x_train, y_train_mono)
         preds = model._get_predictions(x_train)
@@ -1064,7 +1065,7 @@ class Modelaggregation(unittest.TestCase):
             remove_dir(os.path.split(submodel.model_dir)[-1])
         remove_dir(model_dir)
 
-        gbt, sgd, _, _= self.create_models(bool_models_regressor=True)
+        gbt, sgd, _, _ = self.create_models(bool_models_regressor=True)
         model = ModelAggregation(model_dir=model_dir, list_models=[gbt, sgd])
         model.fit(x_train, y_train_mono)
         preds = model._get_predictions(x_train)
@@ -1112,7 +1113,7 @@ class Modelaggregation(unittest.TestCase):
         y_train_mono = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         n_classes = 3
 
-        gbt, sgd, _, _= self.create_models()
+        gbt, sgd, _, _ = self.create_models()
         model = ModelAggregation(model_dir=model_dir, list_models=[gbt, sgd])
         model.fit(x_train, y_train_mono)
         probas = model.predict_proba(x_train)
@@ -1120,7 +1121,7 @@ class Modelaggregation(unittest.TestCase):
         self.assertEqual(len(probas[0]), n_classes)
         probas_gbt = gbt.predict(x_train, return_proba=True)
         probas_sgd = sgd.predict(x_train, return_proba=True)
-        probas_agg = [(probas_gbt[i]+probas_sgd[i]) / 2 for i in range(len(probas_gbt))]
+        probas_agg = [(probas_gbt[i] + probas_sgd[i]) / 2 for i in range(len(probas_gbt))]
         self.assertTrue((probas == probas_agg).all())
         for submodel in model.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
@@ -1437,7 +1438,7 @@ class Modelaggregation(unittest.TestCase):
         y_train_mono = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
 
         # Create model
-        gbt, sgd, _, _= self.create_models()
+        gbt, sgd, _, _ = self.create_models()
         model = ModelAggregation(model_dir=model_dir, list_models=[gbt, sgd])
         model.fit(x_train, y_train_mono)
         model.save()

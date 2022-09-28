@@ -37,8 +37,8 @@ from typing import Union, List, Type, Tuple
 
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.models_training import utils_models
-from {{package_name}}.monitoring.mlflow_logger import MLflowLogger
+from {{package_name}}.models_training import utils_models, model_aggregation
+from {{package_name}}.monitoring.model_logger import MLflowLogger
 from {{package_name}}.models_training.model_class import ModelClass
 from {{package_name}}.models_training.regressors import (model_rf_regressor,
                                                          model_dense_regressor,
@@ -229,6 +229,9 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
         # model = model_dense_regressor.ModelDenseRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                   preprocess_pipeline=preprocess_pipeline,
         #                                                   batch_size=64, epochs=99, patience=5)
+        # modle = model_aggregation.ModelAggregation(x_col=x_col, y_col=y_col, level_save=level_save,
+        #                                            list_models=[model_sgd_regressor.ModelSGDRegressor(), model_sgd_regressor.ModelSGDRegressor()],
+        #                                            multi_label=multi_label)
 
     # Display if GPU is being used
     model.display_if_gpu_activated()
