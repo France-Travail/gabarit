@@ -317,7 +317,7 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(sgd.model_dir)
 
     def test02_model_aggregation_sort_model_type(self):
-        '''Test of the method _sort_model_type of {{package_name}}.models_training.model_aggregation.ModelAggregation._sort_model_type'''
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation._sort_model_type'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -363,8 +363,8 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(sgd.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test02_model_aggregation_has_model_classifier(self):
-        '''Test of the method _has_model_classifier of {{package_name}}.models_training.model_aggregation.ModelAggregation._has_model_classifier'''
+    def test03_model_aggregation_has_model_classifier(self):
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation._has_model_classifier'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -388,7 +388,7 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(sgd.model_dir)
 
     def test04_model_aggregation_has_model_regressor(self):
-        '''Test of the method _has_model_regressor of {{package_name}}.models_training.model_aggregation.ModelAggregation._has_model_regressor'''
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation._has_model_regressor'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -412,7 +412,7 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(sgd.model_dir)
 
     def test05_model_aggregation_check_trained(self):
-        '''Test of the method _check_trained of {{package_name}}.models_training.model_aggregation.ModelAggregation._check_trained'''
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation._check_trained'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -509,7 +509,7 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(sgd.model_dir)
 
     def test06_model_aggregation_fit(self):
-        '''Test of the method fit of {{package_name}}.models_training.model_aggregation.ModelAggregation.fit'''
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation.fit'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -645,7 +645,8 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(sgd.model_dir)
 
     def test07_model_aggregation_predict(self):
-        '''Test of the method predict of {{package_name}}.models_training.model_aggregation.ModelAggregation.predict'''
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation.predict'''
+
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
@@ -1136,7 +1137,7 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(sgd.model_dir)
 
     def test11_model_aggregation_predict_model_with_full_list_classes(self):
-        '''Test of the method save of {{package_name}}.models_training.model_aggregation.ModelAggregation._predict_model_with_full_list_classes'''
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation._predict_model_with_full_list_classes'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -1366,7 +1367,7 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(model_dir)
 
     def test18_model_aggregation_save(self):
-        '''Test of the method save of demo.models_training.model_aggregation.ModelAggregation.save'''
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation.save'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -1422,7 +1423,7 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(sgd.model_dir)
 
     def test19_model_aggregation_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.model_aggregation.ModelAaggregation.reload_from_standalone'''
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAaggregation.reload_from_standalone'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         model_new_dir = os.path.join(os.getcwd(), 'model_new_test_123456789')
