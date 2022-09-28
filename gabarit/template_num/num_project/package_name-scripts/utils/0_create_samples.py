@@ -77,7 +77,6 @@ def main(filenames: List[str], n_samples: int = 100, sep: str = '{{default_sep}}
         utils.to_csv(extract, new_path, first_line=first_line, sep='{{default_sep}}', encoding='{{default_encoding}}')
 
 
-
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filenames', nargs='+', required=True, help="Datasets filenames (actually paths relative to {{package_name}}-data)")

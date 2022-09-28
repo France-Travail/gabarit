@@ -23,7 +23,9 @@ from unittest.mock import patch
 # utils libs
 import os
 import sys
+import json
 import shutil
+import tempfile
 import subprocess
 import pandas as pd
 import importlib.util
@@ -50,8 +52,8 @@ class Case1_e2e_pipeline(unittest.TestCase):
     '''Class to test the project end to end'''
 
     def test01_CreateSamples(self):
-        '''Test of the file 0_create_samples.py'''
-        print("Test of the file 0_create_samples.py")
+        '''Test of the file utils/0_create_samples.py'''
+        print("Test of the file utils/0_create_samples.py")
 
         # "Basic" case
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv -n 15"
@@ -71,8 +73,8 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(df2.shape[0], 210)  # 210 row max
 
     def test02_MergeFiles(self):
-        '''Test of the file 0_merge_files.py'''
-        print("Test of the file 0_merge_files.py")
+        '''Test of the file utils/0_merge_files.py'''
+        print("Test of the file utils/0_merge_files.py")
 
         # "Basic" case
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_merge_files.py -f mono_class_mono_label.csv multi_class_mono_label.csv -c col_1 col_2 y_col -o merged_file.csv"
@@ -82,8 +84,8 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertGreater(df.shape[0], 210)  # We check that there are more than 210 elements (ie. the size of one of the two files)
 
     def test03_SplitTrainValidTest(self):
-        '''Test of the file 0_split_train_valid_test.py'''
-        print("Test of the file 0_split_train_valid_test.py")
+        '''Test of the file utils/0_split_train_valid_test.py'''
+        print("Test of the file utils/0_split_train_valid_test.py")
 
         # "Basic" case
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --y_col y_col --seed 42"
@@ -142,7 +144,45 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(df_valid.shape[0], 42)
         self.assertEqual(df_test.shape[0], 42)
 
-    def test04_PreProcessData(self):
+    def test04_GenerateReport(self):
+        '''Test of the file utils/0_generate_report.py'''
+        print("Test of the file utils/0_generate_report.py")
+
+        # We first create a sweetviz configuration file
+        config_path = os.path.join(full_path_lib, "test_config.json")
+        if os.path.exists(config_path):
+            os.remove(config_path)
+        with open(config_path, 'w') as f:
+            json.dump({"open_browser": False}, f)
+
+        # "Basic" case
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_generate_report.py -s mono_class_mono_label.csv --source_names source --config {config_path}"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_num-data", "reports", "report_source.html")))
+
+        # Compare datasets
+        test_compare = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_generate_report.py -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path}"
+        self.assertEqual(subprocess.run(test_compare, shell=True).returncode, 0)
+        self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_num-data", "reports", "report_train_valid.html")))
+        self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_num-data", "reports", "report_train_test.html")))
+
+        # With target
+        # Sweetviz does not with categorical target. Hence, we'll create a temporary dataframe with a binary target.
+        data_path = os.path.join(full_path_lib, 'test_template_num-data')
+        original_dataset_path = os.path.join(data_path, 'mono_class_mono_label.csv')
+        with tempfile.NamedTemporaryFile(dir=data_path) as tmp_file:
+            # Read dataset, add a tmp target as binary class & save it in the tmp file
+            df = pd.read_csv(original_dataset_path, sep=';', encoding='utf-8')
+            df['tmp_target'] = df['y_col'].apply(lambda x: 1. if x == 'oui' else 0.)
+            df.to_csv(tmp_file.name, sep=';', encoding='utf-8', index=None)
+            test_target = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_generate_report.py -s {tmp_file.name} --source_names source_with_target -t tmp_target --config {config_path}"
+            self.assertEqual(subprocess.run(test_target, shell=True).returncode, 0)
+            self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_num-data", "reports", "report_source_with_target.html")))
+
+        # Clean up sweetviz config path (useful ?)
+        os.remove(config_path)
+
+    def test05_PreProcessData(self):
         '''Test of the file 1_preprocess_data.py'''
         print("Test of the file 1_preprocess_data.py")
 
@@ -188,7 +228,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue('pipeline.info' in os.listdir(pipeline_path))
         self.assertTrue('pipeline.pkl' in os.listdir(pipeline_path))
 
-    def test05_ApplyPipeline(self):
+    def test06_ApplyPipeline(self):
         '''Test of the file 2_apply_existing_pipeline.py'''
         print("Test of the file 2_apply_existing_pipeline.py")
 
@@ -236,7 +276,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(sorted(df_train.num__col_2.unique()), sorted(df_valid.num__col_2.unique()))
         self.assertEqual(sorted(df_train.y_col.unique()), sorted(df_valid.y_col.unique()))
 
-    def test06_TrainingE2E(self):
+    def test07_TrainingE2E(self):
         '''Test of files 3_training_classification.py & 3_training_regression.py'''
         print("Test of files 3_training_classification.py & 3_training_regression.py")
 
@@ -294,7 +334,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         listdir = os.listdir(os.path.join(save_model_dir))
         self.assertEqual(len(listdir), 2)
 
-    def test07_PredictE2E(self):
+    def test08_PredictE2E(self):
         '''Test of the file 4_predict.py'''
         print("Test of the file 4_predict.py")
 

@@ -1,8 +1,10 @@
+import html
 import json
 import os
 from pathlib import Path
 
 import pandas as pd
+from IPython import display
 from PIL import Image
 from sklearn.compose import ColumnTransformer
 from {{package_name}}.utils import get_data_path, get_models_path
@@ -66,6 +68,25 @@ def verify_exercice_2():
 
 def verify_exercice_3():
     """Verify third exercice"""
+    report_path = DATA_PATH / "reports" / "report_wine_train_wine_test.html"
+    assert report_path.exists(), f"{report_path} not found"
+
+    with report_path.open("r") as f:
+        report_content = f.read()
+
+    report_html = html.escape(report_content)
+    iframe = (
+        f'<iframe width="100%" height="750px" srcdoc="{report_html}" '
+        f'frameborder="0" allowfullscreen></iframe>'
+    )
+
+    display.display_html(iframe, raw=True)
+
+    print("Exercice 3 : OK ✔")
+
+
+def verify_exercice_4():
+    """Verify fourth exercice"""
     file_path = DATA_PATH / f"{DATASET_NAME}_preprocess_P1.csv"
     assert os.path.exists(file_path), "Did you run 1_preprocess_data.py ?"
 
@@ -77,11 +98,11 @@ def verify_exercice_3():
             "target should only contain int. Did you use '--target_cols target' ?"
         )
 
-    print("Exercice 3 : OK ✔")
+    print("Exercice 4 : OK ✔")
 
 
-def verify_exercice_4():
-    """Verify fourth exercice"""
+def verify_exercice_5():
+    """Verify fifth exercice"""
     try:
         from {{package_name}}.preprocessing.preprocess import preprocess_P2
     except ImportError:
@@ -116,10 +137,10 @@ def verify_exercice_4():
             "target should only contain int. Did you use '--target_cols target' ?"
         )
 
-    print("Exercice 4 : OK ✔")
+    print("Exercice 5 : OK ✔")
 
 
-def verify_exercice_5():
+def verify_exercice_6():
     """Verify sixth exercice"""
     train_P1 = DATA_PATH / f"{DATASET_NAME}_train_preprocess_P1.csv"
     valid_P1 = DATA_PATH / f"{DATASET_NAME}_valid_preprocess_P1.csv"
@@ -158,11 +179,11 @@ def verify_exercice_5():
                 f"Did you use '--target_cols target' ?"
             )
 
-    print("Exercice 5 : OK ✔")
+    print("Exercice 6 : OK ✔")
 
 
-def verify_exercice_6():
-    """Verify sixth exercice"""
+def verify_exercice_7():
+    """Verify seventh exercice"""
 
     models_folders = sorted(
         MODELS_PATH.glob("model_ridge_classifier/model_ridge_classifier_*")
@@ -171,44 +192,6 @@ def verify_exercice_6():
     if not models_folders:
         raise AssertionError(
             "No model_ridge_classifier found. Did you run 3_training_classification.py ?"
-        )
-
-    last_model = models_folders[-1]
-    last_model_config = last_model / "configurations.json"
-
-    with last_model_config.open("r") as f:
-        config = json.load(f)
-
-    filename_valid = config.get("filename_valid", None)
-    if filename_valid != f"{DATASET_NAME}_valid_preprocess_P1.csv":
-        raise AssertionError(
-            f"'filename_valid' is {filename_valid} but should be "
-            f"'{DATASET_NAME}_valid_preprocess_P1.csv'. "
-            f"Did you use '--filename_valid {DATASET_NAME}_valid_preprocess_P1.csv' ?"
-        )
-
-    print("Exercice 6 : OK ✔")
-
-    confusion_matrix = last_model / "plots" / "valid_confusion_matrix.png"
-
-    print("A confusion matrix plot has been automatically produced : \n")
-
-    confusion_matrixt_img = Image.open(confusion_matrix)
-    confusion_matrixt_img.show()
-
-    print("\n", confusion_matrix)
-
-
-def verify_exercice_7():
-    """Verify seventh exercice"""
-
-    models_folders = sorted(
-        MODELS_PATH.glob("model_lgbm_classifier/model_lgbm_classifier_*")
-    )
-
-    if not models_folders:
-        raise AssertionError(
-            "No model_lgbm_classifier found. Did you properly uncomment ModelLGBMClassifier model ?"
         )
 
     last_model = models_folders[-1]
@@ -239,6 +222,44 @@ def verify_exercice_7():
 
 def verify_exercice_8():
     """Verify eighth exercice"""
+
+    models_folders = sorted(
+        MODELS_PATH.glob("model_lgbm_classifier/model_lgbm_classifier_*")
+    )
+
+    if not models_folders:
+        raise AssertionError(
+            "No model_lgbm_classifier found. Did you properly uncomment ModelLGBMClassifier model ?"
+        )
+
+    last_model = models_folders[-1]
+    last_model_config = last_model / "configurations.json"
+
+    with last_model_config.open("r") as f:
+        config = json.load(f)
+
+    filename_valid = config.get("filename_valid", None)
+    if filename_valid != f"{DATASET_NAME}_valid_preprocess_P1.csv":
+        raise AssertionError(
+            f"'filename_valid' is {filename_valid} but should be "
+            f"'{DATASET_NAME}_valid_preprocess_P1.csv'. "
+            f"Did you use '--filename_valid {DATASET_NAME}_valid_preprocess_P1.csv' ?"
+        )
+
+    print("Exercice 8 : OK ✔")
+
+    confusion_matrix = last_model / "plots" / "valid_confusion_matrix.png"
+
+    print("A confusion matrix plot has been automatically produced : \n")
+
+    confusion_matrixt_img = Image.open(confusion_matrix)
+    confusion_matrixt_img.show()
+
+    print("\n", confusion_matrix)
+
+
+def verify_exercice_9():
+    """Verify nineth exercice"""
     predictions_folder = DATA_PATH / "predictions" / f"{DATASET_NAME}_test"
 
     if not predictions_folder.exists():
@@ -271,7 +292,7 @@ def verify_exercice_8():
             "Did you use this model to make your predictions ?"
         )
 
-    print("Exercice 8 : OK ✔")
+    print("Exercice 9 : OK ✔")
 
     confusion_matrix = last_predictions / "plots" / "with_y_true_confusion_matrix.png"
 
@@ -283,8 +304,8 @@ def verify_exercice_8():
     print("\n", confusion_matrix)
 
 
-def verify_exercice_9():
-    """Verify nineth exercice"""
+def verify_exercice_10():
+    """Verify tenth exercice"""
     # Verify presence of train, valid test splits
     for split in ("train", "valid", "test"):
         split_path = DATA_PATH / f"{DATASET_REG_NAME}_{split}.csv"
@@ -368,7 +389,7 @@ def verify_exercice_9():
             "Did you use this model to make your predictions ?"
         )
 
-    print("Exercice 9 : OK ✔")
+    print("Exercice 10 : OK ✔")
 
     error_plot = last_predictions / "plots" / "with_y_true_errors.png"
 
@@ -380,4 +401,3 @@ def verify_exercice_9():
     error_plot_img.show()
 
     print(error_plot)
-
