@@ -26,6 +26,7 @@ import json
 import logging
 import sweetviz
 import argparse
+import pandas as pd
 from pathlib import Path
 from itertools import product
 from typing import List, Union, Tuple
@@ -82,7 +83,7 @@ def main(source_paths: List[str], source_names: List[str] = None, compare_paths:
         zip(source_paths, source_names), zip(compare_paths or [None], compare_names or [None])
     ):
         # Read source csv
-        source_df, _ = utils.read_csv(source_path, sep=sep, encoding=encoding)
+        source_df = pd.read_csv(source_path, sep=sep, encoding=encoding)
         source = [source_df, source_name]
         source_filename = source_name.lower().replace(" ", "_")
 
@@ -92,7 +93,7 @@ def main(source_paths: List[str], source_names: List[str] = None, compare_paths:
             output_path = os.path.join(report_folder, f"report_{source_filename}.html")
             logger.info(f"Generating report for dataset '{source_filename}'")
         else:
-            compare_df, _ = utils.read_csv(compare_path, sep=sep, encoding=encoding)
+            compare_df = pd.read_csv(compare_path, sep=sep, encoding=encoding)
             compare = [compare_df, compare_name]
             compare_filename = compare_name.replace(" ", "_")
             output_path = os.path.join(report_folder, f"report_{source_filename}_{compare_filename}.html")
