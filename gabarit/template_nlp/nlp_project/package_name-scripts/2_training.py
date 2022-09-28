@@ -275,9 +275,9 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
         #                                                             tokenizer_special_tokens=tuple(),
         #                                                             padding="max_length", truncation=True,
         #                                                             multi_label=multi_label)
-        # modle = model_aggregation(x_col=x_col, y_col=y_col, level_save=level_save,
-        #                             list_models=[ModelTfidfSvm(), ModelTfidfSvm()],
-        #                             multi_label=multi_label)
+        # modle = model_aggregation.ModelAggregation(x_col=x_col, y_col=y_col, level_save=level_save,
+        #                                            list_models=[model_tfidf_svm.ModelTfidfSvm(), model_tfidf_svm.ModelTfidfSvm()],
+        #                                            multi_label=multi_label)
 
     # Display if GPU is being used
     model.display_if_gpu_activated()

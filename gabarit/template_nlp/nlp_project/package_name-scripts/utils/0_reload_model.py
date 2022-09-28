@@ -118,6 +118,7 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'model_embedding_lstm_gru_gpu': model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu,
         'model_pytorch_light': model_pytorch_light.ModelPyTorchTransformersLight,
         'model_pytorch_transformers': model_pytorch_transformers.ModelPyTorchTransformers,
+        'model_aggregation': model_aggregation.ModelAggregation,
     }
     model_type = configs['model_name']
     if model_type not in model_type_dicts:
