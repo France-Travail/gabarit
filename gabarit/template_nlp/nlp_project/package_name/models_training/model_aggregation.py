@@ -28,7 +28,7 @@ import dill as pickle
 import numpy as np
 import pandas as pd
 from types import FunctionType, MethodType
-from typing import Callable, Union, Dict
+from typing import Callable, Union
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_models
@@ -177,14 +177,14 @@ class ModelAggregation(ModelClass):
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict(self, x_test, return_proba: Union[bool, None] = False, **kwargs) -> np.array:
+    def predict(self, x_test, return_proba: Union[bool, None] = False, **kwargs) -> np.ndarray:
         '''Prediction
 
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
             return_proba (bool): If the function should return the probabilities instead of the classes
         Returns:
-            (np.array): array of shape = [n_samples]
+            (np.ndarray): array of shape = [n_samples]
         '''
         # We decide whether to rely on each model's probas or their prediction
         if return_proba:
@@ -230,19 +230,19 @@ class ModelAggregation(ModelClass):
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict_proba(self, x_test, **kwargs) -> np.array:
+    def predict_proba(self, x_test, **kwargs) -> np.ndarray:
         '''Predicts the probabilities on the test set
 
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
         Returns:
-            (np.array): array of shape = [n_samples, n_classes]
+            (np.ndarray): array of shape = [n_samples, n_classes]
         '''
         probas = self._get_probas(x_test, **kwargs)
         # The probas of all models are averaged.
         return np.sum(probas, axis=1) / probas.shape[1]
 
-    def _predict_model_with_full_list_classes(self, model, x_test, return_proba: Union[bool, None] = False) -> np.array:
+    def _predict_model_with_full_list_classes(self, model, x_test, return_proba: Union[bool, None] = False) -> np.ndarray:
         '''For multi_label: Complete columns missing in the prediction of model (label missing in their list_classes)
 
         Args:
@@ -250,7 +250,7 @@ class ModelAggregation(ModelClass):
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
             return_proba (bool): If the function should return the probabilities instead of the classes
         Returns:
-            (np.array): predict complete (0 for missing columns)
+            (np.ndarray): predict complete (0 for missing columns)
         '''
         pred = model.predict(x_test, return_proba=return_proba)
 
