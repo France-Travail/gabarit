@@ -82,18 +82,23 @@ def generate(project_name: str, project_path: str, config_path: str,
     def get_config(config, section, key, fallback=None):
         value = config.get(section, key, fallback=fallback)
         return value if value != '' else None
-    default_sep = get_config(config, 'files', 'csv_sep', fallback=None)
-    default_encoding = get_config(config, 'files', 'encoding', fallback=None)
-    pip_trusted_host = get_config(config, 'pip', 'trusted-host', fallback=None)
-    pip_index_url = get_config(config, 'pip', 'index-url', fallback=None)
-    mlflow_tracking_uri = get_config(config, 'mlflow', 'tracking_uri', fallback='')
-    additional_pip_packages = get_config(config, 'packages', 'additional_pip_packages', fallback=None)
-    vgg16_weights_backup_urls = get_config(config, 'transfer_learning', 'vgg16_weights_backup_urls', fallback=None)
-    efficientnetb6_weights_backup_urls = get_config(config, 'transfer_learning', 'efficientnetb6_weights_backup_urls', fallback=None)
-    detectron_config_base_backup_urls = get_config(config, 'detectron', 'detectron_config_base_backup_urls', fallback=None)
-    detectron_config_backup_urls = get_config(config, 'detectron', 'detectron_config_backup_urls', fallback=None)
-    detectron_model_backup_urls = get_config(config, 'detectron', 'detectron_model_backup_urls', fallback=None)
+
+    default_sep = get_config(config, 'files', 'csv_sep')
+    default_encoding = get_config(config, 'files', 'encoding')
+    pip_trusted_host = get_config(config, 'pip', 'trusted-host')
+    pip_index_url = get_config(config, 'pip', 'index-url')
+    mlflow_tracking_uri = get_config(config, 'mlflow', 'tracking_uri')
+    additional_pip_packages = get_config(config, 'packages', 'additional_pip_packages')
+    vgg16_weights_backup_urls = get_config(config, 'transfer_learning', 'vgg16_weights_backup_urls')
+    efficientnetb6_weights_backup_urls = get_config(config, 'transfer_learning', 'efficientnetb6_weights_backup_urls')
+    detectron_config_base_backup_urls = get_config(config, 'detectron', 'detectron_config_base_backup_urls')
+    detectron_config_backup_urls = get_config(config, 'detectron', 'detectron_config_backup_urls')
+    detectron_model_backup_urls = get_config(config, 'detectron', 'detectron_model_backup_urls')
     dvc_config_ok = True if dvc_config_path is not None else False
+
+    # Prevent mlflow_tracking_uri to be set to "None" in training script
+    if mlflow_tracking_uri is None:
+        mlflow_tracking_uri = ''
 
     # Fix some options that should be list of elements
     vgg16_weights_backup_urls = vgg16_weights_backup_urls.split('\n') if vgg16_weights_backup_urls is not None else None
