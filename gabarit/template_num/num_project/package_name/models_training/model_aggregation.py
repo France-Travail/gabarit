@@ -33,8 +33,8 @@ from typing import Callable, Union, Dict, Optional, List, Any
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_models
 from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin
-from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin
+from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin  # type: ignore
+from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
 
 
 class ModelAggregation(ModelClass):
