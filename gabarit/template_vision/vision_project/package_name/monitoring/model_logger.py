@@ -192,8 +192,16 @@ class MLflowLogger:
             dictionary (dict): A dictionary
             artifact_file (str): The run-relative artifact file path in posixpath format to which the dictionary is saved
         '''
-        # Log parameter
         mlflow.log_dict(dictionary=dictionary, artifact_file=artifact_file)
+
+    def log_text(self, text:str, artifact_file: str) -> None:
+        '''Logs a text as an artifact in MLflow
+
+        Args:
+            text (str): A text
+            artifact_file (str): The run-relative artifact file path in posixpath format to which the dictionary is saved
+        '''
+        mlflow.log_text(text=text, artifact_file=artifact_file)
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

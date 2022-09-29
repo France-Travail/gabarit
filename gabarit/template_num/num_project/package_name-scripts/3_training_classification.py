@@ -30,7 +30,9 @@ import shutil
 import logging
 import argparse
 import warnings
+import numpy as np
 import pandas as pd
+from functools import partialmethod
 from typing import Union, List, Type, Tuple
 
 from {{package_name}} import utils
@@ -369,6 +371,17 @@ def main(filename: str, y_col: List[Union[str, int]], excluded_cols: Union[List[
     if model_logger is not None:
         model_logger.log_df_stats(df_stats)
         model_logger.log_dict(model.json_dict, "configurations.json")
+
+        report = sweetviz_report(
+            df_train=df_train, 
+            df_valid=df_valid if filename_valid else None, 
+            y_col=y_col, 
+            y_pred_train=y_pred_train, 
+            y_pred_valid=y_pred_valid if filename_valid else None
+        )
+        if report:
+            model_logger.log_text(report, "sweetviz_train_valid.html")
+
         model_logger.stop_run()
 
 
@@ -406,6 +419,84 @@ def load_dataset(filename: str, sep: str = '{{default_sep}}', encoding: str = '{
 
     # Return
     return df, preprocess_pipeline_dir
+
+def sweetviz_report(
+    df_train: pd.DataFrame, 
+    df_valid: pd.DataFrame,
+    y_col: Union[str, List[str]],
+    y_pred_train: np.ndarray,
+    y_pred_valid: np.ndarray,
+) -> str:
+    '''Generate a sweetviz report that can be logged into MLflow
+
+    Args:
+        df_train (pd.DataFrame): Training data
+        df_valid (pd.DataFrame): Validation data
+        y_col (Union[str, List[str]]): Target(s) column(s)
+        y_pred_train (np.ndarray): Model predictions on training data
+        y_pred_valid (np.ndarray): Model predictions on validation data
+
+    Returns:
+        str: A HTML sweetviz report
+    '''
+    # Desactivate tqdm and import sweetviz
+    try:
+        from tqdm import tqdm
+        tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
+    except ImportError:
+        pass
+
+    try:
+        import sweetviz
+        import tempfile
+    except ImportError:
+        return None
+
+    if isinstance(y_col, str):
+        y_col = [y_col]
+
+    # Add predictions to training data
+    if y_pred_train is not None:
+        # If there is not as much columns in y_col as in y_pred_train
+        # it could be that y_pred_train returns probabilities of each
+        # class so we have to create names to add it to df_train
+        n_targets = y_pred_train.shape[1] if len(y_pred_train.shape) > 1 else 1
+
+        if len(y_col) != n_targets:
+            n_labels = y_pred_train.shape[1] // len(y_col)
+            y_col_names = [
+                "_".join(("pred", col)) for col in y_col for l in range(n_labels) 
+            ]
+        else:
+            y_col_names = ["_".join(("pred", col)) for col in y_col]
+            
+
+        df_train.loc[:, y_col_names] = y_pred_train
+    
+    # Add predictions to validation data
+    if df_valid is not None and y_pred_valid is not None:
+        df_valid.loc[:, y_col_names] = y_pred_valid
+
+    train_data = [df_train, "Training data"]
+    valid_data = [df_valid, "Validation data"] if df_valid is not None else None
+
+    # Try to specify target feature. That could fail due to the fact that sweetviz
+    # can not handle multiple target columns and all possible target types
+    if len(y_col) == 1:
+        target = y_col[0]
+    else:
+        target = None
+        
+    try:
+        report: sweetviz.DataframeReport = sweetviz.compare(train_data, valid_data, target_feat=target)
+    except (KeyError, ValueError):
+        report: sweetviz.DataframeReport = sweetviz.compare(train_data, valid_data)
+
+    with tempfile.TemporaryDirectory() as tmpdirname:
+        tmpfile = os.path.join(tmpdirname, "report.html")
+        report.show_html(tmpfile, open_browser=False, layout="vertical")
+
+    return report._page_html
 
 
 if __name__ == '__main__':
