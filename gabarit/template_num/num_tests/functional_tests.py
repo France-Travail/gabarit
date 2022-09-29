@@ -1086,7 +1086,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_mono_label(self, test_model)
             remove_dir(model_dir)
@@ -1110,7 +1110,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function='median_predict',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_mono_label(self, test_model)
             remove_dir(model_dir)
@@ -1132,7 +1132,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function='mean_predict',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_mono_label(self, test_model)
             remove_dir(model_dir)
@@ -1151,7 +1151,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
                                                             list_models=list_models, using_proba=True, aggregation_function='proba_argmax',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_mono_label(self, test_model)
             remove_dir(model_dir)
@@ -1179,7 +1179,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_mono_label(self, test_model)
             remove_dir(model_dir)
@@ -1639,7 +1639,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function='all_predictions',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', y_col=['y_col_1', 'y_col_2'],
                       filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_multi_label(self, test_model)
             remove_dir(model_dir)
@@ -1663,7 +1663,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function='all_predictions',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', y_col=['y_col_1', 'y_col_2'],
                       filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_multi_label(self, test_model)
             remove_dir(model_dir)
@@ -1684,7 +1684,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function='all_predictions',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', y_col=['y_col_1', 'y_col_2'],
                       filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_multi_label(self, test_model)
             remove_dir(model_dir)
@@ -1703,7 +1703,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function='vote_labels',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', y_col=['y_col_1', 'y_col_2'],
                       filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_multi_label(self, test_model)
             remove_dir(model_dir)
@@ -1722,12 +1722,11 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             def function_test(predictions: pd.Series) -> list:
                 return np.sum(predictions, axis=0, dtype=bool).astype(int)
 
-
             test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', y_col=['y_col_1', 'y_col_2'],
                       filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_multi_label(self, test_model)
             remove_dir(model_dir)
@@ -2469,7 +2468,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_multi_class_mono_label(self, test_model)
             remove_dir(model_dir)
@@ -2493,7 +2492,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function='median_predict',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_multi_class_mono_label(self, test_model)
             remove_dir(model_dir)
@@ -2515,7 +2514,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function='mean_predict',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_multi_class_mono_label(self, test_model)
             remove_dir(model_dir)
@@ -2534,7 +2533,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
                                                             list_models=list_models, using_proba=True, aggregation_function='proba_argmax',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_multi_class_mono_label(self, test_model)
             remove_dir(model_dir)
@@ -2563,7 +2562,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_multi_class_mono_label(self, test_model)
             remove_dir(model_dir)
@@ -2968,7 +2967,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_output_regression(self, test_model)
             remove_dir(model_dir)
@@ -2992,7 +2991,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_output_regression(self, test_model)
             remove_dir(model_dir)
@@ -3014,7 +3013,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function='mean_predict',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_output_regression(self, test_model)
             remove_dir(model_dir)
@@ -3033,7 +3032,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function='median_predict',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_output_regression(self, test_model)
             remove_dir(model_dir)
@@ -3062,7 +3061,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
-            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_output_regression(self, test_model)
             remove_dir(model_dir)
