@@ -1068,7 +1068,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
 
         try:
             # Load training file
-            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_num-scripts/3_training_classification.py')
             test = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(test)
 
@@ -1621,7 +1621,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
 
         try:
             # Load training file
-            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_num-scripts/3_training_classification.py')
             test = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(test)
 
@@ -2451,7 +2451,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
 
         try:
             # Load training file
-            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_num-scripts/3_training_classification.py')
             test = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(test)
 
@@ -2950,7 +2950,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
 
         try:
             # Load training file
-            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_num-scripts/3_training_regression.py')
             test = importlib.util.module_from_spec(spec)
             spec.loader.exec_module(test)
 
