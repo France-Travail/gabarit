@@ -1082,7 +1082,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
                            model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
                            model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -1106,7 +1106,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_name = 'aggregation_mono_class_mono_label'
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='median_predict',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -1128,7 +1128,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
                            model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='mean_predict',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -1147,7 +1147,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
                            model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=True, aggregation_function='proba_argmax',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -1175,7 +1175,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
                     return predictions[0]
                 else:
                     return votes[0][0]
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -1635,7 +1635,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
                            model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
                            model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function='all_predictions',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -1659,7 +1659,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function='all_predictions',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -1680,7 +1680,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
                            model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function='all_predictions',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -1699,7 +1699,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
                            model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function='vote_labels',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -1723,7 +1723,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
                 return np.sum(predictions, axis=0, dtype=bool).astype(int)
 
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -2465,7 +2465,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
                            model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
                            model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -2489,7 +2489,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             model_name = 'aggregation_multi_class_mono_label'
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function='median_predict',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -2511,7 +2511,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
                            model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function='mean_predict',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -2530,7 +2530,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
                            model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=True, aggregation_function='proba_argmax',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -2559,7 +2559,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
                 else:
                     return votes[0][0]
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -2964,7 +2964,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
                            model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_sgd2, x_col=['col_1', 'col_2'], y_col='y_col'),
                            model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -2988,7 +2988,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
             model_name = 'aggregation_multi_class_mono_label'
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -3010,7 +3010,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
                            model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function='mean_predict',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -3029,7 +3029,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
                            model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function='median_predict',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
@@ -3058,7 +3058,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
                 else:
                     return votes[0][0]
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_aggregation.ModelAggregation(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
