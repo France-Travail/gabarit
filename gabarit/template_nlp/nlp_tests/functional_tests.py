@@ -872,7 +872,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             # This function is a copy of majority_vote function
-            def function_test(predictions:pd.Series) -> list:
+            def function_test(predictions: pd.Series) -> list:
                 labels, counts = np.unique(predictions, return_counts=True)
                 votes = [(label, count) for label, count in zip(labels, counts)]
                 votes = sorted(votes, key=lambda x: x[1], reverse=True)
@@ -894,6 +894,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
 
         except Exception:
             self.fail('testModel_Aggregation failed')
+
 
 def test_model_mono_class_multi_label(test_class, test_model):
     '''Generic fonction to test a given model for mono-class/multi-labels'''
@@ -1507,9 +1508,8 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             # This function is a copy of all_predictions function
-            def function_test(predictions:pd.Series) -> list:
+            def function_test(predictions: pd.Series) -> list:
                 return np.sum(predictions, axis=0, dtype=bool).astype(int)
-
 
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
@@ -2179,7 +2179,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             # This function is a copy of majority_vote function
-            def function_test(predictions:pd.Series) -> list:
+            def function_test(predictions: pd.Series) -> list:
                 labels, counts = np.unique(predictions, return_counts=True)
                 votes = [(label, count) for label, count in zip(labels, counts)]
                 votes = sorted(votes, key=lambda x: x[1], reverse=True)

@@ -27,6 +27,7 @@ import json
 import shutil
 import tempfile
 import subprocess
+import numpy as np
 import pandas as pd
 import importlib.util
 from pathlib import Path
@@ -1157,9 +1158,8 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-
             # This function is a copy of majority_vote function
-            def function_test(predictions:pd.Series) -> list:
+            def function_test(predictions: pd.Series) -> list:
                 labels, counts = np.unique(predictions, return_counts=True)
                 votes = [(label, count) for label, count in zip(labels, counts)]
                 votes = sorted(votes, key=lambda x: x[1], reverse=True)
@@ -1181,6 +1181,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
 
         except Exception:
             self.fail('testModel_Aggregation failed')
+
 
 def test_model_mono_class_multi_label(test_class, test_model):
     '''Generic fonction to test a given model for mono-class/multi-labels'''
@@ -1701,9 +1702,8 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             list_models = [model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-
             # This function is a copy of all_predictions function
-            def function_test(predictions:pd.Series) -> list:
+            def function_test(predictions: pd.Series) -> list:
                 return np.sum(predictions, axis=0, dtype=bool).astype(int)
 
 
@@ -1721,6 +1721,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
 
         except Exception:
             self.fail('testModel_Aggregation failed')
+
 
 def test_model_multi_class_mono_label(test_class, test_model):
     '''Generic fonction to test a given model for multi-classes/mono-label'''
@@ -2430,7 +2431,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
 
     def test12_Model_Aggregation(self):
         '''Test of the model Aggregation'''
-        print('            ------------------ >     Test of the model Aggregation     /   Mono-class & Mono-label')
+        print('            ------------------ >     Test of the model Aggregation     /   Multi-class & Mono-label')
 
         try:
             # Load training file
@@ -2524,9 +2525,8 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-
             # This function is a copy of majority_vote function
-            def function_test(predictions:pd.Series) -> list:
+            def function_test(predictions: pd.Series) -> list:
                 labels, counts = np.unique(predictions, return_counts=True)
                 votes = [(label, count) for label, count in zip(labels, counts)]
                 votes = sorted(votes, key=lambda x: x[1], reverse=True)
@@ -2549,6 +2549,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
 
         except Exception:
             self.fail('testModel_Aggregation failed')
+
 
 def test_model_mono_output_regression(test_class, test_model):
     '''Generic fonction to test a given model for mono-output regression'''
@@ -2921,7 +2922,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
 
     def test14_Model_Aggregation(self):
         '''Test of the model Aggregation'''
-        print('            ------------------ >     Test of the model Aggregation     /   Mono-class & Mono-label')
+        print('            ------------------ >     Test of the model Aggregation     /   Mono-output Regression')
 
         try:
             # Load training file
@@ -2943,7 +2944,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
             # Test it
             test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_multi_class_mono_label(self, test_model)
+            test_model_mono_output_regression(self, test_model)
             remove_dir(model_dir)
             remove_dir(model_dir_sgd1)
             remove_dir(model_dir_sgd2)
@@ -2967,7 +2968,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
             # Test it
             test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_multi_class_mono_label(self, test_model)
+            test_model_mono_output_regression(self, test_model)
             remove_dir(model_dir)
             remove_dir(model_dir_sgd1)
             remove_dir(model_dir_sgd2)
@@ -2987,7 +2988,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
             # Test it
             test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_multi_class_mono_label(self, test_model)
+            test_model_mono_output_regression(self, test_model)
             remove_dir(model_dir)
             remove_dir(model_dir_sgd1)
             remove_dir(model_dir_sgd2)
@@ -3004,7 +3005,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
             # Test it
             test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_multi_class_mono_label(self, test_model)
+            test_model_mono_output_regression(self, test_model)
             remove_dir(model_dir)
             remove_dir(model_dir_sgd1)
             remove_dir(model_dir_sgd2)
@@ -3015,9 +3016,8 @@ class Case5_MonoOutputRegression(unittest.TestCase):
             list_models = [model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1), model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2), model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-
             # This function is a copy of majority_vote function
-            def function_test(predictions:pd.Series) -> list:
+            def function_test(predictions: pd.Series) -> list:
                 labels, counts = np.unique(predictions, return_counts=True)
                 votes = [(label, count) for label, count in zip(labels, counts)]
                 votes = sorted(votes, key=lambda x: x[1], reverse=True)
@@ -3032,7 +3032,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
             # Test it
             test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_multi_class_mono_label(self, test_model)
+            test_model_mono_output_regression(self, test_model)
             remove_dir(model_dir)
             remove_dir(model_dir_sgd1)
             remove_dir(model_dir_sgd2)
@@ -3040,6 +3040,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
 
         except Exception:
             self.fail('testModel_Aggregation failed')
+
 
 if __name__ == '__main__':
     # Change directory to script directory parent
