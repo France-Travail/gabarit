@@ -784,8 +784,8 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             self.fail('ModelEmbeddingLstmStructuredAttention failed')
 
     def test14_Model_Aggregation(self):
-        '''Test of the model aggregation'''
-        print('            ------------------ >     Test of the model aggregation     /   Mono-class & Mono-label')
+        '''Test of the model Aggregation'''
+        print('            ------------------ >     Test of the model Aggregation     /   Mono-class & Mono-label')
 
         try:
             # Load training file
@@ -800,7 +800,6 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             list_models = [model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm1), model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(model_dir=model_dir_gbt)]
-            os.makedirs(model_dir)
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
@@ -824,7 +823,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
             model_name = 'aggregation_mono_class_mono_label'
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
+
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
@@ -844,7 +843,6 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             svm1.save()
             list_models = [os.path.split(model_dir_svm1)[-1], model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
@@ -861,7 +859,6 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_name = 'aggregation_mono_class_mono_label'
             list_models = [model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm1), model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=True, aggregation_function='proba_argmax',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
@@ -878,7 +875,6 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_name = 'aggregation_mono_class_mono_label'
             list_models = [model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm1), model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
 
             # This function is a copy of majority_vote function
             def function_test(predictions:pd.Series) -> list:
@@ -1425,8 +1421,8 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             self.fail('testModel_EmbeddingLstmStructuredAttention failed')
 
     def test14_Model_Aggregation(self):
-        '''Test of the model TF-IDF/Aggregation'''
-        print('            ------------------ >     Test of the model TF-IDF/Aggregation     /   Mono-class & Multi-labels')
+        '''Test of the model Aggregation'''
+        print('            ------------------ >     Test of the model Aggregation     /   Mono-class & Multi-labels')
 
         try:
             # Load training file
@@ -1441,7 +1437,6 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             list_models = [model_tfidf_svm.ModelTfidfSvm(multi_label=True, model_dir=model_dir_svm1), model_tfidf_svm.ModelTfidfSvm(multi_label=True, model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(multi_label=True, model_dir=model_dir_gbt)]
-            os.makedirs(model_dir)
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='all_predictions',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
@@ -1465,7 +1460,6 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
 
             list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='all_predictions',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
@@ -1484,7 +1478,6 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             svm1.save()
             list_models = [os.path.split(model_dir_svm1)[-1], model_tfidf_svm.ModelTfidfSvm(multi_label=True, model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(multi_label=True, model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='all_predictions',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
@@ -1501,7 +1494,6 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             model_name = 'aggregation_mono_class_multi_label'
             list_models = [model_tfidf_svm.ModelTfidfSvm(multi_label=True, model_dir=model_dir_svm1), model_tfidf_svm.ModelTfidfSvm(multi_label=True, model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(multi_label=True, model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='vote_labels',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
@@ -1518,7 +1510,6 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             model_name = 'aggregation_mono_class_multi_label'
             list_models = [model_tfidf_svm.ModelTfidfSvm(multi_label=True, model_dir=model_dir_svm1), model_tfidf_svm.ModelTfidfSvm(multi_label=True, model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(multi_label=True, model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
 
             # This function is a copy of all_predictions function
             def function_test(predictions:pd.Series) -> list:
@@ -2101,8 +2092,8 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             self.fail('testModel_EmbeddingLstmStructuredAttention failed')
 
     def test14_Model_Aggregation(self):
-        '''Test of the model aggregation'''
-        print('            ------------------ >     Test of the model aggregation     /   Mono-class & Mono-label')
+        '''Test of the model Aggregation'''
+        print('            ------------------ >     Test of the model Aggregation     /   Multi-class & Mono-label')
 
         try:
             # Load training file
@@ -2117,7 +2108,6 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             list_models = [model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm1), model_tfidf_gbt.ModelTfidfGbt(model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(model_dir=model_dir_gbt)]
-            os.makedirs(model_dir)
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
@@ -2141,7 +2131,6 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
             model_name = 'aggregation_multi_class_mono_label'
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
@@ -2161,7 +2150,6 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             svm1.save()
             list_models = [os.path.split(model_dir_svm1)[-1], model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
@@ -2178,7 +2166,6 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             model_name = 'aggregation_multi_class_mono_label'
             list_models = [model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm1), model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=True, aggregation_function='proba_argmax',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
@@ -2195,7 +2182,6 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             model_name = 'aggregation_multi_class_mono_label'
             list_models = [model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm1), model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
 
             # This function is a copy of majority_vote function
             def function_test(predictions:pd.Series) -> list:
