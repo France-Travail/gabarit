@@ -1078,7 +1078,9 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_dir_svm2 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
 
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
@@ -1093,11 +1095,11 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             remove_dir(model_dir_gbt)
 
             # Set model with function median_predict and list_models=[model_name, model_name, model_name]
-            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1)
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col')
             svm1.save()
-            svm2 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2)
+            svm2 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col')
             svm2.save()
-            gbt = model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)
+            gbt = model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')
             gbt.save()
 
             list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
@@ -1119,9 +1121,11 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             # Set model with function mean_predict and list_models=[model_name, model, model]
             model_name = 'aggregation_mono_class_mono_label'
             model_dir_svm1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1)
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col')
             svm1.save()
-            list_models = [os.path.split(model_dir_svm1)[-1], model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            list_models = [os.path.split(model_dir_svm1)[-1],
+                           model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
@@ -1138,7 +1142,9 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
 
             # Set model with function proba_argmax
             model_name = 'aggregation_mono_class_mono_label'
-            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
@@ -1155,7 +1161,9 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
 
             # Set model with function given
             model_name = 'aggregation_mono_class_mono_label'
-            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             # This function is a copy of majority_vote function
@@ -1623,7 +1631,9 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             model_dir_svm2 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            list_models = [model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt)]
+            list_models = [model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
 
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='all_predictions',
@@ -1639,11 +1649,11 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
 
             # Set model with function all_predictions and list_models=[model_name, model_name, model_name]
             model_name = 'aggregation_mono_class_multi_label'
-            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, multi_label=True)
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, multi_label=True, x_col=['col_1', 'col_2'], y_col='y_col')
             svm1.save()
-            svm2 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, multi_label=True)
+            svm2 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, multi_label=True, x_col=['col_1', 'col_2'], y_col='y_col')
             svm2.save()
-            gbt = model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, multi_label=True)
+            gbt = model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, multi_label=True, x_col=['col_1', 'col_2'], y_col='y_col')
             gbt.save()
 
             list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
@@ -1663,9 +1673,11 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
 
             # Set model with function all_predictions and list_models=[model_name, model, model]
             model_name = 'aggregation_mono_class_multi_label'
-            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, multi_label=True)
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, multi_label=True, x_col=['col_1', 'col_2'], y_col='y_col')
             svm1.save()
-            list_models = [os.path.split(model_dir_svm1)[-1], model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt)]
+            list_models = [os.path.split(model_dir_svm1)[-1],
+                           model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
@@ -1682,7 +1694,9 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
 
             # Set model with function vote_labels
             model_name = 'aggregation_mono_class_multi_label'
-            list_models = [model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt)]
+            list_models = [model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
@@ -1699,7 +1713,9 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
 
             # Set model with function given
             model_name = 'aggregation_mono_class_multi_label'
-            list_models = [model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt)]
+            list_models = [model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             # This function is a copy of all_predictions function
@@ -2445,7 +2461,9 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             model_dir_svm2 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
 
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
@@ -2460,11 +2478,11 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             remove_dir(model_dir_gbt)
 
             # Set model with function median_predict and list_models=[model_name, model_name, model_name]
-            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1)
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col')
             svm1.save()
-            svm2 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2)
+            svm2 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col')
             svm2.save()
-            gbt = model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)
+            gbt = model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')
             gbt.save()
 
             list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
@@ -2486,9 +2504,11 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             # Set model with function mean_predict and list_models=[model_name, model, model]
             model_name = 'aggregation_multi_class_mono_label'
             model_dir_svm1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1)
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col')
             svm1.save()
-            list_models = [os.path.split(model_dir_svm1)[-1], model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            list_models = [os.path.split(model_dir_svm1)[-1],
+                           model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
@@ -2505,7 +2525,9 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
 
             # Set model with function proba_argmax
             model_name = 'aggregation_multi_class_mono_label'
-            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
@@ -2522,7 +2544,9 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
 
             # Set model with function given
             model_name = 'aggregation_multi_class_mono_label'
-            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1), model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2), model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt)]
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             # This function is a copy of majority_vote function
@@ -2936,7 +2960,9 @@ class Case5_MonoOutputRegression(unittest.TestCase):
             model_dir_sgd2 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            list_models = [model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1), model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_sgd2), model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt)]
+            list_models = [model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_sgd2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
 
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
@@ -2951,11 +2977,11 @@ class Case5_MonoOutputRegression(unittest.TestCase):
             remove_dir(model_dir_gbt)
 
             # Set model with function majority_vote and list_models=[model_name, model_name, model_name]
-            svm1 = model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1)
+            svm1 = model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1, x_col=['col_1', 'col_2'], y_col='y_col')
             svm1.save()
-            svm2 = model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2)
+            svm2 = model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2, x_col=['col_1', 'col_2'], y_col='y_col')
             svm2.save()
-            gbt = model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt)
+            gbt = model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')
             gbt.save()
 
             list_models = [os.path.split(model_dir_sgd1)[-1], os.path.split(model_dir_sgd2)[-1], os.path.split(model_dir_gbt)[-1]]
@@ -2977,9 +3003,11 @@ class Case5_MonoOutputRegression(unittest.TestCase):
             # Set model with function mean_predict and list_models=[model_name, model, model]
             model_name = 'aggregation_multi_class_mono_label'
             model_dir_sgd1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            svm1 = model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1)
+            svm1 = model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1, x_col=['col_1', 'col_2'], y_col='y_col')
             svm1.save()
-            list_models = [os.path.split(model_dir_sgd1)[-1], model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2), model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt)]
+            list_models = [os.path.split(model_dir_sgd1)[-1],
+                           model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
@@ -2996,7 +3024,9 @@ class Case5_MonoOutputRegression(unittest.TestCase):
 
             # Set model with function median_predict
             model_name = 'aggregation_multi_class_mono_label'
-            list_models = [model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1), model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2), model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt)]
+            list_models = [model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
@@ -3013,7 +3043,9 @@ class Case5_MonoOutputRegression(unittest.TestCase):
 
             # Set model with function given
             model_name = 'aggregation_multi_class_mono_label'
-            list_models = [model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1), model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2), model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt)]
+            list_models = [model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             # This function is a copy of majority_vote function
