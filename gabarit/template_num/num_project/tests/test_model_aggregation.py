@@ -275,7 +275,7 @@ class Modelaggregation(unittest.TestCase):
             model = ModelAggregation(model_dir=model_dir, multi_label=None, aggregation_function=lambda predictions: np.sum(predictions, axis=0, dtype=bool).astype(int))
         remove_dir(model_dir)
 
-        # mix the classifiers model and the regressors model in the list model
+        # The classifier and regressor models cannot be combined in list models
         gbt, _, _, _ = self.create_models(bool_models_regressor=False)
         model_dir_regressor = os.path.join(utils.get_models_path(), 'model_test_123456789_regressor')
         sgd_regressor = ModelSGDRegressor(model_dir=model_dir_regressor)

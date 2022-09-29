@@ -55,7 +55,7 @@ class ModelAggregation(ModelClass):
             ValueError : If the object aggregation_function is a str but not found in the dictionary dict_aggregation_function
             ValueError : If the object aggregation_function is not compatible with value using_proba
             ValueError : If the object aggregation_function is not compatible with value multi_label
-            ValueError : Mix the classifiers model and the regressors model in the list model
+            ValueError : The classifier and regressor models cannot be combined in list models.
             ValueError : If the regressor model in list_models and multi_label is True
             ValueError : If the regressor model in list_models and using_proba is True
             ValueError : The 'multi_label' parameters of the list models are inconsistent with the model_aggregation
@@ -98,16 +98,17 @@ class ModelAggregation(ModelClass):
         if list_models is not None:
             self._sort_model_type(list_models)
 
-        # Error for mix the classifiers model and the regressors model
+        # Error: The classifier and regressor models cannot be combined in list_models
         if self.list_real_models is not None:
             if self._has_model_classifier() and self._has_model_regressor():
-                raise ValueError(f"mix the classifiers model and theregressors model in the list models.")
+                raise ValueError(f"It is impossible to mix together the regressor model and the classifier model in list_models.")
 
-        # Error for multi label inconsistency
-        if self.list_real_models is not None and self._has_model_classifier():
-            set_multi_label = {model.multi_label for model in self.list_real_models}
-            if True in set_multi_label and not self.multi_label:
-                raise ValueError(f"The 'multi_label' parameters of the list models are inconsistent with the model_aggregation.")
+        if self.list_real_models is not None:
+            # Error for multi label inconsistency
+            if self._has_model_classifier():
+                set_multi_label = {model.multi_label for model in self.list_real_models}
+                if True in set_multi_label and not self.multi_label:
+                    raise ValueError(f"The 'multi_label' parameters of the list models are inconsistent with the model_aggregation.")
             # Error for the regressor model in list_models and multi_label is True
             if self._has_model_regressor() and multi_label:
                 raise ValueError(f"The regressor model is not compatible with multi_label")
@@ -115,8 +116,8 @@ class ModelAggregation(ModelClass):
             if self._has_model_regressor() and using_proba:
                 raise ValueError(f"The regressor model is not compatible with using_proba")
 
-        self.list_classes: Optional[List[Any]] = None
-        self.dict_classes: Optional[Dict[Any, Any]] = None
+        self.list_classes: Union[None, List[Any]] = None
+        self.dict_classes: Union[None, Dict[Any, Any]] = None
         self._check_trained()
 
     def _sort_model_type(self, list_models: list) -> None:
@@ -147,7 +148,7 @@ class ModelAggregation(ModelClass):
         Args:
             (bool): has a classification model in list_real_models
         '''
-        list_type_model = np.array([ModelClassifierMixin in model.__class__.__bases__ for model in self.list_real_models])
+        list_type_model = np.array([isinstance(model, ModelClassifierMixin) for model in self.list_real_models])
         return list_type_model.any()
 
     def _has_model_regressor(self) -> np.bool_:
@@ -156,7 +157,7 @@ class ModelAggregation(ModelClass):
         Args:
             (bool): has a regressor model in list_real_models
         '''
-        list_type_model = np.array([ModelRegressorMixin in model.__class__.__bases__ for model in self.list_real_models])
+        list_type_model = np.array([isinstance(model, ModelRegressorMixin) for model in self.list_real_models])
         return list_type_model.any()
 
     def _check_trained(self):
@@ -198,15 +199,13 @@ class ModelAggregation(ModelClass):
             bool_multi_label = True if len(y_train.iloc[0]) > 1 else False
         elif isinstance(y_train, np.ndarray):
             bool_multi_label = True if y_train.shape != (len(x_train),) else False
-        elif isinstance(y_train, pd.Series):
-            bool_multi_label = False
         else:
             bool_multi_label = False
 
         # Fit each model
         for model in self.list_real_models:
             if not model.trained:
-                if not self._has_model_regressor():
+                if self._has_model_classifier():
                     if bool_multi_label and not model.multi_label:
                         raise ValueError(f"Model {model} (model_name: {model.model_name}) needs y_train_mono_label to fit")
                     if not bool_multi_label and model.multi_label:
