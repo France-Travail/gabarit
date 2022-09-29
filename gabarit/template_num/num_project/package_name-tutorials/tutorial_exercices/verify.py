@@ -49,7 +49,7 @@ def verify_exercice_1():
                 f"Did you correctly use a 0.6 / 0.2 / 0.2 split ?"
             )
         try:
-            assert df["num__alcohol"].iloc[0] == expected_results[file]["alcohol"]
+            assert df["alcohol"].iloc[0] == expected_results[file]["alcohol"]
         except AssertionError:
             raise ValueError(
                 f"Unexpected value in {file_path}.  "
@@ -163,7 +163,7 @@ def verify_exercice_6():
         df = pd.read_csv(file, sep=";", skiprows=1)
 
         try:
-            assert abs(df["alcohol"].iloc[0] - alcohol_first_value) < 1e-3
+            assert abs(df["num__alcohol"].iloc[0] - alcohol_first_value) < 1e-3
         except AssertionError:
             raise ValueError(
                 f"Unexpected value in {file}. Did you use 1_preprocess_data.py on "
