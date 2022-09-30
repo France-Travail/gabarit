@@ -459,9 +459,13 @@ def sweetviz_report(
         target = None
         
     try:
-        report: sweetviz.DataframeReport = sweetviz.compare(train_data, valid_data, target_feat=target)
+        report: sweetviz.DataframeReport = sweetviz.compare(
+            train_data, valid_data, target_feat=target, pairwise_analysis="off"
+        )
     except (KeyError, ValueError):
-        report: sweetviz.DataframeReport = sweetviz.compare(train_data, valid_data)
+        report: sweetviz.DataframeReport = sweetviz.compare(
+            train_data, valid_data, pairwise_analysis="off"
+        )
 
     with tempfile.TemporaryDirectory() as tmpdirname:
         tmpfile = os.path.join(tmpdirname, "report.html")
