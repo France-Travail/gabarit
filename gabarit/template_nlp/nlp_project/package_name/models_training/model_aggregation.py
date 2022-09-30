@@ -49,10 +49,10 @@ class ModelAggregation(ModelClass):
             multi_label (bool): If the classification is multi-labels
 
         Raises:
-            ValueError : If aggregation_function object is Callable and using_proba/multi_label is None
             ValueError : If the object aggregation_function is a str but not found in the dictionary dict_aggregation_function
             ValueError : If the object aggregation_function is not compatible with value using_proba
             ValueError : If the object aggregation_function is not compatible with value multi_label
+            ValueError : If aggregation_function object is Callable and using_proba/multi_label is None
             ValueError : The 'multi_label' parameters of the list models are inconsistent with the model_aggregation
         '''
         # Init.
@@ -96,6 +96,8 @@ class ModelAggregation(ModelClass):
             set_multi_label = {model.multi_label for model in self.list_real_models}
             if True in set_multi_label and not self.multi_label:
                 raise ValueError(f"The 'multi_label' parameters of the list models are inconsistent with the model_aggregation.")
+            # set list_models_trained
+            self.list_models_trained = [model.trained for model in self.list_real_models]
 
         self._check_trained()
 
@@ -323,9 +325,10 @@ class ModelAggregation(ModelClass):
         Kwargs:
             json_data (dict): Additional configurations to be saved
         '''
-        # Save each model
-        for model in self.list_real_models:
-            model.save()
+        # Save each trained and unsaved model
+        for i, model in enumerate(self.list_real_models):
+            if not self.list_models_trained[i] and model.trained:
+                model.save()
 
         json_data['list_models'] = self.list_models.copy()
         json_data['using_proba'] = self.using_proba
@@ -347,6 +350,26 @@ class ModelAggregation(ModelClass):
         super().save(json_data=json_data)
         setattr(self, "aggregation_function", aggregation_function)
         setattr(self, "list_real_models", list_real_models)
+
+        # Add message in model_upload_instructions.md
+        md_path = os.path.join(self.model_dir, f"model_upload_instructions.md")
+        line = "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that all sub-models and the aggregation model are manually saved together in order to be able to load it .  /!\/!\/!\/!\/!\ "
+        self.prepend_line(md_path, line)
+
+    def prepend_line(self, file_name: str, line: str) -> None:
+        ''' Insert given string as a new line at the beginning of a file
+
+        Kwargs:
+            file_name (str): Path to file
+            line (str): line to insert
+        '''
+        dummy_file = file_name + '.bak'
+        with open(file_name, 'r') as read_obj, open(dummy_file, 'w') as write_obj:
+            write_obj.write(line + '\n')
+            for line in read_obj:
+                write_obj.write(line)
+        os.remove(file_name)
+        os.rename(dummy_file, file_name)
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model aggregation from its configuration and "standalones" files
@@ -401,7 +424,6 @@ class ModelAggregation(ModelClass):
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         self._sort_model_type(self.list_models)
-
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

@@ -241,7 +241,7 @@ class Modelaggregation(unittest.TestCase):
             model = ModelAggregation(model_dir=model_dir, aggregation_function='vote_labels', multi_label=False)
         remove_dir(model_dir)
 
-        # if aggregation_function object is a function and using_proba is None
+        # if aggregation_function object is a Callable and using_proba is None
         model_get_function = ModelAggregation(model_dir=model_dir)
         function_test = model_get_function.majority_vote
         remove_dir(model_dir)
@@ -251,7 +251,7 @@ class Modelaggregation(unittest.TestCase):
         with self.assertRaises(ValueError):
             model = ModelAggregation(model_dir=model_dir, using_proba=None, aggregation_function=lambda predictions: np.sum(predictions, axis=0, dtype=bool).astype(int))
         remove_dir(model_dir)
-        # if aggregation_function object is a function and multi_label is None
+        # if aggregation_function object is a Callable and multi_label is None
         model_get_function = ModelAggregation(model_dir=model_dir)
         function_test = model_get_function.majority_vote
         remove_dir(model_dir)
@@ -348,6 +348,7 @@ class Modelaggregation(unittest.TestCase):
         model._sort_model_type([svm, gbt])
         model._check_trained()
         self.assertTrue(model.trained)
+        self.assertEqual(model.list_models_trained, [True, True])
         self.assertTrue(len(model.list_classes), n_classes_int)
         self.assertEqual(model.list_classes, list_classes_int)
         self.assertEqual(model.dict_classes, dict_classes_int)
@@ -366,6 +367,7 @@ class Modelaggregation(unittest.TestCase):
         model._sort_model_type([svm, gbt])
         model._check_trained()
         self.assertTrue(model.trained)
+        self.assertEqual(model.list_models_trained, [True, True])
         self.assertTrue(len(model.list_classes), n_classes_str)
         self.assertEqual(model.list_classes, list_classes_str)
         self.assertEqual(model.dict_classes, dict_classes_str)
@@ -382,6 +384,7 @@ class Modelaggregation(unittest.TestCase):
         model._sort_model_type([svm, gbt])
         model._check_trained()
         self.assertFalse(model.trained)
+        self.assertFalse(hasattr(model, 'list_models_trained'))
         self.assertTrue(model.list_classes is None)
         self.assertTrue(model.dict_classes is None)
         for submodel in model.list_real_models:
@@ -397,6 +400,7 @@ class Modelaggregation(unittest.TestCase):
         model._sort_model_type([svm, gbt])
         model._check_trained()
         self.assertFalse(model.trained)
+        self.assertFalse(hasattr(model, 'list_models_trained'))
         self.assertTrue(model.list_classes is None)
         self.assertTrue(model.dict_classes is None)
         for submodel in model.list_real_models:
@@ -1172,12 +1176,31 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(svm.model_dir)
         remove_dir(gbt.model_dir)
 
-    def test15_model_aggregation_reload_from_standalone(self):
-        '''Test of {{package_name}}.models_training.model_aggregation.ModelAaggregation.reload_from_standalone'''
+    def test15_model_aggregation_prepend_line(self):
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAaggregation.prepend_line'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        model = ModelAggregation(model_dir=model_dir)
+        path = os.path.join(model_dir, 'test.md')
+        with open(path, 'w') as f:
+            f.write('toto')
+        with open(path, 'r') as f:
+            self.assertTrue(f.read() == 'toto')
+        model.prepend_line(path, 'titi')
+        with open(path, 'r') as f:
+            self.assertTrue(f.read() == 'titi\ntoto')
+        os.remove(path)
+        remove_dir(model_dir)
+
+    def test16_model_aggregation_reload_from_standalone(self):
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation.reload_from_standalone'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         model_new_dir = os.path.join(os.getcwd(), 'model_new_test_123456789')
         remove_dir(model_dir)
+        remove_dir(model_new_dir)
 
         #######################
         #  mono_label
