@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Model Aggregation
+## Model Aggregation Classifier
 
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
@@ -18,7 +18,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelAggregation -> model aggregation with ModelClass
+# - ModelAggregationClassifier -> model aggregation for classification
 
 import os
 import json
@@ -28,21 +28,20 @@ import dill as pickle
 import numpy as np
 import pandas as pd
 from types import FunctionType, MethodType
-from typing import Callable, Union, Dict, Optional, List, Any
+from typing import Callable, Union
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_models
 from {{package_name}}.models_training.model_class import ModelClass
 from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin  # type: ignore
-from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
 
 
-class ModelAggregation(ModelClass):
+class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
     '''Model for aggregating multiple ModelClasses'''
-    _default_name = 'model_aggregation'
+    _default_name = 'model_aggregation_classifier'
 
     def __init__(self, list_models: Union[list, None] = None, aggregation_function: Union[Callable, str] = 'majority_vote', using_proba: Union[bool, None] = None, multi_label: Union[bool, None] = None, **kwargs) -> None:
-        '''Initialization of the class (see ModelClass for more arguments)
+        '''Initialization of the class (see ModelClass & ModelClassifierMixin for more arguments)
 
         Kwargs:
             list_models (list) : The list of model to be aggregated
@@ -51,14 +50,12 @@ class ModelAggregation(ModelClass):
             multi_label (bool): If the classification is multi-labels
 
         Raises:
-            ValueError : If aggregation_function object is Callable and using_proba/multi_label is None
             ValueError : If the object aggregation_function is a str but not found in the dictionary dict_aggregation_function
             ValueError : If the object aggregation_function is not compatible with value using_proba
             ValueError : If the object aggregation_function is not compatible with value multi_label
-            ValueError : The classifier and regressor models cannot be combined in list models.
-            ValueError : If the regressor model in list_models and multi_label is True
-            ValueError : If the regressor model in list_models and using_proba is True
-            ValueError : The 'multi_label' parameters of the list models are inconsistent with the model_aggregation
+            ValueError : If aggregation_function object is Callable and using_proba/multi_label is None
+            ValueError : If the object list_model has other model than model calssifier (model_aggregation_classifier is only compatible with model classifier)
+            ValueError : The 'multi_label' parameters of the list models are inconsistent with the model_aggregation_classifier
         '''
         # Init.
         super().__init__(**kwargs)
@@ -72,9 +69,7 @@ class ModelAggregation(ModelClass):
         dict_aggregation_function = {'majority_vote': {'function': self.majority_vote, 'using_proba': False, 'multi_label': False},
                                      'proba_argmax': {'function': self.proba_argmax, 'using_proba': True, 'multi_label': False},
                                      'all_predictions': {'function': self.all_predictions, 'using_proba': False, 'multi_label': True},
-                                     'vote_labels': {'function': self.vote_labels, 'using_proba': False, 'multi_label': True},
-                                     'median_predict': {'function': self.median_predict, 'using_proba': False, 'multi_label': False},
-                                     'mean_predict': {'function': self.mean_predict, 'using_proba': False, 'multi_label': False}}
+                                     'vote_labels': {'function': self.vote_labels, 'using_proba': False, 'multi_label': True}}
         if isinstance(aggregation_function, (FunctionType, MethodType)):
             if using_proba is None or multi_label is None:
                 raise ValueError(f"When aggregation_function is Callable, using_proba(bool) and multi_label(bool) cannot be None ")
@@ -98,26 +93,18 @@ class ModelAggregation(ModelClass):
         if list_models is not None:
             self._sort_model_type(list_models)
 
-        # Error: The classifier and regressor models cannot be combined in list_models
         if self.list_real_models is not None:
-            if self._has_model_classifier() and self._has_model_regressor():
-                raise ValueError(f"It is impossible to mix together the regressor model and the classifier model in list_models.")
+            # Error: The classifier and regressor models cannot be combined in list_models
+            if not self._all_sub_model_are_classifier():
+                raise ValueError(f"model_aggregation_classifier is only compatible with model classifier")
 
-        if self.list_real_models is not None:
             # Error for multi label inconsistency
-            if self._has_model_classifier():
-                set_multi_label = {model.multi_label for model in self.list_real_models}
-                if True in set_multi_label and not self.multi_label:
-                    raise ValueError(f"The 'multi_label' parameters of the list models are inconsistent with the model_aggregation.")
-            # Error for the regressor model in list_models and multi_label is True
-            if self._has_model_regressor() and multi_label:
-                raise ValueError(f"The regressor model is not compatible with multi_label")
-            # Error for the regressor model in list_models and using_proba is True
-            if self._has_model_regressor() and using_proba:
-                raise ValueError(f"The regressor model is not compatible with using_proba")
+            set_multi_label = {model.multi_label for model in self.list_real_models}
+            if True in set_multi_label and not self.multi_label:
+                raise ValueError(f"The 'multi_label' parameters of the list models are inconsistent with the model_aggregation_classifier.")
+            # set list_models_trained
+            self.list_models_trained = [model.trained for model in self.list_real_models]
 
-        self.list_classes: Union[None, List[Any]] = None
-        self.dict_classes: Union[None, Dict[Any, Any]] = None
         self._check_trained()
 
     def _sort_model_type(self, list_models: list) -> None:
@@ -142,23 +129,16 @@ class ModelAggregation(ModelClass):
             self.list_real_models = list_real_models
             self.list_models = new_list_models
 
-    def _has_model_classifier(self) -> np.bool_:
-        '''Checke has a classification model in list_real_models
+    def _all_sub_model_are_classifier(self) -> np.bool_:
+        '''Checke all list_real_models are models classifier
 
         Args:
-            (bool): has a classification model in list_real_models
+            (bool): all list_real_models are models classifier
         '''
-        list_type_model = np.array([isinstance(model, ModelClassifierMixin) for model in self.list_real_models])
-        return list_type_model.any()
-
-    def _has_model_regressor(self) -> np.bool_:
-        '''Checke has a regressor model in list_real_models
-
-        Args:
-            (bool): has a regressor model in list_real_models
-        '''
-        list_type_model = np.array([isinstance(model, ModelRegressorMixin) for model in self.list_real_models])
-        return list_type_model.any()
+        for model in self.list_real_models:
+            if not isinstance(model, ModelClassifierMixin):
+                return False
+        return True
 
     def _check_trained(self):
         '''Check and sets various attributes related to the fitting of underlying models
@@ -172,17 +152,16 @@ class ModelAggregation(ModelClass):
                 self.trained = True
                 self.nb_fit += 1
 
-                if self._has_model_classifier():
-                    # Set list_classes
-                    self.list_classes = list({label for model in self.list_real_models for label in model.list_classes})
-                    list_label_str = [label for label in self.list_classes if isinstance(label, str)]
-                    list_label_other = [int(label) for label in self.list_classes if label not in list_label_str]
-                    if len(list_label_str) > 0 and len(list_label_other) > 0:
-                        raise TypeError('There are more than one type of labels in the list models.')
-                    self.list_classes.sort()
+                # Set list_classes
+                self.list_classes = list({label for model in self.list_real_models for label in model.list_classes})
+                list_label_str = [label for label in self.list_classes if isinstance(label, str)]
+                list_label_other = [int(label) for label in self.list_classes if label not in list_label_str]
+                if len(list_label_str) > 0 and len(list_label_other) > 0:
+                    raise TypeError('There are more than one type of labels in the list models.')
+                self.list_classes.sort()
 
-                    # Set dict_classes based on list classes
-                    self.dict_classes = {i: col for i, col in enumerate(self.list_classes)}
+                # Set dict_classes based on list classes
+                self.dict_classes = {i: col for i, col in enumerate(self.list_classes)}
 
     def fit(self, x_train, y_train, **kwargs) -> None:
         '''Trains the model
@@ -205,11 +184,10 @@ class ModelAggregation(ModelClass):
         # Fit each model
         for model in self.list_real_models:
             if not model.trained:
-                if self._has_model_classifier():
-                    if bool_multi_label and not model.multi_label:
-                        raise ValueError(f"Model {model} (model_name: {model.model_name}) needs y_train_mono_label to fit")
-                    if not bool_multi_label and model.multi_label:
-                        raise ValueError(f"Model {model}(model_name: {model.model_name}) needs y_train_multi_label to fit")
+                if bool_multi_label and not model.multi_label:
+                    raise ValueError(f"Model {model} (model_name: {model.model_name}) needs y_train_mono_label to fit")
+                if not bool_multi_label and model.multi_label:
+                    raise ValueError(f"Model {model}(model_name: {model.model_name}) needs y_train_multi_label to fit")
                 model.fit(x_train, y_train, **kwargs)
 
         self._check_trained()
@@ -378,15 +356,13 @@ class ModelAggregation(ModelClass):
         Kwargs:
             json_data (dict): Additional configurations to be saved
         '''
-        # Save each model
-        for model in self.list_real_models:
-            model.save()
+        # Save each trained and unsaved model
+        for i, model in enumerate(self.list_real_models):
+            if not self.list_models_trained[i] and model.trained:
+                model.save()
 
         json_data['list_models'] = self.list_models.copy()
         json_data['using_proba'] = self.using_proba
-        json_data['list_classes'] = self.list_classes
-        json_data['dict_classes'] = self.dict_classes
-        json_data['multi_label'] = self.multi_label
 
         aggregation_function = self.aggregation_function
 
@@ -405,6 +381,26 @@ class ModelAggregation(ModelClass):
         super().save(json_data=json_data)
         setattr(self, "aggregation_function", aggregation_function)
         setattr(self, "list_real_models", list_real_models)
+
+        # Add message in model_upload_instructions.md
+        md_path = os.path.join(self.model_dir, f"model_upload_instructions.md")
+        line = "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that all sub-models and the aggregation model are manually saved together in order to be able to load it .  /!\/!\/!\/!\/!\ "
+        self.prepend_line(md_path, line)
+
+    def prepend_line(self, file_name: str, line: str) -> None:
+        ''' Insert given string as a new line at the beginning of a file 
+
+        Kwargs:
+            file_name (str): Path to file
+            line (str): line to insert
+        '''
+        dummy_file = file_name + '.bak'
+        with open(file_name, 'r') as read_obj, open(dummy_file, 'w') as write_obj:
+            write_obj.write(line + '\n')
+            for line in read_obj:
+                write_obj.write(line)
+        os.remove(file_name)
+        os.rename(dummy_file, file_name)
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model aggregation from its configuration and "standalones" files
