@@ -339,35 +339,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test03_model_aggregation_classifier_all_sub_model_are_classifier(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._all_sub_model_are_classifier'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        gbt, sgd, _, _ = self.create_models()
-        list_models = [gbt, sgd]
-        model = ModelAggregationClassifier(model_dir=model_dir, list_models=list_models)
-        self.assertTrue(model._all_sub_model_are_classifier())
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
-        remove_dir(sgd.model_dir)
-
-        gbt, _, _, _ = self.create_models()
-        sgd = ModelSGDRegressor()
-        list_models = [gbt, sgd]
-        model = ModelAggregationClassifier(model_dir=model_dir)
-        model.list_models=list_models
-        model._sort_model_type(list_models)
-        self.assertFalse(model._all_sub_model_are_classifier())
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
-        remove_dir(gbt.model_dir)
-        remove_dir(sgd.model_dir)
-
-    def test05_model_aggregation_classifier_check_trained(self):
+    def test03_model_aggregation_classifier_check_trained(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._check_trained'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -464,7 +436,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test06_model_aggregation_classifier_fit(self):
+    def test04_model_aggregation_classifier_fit(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.fit'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -600,7 +572,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test07_model_aggregation_classifier_predict(self):
+    def test05_model_aggregation_classifier_predict(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.predict'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -861,7 +833,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test08_model_aggregation_classifier_get_proba(self):
+    def test06_model_aggregation_classifier_get_proba(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._get_proba'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -894,7 +866,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test09_model_aggregation_classifier_get_predictions(self):
+    def test07_model_aggregation_classifier_get_predictions(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._get_predictions'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -946,7 +918,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test10_model_aggregation_classifier_predict_proba(self):
+    def test08_model_aggregation_classifier_predict_proba(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.predict_proba'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -979,7 +951,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test11_model_aggregation_classifier_predict_model_with_full_list_classes(self):
+    def test09_model_aggregation_classifier_predict_model_with_full_list_classes(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._predict_model_with_full_list_classes'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -1056,7 +1028,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         remove_dir(gbt1.model_dir)
         remove_dir(gbt2.model_dir)
 
-    def test12_model_aggregation_classifier_proba_argmax(self):
+    def test10_model_aggregation_classifier_proba_argmax(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.proba_argmax'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -1089,7 +1061,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         remove_dir(model_dir)
 
-    def test13_model_aggregation_classifier_majority_vote(self):
+    def test11_model_aggregation_classifier_majority_vote(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.majority_vote'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -1109,7 +1081,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         remove_dir(model_dir)
 
-    def test14_model_aggregation_classifier_all_predictions(self):
+    def test12_model_aggregation_classifier_all_predictions(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.all_predictions'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -1137,7 +1109,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         remove_dir(model_dir)
 
-    def test15_model_aggregation_classifier_vote_labels(self):
+    def test13_model_aggregation_classifier_vote_labels(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.vote_labels'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -1169,7 +1141,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         remove_dir(model_dir)
 
-    def test16_model_aggregation_classifier_save(self):
+    def test14_model_aggregation_classifier_save(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.save'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -1229,7 +1201,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test17_model_aggregation_classifier_prepend_line(self):
+    def test15_model_aggregation_classifier_prepend_line(self):
         '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregationClassifier.prepend_line'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -1247,7 +1219,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         os.remove(path)
         remove_dir(model_dir)
 
-    def test18_model_aggregation_classifier_reload_from_standalone(self):
+    def test16_model_aggregation_classifier_reload_from_standalone(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.reload_from_standalone'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
