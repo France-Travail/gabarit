@@ -93,6 +93,7 @@ class Modelaggregation(unittest.TestCase):
         self.assertEqual(model.list_models, [svm_name, gbt_name])
         self.assertTrue(isinstance(model.list_real_models[0], type(svm)))
         self.assertTrue(isinstance(model.list_real_models[1], type(gbt)))
+        self.assertEqual(model.list_models_trained, [False, False])
         self.assertTrue(isinstance(model._is_gpu_activated(), bool))
         self.assertEqual(model.proba_argmax.__code__.co_code, model.aggregation_function.__code__.co_code)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
@@ -116,6 +117,7 @@ class Modelaggregation(unittest.TestCase):
         self.assertEqual(model.list_models, list_models)
         self.assertTrue(isinstance(model.list_real_models[0], type(svm)))
         self.assertTrue(isinstance(model.list_real_models[1], type(gbt)))
+        self.assertEqual(model.list_models_trained, [False, False])
         self.assertTrue(isinstance(model._is_gpu_activated(), bool))
         self.assertEqual(model.majority_vote.__code__.co_code, model.aggregation_function.__code__.co_code)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
@@ -139,6 +141,7 @@ class Modelaggregation(unittest.TestCase):
         self.assertEqual(model.list_models, [svm_name, gbt_name])
         self.assertTrue(isinstance(model.list_real_models[0], type(svm)))
         self.assertTrue(isinstance(model.list_real_models[1], type(gbt)))
+        self.assertEqual(model.list_models_trained, [False, False])
         self.assertTrue(isinstance(model._is_gpu_activated(), bool))
         self.assertEqual(model.all_predictions.__code__.co_code, model.aggregation_function.__code__.co_code)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
@@ -162,6 +165,7 @@ class Modelaggregation(unittest.TestCase):
         self.assertEqual(model.list_models, [svm_name, gbt_name])
         self.assertTrue(isinstance(model.list_real_models[0], type(svm)))
         self.assertTrue(isinstance(model.list_real_models[1], type(gbt)))
+        self.assertEqual(model.list_models_trained, [False, False])
         self.assertTrue(isinstance(model._is_gpu_activated(), bool))
         self.assertEqual(model.vote_labels.__code__.co_code, model.aggregation_function.__code__.co_code)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
@@ -196,6 +200,7 @@ class Modelaggregation(unittest.TestCase):
         self.assertEqual(model.list_models, list_models)
         self.assertTrue(isinstance(model.list_real_models[0], type(svm)))
         self.assertTrue(isinstance(model.list_real_models[1], type(gbt)))
+        self.assertEqual(model.list_models_trained, [False, False])
         self.assertTrue(isinstance(model._is_gpu_activated(), bool))
         self.assertEqual(function_test.__code__.co_code, model.aggregation_function.__code__.co_code)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
@@ -348,7 +353,6 @@ class Modelaggregation(unittest.TestCase):
         model._sort_model_type([svm, gbt])
         model._check_trained()
         self.assertTrue(model.trained)
-        self.assertEqual(model.list_models_trained, [True, True])
         self.assertTrue(len(model.list_classes), n_classes_int)
         self.assertEqual(model.list_classes, list_classes_int)
         self.assertEqual(model.dict_classes, dict_classes_int)
@@ -367,7 +371,6 @@ class Modelaggregation(unittest.TestCase):
         model._sort_model_type([svm, gbt])
         model._check_trained()
         self.assertTrue(model.trained)
-        self.assertEqual(model.list_models_trained, [True, True])
         self.assertTrue(len(model.list_classes), n_classes_str)
         self.assertEqual(model.list_classes, list_classes_str)
         self.assertEqual(model.dict_classes, dict_classes_str)
@@ -384,7 +387,6 @@ class Modelaggregation(unittest.TestCase):
         model._sort_model_type([svm, gbt])
         model._check_trained()
         self.assertFalse(model.trained)
-        self.assertFalse(hasattr(model, 'list_models_trained'))
         self.assertTrue(model.list_classes is None)
         self.assertTrue(model.dict_classes is None)
         for submodel in model.list_real_models:
@@ -400,7 +402,6 @@ class Modelaggregation(unittest.TestCase):
         model._sort_model_type([svm, gbt])
         model._check_trained()
         self.assertFalse(model.trained)
-        self.assertFalse(hasattr(model, 'list_models_trained'))
         self.assertTrue(model.list_classes is None)
         self.assertTrue(model.dict_classes is None)
         for submodel in model.list_real_models:
@@ -1126,10 +1127,14 @@ class Modelaggregation(unittest.TestCase):
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
+        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test"])
+        y_train = ['test1', 'test2', 'test4', 'test1']
+
         model_path = utils.get_models_path()
         svm = ModelTfidfSvm(model_dir=os.path.join(model_path, 'model_test_123456789_svm'))
         gbt = ModelTfidfSvm(model_dir=os.path.join(model_path, 'model_test_123456789_gbt'))
         model = ModelAggregation(model_dir=model_dir, list_models=[svm, gbt])
+        model.fit(x_train, y_train)
         model.save(json_data={'test': 10})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"aggregation_function.pkl")))
