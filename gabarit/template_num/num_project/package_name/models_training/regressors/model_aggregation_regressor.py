@@ -33,7 +33,7 @@ from {{package_name}}.models_training.model_class import ModelClass
 from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
 
 
-class ModelAggregationRegressors(ModelRegressorMixin, ModelClass):
+class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
     '''Model for aggregating multiple ModelClasses'''
     _default_name = 'model_aggregation_regressor'
 
@@ -120,6 +120,8 @@ class ModelAggregationRegressors(ModelRegressorMixin, ModelClass):
             x_train (?): Array-like, shape = [n_samples]
             y_train (?): Array-like, shape = [n_samples]
         '''
+        # We check input format
+        x_train, y_train = self._check_input_format(x_train, y_train, fit_function=True)
 
         # Fit each model
         for model in self.list_real_models:
@@ -128,16 +130,32 @@ class ModelAggregationRegressors(ModelRegressorMixin, ModelClass):
         self._check_trained()
 
     @utils.trained_needed
-    def predict(self, x_test, **kwargs) -> np.ndarray:
+    def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
         '''Prediction
 
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
+            return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
         Returns:
             (np.ndarray): array of shape = [n_samples]
+        Raises:
+            ValueError: If return_proba=True
         '''
+        if return_proba:
+            raise ValueError(f"Models of the type {self.model_type} can't handle probabilities")
         preds = self._get_predictions(x_test, **kwargs)
         return np.array([self.aggregation_function(array) for array in preds]) # type: ignore
+
+    @utils.trained_needed
+    def predict_proba(self, x_test, **kwargs) -> None:
+        '''Predicts the probabilities on the test set - raise ValueError
+
+        Args:
+            x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
+        Raises:
+            ValueError: Models of type regressor do not implement the method predict_proba
+        '''
+        raise ValueError(f"Models of type regressor do not implement the method predict_proba")
 
     @utils.trained_needed
     def _get_predictions(self, x_test, **kwargs) -> np.ndarray:
@@ -226,30 +244,42 @@ class ModelAggregationRegressors(ModelRegressorMixin, ModelClass):
 
         Kwargs:
             configuration_path (str): Path to configuration file
+            preprocess_pipeline_path (str): Path to preprocess pipeline
             aggregation_function_path (str): Path to aggregation_function_path
         Raises:
             ValueError: If configuration_path is None
+            ValueError: If preprocess_pipeline_path is None
             ValueError: If aggregation_function_path is None
             FileNotFoundError: If the object configuration_path is not an existing file
+            FileNotFoundError: If the object preprocess_pipeline_path is not an existing file
             FileNotFoundError: If the object aggregation_function_path is not an existing file
         '''
         # Retrieve args
         configuration_path = kwargs.get('configuration_path', None)
+        preprocess_pipeline_path = kwargs.get('preprocess_pipeline_path', None)
         aggregation_function_path = kwargs.get('aggregation_function_path', None)
 
         # Checks
         if configuration_path is None:
             raise ValueError("The argument configuration_path can't be None")
+        if preprocess_pipeline_path is None:
+            raise ValueError("The argument preprocess_pipeline_path can't be None")
         if aggregation_function_path is None:
             raise ValueError("The argument aggregation_function_path can't be None")
         if not os.path.exists(configuration_path):
             raise FileNotFoundError(f"The file {configuration_path} does not exist")
+        if not os.path.exists(preprocess_pipeline_path):
+            raise FileNotFoundError(f"The file {preprocess_pipeline_path} does not exist")
         if not os.path.exists(aggregation_function_path):
             raise FileNotFoundError(f"The file {aggregation_function_path} does not exist")
 
         # Load confs
         with open(configuration_path, 'r', encoding='utf-8') as f:
             configs = json.load(f)
+
+        # Reload pipeline preprocessing
+        with open(preprocess_pipeline_path, 'rb') as f:
+            self.preprocess_pipeline = pickle.load(f)
 
         # Reload aggregation_function_path
         with open(aggregation_function_path, 'rb') as f:

@@ -1244,9 +1244,10 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         # Reload
         conf_path = os.path.join(model.model_dir, "configurations.json")
+        preprocess_pipeline_path = os.path.join(model.model_dir, "preprocess_pipeline.pkl")
         aggregation_function_path = os.path.join(model.model_dir, "aggregation_function.pkl")
         model_new = ModelAggregationClassifier(model_dir=model_new_dir)
-        model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path=aggregation_function_path)
+        model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path=aggregation_function_path, preprocess_pipeline_path=preprocess_pipeline_path)
 
         # Test
         self.assertEqual(model.trained, model_new.trained)
@@ -1290,9 +1291,10 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         # Reload
         conf_path = os.path.join(model.model_dir, "configurations.json")
+        preprocess_pipeline_path = os.path.join(model.model_dir, "preprocess_pipeline.pkl")
         aggregation_function_path = os.path.join(model.model_dir, "aggregation_function.pkl")
         model_new = ModelAggregationClassifier(model_dir=model_new_dir)
-        model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path=aggregation_function_path)
+        model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path=aggregation_function_path, preprocess_pipeline_path=preprocess_pipeline_path)
 
         # Test
         self.assertEqual(model.trained, model_new.trained)
@@ -1323,25 +1325,34 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         model_new = ModelAggregationClassifier(model_dir=model_new_dir)
         with self.assertRaises(FileNotFoundError):
-            model_new.reload_from_standalone(model_dir=model_dir, configuration_path='toto.json', aggregation_function_path=aggregation_function_path)
+            model_new.reload_from_standalone(model_dir=model_dir, configuration_path='toto.json', aggregation_function_path=aggregation_function_path, preprocess_pipeline_path=preprocess_pipeline_path)
         remove_dir(model_new.model_dir)
         remove_dir(model_new_dir)
         model_new = ModelAggregationClassifier(model_dir=model_new_dir)
         with self.assertRaises(FileNotFoundError):
-            model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path='toto.pkl')
+            model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path='toto.pkl', preprocess_pipeline_path=preprocess_pipeline_path)
+        remove_dir(model_new.model_dir)
+        remove_dir(model_new_dir)
+        model_new = ModelAggregationClassifier(model_dir=model_new_dir)
+        with self.assertRaises(FileNotFoundError):
+            model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path=aggregation_function_path, preprocess_pipeline_path='toto.pkl')
         remove_dir(model_new.model_dir)
         remove_dir(model_new_dir)
         model_new = ModelAggregationClassifier(model_dir=model_new_dir)
         with self.assertRaises(ValueError):
-            model_new.reload_from_standalone(model_dir=model_dir, aggregation_function_path=aggregation_function_path)
+            model_new.reload_from_standalone(model_dir=model_dir, aggregation_function_path=aggregation_function_path, preprocess_pipeline_path=preprocess_pipeline_path)
         remove_dir(model_new.model_dir)
         remove_dir(model_new_dir)
         model_new = ModelAggregationClassifier(model_dir=model_new_dir)
         with self.assertRaises(ValueError):
-            model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path)
+            model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, preprocess_pipeline_path=preprocess_pipeline_path)
         remove_dir(model_new.model_dir)
         remove_dir(model_new_dir)
-
+        model_new = ModelAggregationClassifier(model_dir=model_new_dir)
+        with self.assertRaises(ValueError):
+            model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path=aggregation_function_path)
+        remove_dir(model_new.model_dir)
+        remove_dir(model_new_dir)
 
 # Perform tests
 if __name__ == '__main__':
