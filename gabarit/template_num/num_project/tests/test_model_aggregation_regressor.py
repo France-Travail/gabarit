@@ -28,7 +28,7 @@ from {{package_name}} import utils
 from {{package_name}}.models_training.classifiers.model_sgd_classifier import ModelSGDClassifier
 from {{package_name}}.models_training.regressors.model_gbt_regressor import ModelGBTRegressor
 from {{package_name}}.models_training.regressors.model_sgd_regressor import ModelSGDRegressor
-from {{package_name}}.models_training.regressors.model_aggregation_regressor import ModelAggregationRegressors
+from {{package_name}}.models_training.regressors.model_aggregation_regressor import ModelAggregationRegressor
 
 # Disable logging
 import logging
@@ -39,7 +39,7 @@ def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
 
-class ModelAggregationRegressorsTests(unittest.TestCase):
+class ModelAggregationRegressorTests(unittest.TestCase):
     '''Main class to test model_aggregation_regressor'''
 
     def setUp(self):
@@ -70,7 +70,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         return gbt, sgd, gbt_name, sgd_name
 
     def test01_model_aggregation_regressor_init(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors.__init__'''
+        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor.__init__'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -87,7 +87,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         # not multi_label
         gbt, sgd, gbt_name, sgd_name = self.create_models()
         list_models = [gbt, sgd]
-        model = ModelAggregationRegressors(model_dir=model_dir, model_name=model_name, list_models=list_models, aggregation_function='median_predict')
+        model = ModelAggregationRegressor(model_dir=model_dir, model_name=model_name, list_models=list_models, aggregation_function='median_predict')
         self.assertTrue(os.path.isdir(model_dir))
         self.assertTrue(isinstance(model.list_models, list))
         self.assertEqual(model.list_models, [gbt_name, sgd_name])
@@ -108,7 +108,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         # not multi_label
         gbt, sgd, gbt_name, sgd_name = self.create_models()
         list_models = [gbt_name, sgd_name]
-        model = ModelAggregationRegressors(model_dir=model_dir, model_name=model_name, list_models=list_models, aggregation_function='mean_predict')
+        model = ModelAggregationRegressor(model_dir=model_dir, model_name=model_name, list_models=list_models, aggregation_function='mean_predict')
         self.assertTrue(os.path.isdir(model_dir))
         self.assertEqual(model.model_name, model_name)
         self.assertTrue(isinstance(model.list_models, list))
@@ -130,7 +130,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         # multi_label
         gbt, sgd, gbt_name, sgd_name = self.create_models()
         list_models = [gbt_name, sgd]
-        model = ModelAggregationRegressors(model_dir=model_dir, model_name=model_name, list_models=list_models, aggregation_function='median_predict')
+        model = ModelAggregationRegressor(model_dir=model_dir, model_name=model_name, list_models=list_models, aggregation_function='median_predict')
         self.assertTrue(os.path.isdir(model_dir))
         self.assertEqual(model.model_name, model_name)
         self.assertTrue(isinstance(model.list_models, list))
@@ -157,7 +157,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
 
         gbt, sgd, gbt_name, sgd_name = self.create_models()
         list_models = [gbt_name, sgd]
-        model = ModelAggregationRegressors(model_dir=model_dir, model_name=model_name, list_models=list_models, aggregation_function=function_test)
+        model = ModelAggregationRegressor(model_dir=model_dir, model_name=model_name, list_models=list_models, aggregation_function=function_test)
         self.assertTrue(os.path.isdir(model_dir))
         self.assertEqual(model.model_name, model_name)
         self.assertTrue(isinstance(model.list_models, list))
@@ -178,7 +178,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
 
         # if the object aggregation_function is a str but not found in the dictionary dict_aggregation_function
         with self.assertRaises(ValueError):
-            model = ModelAggregationRegressors(model_dir=model_dir, aggregation_function='1234')
+            model = ModelAggregationRegressor(model_dir=model_dir, aggregation_function='1234')
         remove_dir(model_dir)
 
         # The classifier and regressor models cannot be combined in list models
@@ -187,7 +187,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         sgd_regressor = ModelSGDClassifier(model_dir=model_dir_classifier)
         list_models = [gbt, sgd_regressor]
         with self.assertRaises(ValueError):
-            model = ModelAggregationRegressors(model_dir=model_dir, list_models=list_models)
+            model = ModelAggregationRegressor(model_dir=model_dir, list_models=list_models)
         for submodel in model.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
         remove_dir(model_dir)
@@ -196,7 +196,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         remove_dir(sgd.model_dir)
 
     def test02_model_aggregation_regressor_sort_model_type(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors._sort_model_type'''
+        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor._sort_model_type'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -204,7 +204,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         # list_models = [model, model]
         gbt, sgd, gbt_name, sgd_name = self.create_models()
         list_models = [gbt, sgd]
-        model = ModelAggregationRegressors(model_dir=model_dir)
+        model = ModelAggregationRegressor(model_dir=model_dir)
         model._sort_model_type(list_models)
         self.assertTrue(isinstance(model.list_real_models[0], type(gbt)))
         self.assertTrue(isinstance(model.list_real_models[1], type(sgd)))
@@ -217,7 +217,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         # list_models = [model_name, model_name]
         gbt, sgd, gbt_name, sgd_name = self.create_models()
         list_models = [gbt_name, sgd_name]
-        model = ModelAggregationRegressors(model_dir=model_dir)
+        model = ModelAggregationRegressor(model_dir=model_dir)
         model._sort_model_type(list_models)
         self.assertTrue(isinstance(model.list_real_models[0], type(gbt)))
         self.assertTrue(isinstance(model.list_real_models[1], type(sgd)))
@@ -230,7 +230,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         # list_models = [model_name, model]
         gbt, sgd, gbt_name, sgd_name = self.create_models()
         list_models = [gbt_name, sgd]
-        model = ModelAggregationRegressors(model_dir=model_dir)
+        model = ModelAggregationRegressor(model_dir=model_dir)
         model._sort_model_type(list_models)
         self.assertTrue(isinstance(model.list_real_models[0], type(gbt)))
         self.assertTrue(isinstance(model.list_real_models[1], type(sgd)))
@@ -243,7 +243,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         remove_dir(sgd.model_dir)
 
     def test03_model_aggregation_regressor_check_trained(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors._check_trained'''
+        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor._check_trained'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -254,7 +254,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
 
         # int
         gbt, sgd, _, _ = self.create_models()
-        model = ModelAggregationRegressors(model_dir=model_dir)
+        model = ModelAggregationRegressor(model_dir=model_dir)
         self.assertFalse(model.trained)
         gbt.fit(x_train, y_train_int)
         sgd.fit(x_train, y_train_int)
@@ -267,7 +267,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
 
         # not trained
         gbt, sgd, _, _ = self.create_models()
-        model = ModelAggregationRegressors(model_dir=model_dir)
+        model = ModelAggregationRegressor(model_dir=model_dir)
         self.assertFalse(model.trained)
         model._sort_model_type([gbt, sgd])
         model._check_trained()
@@ -277,7 +277,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         remove_dir(model_dir)
 
         gbt, sgd, _, _ = self.create_models()
-        model = ModelAggregationRegressors(model_dir=model_dir)
+        model = ModelAggregationRegressor(model_dir=model_dir)
         self.assertFalse(model.trained)
         sgd.fit(x_train, y_train_int)
         model._sort_model_type([gbt, sgd])
@@ -290,7 +290,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         remove_dir(sgd.model_dir)
 
     def test04_model_aggregation_regressor_fit(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors.fit'''
+        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor.fit'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -301,7 +301,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
 
         # Not trained
         gbt, sgd, _, _ = self.create_models()
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=[gbt, sgd])
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=[gbt, sgd])
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
         model.fit(x_train, y_train_mono)
@@ -317,7 +317,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         # Some model trained
         gbt, sgd, _, _ = self.create_models()
         gbt.fit(x_train, y_train_mono)
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=[gbt, sgd])
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=[gbt, sgd])
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
         model.fit(x_train, y_train_mono)
@@ -333,7 +333,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         remove_dir(sgd.model_dir)
 
     def test05_model_aggregation_regressor_predict(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors.predict'''
+        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor.predict'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -378,13 +378,13 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
 
         # All models have the same labels
         list_models = [list_model_mono[0], list_model_mono[1]]
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=list_models, aggregation_function='median_predict')
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=list_models, aggregation_function='median_predict')
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'])
         remove_dir(model_dir)
 
         # The models have different labels
         list_models = [list_model_mono[0], list_model_mono[2], list_model_mono[3]]
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=list_models, aggregation_function='median_predict')
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=list_models, aggregation_function='median_predict')
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_median'])
         remove_dir(model_dir)
 
@@ -394,13 +394,13 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
 
         # All models have the same labels
         list_models = [list_model_mono[0], list_model_mono[1]]
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=list_models, aggregation_function='mean_predict')
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=list_models, aggregation_function='mean_predict')
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'])
         remove_dir(model_dir)
 
         # The models have different labels
         list_models = [list_model_mono[0], list_model_mono[2], list_model_mono[3]]
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=list_models, aggregation_function='mean_predict')
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=list_models, aggregation_function='mean_predict')
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_mean'])
         remove_dir(model_dir)
 
@@ -414,19 +414,19 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
 
         # All models have the same labels
         list_models = [list_model_mono[0], list_model_mono[1]]
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=list_models, using_proba=False, multi_label=False, aggregation_function=function_test)
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=list_models, using_proba=False, multi_label=False, aggregation_function=function_test)
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_1'])
         remove_dir(model_dir)
 
         # The models have different labels
         list_models = [list_model_mono[0], list_model_mono[2], list_model_mono[3]]
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=list_models, using_proba=False, multi_label=False, aggregation_function=function_test)
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=list_models, using_proba=False, multi_label=False, aggregation_function=function_test)
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_2'])
         remove_dir(model_dir)
 
         # Equality case
         list_models = [list_model_mono[4], list_model_mono[0], list_model_mono[1], list_model_mono[2], list_model_mono[3]]
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=list_models, aggregation_function='median_predict')
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=list_models, aggregation_function='median_predict')
         test_method(model, dic_mono['x_test'], target_predict=dic_mono['target_9'])
         remove_dir(model_dir)
 
@@ -437,19 +437,51 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         # Error
         ############################################
 
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        y_train_mono = pd.Series([1, 1, 1, 2, 3, 3, 3] * 10)
+
         # Model needs to be fitted
         gbt, sgd, _, _ = self.create_models()
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=[gbt, sgd])
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=[gbt, sgd])
         with self.assertRaises(AttributeError):
-            model.predict('test')
+            model.predict(x_train)
+        for submodel in model.list_real_models:
+            remove_dir(os.path.split(submodel.model_dir)[-1])
+        remove_dir(model_dir)
+
+        gbt, sgd, _, _ = self.create_models()
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=[gbt, sgd])
+        model.fit(x_train, y_train_mono)
+        with self.assertRaises(ValueError):
+            model.predict(x_train, return_proba=True)
         for submodel in model.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
         remove_dir(model_dir)
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test06_model_aggregation_regressor_get_predictions(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors._get_predictions'''
+    def test06_model_aggregation_regressor_predict_proba(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor.predict_proba'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        y_train_mono = pd.Series([1, 1, 1, 2, 3, 3, 3] * 10)
+
+        gbt, sgd, _, _ = self.create_models()
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=[gbt, sgd])
+        model.fit(x_train, y_train_mono)
+        with self.assertRaises(ValueError):
+            model.predict_proba(x_train)
+        for submodel in model.list_real_models:
+            remove_dir(os.path.split(submodel.model_dir)[-1])
+        remove_dir(model_dir)
+        remove_dir(gbt.model_dir)
+        remove_dir(sgd.model_dir)
+
+    def test07_model_aggregation_regressor_get_predictions(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor._get_predictions'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -460,7 +492,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
 
         # mono_label
         gbt, sgd, _, _ = self.create_models()
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=[gbt, sgd])
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=[gbt, sgd])
         model.fit(x_train, y_train_mono)
         preds = model._get_predictions(x_train)
         self.assertTrue(isinstance(preds, np.ndarray))
@@ -472,7 +504,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         remove_dir(model_dir)
 
         gbt, sgd, _, _ = self.create_models()
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=[gbt, sgd])
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=[gbt, sgd])
         model.fit(x_train, y_train_mono)
         preds = model._get_predictions(x_train)
         self.assertTrue(isinstance(preds, np.ndarray))
@@ -484,20 +516,20 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Model needs to be fitted
-        model = ModelAggregationRegressors(model_dir=model_dir)
+        model = ModelAggregationRegressor(model_dir=model_dir)
         with self.assertRaises(AttributeError):
             model._get_predictions('test')
         remove_dir(model_dir)
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test07_model_aggregation_regressor_median_predict(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors.median_predict'''
+    def test08_model_aggregation_regressor_median_predict(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor.median_predict'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
-        model = ModelAggregationRegressors(model_dir=model_dir)
+        model = ModelAggregationRegressor(model_dir=model_dir)
 
         # normal case (3 models)
         preds = np.array([3, 4, 4])
@@ -511,13 +543,13 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
 
         remove_dir(model_dir)
 
-    def test08_model_aggregation_regressor_mean_predict(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors.mean_predict'''
+    def test09_model_aggregation_regressor_mean_predict(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor.mean_predict'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
-        model = ModelAggregationRegressors(model_dir=model_dir)
+        model = ModelAggregationRegressor(model_dir=model_dir)
 
         # normal case (3 models)
         preds = np.array([3, 2, 4])
@@ -531,8 +563,8 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
 
         remove_dir(model_dir)
 
-    def test09_model_aggregation_regressor_save(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors.save'''
+    def test10_model_aggregation_regressor_save(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor.save'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -543,7 +575,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         model_path = utils.get_models_path()
         gbt = ModelGBTRegressor(model_dir=os.path.join(model_path, 'model_test_123456789_gbt'))
         sgd = ModelSGDRegressor(model_dir=os.path.join(model_path, 'model_test_123456789_sgd'))
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=[gbt, sgd])
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=[gbt, sgd])
         model.fit(x_train, y_train_mono)
         model.save(json_data={'test': 10})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
@@ -584,7 +616,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test10_model_aggregation_regressor_reload_from_standalone(self):
+    def test11_model_aggregation_regressor_reload_from_standalone(self):
         '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAaggregation.reload_from_standalone'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -598,16 +630,17 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
 
         # Create model
         gbt, sgd, _, _ = self.create_models()
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=[gbt, sgd])
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=[gbt, sgd])
         model.fit(x_train, y_train_mono)
         model.save()
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"aggregation_function.pkl")))
 
         # Reload
         conf_path = os.path.join(model.model_dir, "configurations.json")
+        preprocess_pipeline_path = os.path.join(model.model_dir, "preprocess_pipeline.pkl")
         aggregation_function_path = os.path.join(model.model_dir, "aggregation_function.pkl")
-        model_new = ModelAggregationRegressors(model_dir=model_new_dir)
-        model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path=aggregation_function_path)
+        model_new = ModelAggregationRegressor(model_dir=model_new_dir)
+        model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path=aggregation_function_path, preprocess_pipeline_path=preprocess_pipeline_path)
 
         # Test
         self.assertEqual(model.trained, model_new.trained)
@@ -631,27 +664,37 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         # Errors
         ############################################
 
-        model_new = ModelAggregationRegressors(model_dir=model_new_dir)
+        model_new = ModelAggregationRegressor(model_dir=model_new_dir)
         with self.assertRaises(FileNotFoundError):
-            model_new.reload_from_standalone(model_dir=model_dir, configuration_path='toto.json', aggregation_function_path=aggregation_function_path)
+            model_new.reload_from_standalone(model_dir=model_dir, configuration_path='toto.json', aggregation_function_path=aggregation_function_path, preprocess_pipeline_path=preprocess_pipeline_path)
         remove_dir(model_new.model_dir)
         remove_dir(model_new_dir)
-        model_new = ModelAggregationRegressors(model_dir=model_new_dir)
+        model_new = ModelAggregationRegressor(model_dir=model_new_dir)
         with self.assertRaises(FileNotFoundError):
-            model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path='toto.pkl')
+            model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path='toto.pkl', preprocess_pipeline_path=preprocess_pipeline_path)
         remove_dir(model_new.model_dir)
         remove_dir(model_new_dir)
-        model_new = ModelAggregationRegressors(model_dir=model_new_dir)
-        with self.assertRaises(ValueError):
-            model_new.reload_from_standalone(model_dir=model_dir, aggregation_function_path=aggregation_function_path)
-        remove_dir(model_new.model_dir)
-        remove_dir(model_new_dir)
-        model_new = ModelAggregationRegressors(model_dir=model_new_dir)
-        with self.assertRaises(ValueError):
-            model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path)
+        model_new = ModelAggregationRegressor(model_dir=model_new_dir)
+        with self.assertRaises(FileNotFoundError):
+            model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path=aggregation_function_path, preprocess_pipeline_path='toto.pkl')
         remove_dir(model_new.model_dir)
         remove_dir(model_new_dir)
 
+        model_new = ModelAggregationRegressor(model_dir=model_new_dir)
+        with self.assertRaises(ValueError):
+            model_new.reload_from_standalone(model_dir=model_dir, aggregation_function_path=aggregation_function_path, preprocess_pipeline_path=preprocess_pipeline_path)
+        remove_dir(model_new.model_dir)
+        remove_dir(model_new_dir)
+        model_new = ModelAggregationRegressor(model_dir=model_new_dir)
+        with self.assertRaises(ValueError):
+            model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, preprocess_pipeline_path=preprocess_pipeline_path)
+        remove_dir(model_new.model_dir)
+        remove_dir(model_new_dir)
+        model_new = ModelAggregationRegressor(model_dir=model_new_dir)
+        with self.assertRaises(ValueError):
+            model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path=aggregation_function_path)
+        remove_dir(model_new.model_dir)
+        remove_dir(model_new_dir)
 
 # Perform tests
 if __name__ == '__main__':

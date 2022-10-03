@@ -169,6 +169,9 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
         else:
             bool_multi_label = False
 
+        # We check input format
+        x_train, y_train = self._check_input_format(x_train, y_train, fit_function=True)
+
         # Fit each model
         for model in self.list_real_models:
             if not model.trained:
@@ -393,24 +396,32 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
 
         Kwargs:
             configuration_path (str): Path to configuration file
+            preprocess_pipeline_path (str): Path to preprocess pipeline
             aggregation_function_path (str): Path to aggregation_function_path
         Raises:
             ValueError: If configuration_path is None
+            ValueError: If preprocess_pipeline_path is None
             ValueError: If aggregation_function_path is None
             FileNotFoundError: If the object configuration_path is not an existing file
+            FileNotFoundError: If the object preprocess_pipeline_path is not an existing file
             FileNotFoundError: If the object aggregation_function_path is not an existing file
         '''
         # Retrieve args
         configuration_path = kwargs.get('configuration_path', None)
+        preprocess_pipeline_path = kwargs.get('preprocess_pipeline_path', None)
         aggregation_function_path = kwargs.get('aggregation_function_path', None)
 
         # Checks
         if configuration_path is None:
             raise ValueError("The argument configuration_path can't be None")
+        if preprocess_pipeline_path is None:
+            raise ValueError("The argument preprocess_pipeline_path can't be None")
         if aggregation_function_path is None:
             raise ValueError("The argument aggregation_function_path can't be None")
         if not os.path.exists(configuration_path):
             raise FileNotFoundError(f"The file {configuration_path} does not exist")
+        if not os.path.exists(preprocess_pipeline_path):
+            raise FileNotFoundError(f"The file {preprocess_pipeline_path} does not exist")
         if not os.path.exists(aggregation_function_path):
             raise FileNotFoundError(f"The file {aggregation_function_path} does not exist")
 
@@ -423,6 +434,10 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
             configs['dict_classes'] = {int(k): v for k, v in configs['dict_classes'].items()}
         elif 'list_classes' in configs.keys():
             configs['dict_classes'] = {i: col for i, col in enumerate(configs['list_classes'])}
+
+        # Reload pipeline preprocessing
+        with open(preprocess_pipeline_path, 'rb') as f:
+            self.preprocess_pipeline = pickle.load(f)
 
         # Reload aggregation_function_path
         with open(aggregation_function_path, 'rb') as f:
