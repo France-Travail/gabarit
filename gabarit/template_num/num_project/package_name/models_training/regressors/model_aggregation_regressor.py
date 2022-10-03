@@ -227,7 +227,7 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
         self.prepend_line(md_path, line)
 
     def prepend_line(self, file_name: str, line: str) -> None:
-        ''' Insert given string as a new line at the beginning of a file 
+        ''' Insert given string as a new line at the beginning of a file
 
         Kwargs:
             file_name (str): Path to file
