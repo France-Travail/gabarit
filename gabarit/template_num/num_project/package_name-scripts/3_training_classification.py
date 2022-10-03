@@ -49,7 +49,9 @@ from {{package_name}}.models_training.classifiers import (model_rf_classifier,
                                                           model_knn_classifier,
                                                           model_gbt_classifier,
                                                           model_lgbm_classifier,
-                                                          model_xgboost_classifier)
+                                                          model_xgboost_classifier,
+                                                          model_aggregation_classifier
+                                                          )
 
 # Disable some warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -296,9 +298,9 @@ def main(filename: str, y_col: List[Union[str, int]], excluded_cols: Union[List[
         #                                                     preprocess_pipeline=preprocess_pipeline,
         #                                                     batch_size=64, epochs=99, patience=5,
         #                                                     multi_label=multi_label)
-        # modle = model_aggregation.ModelAggregation(x_col=x_col, y_col=y_col, level_save=level_save,
-        #                                            list_models=[model_svm_classifier.ModelSVMClassifier(), model_svm_classifier.ModelSVMClassifier()],
-        #                                            multi_label=multi_label)
+        # modle = model_aggregation_classifier.ModelAggregationClassifier(x_col=x_col, y_col=y_col, level_save=level_save,
+        #                                                                 list_models=[model_svm_classifier.ModelSVMClassifier(), model_svm_classifier.ModelSVMClassifier()],
+        #                                                                 multi_label=multi_label)
 
     # Display if GPU is being used
     model.display_if_gpu_activated()
