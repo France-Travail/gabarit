@@ -23,12 +23,11 @@
 import os
 import json
 import logging
-import dill as pickle
-
 import numpy as np
 import pandas as pd
+import dill as pickle
 from types import FunctionType, MethodType
-from typing import Callable, Union
+from typing import Callable, Union, List
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_models
@@ -95,15 +94,15 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
 
         if self.list_real_models is not None:
             # Error: The classifier and regressor models cannot be combined in list_models
-            if not self._all_sub_model_are_classifier():
-                raise ValueError(f"model_aggregation_classifier is only compatible with model classifier")
+            if False in [isinstance(model, ModelClassifierMixin) for model in self.list_real_models]:
+                raise ValueError(f"model_aggregation_classifier only accepts model classifier")
 
             # Error for multi label inconsistency
             set_multi_label = {model.multi_label for model in self.list_real_models}
             if True in set_multi_label and not self.multi_label:
                 raise ValueError(f"The 'multi_label' parameters of the list models are inconsistent with the model_aggregation_classifier.")
             # set list_models_trained
-            self.list_models_trained = [model.trained for model in self.list_real_models]
+            self.list_models_trained: List[bool] = [model.trained for model in self.list_real_models]
 
         self._check_trained()
 
@@ -128,17 +127,6 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
                 list_real_models.append(real_model)
             self.list_real_models = list_real_models
             self.list_models = new_list_models
-
-    def _all_sub_model_are_classifier(self) -> np.bool_:
-        '''Checke all list_real_models are models classifier
-
-        Args:
-            (bool): all list_real_models are models classifier
-        '''
-        for model in self.list_real_models:
-            if not isinstance(model, ModelClassifierMixin):
-                return False
-        return True
 
     def _check_trained(self):
         '''Check and sets various attributes related to the fitting of underlying models
@@ -357,9 +345,9 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
             json_data (dict): Additional configurations to be saved
         '''
         # Save each trained and unsaved model
-        for i, model in enumerate(self.list_real_models):
-            if not self.list_models_trained[i] and model.trained:
-                model.save()
+        for tuple_trained_model in zip(self.list_models_trained, self.list_real_models):
+            if (not tuple_trained_model[0]) and tuple_trained_model[1].trained:
+                tuple_trained_model[1].save()
 
         json_data['list_models'] = self.list_models.copy()
         json_data['using_proba'] = self.using_proba
@@ -384,7 +372,7 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
 
         # Add message in model_upload_instructions.md
         md_path = os.path.join(self.model_dir, f"model_upload_instructions.md")
-        line = "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that all sub-models and the aggregation model are manually saved together in order to be able to load it .  /!\/!\/!\/!\/!\ "
+        line = r"/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that all sub-models and the aggregation model are manually saved together in order to be able to load it  /!\/!\/!\/!\/!\ "
         self.prepend_line(md_path, line)
 
     def prepend_line(self, file_name: str, line: str) -> None:
@@ -394,13 +382,10 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
             file_name (str): Path to file
             line (str): line to insert
         '''
-        dummy_file = file_name + '.bak'
-        with open(file_name, 'r') as read_obj, open(dummy_file, 'w') as write_obj:
-            write_obj.write(line + '\n')
-            for line in read_obj:
-                write_obj.write(line)
-        os.remove(file_name)
-        os.rename(dummy_file, file_name)
+        with open(file_name, 'r') as original:
+            data = original.read()
+        with open(file_name, 'w') as modified:
+            modified.write(line + "\n" + data)
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model aggregation from its configuration and "standalones" files

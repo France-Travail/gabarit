@@ -242,35 +242,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test03_model_aggregation_regressor_all_sub_model_are_regressor(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors._all_sub_model_are_regressor'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        gbt, sgd, _, _ = self.create_models()
-        list_models = [gbt, sgd]
-        model = ModelAggregationRegressors(model_dir=model_dir, list_models=list_models)
-        self.assertTrue(model._all_sub_model_are_regressor())
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
-        remove_dir(sgd.model_dir)
-
-        gbt, _, _, _ = self.create_models()
-        sgd = ModelSGDClassifier()
-        list_models = [gbt, sgd]
-        model = ModelAggregationRegressors(model_dir=model_dir)
-        model.list_models=list_models
-        model._sort_model_type(list_models)
-        self.assertFalse(model._all_sub_model_are_regressor())
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
-        remove_dir(gbt.model_dir)
-        remove_dir(sgd.model_dir)
-
-    def test04_model_aggregation_regressor_check_trained(self):
+    def test03_model_aggregation_regressor_check_trained(self):
         '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors._check_trained'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -317,7 +289,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test05_model_aggregation_regressor_fit(self):
+    def test04_model_aggregation_regressor_fit(self):
         '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors.fit'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -360,7 +332,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test06_model_aggregation_regressor_predict(self):
+    def test05_model_aggregation_regressor_predict(self):
         '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors.predict'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -476,7 +448,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test07_model_aggregation_regressor_get_predictions(self):
+    def test06_model_aggregation_regressor_get_predictions(self):
         '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors._get_predictions'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -519,7 +491,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test08_model_aggregation_regressor_median_predict(self):
+    def test07_model_aggregation_regressor_median_predict(self):
         '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors.median_predict'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -539,7 +511,7 @@ class ModelAggregationRegressorsTests(unittest.TestCase):
 
         remove_dir(model_dir)
 
-    def test17_model_aggregation_regressor_mean_predict(self):
+    def test08_model_aggregation_regressor_mean_predict(self):
         '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressors.mean_predict'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')

@@ -23,15 +23,12 @@
 import os
 import json
 import logging
-import dill as pickle
-
 import numpy as np
-import pandas as pd
+import dill as pickle
 from typing import Callable, Union, List
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_models
-from {{package_name}}.monitoring.model_logger import ModelLogger
 from {{package_name}}.models_training.model_class import ModelClass
 from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
 
@@ -58,12 +55,12 @@ class ModelAggregationRegressors(ModelRegressorMixin, ModelClass):
         self.logger = logging.getLogger(__name__)
 
         # Get the aggregation function
-        dict_aggregation_function = {'median_predict': {'function': self.median_predict, 'using_proba': False, 'multi_label': False},
-                                     'mean_predict': {'function': self.mean_predict, 'using_proba': False, 'multi_label': False}}
+        dict_aggregation_function = {'median_predict': self.median_predict,
+                                     'mean_predict': self.mean_predict}
         if isinstance(aggregation_function, str):
             if aggregation_function not in dict_aggregation_function.keys():
                 raise ValueError(f"The aggregation_function object ({aggregation_function}) is not a valid option ({dict_aggregation_function.keys()})")
-            aggregation_function = dict_aggregation_function[aggregation_function]['function'] # type: ignore
+            aggregation_function = dict_aggregation_function[aggregation_function] # type: ignore
 
         # Manage model
         self.aggregation_function = aggregation_function
@@ -74,10 +71,10 @@ class ModelAggregationRegressors(ModelRegressorMixin, ModelClass):
 
         # Error: The classifier and regressor models cannot be combined in list_models
         if self.list_real_models is not None:
-            if not self._all_sub_model_are_regressor():
-                raise ValueError(f"model_aggregation_regressor is only compatible with model regressor")
+            if False in [isinstance(model, ModelRegressorMixin) for model in self.list_real_models]:
+                raise ValueError(f"model_aggregation_regressor only accepts model regressor")
             # set list_models_trained
-            self.list_models_trained = [model.trained for model in self.list_real_models]
+            self.list_models_trained: List[bool] = [model.trained for model in self.list_real_models]
 
         self._check_trained()
 
@@ -102,17 +99,6 @@ class ModelAggregationRegressors(ModelRegressorMixin, ModelClass):
                 list_real_models.append(real_model)
             self.list_real_models = list_real_models
             self.list_models = new_list_models
-
-    def _all_sub_model_are_regressor(self) -> np.bool_:
-        '''Checke all list_real_models are models regressor
-
-        Args:
-            (bool): all list_real_models are models regressor
-        '''
-        for model in self.list_real_models:
-            if not isinstance(model, ModelRegressorMixin):
-                return False
-        return True
 
     def _check_trained(self):
         '''Check and sets various attributes related to the fitting of underlying models
@@ -150,7 +136,6 @@ class ModelAggregationRegressors(ModelRegressorMixin, ModelClass):
         Returns:
             (np.ndarray): array of shape = [n_samples]
         '''
-        # We decide whether to rely on each model's probas or their prediction
         preds = self._get_predictions(x_test, **kwargs)
         return np.array([self.aggregation_function(array) for array in preds]) # type: ignore
 
@@ -194,9 +179,9 @@ class ModelAggregationRegressors(ModelRegressorMixin, ModelClass):
             json_data (dict): Additional configurations to be saved
         '''
         # Save each trained and unsaved model
-        for i, model in enumerate(self.list_real_models):
-            if not self.list_models_trained[i] and model.trained:
-                model.save()
+        for tuple_trained_model in zip(self.list_models_trained, self.list_real_models):
+            if (not tuple_trained_model[0]) and tuple_trained_model[1].trained:
+                tuple_trained_model[1].save()
 
         json_data['list_models'] = self.list_models.copy()
 
@@ -220,7 +205,7 @@ class ModelAggregationRegressors(ModelRegressorMixin, ModelClass):
 
         # Add message in model_upload_instructions.md
         md_path = os.path.join(self.model_dir, f"model_upload_instructions.md")
-        line = "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that all sub-models and the aggregation model are manually saved together in order to be able to load it .  /!\/!\/!\/!\/!\ "
+        line = r"/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that all sub-models and the aggregation model are manually saved together in order to be able to load it  /!\/!\/!\/!\/!\ "
         self.prepend_line(md_path, line)
 
     def prepend_line(self, file_name: str, line: str) -> None:
@@ -230,13 +215,10 @@ class ModelAggregationRegressors(ModelRegressorMixin, ModelClass):
             file_name (str): Path to file
             line (str): line to insert
         '''
-        dummy_file = file_name + '.bak'
-        with open(file_name, 'r') as read_obj, open(dummy_file, 'w') as write_obj:
-            write_obj.write(line + '\n')
-            for line in read_obj:
-                write_obj.write(line)
-        os.remove(file_name)
-        os.rename(dummy_file, file_name)
+        with open(file_name, 'r') as original:
+            data = original.read()
+        with open(file_name, 'w') as modified:
+            modified.write(line + "\n" + data)
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model aggregation from its configuration and "standalones" files
