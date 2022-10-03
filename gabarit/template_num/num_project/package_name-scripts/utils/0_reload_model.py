@@ -29,7 +29,7 @@ from typing import Union
 
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.models_training import utils_models, utils_deep_keras, model_aggregation
+from {{package_name}}.models_training import utils_models, utils_deep_keras
 from {{package_name}}.models_training.classifiers import (model_rf_classifier,
                                                           model_dense_classifier,
                                                           model_ridge_classifier,
@@ -39,7 +39,8 @@ from {{package_name}}.models_training.classifiers import (model_rf_classifier,
                                                           model_knn_classifier,
                                                           model_gbt_classifier,
                                                           model_lgbm_classifier,
-                                                          model_xgboost_classifier)
+                                                          model_xgboost_classifier,
+                                                          model_aggregation_classifier)
 from {{package_name}}.models_training.regressors import (model_rf_regressor,
                                                          model_dense_regressor,
                                                          model_elasticnet_regressor,
@@ -51,7 +52,8 @@ from {{package_name}}.models_training.regressors import (model_rf_regressor,
                                                          model_pls_regressor,
                                                          model_gbt_regressor,
                                                          model_xgboost_regressor,
-                                                         model_lgbm_regressor)
+                                                         model_lgbm_regressor,
+                                                         model_aggregation_regressor)
 
 # Get logger
 logger = logging.getLogger('{{package_name}}.0_reload_model')
@@ -120,6 +122,7 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'model_xgboost_classifier': model_xgboost_classifier.ModelXgboostClassifier,
         'model_lgbm_classifier': model_lgbm_classifier.ModelLGBMClassifier,
         'model_dense_classifier': model_dense_classifier.ModelDenseClassifier,
+        'model_aggregation_classifier': model_aggregation_classifier.ModelAggregationClassifier,
         'model_dense_regressor': model_dense_regressor.ModelDenseRegressor,
         'model_elasticnet_regressor': model_elasticnet_regressor.ModelElasticNetRegressor,
         'model_bayesian_ridge_regressor': model_bayesian_ridge_regressor.ModelBayesianRidgeRegressor,
@@ -132,6 +135,7 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'model_gbt_regressor': model_gbt_regressor.ModelGBTRegressor,
         'model_xgboost_regressor': model_xgboost_regressor.ModelXgboostRegressor,
         'model_lgbm_regressor': model_lgbm_regressor.ModelLGBMRegressor,
+        'model_aggregation_regressor': model_aggregation_regressor.ModelAggregationRegressor,
     }
     model_type = configs['model_name']
     if model_type not in model_type_dicts:
