@@ -824,13 +824,13 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_name = 'aggregation_mono_class_mono_label'
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model_2 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
             test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
-                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_mono_class_mono_label(self, test_model)
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_2)
+            test_model_mono_class_mono_label(self, test_model_2)
             remove_dir(model_dir)
             remove_dir(model_dir_svm1)
             remove_dir(model_dir_svm2)
@@ -843,13 +843,13 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             svm1.save()
             list_models = [os.path.split(model_dir_svm1)[-1], model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model_3 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
             test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
-                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_mono_class_mono_label(self, test_model)
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_3)
+            test_model_mono_class_mono_label(self, test_model_3)
             remove_dir(model_dir)
             remove_dir(model_dir_svm1)
             remove_dir(model_dir_svm2)
@@ -859,13 +859,13 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_name = 'aggregation_mono_class_mono_label'
             list_models = [model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm1), model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model_4 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=True, aggregation_function='proba_argmax',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
             test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
-                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_mono_class_mono_label(self, test_model)
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_4)
+            test_model_mono_class_mono_label(self, test_model_4)
             remove_dir(model_dir)
             remove_dir(model_dir_svm1)
             remove_dir(model_dir_svm2)
@@ -885,13 +885,13 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
                     return predictions[0]
                 else:
                     return votes[0][0]
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model_5 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
             test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
-                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_mono_class_mono_label(self, test_model)
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_5)
+            test_model_mono_class_mono_label(self, test_model_5)
             remove_dir(model_dir)
             remove_dir(model_dir_svm1)
             remove_dir(model_dir_svm2)
@@ -1461,13 +1461,13 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
 
             list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model_2 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='all_predictions',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
             # Test it
             test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
-                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
-            test_model_mono_class_multi_label(self, test_model)
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model_2)
+            test_model_mono_class_multi_label(self, test_model_2)
             remove_dir(model_dir)
             remove_dir(model_dir_svm1)
             remove_dir(model_dir_svm2)
@@ -1479,13 +1479,13 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             svm1.save()
             list_models = [os.path.split(model_dir_svm1)[-1], model_tfidf_svm.ModelTfidfSvm(multi_label=True, model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(multi_label=True, model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model_3 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='all_predictions',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
             # Test it
             test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
-                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
-            test_model_mono_class_multi_label(self, test_model)
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model_3)
+            test_model_mono_class_multi_label(self, test_model_3)
             remove_dir(model_dir)
             remove_dir(model_dir_svm1)
             remove_dir(model_dir_svm2)
@@ -1495,13 +1495,13 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             model_name = 'aggregation_mono_class_multi_label'
             list_models = [model_tfidf_svm.ModelTfidfSvm(multi_label=True, model_dir=model_dir_svm1), model_tfidf_svm.ModelTfidfSvm(multi_label=True, model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(multi_label=True, model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model_4 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='vote_labels',
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
             # Test it
             test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
-                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
-            test_model_mono_class_multi_label(self, test_model)
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model_4)
+            test_model_mono_class_multi_label(self, test_model_4)
             remove_dir(model_dir)
             remove_dir(model_dir_svm1)
             remove_dir(model_dir_svm2)
@@ -1516,13 +1516,13 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             def function_test(predictions: pd.Series) -> list:
                 return np.sum(predictions, axis=0, dtype=bool).astype(int)
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model_5 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
             # Test it
             test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
-                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
-            test_model_mono_class_multi_label(self, test_model)
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model_5)
+            test_model_mono_class_multi_label(self, test_model_5)
             remove_dir(model_dir)
             remove_dir(model_dir_svm1)
             remove_dir(model_dir_svm2)
@@ -2131,13 +2131,13 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
             model_name = 'aggregation_multi_class_mono_label'
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model_2 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
             test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
-                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_multi_class_mono_label(self, test_model)
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model_2)
+            test_model_multi_class_mono_label(self, test_model_2)
             remove_dir(model_dir)
             remove_dir(model_dir_svm1)
             remove_dir(model_dir_svm2)
@@ -2150,13 +2150,13 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             svm1.save()
             list_models = [os.path.split(model_dir_svm1)[-1], model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model_3 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function='majority_vote',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
             test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
-                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_multi_class_mono_label(self, test_model)
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model_3)
+            test_model_multi_class_mono_label(self, test_model_3)
             remove_dir(model_dir)
             remove_dir(model_dir_svm1)
             remove_dir(model_dir_svm2)
@@ -2166,13 +2166,13 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             model_name = 'aggregation_multi_class_mono_label'
             list_models = [model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm1), model_tfidf_svm.ModelTfidfSvm(model_dir=model_dir_svm2), model_tfidf_gbt.ModelTfidfGbt(model_dir=model_dir_gbt)]
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model_4 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=True, aggregation_function='proba_argmax',
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
             test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
-                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_multi_class_mono_label(self, test_model)
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model_4)
+            test_model_multi_class_mono_label(self, test_model_4)
             remove_dir(model_dir)
             remove_dir(model_dir_svm1)
             remove_dir(model_dir_svm2)
@@ -2193,13 +2193,13 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
                 else:
                     return votes[0][0]
 
-            test_model = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model_5 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
             # Test it
             test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
-                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_multi_class_mono_label(self, test_model)
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model_5)
+            test_model_multi_class_mono_label(self, test_model_5)
             remove_dir(model_dir)
             remove_dir(model_dir_svm1)
             remove_dir(model_dir_svm2)
