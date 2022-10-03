@@ -28,7 +28,7 @@ import dill as pickle
 import numpy as np
 import pandas as pd
 from types import FunctionType, MethodType
-from typing import Callable, Union
+from typing import Callable, Union, List
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_models
@@ -97,7 +97,7 @@ class ModelAggregation(ModelClass):
             if True in set_multi_label and not self.multi_label:
                 raise ValueError(f"The 'multi_label' parameters of the list models are inconsistent with the model_aggregation.")
             # set list_models_trained
-            self.list_models_trained = [model.trained for model in self.list_real_models]
+            self.list_models_trained: List[bool] = [model.trained for model in self.list_real_models]
 
         self._check_trained()
 
