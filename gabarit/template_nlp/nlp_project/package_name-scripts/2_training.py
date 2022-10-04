@@ -62,8 +62,8 @@ logger = logging.getLogger('{{package_name}}.2_training')
 def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], filename_valid: Union[str, None] = None,
          min_rows: Union[int, None] = None, level_save: str = 'HIGH',
          sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}',
-         model: Union[Type[ModelClass], None] = None, 
-         mlflow_experiment: Union[str, None]= None) -> None:
+         model: Union[Type[ModelClass], None] = None,
+         mlflow_experiment: Union[str, None] = None) -> None:
     '''Trains a model
 
     Args:
@@ -309,16 +309,6 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
     ##############################################
     # Model metrics
     ##############################################
-    model_logger=None
-    
-    # Logging metrics on MLflow
-    if mlflow_experiment:
-        model_logger = MLflowLogger(
-            experiment_name=f"{{package_name}}/{mlflow_experiment}",
-            tracking_uri="{{mlflow_tracking_uri}}",
-        )
-        model_logger.set_tag('model_name', f"{os.path.basename(model.model_dir)}")
-        # To log more tags/params, you can use model_logger.set_tag(key, value) or model_logger.log_param(key, value)
 
     # Series to add
     cols_to_add: List[pd.Series] = []  # You can add columns to save here
@@ -328,31 +318,37 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
 
     # Get results
     y_pred_train = model.predict(x_train, return_proba=False)
-    # model_logger.set_tag(key='type_metric', value='train')
     df_stats = model.get_and_save_metrics(y_train, y_pred_train, x=x_train, series_to_add=series_to_add_train, type_data='train')
     gc.collect()  # In some cases, helps with OOMs
     # Get predictions on valid if exists
     if x_valid is not None:
         y_pred_valid = model.predict(x_valid, return_proba=False)
-        # model_logger.set_tag(key='type_metric', value='valid')
         df_stats = model.get_and_save_metrics(y_valid, y_pred_valid, x=x_valid, series_to_add=series_to_add_valid, type_data='valid')
         gc.collect()  # In some cases, helps with OOMs
 
-    # Stop MLflow if started
-    if model_logger is not None:
+
+    ##############################################
+    # Logger MLflow
+    ##############################################
+
+    # Logging metrics on MLflow
+    if mlflow_experiment:
+        # Get logger
+        model_logger = MLflowLogger(
+            experiment_name=f"{{package_name}}/{mlflow_experiment}",
+            tracking_uri="{{mlflow_tracking_uri}}",
+        )
+        # Set model name, save metrics & configurations
+        model_logger.set_tag('model_name', f"{os.path.basename(model.model_dir)}")
         model_logger.log_df_stats(df_stats)
         model_logger.log_dict(model.json_dict, "configurations.json")
-
-        report = sweetviz_report(
-            df_train=df_train, 
-            df_valid=df_valid if filename_valid else None, 
-            y_col=y_col, 
-            y_pred_train=y_pred_train, 
-            y_pred_valid=y_pred_valid if filename_valid else None
-        )
+        # To log more tags/params, you can use model_logger.set_tag(key, value) or model_logger.log_param(key, value)
+        # Log a sweetviz report
+        report = get_sweetviz_report(df_train=df_train, df_valid=df_valid if filename_valid else None, y_col=y_col,
+                                 y_pred_train=y_pred_train, y_pred_valid=y_pred_valid if filename_valid else None)
         if report:
             model_logger.log_text(report, "sweetviz_train_valid.html")
-
+        # Stop MLflow if started
         model_logger.stop_run()
 
 
@@ -391,13 +387,9 @@ def load_dataset(filename: str, sep: str = '{{default_sep}}', encoding: str = '{
     # Return
     return df, preprocess_str
 
-def sweetviz_report(
-    df_train: pd.DataFrame, 
-    df_valid: pd.DataFrame,
-    y_col: Union[str, List[str]],
-    y_pred_train: np.ndarray,
-    y_pred_valid: np.ndarray,
-) -> str:
+
+def get_sweetviz_report(df_train: pd.DataFrame, df_valid: pd.DataFrame, y_col: Union[str, List[str]],
+                        y_pred_train: np.ndarray, y_pred_valid: np.ndarray) -> str:
     '''Generate a sweetviz report that can be logged into MLflow
 
     Args:
@@ -406,10 +398,11 @@ def sweetviz_report(
         y_col (Union[str, List[str]]): Target(s) column(s)
         y_pred_train (np.ndarray): Model predictions on training data
         y_pred_valid (np.ndarray): Model predictions on validation data
-
     Returns:
         str: A HTML sweetviz report
     '''
+    # SweetViz add too much logs to be use in production
+    # https://github.com/fbdesignpro/sweetviz/issues/124
     # Desactivate tqdm and import sweetviz
     try:
         from tqdm import tqdm
@@ -436,14 +429,14 @@ def sweetviz_report(
         if len(y_col) != n_targets:
             n_labels = y_pred_train.shape[1] // len(y_col)
             y_col_names = [
-                "_".join(("pred", col)) for col in y_col for l in range(n_labels) 
+                "_".join(("pred", col)) for col in y_col for l in range(n_labels)
             ]
         else:
             y_col_names = ["_".join(("pred", col)) for col in y_col]
-            
+
 
         df_train.loc[:, y_col_names] = y_pred_train
-    
+
     # Add predictions to validation data
     if df_valid is not None and y_pred_valid is not None:
         df_valid.loc[:, y_col_names] = y_pred_valid
@@ -457,7 +450,7 @@ def sweetviz_report(
         target = y_col[0]
     else:
         target = None
-        
+
     try:
         report: sweetviz.DataframeReport = sweetviz.compare(
             train_data, valid_data, target_feat=target, pairwise_analysis="off"
