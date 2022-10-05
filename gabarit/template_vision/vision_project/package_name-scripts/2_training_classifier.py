@@ -50,7 +50,8 @@ logger = logging.getLogger('{{package_name}}.2_training_classifier')
 
 def main(directory: str, directory_valid: str = None, level_save: str = 'HIGH',
          sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}',
-         model: Type[ModelClass] = None, mlflow_experiment: Union[str, None]= None) -> None:
+         model: Union[Type[ModelClass], None] = None,
+         mlflow_experiment: Union[str, None] = None) -> None:
     '''Trains a model
 
     Args:
@@ -184,7 +185,7 @@ def main(directory: str, directory_valid: str = None, level_save: str = 'HIGH',
     # Model metrics
     ##############################################
     model_logger=None
-    
+
     # Logging metrics on MLflow
     if mlflow_experiment:
         model_logger = MLflowLogger(

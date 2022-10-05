@@ -83,7 +83,7 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
         sep (str): Separator to use with the .csv files
         encoding (str): Encoding to use with the .csv files
         model (ModelClass): A model to be fitted. This should only be used for testing purposes.
-        mlflow_experiment (str): Name of the current experiment.
+        mlflow_experiment (str): Name of the current experiment. If None, no experiment will be saved.
     Raises:
         ValueError: If level_save value is not a valid option (['LOW', 'MEDIUM', 'HIGH'])
         ValueError: If multi-labels and bad OHE format
@@ -344,8 +344,9 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
         model_logger.log_dict(model.json_dict, "configurations.json")
         # To log more tags/params, you can use model_logger.set_tag(key, value) or model_logger.log_param(key, value)
         # Log a sweetviz report
-        report = get_sweetviz_report(df_train=df_train, df_valid=df_valid if filename_valid else None, y_col=y_col,
-                                 y_pred_train=y_pred_train, y_pred_valid=y_pred_valid if filename_valid else None)
+        report = get_sweetviz_report(df_train=df_train, y_pred_train=y_pred_train, y_col=y_col,
+                                     df_valid=df_valid if filename_valid else None,
+                                     y_pred_valid=y_pred_valid if filename_valid else None)
         if report:
             model_logger.log_text(report, "sweetviz_train_valid.html")
         # Stop MLflow if started
@@ -388,22 +389,24 @@ def load_dataset(filename: str, sep: str = '{{default_sep}}', encoding: str = '{
     return df, preprocess_str
 
 
-def get_sweetviz_report(df_train: pd.DataFrame, df_valid: pd.DataFrame, y_col: Union[str, List[str]],
-                        y_pred_train: np.ndarray, y_pred_valid: np.ndarray) -> str:
+def get_sweetviz_report(df_train: pd.DataFrame, y_pred_train: np.ndarray, y_col: Union[str, List[str]],
+                        df_valid: Union[pd.DataFrame, None], y_pred_valid: Union[np.ndarray, None]) -> str:
     '''Generate a sweetviz report that can be logged into MLflow
 
     Args:
         df_train (pd.DataFrame): Training data
-        df_valid (pd.DataFrame): Validation data
-        y_col (Union[str, List[str]]): Target(s) column(s)
         y_pred_train (np.ndarray): Model predictions on training data
+        y_col (str | list<str>): Target(s) column(s)
+        df_valid (pd.DataFrame): Validation data
         y_pred_valid (np.ndarray): Model predictions on validation data
     Returns:
         str: A HTML sweetviz report
     '''
+    logger.info("Producing a sweetviz report ...")
+
     # SweetViz add too much logs to be use in production
     # https://github.com/fbdesignpro/sweetviz/issues/124
-    # Desactivate tqdm and import sweetviz
+    # Deactivate tqdm and import sweetviz
     try:
         from tqdm import tqdm
         tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
@@ -416,54 +419,52 @@ def get_sweetviz_report(df_train: pd.DataFrame, df_valid: pd.DataFrame, y_col: U
     except ImportError:
         return None
 
-    if isinstance(y_col, str):
-        y_col = [y_col]
-
-    # Add predictions to training data
-    if y_pred_train is not None:
-        # If there is not as much columns in y_col as in y_pred_train
-        # it could be that y_pred_train returns probabilities of each
-        # class so we have to create names to add it to df_train
-        n_targets = y_pred_train.shape[1] if len(y_pred_train.shape) > 1 else 1
-
-        if len(y_col) != n_targets:
-            n_labels = y_pred_train.shape[1] // len(y_col)
-            y_col_names = [
-                "_".join(("pred", col)) for col in y_col for l in range(n_labels)
-            ]
-        else:
-            y_col_names = ["_".join(("pred", col)) for col in y_col]
-
-
-        df_train.loc[:, y_col_names] = y_pred_train
-
+    # Add predictions to our datasets
+    # First, get new columns name
+    y_col_names = [f"pred_{col}" for col in y_col] if isinstance(y_col, list) else [f"pred_{y_col}"]
+    # Add predictions to train data
+    df_train.loc[:, y_col_names] = y_pred_train
     # Add predictions to validation data
     if df_valid is not None and y_pred_valid is not None:
         df_valid.loc[:, y_col_names] = y_pred_valid
 
+    # Try to specify target feature. That could fail due to the fact that sweetviz
+    # can not handle multiple target columns and all possible target types.
+    if isinstance(y_col, str):
+        target = y_col
+        # IF only 0 & 1 in string, cast target column to int
+        if sorted(df_train[target].unique()) == ['0', '1']:
+            df_train[target] = df_train[target].astype(int)
+            if df_valid is not None:
+                df_valid[target] = df_valid[target].astype(int)
+    else:
+        target = None
+    # Prepare SweetViz datasets
     train_data = [df_train, "Training data"]
     valid_data = [df_valid, "Validation data"] if df_valid is not None else None
 
-    # Try to specify target feature. That could fail due to the fact that sweetviz
-    # can not handle multiple target columns and all possible target types
-    if len(y_col) == 1:
-        target = y_col[0]
-    else:
-        target = None
+    # Get sweetviz report
+    # Strategy : if target not None, try to get report with target
+    # If it fails, or if target is None, backup without target
+    # pairwise_analysis must be set to off, otherwise takes far too much time
+    get_report_without_target = True
+    report: sweetviz.DataframeReport
+    if target is not None:
+        try:
+            report = sweetviz.compare(train_data, valid_data, target_feat=target, pairwise_analysis="off")
+            get_report_without_target = False  # No need to get report without target
+        except (KeyError, ValueError):
+            logger.info("Can't produce a sweetviz report with 'target_feat'. Proceeding without this option.")
+    if get_report_without_target:
+        report = sweetviz.compare(train_data, valid_data, pairwise_analysis="off")
 
-    try:
-        report: sweetviz.DataframeReport = sweetviz.compare(
-            train_data, valid_data, target_feat=target, pairwise_analysis="off"
-        )
-    except (KeyError, ValueError):
-        report: sweetviz.DataframeReport = sweetviz.compare(
-            train_data, valid_data, pairwise_analysis="off"
-        )
+    # We need to call show_html in order to get _page_html
+    # Hence, we'll do it on a temp file
+    with tempfile.TemporaryDirectory() as tmp_dirname:
+        tmp_file = os.path.join(tmp_dirname, "report.html")
+        report.show_html(tmp_file, open_browser=False, layout="vertical")
 
-    with tempfile.TemporaryDirectory() as tmpdirname:
-        tmpfile = os.path.join(tmpdirname, "report.html")
-        report.show_html(tmpfile, open_browser=False, layout="vertical")
-
+    # Return html code as string
     return report._page_html
 
 
