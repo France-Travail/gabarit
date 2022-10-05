@@ -235,9 +235,9 @@ class Case3_unit_tests(unittest.TestCase):
             shutil.rmtree(models_path)
             os.makedirs(models_path)
 
-    def test18_test_model_logger(self):
-        '''Launches tests of file model_logger.py'''
-        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_logger.py', shell=True).returncode, 0)
+    def test18_test_mlflow_logger(self):
+        '''Launches tests of file mlflow_logger.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_mlflow_logger.py', shell=True).returncode, 0)
 
     def test19_test_model_explainer(self):
         '''Launches tests of file model_explainer.py'''

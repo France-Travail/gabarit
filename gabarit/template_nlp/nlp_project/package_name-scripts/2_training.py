@@ -36,7 +36,7 @@ from typing import Union, List, Type, Tuple
 
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.monitoring.model_logger import MLflowLogger
+from {{package_name}}.monitoring.mlflow_logger import MLflowLogger
 from {{package_name}}.models_training.model_class import ModelClass
 from {{package_name}}.models_training import (model_tfidf_dense,
                                               model_tfidf_gbt,
@@ -334,23 +334,23 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
     # Logging metrics on MLflow
     if mlflow_experiment:
         # Get logger
-        model_logger = MLflowLogger(
+        mlflow_logger = MLflowLogger(
             experiment_name=f"{{package_name}}/{mlflow_experiment}",
             tracking_uri="{{mlflow_tracking_uri}}",
         )
         # Set model name, save metrics & configurations
-        model_logger.set_tag('model_name', f"{os.path.basename(model.model_dir)}")
-        model_logger.log_df_stats(df_stats)
-        model_logger.log_dict(model.json_dict, "configurations.json")
-        # To log more tags/params, you can use model_logger.set_tag(key, value) or model_logger.log_param(key, value)
+        mlflow_logger.set_tag('model_name', f"{os.path.basename(model.model_dir)}")
+        mlflow_logger.log_df_stats(df_stats)
+        mlflow_logger.log_dict(model.json_dict, "configurations.json")
+        # To log more tags/params, you can use mlflow_logger.set_tag(key, value) or mlflow_logger.log_param(key, value)
         # Log a sweetviz report
         report = get_sweetviz_report(df_train=df_train, y_pred_train=y_pred_train, y_col=y_col,
                                      df_valid=df_valid if filename_valid else None,
                                      y_pred_valid=y_pred_valid if filename_valid else None)
         if report:
-            model_logger.log_text(report, "sweetviz_train_valid.html")
+            mlflow_logger.log_text(report, "sweetviz_train_valid.html")
         # Stop MLflow if started
-        model_logger.stop_run()
+        mlflow_logger.stop_run()
 
 
 def load_dataset(filename: str, sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}') -> Tuple[pd.DataFrame, str]:
