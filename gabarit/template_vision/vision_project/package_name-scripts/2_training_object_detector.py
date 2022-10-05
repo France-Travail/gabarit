@@ -65,7 +65,7 @@ def main(directory: str, directory_valid: str = None, level_save: str = 'HIGH',
         sep (str): Separator to use with the .csv files
         encoding (str): Encoding to use with the .csv files
         model (ModelClass): A model to be fitted. This should only be used for testing purposes.
-        mlflow_experiment (str): Name of the current experiment.
+        mlflow_experiment (str): Name of the current experiment. If None, no experiment will be saved.
     Raises:
         ValueError: If level_save value is not a valid option (['LOW', 'MEDIUM', 'HIGH'])
         FileNotFoundError: If the directory does not exists in {{package_name}}-data
@@ -194,33 +194,35 @@ def main(directory: str, directory_valid: str = None, level_save: str = 'HIGH',
     ##############################################
     # Model metrics
     ##############################################
-    mlflow_logger=None
-
-    # Logging metrics on MLflow
-    if mlflow_experiment:
-        mlflow_logger = MLflowLogger(
-            experiment_name=f"{{package_name}}/{mlflow_experiment}",
-            tracking_uri="{{mlflow_tracking_uri}}",
-        )
-        mlflow_logger.set_tag('model_name', f"{os.path.basename(model.model_dir)}")
-        # To log more tags/params, you can use mlflow_logger.set_tag(key, value) or mlflow_logger.log_param(key, value)
 
     # Get results
     y_pred_train = model.predict(df_train)
-    # mlflow_logger.set_tag(key='type_metric', value='train')
     df_stats = model.get_and_save_metrics(bboxes_list, y_pred_train, list_files_x=path_list, type_data='train')
     gc.collect()  # In some cases, helps with OOMs
     # Get predictions on valid
     if df_valid is not None:
         y_pred_valid = model.predict(df_valid)
-        # mlflow_logger.set_tag(key='type_metric', value='valid')
         df_stats = model.get_and_save_metrics(bboxes_list_valid, y_pred_valid, list_files_x=path_list_valid, type_data='valid')
         gc.collect()  # In some cases, helps with OOMs
 
-    # Stop MLflow if started
-    if mlflow_logger is not None:
+
+    ##############################################
+    # Logger MLflow
+    ##############################################
+
+    # Logging metrics on MLflow
+    if mlflow_experiment:
+        # Get logger
+        mlflow_logger = MLflowLogger(
+            experiment_name=f"{{package_name}}/{mlflow_experiment}",
+            tracking_uri="{{mlflow_tracking_uri}}",
+        )
+        # Set model name, save metrics & configurations
+        mlflow_logger.set_tag('model_name', f"{os.path.basename(model.model_dir)}")
         mlflow_logger.log_df_stats(df_stats)
         mlflow_logger.log_dict(model.json_dict, "configurations.json")
+        # To log more tags/params, you can use mlflow_logger.set_tag(key, value) or mlflow_logger.log_param(key, value)
+        # Stop MLflow if started
         mlflow_logger.stop_run()
 
 
