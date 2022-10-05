@@ -116,7 +116,7 @@ def generate(project_name: str, project_path: str, config_path: str,
                 rmtree(tutorials_path)
 
         # Copy models upload instructions
-        ressources_path = os.path.join(tmp_folder, f'{project_name}-ressources')
+        ressources_path = os.path.join(tmp_folder, f'package_name-ressources')
         if not os.path.exists(ressources_path):
             os.makedirs(ressources_path)
         upload_intructions_target_path = os.path.join(ressources_path, 'model_upload_instructions.md')
