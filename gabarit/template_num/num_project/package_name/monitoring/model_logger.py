@@ -27,13 +27,15 @@ import logging
 import pandas as pd
 from typing import Union
 
+from {{package_name}} import utils
+
 # Deactivation of GIT warning for mlflow
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 
 class MLflowLogger:
     '''Abstracts how MlFlow works'''
 
-    def __init__(self, experiment_name: str, tracking_uri: Union[str, None] = None) -> None:
+    def __init__(self, experiment_name: str, tracking_uri: str = '') -> None:
         '''Class initialization
         Args:
             experiment_name (str):  Name of the experiment to activate
@@ -44,13 +46,12 @@ class MLflowLogger:
         self.logger = logging.getLogger(__name__)
 
         # Set tracking URI & experiment name
-        if tracking_uri:
-            self.tracking_uri = tracking_uri
-
+        if tracking_uri == '':
+            tracking_uri = 'file:/' + os.path.join(utils.get_data_path(), 'experiments', 'mlruns')
+        self.tracking_uri = tracking_uri
+        mlflow.set_tracking_uri(self.tracking_uri)
         self.experiment_name = experiment_name
-
         mlflow.set_experiment(experiment_name)
-
         self.logger.info(f'Ml Flow running, metrics available @ {self.tracking_uri}')
 
     @property
@@ -160,7 +161,7 @@ class MLflowLogger:
 
     def log_df_stats(self, df_stats:pd.DataFrame) -> None:
         '''Log a dataframe containing metrics from a training
-        
+
         Args:
             df_stats (pd.Dataframe): Dataframe containing metrics from a training
         '''
