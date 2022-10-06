@@ -68,8 +68,8 @@ class MLflowLogger:
         '''Set tracking uri'''
         mlflow.set_tracking_uri(uri)
 
-    def stop_run(self) -> None:
-        '''Stop an MLflow run'''
+    def end_run(self) -> None:
+        '''Stops an MLflow run'''
         try:
             mlflow.end_run()
         except Exception:
@@ -207,6 +207,7 @@ class MLflowLogger:
             artifact_file (str): The run-relative artifact file path in posixpath format to which the dictionary is saved
         '''
         mlflow.log_text(text=text, artifact_file=artifact_file)
+
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

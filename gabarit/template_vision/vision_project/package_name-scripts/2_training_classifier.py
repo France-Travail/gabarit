@@ -213,7 +213,7 @@ def main(directory: str, directory_valid: str = None, level_save: str = 'HIGH',
         mlflow_logger.log_dict(model.json_dict, "configurations.json")
         # To log more tags/params, you can use mlflow_logger.set_tag(key, value) or mlflow_logger.log_param(key, value)
         # Stop MLflow if started
-        mlflow_logger.stop_run()
+        mlflow_logger.end_run()
 
 
 if __name__ == '__main__':

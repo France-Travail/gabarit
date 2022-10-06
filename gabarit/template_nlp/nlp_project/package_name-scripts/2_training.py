@@ -350,7 +350,7 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
         if report:
             mlflow_logger.log_text(report, "sweetviz_train_valid.html")
         # Stop MLflow if started
-        mlflow_logger.stop_run()
+        mlflow_logger.end_run()
 
 
 def load_dataset(filename: str, sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}') -> Tuple[pd.DataFrame, str]:

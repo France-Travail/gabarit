@@ -50,16 +50,16 @@ class MLflowLoggerTests(unittest.TestCase):
         model = MLflowLogger(experiment_name=experiment_name)
         self.assertEqual(model.experiment_name, experiment_name)
 
-    def test_mlflow_logger_stop_run(self):
-        '''Test of {{package_name}}.monitoring.mlflow_logger.MLflowLogger.stop_run'''
-        experiment_name = 'test_mlflow_logger_stop_run'
+    def test_mlflow_logger_end_run(self):
+        '''Test of {{package_name}}.monitoring.mlflow_logger.MLflowLogger.end_run'''
+        experiment_name = 'test_mlflow_logger_end_run'
         model = MLflowLogger(experiment_name=experiment_name)
 
         # We activate a run via a log
         model.log_param('stop', 'toto')
 
-        # Use of stop_run
-        model.stop_run()
+        # Use of end_run
+        model.end_run()
 
         # Check
         self.assertEqual(mlflow.active_run(), None)
@@ -74,7 +74,7 @@ class MLflowLoggerTests(unittest.TestCase):
         model.log_metric('test', 5, step=2)
 
         # Clear
-        model.stop_run()
+        model.end_run()
 
     def test_mlflow_logger_log_metrics(self):
         '''Test of {{package_name}}.monitoring.mlflow_logger.MLflowLogger.log_metrics'''
