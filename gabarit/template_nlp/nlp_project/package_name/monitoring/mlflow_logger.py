@@ -45,9 +45,10 @@ class MLflowLogger:
         # Get logger
         self.logger = logging.getLogger(__name__)
 
-        # Set tracking URI & experiment name
+        # Backup to local save if no uri (i.e. empty string)
         if tracking_uri == '':
             tracking_uri = 'file:/' + os.path.join(utils.get_data_path(), 'experiments', 'mlruns')
+        # Set tracking URI & experiment name
         self.tracking_uri = tracking_uri
         # No need to set_tracking_uri, this is done through the setter decorator
         self.experiment_name = experiment_name
@@ -174,7 +175,7 @@ class MLflowLogger:
         Kwargs:
             label_col (str): default labelc column name
         '''
-        if label_col not in df_stats.columns():
+        if label_col not in df_stats.columns:
             raise ValueError(f"The provided label column name ({label_col}) not found in df_stats' columns.")
 
         # Get metrics columns
@@ -188,17 +189,22 @@ class MLflowLogger:
         # Log metrics
         ml_flow_metrics = {}
         for i, row in df_stats.iterrows():
-            for col in metrics_columns:
+            for j, col in enumerate(metrics_columns):
                 metric_key = f"{row[label_col]} --- {col}"
                 # Check that mlflow accepts the key, otherwise, replace it
+                # TODO: could be improved ...
                 if not self.valid_name(metric_key):
                     metric_key = f"Label {i} --- {col}"
+                if not self.valid_name(metric_key):
+                    metric_key = f"{row[label_col]} --- Col {j}"
+                if not self.valid_name(metric_key):
+                    metric_key = f"Label {i} --- Col {j}"
                 ml_flow_metrics[metric_key] = row[col]
 
         # Log metrics
         self.log_metrics(ml_flow_metrics)
 
-    def log_dict(self, dictionary:dict, artifact_file: str) -> None:
+    def log_dict(self, dictionary: dict, artifact_file: str) -> None:
         '''Logs a dictionary as an artifact in MLflow
 
         Args:
@@ -207,7 +213,7 @@ class MLflowLogger:
         '''
         mlflow.log_dict(dictionary=dictionary, artifact_file=artifact_file)
 
-    def log_text(self, text:str, artifact_file: str) -> None:
+    def log_text(self, text: str, artifact_file: str) -> None:
         '''Logs a text as an artifact in MLflow
 
         Args:

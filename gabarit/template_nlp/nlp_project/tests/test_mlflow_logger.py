@@ -32,7 +32,7 @@ logging.disable(logging.CRITICAL)
 
 # TMP directory for mlruns
 MLRUNS_TMP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tmp_experiments', 'mlruns')
-LOCAL_TRACKING_URI = f"file://{MLRUNS_TMP_DIR}"
+LOCAL_TRACKING_URI = f"file:/{MLRUNS_TMP_DIR}"
 
 
 class MLflowLoggerTests(unittest.TestCase):
@@ -40,7 +40,12 @@ class MLflowLoggerTests(unittest.TestCase):
 
     @classmethod
     def setUpClass(cls):
-        # Set mlruns directory
+        '''SetUp fonction'''
+        # Change directory to script directory
+        abspath = os.path.abspath(__file__)
+        dname = os.path.dirname(abspath)
+        os.chdir(dname)
+        # Clean mlruns directory (if exists)
         if os.path.exists(MLRUNS_TMP_DIR):
             shutil.rmtree(MLRUNS_TMP_DIR)
 
@@ -49,13 +54,6 @@ class MLflowLoggerTests(unittest.TestCase):
         # Remove mlruns directory
         if os.path.exists(MLRUNS_TMP_DIR):
             shutil.rmtree(MLRUNS_TMP_DIR)
-
-    def setUp(self):
-        '''SetUp fonction'''
-        # Change directory to script directory
-        abspath = os.path.abspath(__file__)
-        dname = os.path.dirname(abspath)
-        os.chdir(dname)
 
     def test01_mlflow_logger_init(self):
         '''Test of the initialization of {{package_name}}.monitoring.mlflow_logger.MLflowLogger'''
@@ -150,14 +148,39 @@ class MLflowLoggerTests(unittest.TestCase):
         df_stats = pd.DataFrame({
             'Label': ['label1', 'label2', 'label3', 'label4'],
             'metric1': [0.5, 0.2, 1.0, -1.5],
-            'metric2!!!': [None, 0.2, 'test', np.NaN]
+            'metric2!!!': [None, 0.2, -15, np.NaN]
         })
-        mlflow.log_df_stats(df_stats)
+        mlflow_logger.log_df_stats(df_stats)
+
+        # Bad label_col
+        with self.assertRaises(ValueError):
+            mlflow_logger.log_df_stats(df_stats, label_col='NotALabelCol')
 
         # Clear
         mlflow_logger.end_run()
 
-# TODO: log_dict & log_text
+    def test11_mlflow_logger_log_dict(self):
+        '''Test of {{package_name}}.monitoring.mlflow_logger.MLflowLogger.log_dict'''
+        experiment_name = 'test_mlflow_logger_log_dict'
+        mlflow_logger = MLflowLogger(experiment_name=experiment_name, tracking_uri=LOCAL_TRACKING_URI)
+        # Nominal case
+        dict = {'toto': 'titi', 'tata': 5}
+        artifact_file = 'test.json'
+        mlflow_logger.log_dict(dict, artifact_file)
+        # Clear
+        mlflow_logger.end_run()
+
+    def test12_mlflow_logger_log_text(self):
+        '''Test of {{package_name}}.monitoring.mlflow_logger.MLflowLogger.log_text'''
+        experiment_name = 'test_mlflow_logger_log_text'
+        mlflow_logger = MLflowLogger(experiment_name=experiment_name, tracking_uri=LOCAL_TRACKING_URI)
+        # Nominal case
+        text = 'This is a test !!!'
+        artifact_file = 'test.json'
+        mlflow_logger.log_text(text, artifact_file)
+        # Clear
+        mlflow_logger.end_run()
+
 # TODO: check local writing ?
 
 # Perform tests
