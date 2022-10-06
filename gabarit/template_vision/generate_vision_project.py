@@ -201,8 +201,10 @@ def generate(project_name: str, project_path: str, config_path: str,
     cache_keras_dir = os.path.join(output_dir, f'{project_name}-data', 'cache_keras')
     models_dir = os.path.join(output_dir, f'{project_name}-models')
     exploration_dir = os.path.join(output_dir, f'{project_name}-exploration')
+    mlflow_experiments_dir = os.path.join(data_dir, 'experiments')
     for new_dir in [data_dir, models_weights_dir, detectron2_conf_dir,
-                    cache_keras_dir, models_dir, exploration_dir]:
+                    cache_keras_dir, models_dir, exploration_dir,
+                    mlflow_experiments_dir]:
         if not os.path.exists(new_dir):
             os.makedirs(new_dir)
 

@@ -182,7 +182,10 @@ def generate(project_name: str, project_path: str, config_path: str,
     models_dir = os.path.join(output_dir, f'{project_name}-models')
     exploration_dir = os.path.join(output_dir, f'{project_name}-exploration')
     transformers_dir = os.path.join(output_dir, f'{project_name}-transformers')
-    for new_dir in [data_dir, models_dir, exploration_dir, transformers_dir]:
+    mlflow_experiments_dir = os.path.join(data_dir, 'experiments')
+    sweetviz_reports_dir = os.path.join(data_dir, 'reports')
+    for new_dir in [data_dir, models_dir, exploration_dir, transformers_dir,
+                    mlflow_experiments_dir, sweetviz_reports_dir]:
         if not os.path.exists(new_dir):
             os.makedirs(new_dir)
 

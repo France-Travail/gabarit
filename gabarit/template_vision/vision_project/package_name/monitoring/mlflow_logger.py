@@ -55,7 +55,7 @@ class MLflowLogger:
             mlflow.set_experiment(experiment_name)
         except Exception as e:
             self.logger.error(repr(e))
-            self.logger.error(f"Can't reach MLflow at {self.tracking_uri}. Please check the URI.")
+            raise ConnectionError(f"Can't reach MLflow at {self.tracking_uri}. Please check the URI.")
         self.logger.info(f'MLflow running, metrics available @ {self.tracking_uri}')
 
     @property
