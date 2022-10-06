@@ -81,6 +81,9 @@ class MLflowLoggerTests(unittest.TestCase):
         # Nominal case
         mlflow_logger.log_metric('test', 5)
         mlflow_logger.log_metric('test', 5, step=2)
+        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        run_id = mlflow.last_active_run().info.run_id
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'metrics', 'test')))
         # Clear
         mlflow_logger.end_run()
 
@@ -89,8 +92,12 @@ class MLflowLoggerTests(unittest.TestCase):
         experiment_name = 'test_mlflow_logger_log_metrics'
         mlflow_logger = MLflowLogger(experiment_name=experiment_name, tracking_uri=LOCAL_TRACKING_URI)
         # Nominal case
-        mlflow_logger.log_metrics({'test': 5})
+        mlflow_logger.log_metrics({'test': 5, 'test2': 24})
         mlflow_logger.log_metrics({'test': 5}, step=2)
+        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        run_id = mlflow.last_active_run().info.run_id
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'metrics', 'test')))
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'metrics', 'test2')))
         # Clear
         mlflow_logger.end_run()
 
@@ -100,6 +107,9 @@ class MLflowLoggerTests(unittest.TestCase):
         mlflow_logger = MLflowLogger(experiment_name=experiment_name, tracking_uri=LOCAL_TRACKING_URI)
         # Nominal case
         mlflow_logger.log_param('test', 5)
+        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        run_id = mlflow.last_active_run().info.run_id
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'params', 'test')))
         # Clear
         mlflow_logger.end_run()
 
@@ -108,7 +118,11 @@ class MLflowLoggerTests(unittest.TestCase):
         experiment_name = 'test_mlflow_logger_log_params'
         mlflow_logger = MLflowLogger(experiment_name=experiment_name, tracking_uri=LOCAL_TRACKING_URI)
         # Nominal case
-        mlflow_logger.log_params({'test': 5})
+        mlflow_logger.log_params({'test': 5, 'test2': 24})
+        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        run_id = mlflow.last_active_run().info.run_id
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'params', 'test')))
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'params', 'test2')))
         # Clear
         mlflow_logger.end_run()
 
@@ -118,6 +132,9 @@ class MLflowLoggerTests(unittest.TestCase):
         mlflow_logger = MLflowLogger(experiment_name=experiment_name, tracking_uri=LOCAL_TRACKING_URI)
         # Nominal case
         mlflow_logger.set_tag('test', 5)
+        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        run_id = mlflow.last_active_run().info.run_id
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'tags', 'test')))
         # Clear
         mlflow_logger.end_run()
 
@@ -126,7 +143,11 @@ class MLflowLoggerTests(unittest.TestCase):
         experiment_name = 'test_mlflow_logger_set_tags'
         mlflow_logger = MLflowLogger(experiment_name=experiment_name, tracking_uri=LOCAL_TRACKING_URI)
         # Nominal case
-        mlflow_logger.set_tags({'test': 5})
+        mlflow_logger.set_tags({'test': 5, 'test2': 24})
+        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        run_id = mlflow.last_active_run().info.run_id
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'tags', 'test')))
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'tags', 'test2')))
         # Clear
         mlflow_logger.end_run()
 
