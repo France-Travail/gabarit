@@ -49,10 +49,14 @@ class MLflowLogger:
         if tracking_uri == '':
             tracking_uri = 'file:/' + os.path.join(utils.get_data_path(), 'experiments', 'mlruns')
         self.tracking_uri = tracking_uri
-        mlflow.set_tracking_uri(self.tracking_uri)
+        # No need to set_tracking_uri, this is done through the setter decorator
         self.experiment_name = experiment_name
-        mlflow.set_experiment(experiment_name)
-        self.logger.info(f'Ml Flow running, metrics available @ {self.tracking_uri}')
+        try:
+            mlflow.set_experiment(experiment_name)
+        except Exception as e:
+            self.logger.error(repr(e))
+            self.logger.error(f"Can't reach MLflow at {self.tracking_uri}. Please check the URI.")
+        self.logger.info(f'MLflow running, metrics available @ {self.tracking_uri}')
 
     @property
     def tracking_uri(self) -> str:
