@@ -77,10 +77,7 @@ class ModelClass:
         self.logger = logging.getLogger(__name__)
 
         # Model name
-        if model_name is None:
-            self.model_name = self._default_name
-        else:
-            self.model_name = model_name
+        self.model_name = self._default_name if model_name is None else model_name
 
         # Names of the columns used
         self.x_col = x_col
@@ -109,6 +106,9 @@ class ModelClass:
         # is trained ?
         self.trained = False
         self.nb_fit = 0
+
+        # Configuration dict. to be logged. Set on save.
+        self.json_dict = {}
 
     def fit(self, x_train, y_train, **kwargs) -> None:
         '''Trains the model

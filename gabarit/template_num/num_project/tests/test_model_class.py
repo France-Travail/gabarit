@@ -77,6 +77,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertTrue(os.path.isdir(model_dir))
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
+        self.assertEqual(model.json_dict, {})
         with self.assertRaises(NotImplementedError):
             model.fit('test', 'test')
         with self.assertRaises(NotImplementedError):
