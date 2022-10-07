@@ -19,6 +19,7 @@ import unittest
 
 # Utils libs
 import os
+import json
 import shutil
 import mlflow
 import numpy as np
@@ -167,11 +168,25 @@ class MLflowLoggerTests(unittest.TestCase):
 
         # Nominal case
         df_stats = pd.DataFrame({
-            'Label': ['label1', 'label2', 'label3', 'label4'],
+            'Label': ['label1', 'label2', 'label3!?', 'label4'],
             'metric1': [0.5, 0.2, 1.0, -1.5],
             'metric2!!!': [None, 0.2, -15, np.NaN]
         })
         mlflow_logger.log_df_stats(df_stats)
+        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        run_id = mlflow.last_active_run().info.run_id
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'params', 'Label 0')))
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'params', 'Label 1')))
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'params', 'Label 2')))
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'params', 'Label 3')))
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'metrics', 'label1 --- metric1')))
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'metrics', 'label1 --- Col 1')))
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'metrics', 'label2 --- metric1')))
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'metrics', 'label2 --- Col 1')))
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'metrics', 'Label 2 --- metric1')))
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'metrics', 'Label 2 --- Col 1')))
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'metrics', 'label4 --- metric1')))
+        self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'metrics', 'label4 --- Col 1')))
 
         # Bad label_col
         with self.assertRaises(ValueError):
@@ -188,6 +203,13 @@ class MLflowLoggerTests(unittest.TestCase):
         dict = {'toto': 'titi', 'tata': 5}
         artifact_file = 'test.json'
         mlflow_logger.log_dict(dict, artifact_file)
+        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        run_id = mlflow.last_active_run().info.run_id
+        saved_json_path = os.path.join(artifact_location, run_id, 'artifacts', 'test.json')
+        self.assertTrue(os.path.exists(saved_json_path))
+        with open(saved_json_path, 'r') as f:
+            saved_jason = json.load(f)
+        self.assertEqual(saved_jason, dict)
         # Clear
         mlflow_logger.end_run()
 
@@ -197,12 +219,18 @@ class MLflowLoggerTests(unittest.TestCase):
         mlflow_logger = MLflowLogger(experiment_name=experiment_name, tracking_uri=LOCAL_TRACKING_URI)
         # Nominal case
         text = 'This is a test !!!'
-        artifact_file = 'test.json'
+        artifact_file = 'test.txt'
         mlflow_logger.log_text(text, artifact_file)
+        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        run_id = mlflow.last_active_run().info.run_id
+        saved_txt_path = os.path.join(artifact_location, run_id, 'artifacts', 'test.txt')
+        self.assertTrue(os.path.exists(saved_txt_path))
+        with open(saved_txt_path, 'r') as f:
+            saved_txt = f.read()
+        self.assertEqual(saved_txt, text)
         # Clear
         mlflow_logger.end_run()
 
-# TODO: check local writing ?
 
 # Perform tests
 if __name__ == '__main__':
