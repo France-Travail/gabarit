@@ -448,7 +448,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         ################
 
         # "Basic" case dataset_v1
-        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/2_training_classifier.py -d dataset_v1_train_preprocess_docs --directory_valid dataset_v1_valid_preprocess_docs"
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/2_training_classifier.py -d dataset_v1_train_preprocess_docs --directory_valid dataset_v1_valid_preprocess_docs --mlflow_experiment mlflow_test"
         self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
         # Check model saved
         save_model_dir = os.path.join(full_path_lib, 'test_template_vision-models', 'model_cnn_classifier')  # cnn by default
@@ -457,7 +457,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertGreater(len(listdir), 0)
 
         # "Basic" case dataset_v2
-        dataset_v2 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/2_training_classifier.py -d dataset_v2_train"
+        dataset_v2 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/2_training_classifier.py -d dataset_v2_train --mlflow_experiment mlflow_test"
         self.assertEqual(subprocess.run(dataset_v2, shell=True).returncode, 0)
         # Check model saved
         save_model_dir = os.path.join(full_path_lib, 'test_template_vision-models', 'model_cnn_classifier')  # cnn by default
@@ -466,7 +466,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertGreater(len(listdir), 1)
 
         # "Basic" case dataset_v3
-        dataset_v3 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/2_training_classifier.py -d dataset_v3_train_preprocess_docs --directory_valid dataset_v3_valid_preprocess_docs"
+        dataset_v3 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/2_training_classifier.py -d dataset_v3_train_preprocess_docs --directory_valid dataset_v3_valid_preprocess_docs --mlflow_experiment mlflow_test"
         self.assertEqual(subprocess.run(dataset_v3, shell=True).returncode, 0)
         # Check model saved
         save_model_dir = os.path.join(full_path_lib, 'test_template_vision-models', 'model_cnn_classifier')  # cnn by default
@@ -496,7 +496,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         test_model.cfg.INPUT.MIN_SIZE_TRAIN = (400,)  # We try to limit the memory impact
 
         # Test it
-        test.main(directory='dataset_object_detection_mini', directory_valid='dataset_object_detection_mini', model=test_model)
+        test.main(directory='dataset_object_detection_mini', directory_valid='dataset_object_detection_mini', model=test_model, mlflow_experiment='mlflow_test')
 
         # Check model saved
         save_model_dir = os.path.join(full_path_lib, 'test_template_vision-models', 'model_detectron_faster_rcnn_e2e')

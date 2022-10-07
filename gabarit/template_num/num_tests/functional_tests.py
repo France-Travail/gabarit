@@ -285,7 +285,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         ################
 
         # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_classification.py -f mono_class_mono_label_train_preprocess_P1.csv -y y_col --filename_valid mono_class_mono_label_valid_preprocess_P1.csv"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_classification.py -f mono_class_mono_label_train_preprocess_P1.csv -y y_col --filename_valid mono_class_mono_label_valid_preprocess_P1.csv --mlflow_experiment mlflow_test"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check model saved
         save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier')  # Ridge Classifier by default
@@ -294,7 +294,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(len(listdir), 1)
 
         # With excluded_cols
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_classification.py -f mono_class_mono_label_train_preprocess_P1.csv -y y_col --filename_valid mono_class_mono_label_valid_preprocess_P1.csv --excluded_cols col_2"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_classification.py -f mono_class_mono_label_train_preprocess_P1.csv -y y_col --filename_valid mono_class_mono_label_valid_preprocess_P1.csv --excluded_cols col_2 --mlflow_experiment mlflow_test"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check model saved
         save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier')  # Ridge Classifier by default
@@ -303,7 +303,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(len(listdir), 2)
 
         # Multilabel - no preprocess - no valid
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_classification.py -f mono_class_multi_label.csv -y y_col_1 y_col_2"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_classification.py -f mono_class_multi_label.csv -y y_col_1 y_col_2 --mlflow_experiment mlflow_test"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check model saved
         save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_ridge_classifier')  # Ridge Classifier by default
@@ -317,7 +317,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         # We didn't work on the file
 
         # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_regression.py -f mono_output_regression_train.csv -y y_col --filename_valid mono_output_regression_valid.csv"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_regression.py -f mono_output_regression_train.csv -y y_col --filename_valid mono_output_regression_valid.csv --mlflow_experiment mlflow_test"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check model saved
         save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_elasticnet_regressor')  # ElasticNet Regressor by default
@@ -326,7 +326,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(len(listdir), 1)
 
         # With excluded_cols
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_regression.py -f mono_output_regression_train.csv -y y_col --filename_valid mono_output_regression_valid.csv --excluded_cols col_2"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_regression.py -f mono_output_regression_train.csv -y y_col --filename_valid mono_output_regression_valid.csv --excluded_cols col_2 --mlflow_experiment mlflow_test"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check model saved
         save_model_dir = os.path.join(full_path_lib, 'test_template_num-models', 'model_elasticnet_regressor')  # ElasticNet Regressor by default
