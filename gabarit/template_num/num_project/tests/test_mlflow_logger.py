@@ -22,6 +22,8 @@ import os
 import json
 import shutil
 import mlflow
+import urllib
+import pathlib
 import numpy as np
 import pandas as pd
 
@@ -33,7 +35,7 @@ logging.disable(logging.CRITICAL)
 
 # TMP directory for mlruns
 MLRUNS_TMP_DIR = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'tmp_experiments', 'mlruns')
-LOCAL_TRACKING_URI = f"file:/{MLRUNS_TMP_DIR}"
+LOCAL_TRACKING_URI = pathlib.Path(MLRUNS_TMP_DIR).as_uri()
 
 
 class MLflowLoggerTests(unittest.TestCase):
@@ -82,7 +84,7 @@ class MLflowLoggerTests(unittest.TestCase):
         # Nominal case
         mlflow_logger.log_metric('test', 5)
         mlflow_logger.log_metric('test', 5, step=2)
-        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        artifact_location = urllib.request.url2pathname(urllib.parse.urlparse(mlflow.get_experiment_by_name(experiment_name).artifact_location).path)
         run_id = mlflow.last_active_run().info.run_id
         self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'metrics', 'test')))
         # Clear
@@ -95,7 +97,7 @@ class MLflowLoggerTests(unittest.TestCase):
         # Nominal case
         mlflow_logger.log_metrics({'test': 5, 'test2': 24})
         mlflow_logger.log_metrics({'test': 5}, step=2)
-        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        artifact_location = urllib.request.url2pathname(urllib.parse.urlparse(mlflow.get_experiment_by_name(experiment_name).artifact_location).path)
         run_id = mlflow.last_active_run().info.run_id
         self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'metrics', 'test')))
         self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'metrics', 'test2')))
@@ -108,7 +110,7 @@ class MLflowLoggerTests(unittest.TestCase):
         mlflow_logger = MLflowLogger(experiment_name=experiment_name, tracking_uri=LOCAL_TRACKING_URI)
         # Nominal case
         mlflow_logger.log_param('test', 5)
-        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        artifact_location = urllib.request.url2pathname(urllib.parse.urlparse(mlflow.get_experiment_by_name(experiment_name).artifact_location).path)
         run_id = mlflow.last_active_run().info.run_id
         self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'params', 'test')))
         # Clear
@@ -120,7 +122,7 @@ class MLflowLoggerTests(unittest.TestCase):
         mlflow_logger = MLflowLogger(experiment_name=experiment_name, tracking_uri=LOCAL_TRACKING_URI)
         # Nominal case
         mlflow_logger.log_params({'test': 5, 'test2': 24})
-        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        artifact_location = urllib.request.url2pathname(urllib.parse.urlparse(mlflow.get_experiment_by_name(experiment_name).artifact_location).path)
         run_id = mlflow.last_active_run().info.run_id
         self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'params', 'test')))
         self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'params', 'test2')))
@@ -133,7 +135,7 @@ class MLflowLoggerTests(unittest.TestCase):
         mlflow_logger = MLflowLogger(experiment_name=experiment_name, tracking_uri=LOCAL_TRACKING_URI)
         # Nominal case
         mlflow_logger.set_tag('test', 5)
-        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        artifact_location = urllib.request.url2pathname(urllib.parse.urlparse(mlflow.get_experiment_by_name(experiment_name).artifact_location).path)
         run_id = mlflow.last_active_run().info.run_id
         self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'tags', 'test')))
         # Clear
@@ -145,7 +147,7 @@ class MLflowLoggerTests(unittest.TestCase):
         mlflow_logger = MLflowLogger(experiment_name=experiment_name, tracking_uri=LOCAL_TRACKING_URI)
         # Nominal case
         mlflow_logger.set_tags({'test': 5, 'test2': 24})
-        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        artifact_location = urllib.request.url2pathname(urllib.parse.urlparse(mlflow.get_experiment_by_name(experiment_name).artifact_location).path)
         run_id = mlflow.last_active_run().info.run_id
         self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'tags', 'test')))
         self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'tags', 'test2')))
@@ -173,7 +175,7 @@ class MLflowLoggerTests(unittest.TestCase):
             'metric2!!!': [None, 0.2, -15, np.NaN]
         })
         mlflow_logger.log_df_stats(df_stats)
-        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        artifact_location = urllib.request.url2pathname(urllib.parse.urlparse(mlflow.get_experiment_by_name(experiment_name).artifact_location).path)
         run_id = mlflow.last_active_run().info.run_id
         self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'params', 'Label 0')))
         self.assertTrue(os.path.exists(os.path.join(artifact_location, run_id, 'params', 'Label 1')))
@@ -203,7 +205,7 @@ class MLflowLoggerTests(unittest.TestCase):
         dict = {'toto': 'titi', 'tata': 5}
         artifact_file = 'test.json'
         mlflow_logger.log_dict(dict, artifact_file)
-        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        artifact_location = urllib.request.url2pathname(urllib.parse.urlparse(mlflow.get_experiment_by_name(experiment_name).artifact_location).path)
         run_id = mlflow.last_active_run().info.run_id
         saved_json_path = os.path.join(artifact_location, run_id, 'artifacts', 'test.json')
         self.assertTrue(os.path.exists(saved_json_path))
@@ -221,7 +223,7 @@ class MLflowLoggerTests(unittest.TestCase):
         text = 'This is a test !!!'
         artifact_file = 'test.txt'
         mlflow_logger.log_text(text, artifact_file)
-        artifact_location = mlflow.get_experiment_by_name(experiment_name).artifact_location[len('file:///'):]
+        artifact_location = urllib.request.url2pathname(urllib.parse.urlparse(mlflow.get_experiment_by_name(experiment_name).artifact_location).path)
         run_id = mlflow.last_active_run().info.run_id
         saved_txt_path = os.path.join(artifact_location, run_id, 'artifacts', 'test.txt')
         self.assertTrue(os.path.exists(saved_txt_path))

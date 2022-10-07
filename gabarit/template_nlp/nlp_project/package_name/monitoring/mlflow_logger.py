@@ -23,6 +23,7 @@
 import os
 import math
 import mlflow
+import pathlib
 import logging
 import pandas as pd
 from typing import Union
@@ -47,7 +48,7 @@ class MLflowLogger:
 
         # Backup to local save if no uri (i.e. empty string)
         if tracking_uri == '':
-            tracking_uri = 'file:/' + os.path.join(utils.get_data_path(), 'experiments', 'mlruns')
+            tracking_uri = pathlib.Path(os.path.join(utils.get_data_path(), 'experiments', 'mlruns')).as_uri()
         # Set tracking URI & experiment name
         self.tracking_uri = tracking_uri
         # No need to set_tracking_uri, this is done through the setter decorator
