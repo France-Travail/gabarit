@@ -89,7 +89,8 @@ class ModelObjectDetectorMixin:
         '''
         return list(y) if isinstance(y, np.ndarray) else y
 
-    def get_and_save_metrics(self, y_true: list, y_pred: list, list_files_x: list = None, type_data: str = '', **kwargs):
+    def get_and_save_metrics(self, y_true: list, y_pred: list, list_files_x: list = None,
+                             type_data: str = '', **kwargs) -> pd.DataFrame:
         '''Gets and saves the metrics of a model
 
         Args:

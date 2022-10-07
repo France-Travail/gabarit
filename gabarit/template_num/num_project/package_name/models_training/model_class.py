@@ -132,7 +132,7 @@ class ModelClass:
         self.nb_fit = 0
 
         # Configuration dict. to be logged. Set on save.
-        self.json_dict = {}
+        self.json_dict: Dict[Any, Any] = {'warning': 'save needs to be called to fill this dict.'}
 
     def fit(self, x_train, y_train, **kwargs) -> None:
         '''Trains the model
@@ -177,8 +177,8 @@ class ModelClass:
         raise NotImplementedError("'inverse_transform' needs to be overridden")
 
     def get_and_save_metrics(self, y_true, y_pred, df_x: Union[pd.DataFrame, None] = None,
-                             series_to_add: Union[List[pd.Series], None] = None, type_data: str = ''
-                            ) -> pd.DataFrame:
+                             series_to_add: Union[List[pd.Series], None] = None,
+                             type_data: str = '') -> pd.DataFrame:
         '''Gets and saves the metrics of a model
 
         Args:

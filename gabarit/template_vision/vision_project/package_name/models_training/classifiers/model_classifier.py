@@ -155,7 +155,8 @@ class ModelClassifierMixin:
         '''
         return list(y) if type(y) == np.ndarray else y
 
-    def get_and_save_metrics(self, y_true, y_pred, list_files_x: Union[list, None] = None, type_data: str = '') -> pd.DataFrame:
+    def get_and_save_metrics(self, y_true, y_pred, list_files_x: Union[list, None] = None,
+                             type_data: str = '') -> pd.DataFrame:
         '''Gets and saves the metrics of a model
 
         Args:

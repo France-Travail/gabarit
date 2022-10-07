@@ -78,7 +78,8 @@ class ModelRegressorMixin:
         return list(y) if isinstance(y, np.ndarray) else y
 
     def get_and_save_metrics(self, y_true, y_pred, df_x: Union[pd.DataFrame, None] = None,
-                             series_to_add: Union[List[pd.Series], None] = None, type_data: str = '') -> pd.DataFrame:
+                             series_to_add: Union[List[pd.Series], None] = None,
+                             type_data: str = '') -> pd.DataFrame:
         '''Gets and saves the metrics of a model
 
         Args:
