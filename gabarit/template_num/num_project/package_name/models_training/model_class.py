@@ -28,7 +28,7 @@ import numpy as np
 import pandas as pd
 import dill as pickle
 from datetime import datetime
-from typing import List, Union, Tuple
+from typing import List, Union, Tuple, Dict, Any
 
 from sklearn.compose import ColumnTransformer
 from sklearn.exceptions import NotFittedError
@@ -37,7 +37,6 @@ from sklearn.utils.validation import check_is_fitted
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
 from {{package_name}}.models_training import utils_models
-from {{package_name}}.monitoring.model_logger import ModelLogger
 
 
 class ModelClass:
@@ -87,10 +86,7 @@ class ModelClass:
         self.model_type = None
 
         # Model name
-        if model_name is None:
-            self.model_name = self._default_name
-        else:
-            self.model_name = model_name
+        self.model_name = self._default_name if model_name is None else model_name
 
         # Names of the columns used
         self.x_col = x_col
@@ -135,6 +131,9 @@ class ModelClass:
         self.trained = False
         self.nb_fit = 0
 
+        # Configuration dict. to be logged. Set on save.
+        self.json_dict: Dict[Any, Any] = {}
+
     def fit(self, x_train, y_train, **kwargs) -> None:
         '''Trains the model
 
@@ -178,8 +177,8 @@ class ModelClass:
         raise NotImplementedError("'inverse_transform' needs to be overridden")
 
     def get_and_save_metrics(self, y_true, y_pred, df_x: Union[pd.DataFrame, None] = None,
-                             series_to_add: Union[List[pd.Series], None] = None, type_data: str = '',
-                             model_logger: Union[ModelLogger, None] = None) -> pd.DataFrame:
+                             series_to_add: Union[List[pd.Series], None] = None,
+                             type_data: str = '') -> pd.DataFrame:
         '''Gets and saves the metrics of a model
 
         Args:
@@ -189,7 +188,6 @@ class ModelClass:
             df_x (pd.DataFrame or None): Input dataFrame used for the prediction
             series_to_add (list): List of pd.Series to add to the dataframe
             type_data (str): Type of dataset (validation, test, ...)
-            model_logger (ModelLogger): Custom class to log the metrics with MLflow
         Returns:
             pd.DataFrame: The dataframe containing the statistics
         '''
@@ -236,6 +234,9 @@ class ModelClass:
         if json_data is not None:
             # Priority given to json_data !
             json_dict = {**json_dict, **json_data}
+
+        # Add conf to attributes
+        self.json_dict = json_dict
 
         # Save conf
         with open(conf_path, 'w', encoding='{{default_encoding}}') as json_file:

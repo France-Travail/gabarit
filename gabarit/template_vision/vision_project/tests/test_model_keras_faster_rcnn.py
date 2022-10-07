@@ -33,7 +33,6 @@ from PIL import Image
 
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.monitoring.model_logger import ModelLogger
 from {{package_name}}.models_training.object_detectors import utils_faster_rcnn
 from {{package_name}}.models_training.object_detectors.model_keras_faster_rcnn import (ModelKerasFasterRcnnObjectDetector,
                                                                                        ModelCheckpointAll,

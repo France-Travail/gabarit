@@ -27,11 +27,10 @@ import logging
 import numpy as np
 import pandas as pd
 import dill as pickle
-from typing import Union
 from datetime import datetime
+from typing import Union, Dict, Any
 
 from {{package_name}} import utils
-from {{package_name}}.monitoring.model_logger import ModelLogger
 
 
 class ModelClass:
@@ -76,10 +75,7 @@ class ModelClass:
         self.model_type = None
 
         # Model name
-        if model_name is None:
-            self.model_name = self._default_name
-        else:
-            self.model_name = model_name
+        self.model_name = self._default_name if model_name is None else model_name
 
         # Model folder
         if model_dir is None:
@@ -97,6 +93,9 @@ class ModelClass:
         # is trained ?
         self.trained = False
         self.nb_fit = 0
+
+        # Configuration dict. to be logged. Set on save.
+        self.json_dict: Dict[Any, Any] = {}
 
     def fit(self, df_train, **kwargs) -> dict:
         '''Trains the model
@@ -143,8 +142,8 @@ class ModelClass:
         '''
         raise NotImplementedError("'inverse_transform' needs to be overridden")
 
-    def get_and_save_metrics(self, y_true, y_pred, list_files_x: Union[list, None] = None, type_data: str = '',
-                             model_logger: Union[ModelLogger, None] = None) -> pd.DataFrame:
+    def get_and_save_metrics(self, y_true, y_pred, list_files_x: Union[list, None] = None,
+                             type_data: str = '') -> pd.DataFrame:
         '''Gets and saves the metrics of a model
 
         Args:
@@ -159,7 +158,6 @@ class ModelClass:
         Kwargs:
             list_files_x (list): Input images file paths
             type_data (str): Type of dataset (validation, test, ...)
-            model_logger (ModelLogger): Custom class to log the metrics with MLflow
         Returns:
             pd.DataFrame: The dataframe containing statistics
         '''
@@ -199,6 +197,9 @@ class ModelClass:
         if json_data is not None:
             # Priority given to json_data !
             json_dict = {**json_dict, **json_data}
+
+        # Add conf to attributes
+        self.json_dict = json_dict
 
         # Save conf
         with open(conf_path, 'w', encoding='{{default_encoding}}') as json_file:

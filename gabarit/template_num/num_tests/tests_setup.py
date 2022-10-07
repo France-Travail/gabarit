@@ -134,9 +134,9 @@ class Case3_unit_tests(unittest.TestCase):
         '''Launches tests of file preprocess.py'''
         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_preprocess.py', shell=True).returncode, 0)
 
-    def test06_test_model_logger(self):
-        '''Launches tests of file model_logger.py'''
-        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_logger.py', shell=True).returncode, 0)
+    def test06_test_mlflow_logger(self):
+        '''Launches tests of file mlflow_logger.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_mlflow_logger.py', shell=True).returncode, 0)
 
     def test07_test_utils_models(self):
         '''Launches tests of file utils_models.py'''

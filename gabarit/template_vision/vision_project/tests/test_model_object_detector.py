@@ -29,7 +29,6 @@ import pandas as pd
 
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.monitoring.model_logger import ModelLogger
 from {{package_name}}.models_training.model_class import ModelClass
 from {{package_name}}.models_training.object_detectors import model_object_detector
 from {{package_name}}.models_training.object_detectors.model_object_detector import ModelObjectDetectorMixin
@@ -169,10 +168,6 @@ class ModelClassifierMixinTests(unittest.TestCase):
         dict_translate_target = {'orange': '1', 'banana': '2', 'apple': '3'}
         model.dict_classes = {i: col for i, col in enumerate(model.list_classes)}
         type_data = 'toto'
-        model_logger = ModelLogger(
-            tracking_uri="http://toto.titi.tata.test",
-            experiment_name="test"
-        )
         # We will test several cases
         for index, dict_test_true_pred in dict_test.items():
             # We get info from the json file and we format them
@@ -200,7 +195,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
             error_message = dict_test_true_pred['comment']
             list_files_x = [random.choice(['toto.png', 'titi.png', 'tata.png']) for _ in range(len(y_true))]
             # We use the function to test
-            df_metrics = model.get_and_save_metrics(y_true, y_pred, list_files_x=list_files_x, type_data=type_data, model_logger=model_logger)
+            df_metrics = model.get_and_save_metrics(y_true, y_pred, list_files_x=list_files_x, type_data=type_data)
             df_metrics = df_metrics.fillna('None')
            # We test
             np.testing.assert_array_equal(df_metrics_target, df_metrics, error_message)

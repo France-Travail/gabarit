@@ -30,13 +30,15 @@ import shutil
 import logging
 import argparse
 import warnings
+import numpy as np
 import pandas as pd
+from functools import partialmethod
 from typing import Union, List, Type, Tuple
 
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
 from {{package_name}}.models_training import utils_models
-from {{package_name}}.monitoring.model_logger import ModelLogger
+from {{package_name}}.monitoring.mlflow_logger import MLflowLogger
 from {{package_name}}.models_training.model_class import ModelClass
 from {{package_name}}.models_training.regressors import (model_rf_regressor,
                                                          model_dense_regressor,
@@ -62,7 +64,8 @@ logger = logging.getLogger('{{package_name}}.3_training_regression')
 def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[str, int]], None] = None,
          filename_valid: Union[str, None] = None, level_save: str = 'HIGH',
          sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}',
-         model: Union[Type[ModelClass], None] = None) -> None:
+         model: Union[Type[ModelClass], None] = None,
+         mlflow_experiment: Union[str, None] = None) -> None:
     '''Trains a model
 
     /!\ By default, models are fitted on all available columns (except targets) /!\
@@ -83,6 +86,7 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
         sep (str): Separator to use with the .csv files
         encoding (str): Encoding to use with the .csv files
         model (ModelClass): A model to be fitted. This should only be used for testing purposes.
+        mlflow_experiment (str): Name of the current experiment. If None, no experiment will be saved.
     Raises:
         ValueError: If level_save value is not a valid option (['LOW', 'MEDIUM', 'HIGH'])
     '''
@@ -265,24 +269,6 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
     ##############################################
     # Model metrics
     ##############################################
-    {% if mlflow_tracking_uri is not none %}
-    # Logging metrics on MLflow
-    model_logger = ModelLogger(
-        tracking_uri="{{mlflow_tracking_uri}}",
-        experiment_name=f"{{package_name}}",
-    )
-    model_logger.set_tag('model_name', f"{os.path.basename(model.model_dir)}")
-    # To log more tags/params, you can use model_logger.set_tag(key, value) or model_logger.log_param(key, value){% else %}
-    # No URI has been defined for MLflow
-    # Uncomment the following code if you want to use MLflow with a valid URI
-    # # Logging metrics on MLflow
-    # model_logger = ModelLogger(
-    #     tracking_uri=TO BE DEFINED,
-    #     experiment_name=f"{{package_name}}",
-    # )
-    # model_logger.set_tag('model_name', f"{os.path.basename(model.model_dir)}")
-    # # To log more tags/params, you can use model_logger.set_tag(key, value) or model_logger.log_param(key, value)
-    model_logger=None{% endif %}
 
     # Series to add
     cols_to_add: List[pd.Series] = []  # You can add columns to save here
@@ -292,19 +278,38 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
 
     # Get results
     y_pred_train = model.predict(x_train, return_proba=False)
-    # model_logger.set_tag(key='type_metric', value='train')
-    model.get_and_save_metrics(y_train, y_pred_train, df_x=x_train, series_to_add=series_to_add_train, type_data='train', model_logger=model_logger)
+    df_stats = model.get_and_save_metrics(y_train, y_pred_train, df_x=x_train, series_to_add=series_to_add_train, type_data='train')
     gc.collect()  # In some cases, helps with OOMs
     # Get predictions on valid
     if x_valid is not None:
         y_pred_valid = model.predict(x_valid, return_proba=False)
-        # model_logger.set_tag(key='type_metric', value='valid')
-        model.get_and_save_metrics(y_valid, y_pred_valid, df_x=x_valid, series_to_add=series_to_add_valid, type_data='valid', model_logger=model_logger)
+        df_stats = model.get_and_save_metrics(y_valid, y_pred_valid, df_x=x_valid, series_to_add=series_to_add_valid, type_data='valid')
         gc.collect()  # In some cases, helps with OOMs
 
-    # Stop MLflow if started
-    if model_logger is not None:
-        model_logger.stop_run()
+
+    ##############################################
+    # Logger MLflow
+    ##############################################
+
+    # Logging metrics on MLflow
+    if mlflow_experiment:
+        # Get logger
+        mlflow_logger = MLflowLogger(
+            experiment_name=f"{{package_name}}/{mlflow_experiment}",
+            tracking_uri="{{mlflow_tracking_uri}}",
+        )
+        mlflow_logger.set_tag('model_name', f"{os.path.basename(model.model_dir)}")
+        mlflow_logger.log_df_stats(df_stats)
+        mlflow_logger.log_dict(model.json_dict, "configurations.json")
+        # To log more tags/params, you can use mlflow_logger.set_tag(key, value) or mlflow_logger.log_param(key, value)
+        # Log a sweetviz report
+        report = get_sweetviz_report(df_train=df_train, y_pred_train=y_pred_train, y_col=y_col,
+                                     df_valid=df_valid if filename_valid else None,
+                                     y_pred_valid=y_pred_valid if filename_valid else None)
+        if report:
+            mlflow_logger.log_text(report, "sweetviz_train_valid.html")
+        # Stop MLflow if started
+        mlflow_logger.end_run()
 
 
 def load_dataset(filename: str, sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}') -> Tuple[pd.DataFrame, str]:
@@ -343,6 +348,70 @@ def load_dataset(filename: str, sep: str = '{{default_sep}}', encoding: str = '{
     return df, preprocess_pipeline_dir
 
 
+def get_sweetviz_report(df_train: pd.DataFrame, y_pred_train: np.ndarray, y_col: str,
+                        df_valid: Union[pd.DataFrame, None], y_pred_valid: Union[np.ndarray, None]) -> str:
+    '''Generate a sweetviz report that can be logged into MLflow
+
+    Args:
+        df_train (pd.DataFrame): Training data
+        y_pred_train (np.ndarray): Model predictions on training data
+        y_col (str): Target column
+        df_valid (pd.DataFrame): Validation data
+        y_pred_valid (np.ndarray): Model predictions on validation data
+    Returns:
+        str: A HTML sweetviz report
+    '''
+    logger.info("Producing a sweetviz report ...")
+
+    # SweetViz add too much logs to be use in production
+    # https://github.com/fbdesignpro/sweetviz/issues/124
+    # Deactivate tqdm and import sweetviz
+    try:
+        from tqdm import tqdm
+        tqdm.__init__ = partialmethod(tqdm.__init__, disable=True)
+    except ImportError:
+        pass
+
+    try:
+        import sweetviz
+        import tempfile
+    except ImportError:
+        return None
+
+    # Add predictions to our datasets
+    # First, get new columns name
+    y_col_name = f"pred_{y_col}"
+    # Add predictions to train data
+    df_train.loc[:, y_col_name] = y_pred_train
+    # Add predictions to validation data
+    if df_valid is not None and y_pred_valid is not None:
+        df_valid.loc[:, y_col_name] = y_pred_valid
+
+    # Target feature
+    target = y_col
+    # Prepare SweetViz datasets
+    train_data = [df_train, "Training data"]
+    valid_data = [df_valid, "Validation data"] if df_valid is not None else None
+
+    # Get sweetviz report
+    get_report_without_target = True
+    report: sweetviz.DataframeReport
+    try:
+        report = sweetviz.compare(train_data, valid_data, target_feat=target, pairwise_analysis="off")
+    except (KeyError, ValueError):
+        logger.info("Can't produce a sweetviz report with 'target_feat'. Should not happen.")
+        report = sweetviz.compare(train_data, valid_data, pairwise_analysis="off")
+
+    # We need to call show_html in order to get _page_html
+    # Hence, we'll do it on a temp file
+    with tempfile.TemporaryDirectory() as tmp_dirname:
+        tmp_file = os.path.join(tmp_dirname, "report.html")
+        report.show_html(tmp_file, open_browser=False, layout="vertical")
+
+    # Return html code as string
+    return report._page_html
+
+
 if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filename', default='dataset_preprocess_P1.csv', help="Name of the training dataset (actually a path relative to {{package_name}}-data)")
@@ -353,6 +422,7 @@ if __name__ == '__main__':
     parser.add_argument('--sep', default='{{default_sep}}', help="Separator to use with the .csv files.")
     parser.add_argument('--encoding', default="{{default_encoding}}", help="Encoding to use with the .csv files.")
     parser.add_argument('--force_cpu', dest='on_cpu', action='store_true', help="Whether to force training on CPU (and not GPU)")
+    parser.add_argument('--mlflow_experiment', help="Name of the current experiment. MLflow tracking is activated only if fulfilled.")
     parser.set_defaults(on_cpu=False)
     args = parser.parse_args()
     # Check forced CPU usage
@@ -364,4 +434,4 @@ if __name__ == '__main__':
     # Main
     main(filename=args.filename, y_col=args.y_col, excluded_cols=args.excluded_cols,
          filename_valid=args.filename_valid, level_save=args.level_save,
-         sep=args.sep, encoding=args.encoding)
+         sep=args.sep, encoding=args.encoding, mlflow_experiment=args.mlflow_experiment)

@@ -22,7 +22,7 @@ import argparse
 import tempfile
 import configparser
 from typing import Union
-from shutil import copyfile
+from shutil import copyfile, rmtree
 from distutils.dir_util import copy_tree
 from jinja2 import Environment, FileSystemLoader
 
@@ -39,13 +39,17 @@ def main() -> None:
     parser.add_argument('--upload', '--upload_intructions', default=os.path.join(ROOT_DIR, 'default_model_upload_instructions.md'),
                         help='Markdown file with models upload instructions (relative or absolute).')
     parser.add_argument('--dvc', '--dvc_config', default=None, help='DVC configuration file to use (relative or absolute).')
+    parser.add_argument('--without_tutorials', dest='include_tutorials', action='store_false', help="If tutorials should NOT be included.")
+    parser.set_defaults(include_tutorials=True)
     args = parser.parse_args()
     # Generate project
-    generate(project_name=args.name, project_path=args.path, config_path=args.config, upload_intructions_path=args.upload, dvc_config_path=args.dvc)
+    generate(project_name=args.name, project_path=args.path, config_path=args.config, upload_intructions_path=args.upload,
+             dvc_config_path=args.dvc, include_tutorials=args.include_tutorials)
 
 
 def generate(project_name: str, project_path: str, config_path: str,
-             upload_intructions_path: str, dvc_config_path: Union[str, None] = None) -> None:
+             upload_intructions_path: str, dvc_config_path: Union[str, None] = None,
+             include_tutorials: bool = True) -> None:
     '''Generates a Computer Vision python template from arguments.
 
     Args:
@@ -56,6 +60,7 @@ def generate(project_name: str, project_path: str, config_path: str,
             The value `model_dir_path_identifier` will be automatically updated for each model with its directory path
     Kwargs:
         dvc_config_path (str): DVC configuration filepath
+        include_tutorials (bool): whether the tutorials should be included
     Raises:
         FileNotFoundError: If configuration path does not exists
         FileNotFoundError: If upload instructions path does not exists
@@ -82,18 +87,23 @@ def generate(project_name: str, project_path: str, config_path: str,
     def get_config(config, section, key, fallback=None):
         value = config.get(section, key, fallback=fallback)
         return value if value != '' else None
-    default_sep = get_config(config, 'files', 'csv_sep', fallback=None)
-    default_encoding = get_config(config, 'files', 'encoding', fallback=None)
-    pip_trusted_host = get_config(config, 'pip', 'trusted-host', fallback=None)
-    pip_index_url = get_config(config, 'pip', 'index-url', fallback=None)
-    mlflow_tracking_uri = get_config(config, 'mlflow', 'tracking_uri', fallback=None)
-    additional_pip_packages = get_config(config, 'packages', 'additional_pip_packages', fallback=None)
-    vgg16_weights_backup_urls = get_config(config, 'transfer_learning', 'vgg16_weights_backup_urls', fallback=None)
-    efficientnetb6_weights_backup_urls = get_config(config, 'transfer_learning', 'efficientnetb6_weights_backup_urls', fallback=None)
-    detectron_config_base_backup_urls = get_config(config, 'detectron', 'detectron_config_base_backup_urls', fallback=None)
-    detectron_config_backup_urls = get_config(config, 'detectron', 'detectron_config_backup_urls', fallback=None)
-    detectron_model_backup_urls = get_config(config, 'detectron', 'detectron_model_backup_urls', fallback=None)
+
+    default_sep = get_config(config, 'files', 'csv_sep')
+    default_encoding = get_config(config, 'files', 'encoding')
+    pip_trusted_host = get_config(config, 'pip', 'trusted-host')
+    pip_index_url = get_config(config, 'pip', 'index-url')
+    mlflow_tracking_uri = get_config(config, 'mlflow', 'tracking_uri')
+    additional_pip_packages = get_config(config, 'packages', 'additional_pip_packages')
+    vgg16_weights_backup_urls = get_config(config, 'transfer_learning', 'vgg16_weights_backup_urls')
+    efficientnetb6_weights_backup_urls = get_config(config, 'transfer_learning', 'efficientnetb6_weights_backup_urls')
+    detectron_config_base_backup_urls = get_config(config, 'detectron', 'detectron_config_base_backup_urls')
+    detectron_config_backup_urls = get_config(config, 'detectron', 'detectron_config_backup_urls')
+    detectron_model_backup_urls = get_config(config, 'detectron', 'detectron_model_backup_urls')
     dvc_config_ok = True if dvc_config_path is not None else False
+
+    # Prevent mlflow_tracking_uri to be set to "None" in training script
+    if mlflow_tracking_uri is None:
+        mlflow_tracking_uri = ''
 
     # Fix some options that should be list of elements
     vgg16_weights_backup_urls = vgg16_weights_backup_urls.split('\n') if vgg16_weights_backup_urls is not None else None
@@ -111,8 +121,14 @@ def generate(project_name: str, project_path: str, config_path: str,
         template_dir = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'vision_project')
         copy_tree(template_dir, tmp_folder)
 
+        # Remove tutorials if not wanted
+        if not include_tutorials:
+            tutorials_path = os.path.join(tmp_folder, 'package_name-tutorials')
+            if os.path.exists(tutorials_path):
+                rmtree(tutorials_path)
+
         # Copy models upload instructions
-        ressources_path = os.path.join(tmp_folder, f'{project_name}-ressources')
+        ressources_path = os.path.join(tmp_folder, f'package_name-ressources')
         if not os.path.exists(ressources_path):
             os.makedirs(ressources_path)
         upload_intructions_target_path = os.path.join(ressources_path, 'model_upload_instructions.md')
@@ -185,8 +201,10 @@ def generate(project_name: str, project_path: str, config_path: str,
     cache_keras_dir = os.path.join(output_dir, f'{project_name}-data', 'cache_keras')
     models_dir = os.path.join(output_dir, f'{project_name}-models')
     exploration_dir = os.path.join(output_dir, f'{project_name}-exploration')
+    mlflow_experiments_dir = os.path.join(data_dir, 'experiments')
     for new_dir in [data_dir, models_weights_dir, detectron2_conf_dir,
-                    cache_keras_dir, models_dir, exploration_dir]:
+                    cache_keras_dir, models_dir, exploration_dir,
+                    mlflow_experiments_dir]:
         if not os.path.exists(new_dir):
             os.makedirs(new_dir)
 

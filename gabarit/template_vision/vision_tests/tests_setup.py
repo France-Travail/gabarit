@@ -128,9 +128,9 @@ class Case3_unit_tests(unittest.TestCase):
         '''Launches tests of file test_manage_white_borders.py'''
         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_manage_white_borders.py', shell=True).returncode, 0)
 
-    def test05_test_model_logger(self):
-        '''Launches tests of file model_logger.py'''
-        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_logger.py', shell=True).returncode, 0)
+    def test05_test_mlflow_logger(self):
+        '''Launches tests of file mlflow_logger.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_mlflow_logger.py', shell=True).returncode, 0)
 
     def test06_test_utils_models(self):
         '''Launches tests of file utils_models.py'''

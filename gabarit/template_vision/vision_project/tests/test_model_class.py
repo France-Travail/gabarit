@@ -64,6 +64,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
         self.assertEqual(model.model_type, None)
+        self.assertEqual(model.json_dict, {})
         with self.assertRaises(NotImplementedError):
             model.fit('test')
         with self.assertRaises(NotImplementedError):

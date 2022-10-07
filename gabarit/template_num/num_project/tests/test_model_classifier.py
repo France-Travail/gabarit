@@ -32,7 +32,6 @@ from sklearn.multiclass import OneVsRestClassifier
 
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.monitoring.model_logger import ModelLogger
 from {{package_name}}.models_training.model_class import ModelClass
 from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin
 
@@ -368,11 +367,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
         df_x = pd.DataFrame({'col_1': [-5, -1, 0, 2], 'col_2': [2, -1, -8, 3]})
         series_to_add = [pd.Series(['a', 'b', 'c', 'd'], name='test')]
         type_data = 'toto'
-        model_logger = ModelLogger(
-            tracking_uri="http://toto.titi.tata.test",
-            experiment_name="test"
-        )
-        df_metrics = model.get_and_save_metrics(y_true, y_pred, df_x=df_x, series_to_add=series_to_add, type_data=type_data, model_logger=model_logger)
+        df_metrics = model.get_and_save_metrics(y_true, y_pred, df_x=df_x, series_to_add=series_to_add, type_data=type_data)
         self.assertEqual(df_metrics.shape[0], 3)  # 2 classes + All
         self.assertEqual(df_metrics.loc[2, :]['Label'], 'All')
         self.assertEqual(df_metrics.loc[2, :]['Accuracy'], 0.5)
