@@ -215,7 +215,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         print("Test of the file 2_training.py")
 
         # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/2_training.py -f mono_class_mono_label_train_preprocess_P1.csv -x preprocessed_text -y y_col --filename_valid mono_class_mono_label_valid_preprocess_P1.csv --mlflow_experiment mlflow_test"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/2_training.py -f mono_class_mono_label_train_preprocess_P1.csv -x preprocessed_text -y y_col --filename_valid mono_class_mono_label_valid_preprocess_P1.csv --mlflow_experiment gabarit_ci/mlflow_test"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check model saved
         save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
@@ -224,7 +224,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(len(listdir), 1)
 
         # Multilabel - no preprocess - no valid
-        multilabel_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/2_training.py -f mono_class_multi_label.csv -x x_col -y y_col_1 y_col_2 --mlflow_experiment mlflow_test"
+        multilabel_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/2_training.py -f mono_class_multi_label.csv -x x_col -y y_col_1 y_col_2 --mlflow_experiment gabarit_ci/mlflow_test"
         self.assertEqual(subprocess.run(multilabel_run, shell=True).returncode, 0)
         # Check model saved
         save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
