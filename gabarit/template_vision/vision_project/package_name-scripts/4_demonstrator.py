@@ -28,16 +28,17 @@ import tempfile
 import numpy as np
 import pandas as pd
 from PIL import Image
-from lime import lime_image
 from matplotlib import pyplot as plt
 from typing import Union, List, Type, Tuple
 from skimage.segmentation import mark_boundaries
 
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
+from {{package_name}}.monitoring import model_explainer
 from {{package_name}}.models_training import utils_models
 from {{package_name}}.models_training.model_class import ModelClass
 from {{package_name}}.models_training.object_detectors import utils_object_detectors
+
 
 # TMP FIX: somehow, a json method prevents us to cache most of our models with Streamlit
 # That was not the case before, something must have changed within a third party library ?
@@ -284,39 +285,10 @@ def explain_image(model: Type[ModelClass], model_conf: dict, img: Image.Image) -
         (plt.Figure): Figure to be displayed
     '''
     # Get lime explainer
-    explainer = lime_image.LimeImageExplainer()
+    explainer = model_explainer.LimeExplainer(model, model_conf)
 
-    # Set predict proba function
-    def classifier_fn_lime(images: np.ndarray) -> np.ndarray:
-        '''Function to be used by Lime, returns probas per classes
-
-        Args:
-            images (np.ndarray):array of images
-        Returns:
-            np.array: probabilities
-        '''
-        # Preprocess images
-        images = [Image.fromarray(img, 'RGB') for img in images]
-        if 'preprocess_str' in model_conf.keys():
-            preprocess_str = model_conf['preprocess_str']
-        else:
-            preprocess_str = "no_preprocess"
-        preprocessor = preprocess.get_preprocessor(preprocess_str)
-        images_preprocessed = preprocessor(images)
-        # Temporary folder
-        with tempfile.TemporaryDirectory(dir=utils.get_data_path()) as tmp_folder:
-            # Save images
-            images_path = [os.path.join(tmp_folder, f'image_{i}.png') for i in range(len(images_preprocessed))]
-            for i, img_preprocessed in enumerate(images_preprocessed):
-                img_preprocessed.save(images_path[i], format='PNG')
-            # Get predictions
-            df = pd.DataFrame({'file_path': images_path})
-            predictions, probas = model.predict_with_proba(df)
-        # Return probas
-        return probas
-
-    # Get explanation (images must be convert into rgb, then into np array)
-    explanation = explainer.explain_instance(np.array(img.convert('RGB')), classifier_fn_lime, hide_color=0, num_samples=100, batch_size=100)
+    # Get explanation
+    explanation = explainer.explain_instance(img, classes=model.list_classes, num_samples=100, batch_size=100, hide_color=0, top_labels=3)
 
     # Preprare figure & return
     new_im_1, mask_1 = explanation.get_image_and_mask(explanation.top_labels[0], positive_only=True, num_features=15, hide_rest=False)
@@ -496,7 +468,7 @@ if selected_model is not None:
             # ---------------------
 
             if checkbox_explanation:
-                st.write("Explenation")
+                st.write("Explanation")
                 fig = explain_image(model, model_conf, img)
                 st.pyplot(fig)
 
