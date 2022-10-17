@@ -189,13 +189,11 @@ class Case1_e2e_pipeline(unittest.TestCase):
         base_filenames_fairlens = ['data_biased_groups.csv', 'data_distribution_score.csv', 'data_distributions.png']
         set_columns_data_distribution = {'Group', 'Distance', 'Proportion', 'Counts', 'P-Value'}
         set_columns_data_biased = {'Group', 'Distance', 'Proportion', 'Counts', 'P-Value', 'number_of_attributes'}
+
         base_filenames_fairlearn = ['algo_metrics_by_groups.csv', 'fairness_count_groups.png']
         list_metrics_binary = ['accuracy', 'precision', 'false_positive_rate', 'false_negative_rate', 'f1_score']
         list_metrics_categorical = ['f1_score_weighted', 'f1_score_macro', 'precision_weighted', 'precision_macro', 'accuracy']
         list_metrics_continuous = ['mean_absolute_value', 'root_mean_squared_error', 'mean_absolute_percentage_error', 'R_squared']
-        binary_target_filenames = ['fairness_algo_barplot_'+metric+'.png' for metric in list_metrics_binary]
-        categorical_target_filenames = ['fairness_algo_barplot_'+metric+'.png' for metric in list_metrics_categorical]
-        continuous_target_filenames = ['fairness_algo_barplot_'+metric+'.png' for metric in list_metrics_continuous]
         data_path = os.path.join(full_path_lib, 'test_template_num-data')
         output_path = os.path.join(data_path, "test_fairness")
         filename_test_fairness = 'test_fairness.csv'
@@ -204,16 +202,20 @@ class Case1_e2e_pipeline(unittest.TestCase):
             if os.path.exists(output_path):
                 remove_dir(output_path)
 
+            # Constitutes the list of files that should be present
             if target == 'biased_target_binary_int':
                 list_metrics = list_metrics_binary
-                filenames = binary_target_filenames
             if target == 'biased_target':
                 list_metrics = list_metrics_continuous
-                filenames = continuous_target_filenames
             if target == 'biased_target_str':
                 list_metrics = list_metrics_categorical
-                filenames = categorical_target_filenames
+            filenames = ['fairness_algo_barplot_'+metric+'.png' for metric in list_metrics]
+            list_filenames_to_check = base_filenames_fairlens.copy()
+            if with_pred:
+                list_filenames_to_check += base_filenames_fairlearn.copy()
+                list_filenames_to_check += filenames.copy()
 
+            # Calculate the theoretical length of the files
             nb_groups_whole = 1
             nb_groups_intersection = 1
             if 'birth_date' in sensitive_cols:
@@ -230,43 +232,42 @@ class Case1_e2e_pipeline(unittest.TestCase):
                 nb_groups_intersection = nb_groups_intersection * 2
             nb_groups_whole = nb_groups_whole-1
 
+            # Run the script
             basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_fairness_metrics.py -f {filename_test_fairness} -t {target} -o test_fairness -n {nb_bins} -s"
             for col in sensitive_cols:
                 basic_run += f' {col}'
             if with_pred:
                  basic_run += f' -p {target}_pred'
-            
             self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
             
-            list_filenames_to_check = base_filenames_fairlens
-            if with_pred:
-                list_filenames_to_check += base_filenames_fairlearn
-                list_filenames_to_check += filenames
-
+            # Test the presence (or absence) of files
             for filename in list_filenames_to_check:
                 self.assertTrue(os.path.exists(os.path.join(output_path, filename)))
             if not with_pred:
                 for filename in base_filenames_fairlearn+filenames:
                     self.assertFalse(os.path.exists(os.path.join(output_path, filename)))
 
+            # Test the file data_distribution_score.csv
             filename = 'data_distribution_score.csv'
             if os.path.exists(os.path.join(output_path, filename)):
                 df = pd.read_csv(os.path.join(output_path, filename), sep=';', encoding='utf-8')
                 self.assertTrue(set_columns_data_distribution.issubset(set(df.columns)))
-                #self.assertTrue(len(df)==nb_groups_whole)
+                self.assertTrue(len(df)==nb_groups_whole)
             
+            # Test the file data_biased_groups.csv
             filename = 'data_biased_groups.csv'
             if os.path.exists(os.path.join(output_path, filename)):
                 df = pd.read_csv(os.path.join(output_path, filename), sep=';', encoding='utf-8')
                 self.assertTrue(set_columns_data_biased.issubset(set(df.columns)))
             
+            # Test the file algo_metrics_by_groups.csv
             if with_pred:
                 filename = 'algo_metrics_by_groups.csv'
                 if os.path.exists(os.path.join(output_path, filename)) and filename[-4:]=='.csv':
                     df = pd.read_csv(os.path.join(output_path, filename), sep=';', encoding='utf-8')
                     set_columns = {'count'}.union(set(list_metrics).union(sensitive_cols))
                     self.assertTrue(set_columns.issubset(set(df.columns)))
-                    #self.assertTrue(len(df)==(nb_groups_intersection+1))
+                    self.assertTrue(len(df)==(nb_groups_intersection+1))
             else:
                 filename = 'algo_metrics_by_groups.csv'
                 self.assertFalse(os.path.join(output_path, filename))
@@ -275,12 +276,13 @@ class Case1_e2e_pipeline(unittest.TestCase):
                 remove_dir(output_path)
 
         test_fairness_script(target='biased_target', sensitive_cols=['sex_label', 'citizenship'], nb_bins=3)
-        # test_fairness_script(target='biased_target_binary_int', sensitive_cols=['sex_label', 'citizenship'], nb_bins=3)
-        # test_fairness_script(target='biased_target_str', sensitive_cols=['sex_label', 'citizenship'], nb_bins=3)
-        # test_fairness_script(target='biased_target', sensitive_cols=['sex_label', 'birth_date'], nb_bins=4)
-        # test_fairness_script(target='biased_target_binary_int', sensitive_cols=['citizenship', 'birth_date'], nb_bins=5)
-        # test_fairness_script(target='biased_target_str', sensitive_cols=['age', 'citizenship'], nb_bins=2)
-        # test_fairness_script(target='biased_target', sensitive_cols=['age', 'citizenship', 'sex_label'], nb_bins=3)
+        test_fairness_script(target='biased_target_binary_int', sensitive_cols=['sex_label', 'citizenship'], nb_bins=3)
+        test_fairness_script(target='biased_target_str', sensitive_cols=['sex_label', 'citizenship'], nb_bins=3)
+        test_fairness_script(target='biased_target', sensitive_cols=['sex_label', 'birth_date'], nb_bins=4)
+        test_fairness_script(target='biased_target_binary_int', sensitive_cols=['citizenship', 'birth_date'], nb_bins=5)
+        test_fairness_script(target='biased_target_str', sensitive_cols=['age', 'citizenship'], nb_bins=2)
+        test_fairness_script(target='biased_target', sensitive_cols=['age', 'citizenship', 'sex_label'], nb_bins=3)
+        test_fairness_script(target='biased_target', sensitive_cols=['sex_label', 'citizenship'], nb_bins=3, with_pred=False)
 
     def test06_PreProcessData(self):
         '''Test of the file 1_preprocess_data.py'''
