@@ -182,68 +182,72 @@ class Case1_e2e_pipeline(unittest.TestCase):
         # Clean up sweetviz config path (useful ?)
         os.remove(config_path)
 
-    def test05_fairness_metrics(self):
-        '''Test of the file utils/0_fairness_metrics.py'''
-        print("Test of the file utils/0_fairness_metrics.py")
+    # def test05_fairness_metrics(self):
+    #     '''Test of the file utils/0_fairness_metrics.py'''
+    #     print("Test of the file utils/0_fairness_metrics.py")
 
-        base_filenames_fairlens = ['data_biased_groups.csv', 'data_distribution_score.csv', 'data_distributions.png']
-        base_filenames_fairlearn = ['algo_metrics_by_groups.csv', 'fairness_count_groups.csv']
-        binary_target_filenames = ['fairness_algo_barplot_'+metric+'.png' for metric in ['accuracy', 'precision', 
-                                                                                              'false_positive_rate', 'false_negative_rate', 
-                                                                                              'f1_score']]
-        categorical_target_filenames = ['fairness_algo_barplot_'+metric+'.png' for metric in ['f1_score_weighted', 'f1_score_macro', 
-                                                                                              'precision_weighted', 'precision_macro', 
-                                                                                              'accuracy']]
-        continuous_target_filenames = ['fairness_algo_barplot_'+metric+'.png' for metric in ['mean_absolute_value', 'root_mean_squared_error', 
-                                                                                              'mean_absolute_percentage_error', 'R_squared']]                                                                                  
-        data_path = os.path.join(full_path_lib, 'test_template_num-data')
-        output_path = os.path.join(data_path, "test_fairness")
-        original_dataset_path = os.path.join(data_path, 'mono_class_multi_label.csv')
+    #     base_filenames_fairlens = ['data_biased_groups.csv', 'data_distribution_score.csv', 'data_distributions.png']
+    #     base_filenames_fairlearn = ['algo_metrics_by_groups.csv', 'fairness_count_groups.csv']
+    #     binary_target_filenames = ['fairness_algo_barplot_'+metric+'.png' for metric in ['accuracy', 'precision', 
+    #                                                                                           'false_positive_rate', 'false_negative_rate', 
+    #                                                                                           'f1_score']]
+    #     categorical_target_filenames = ['fairness_algo_barplot_'+metric+'.png' for metric in ['f1_score_weighted', 'f1_score_macro', 
+    #                                                                                           'precision_weighted', 'precision_macro', 
+    #                                                                                           'accuracy']]
+    #     continuous_target_filenames = ['fairness_algo_barplot_'+metric+'.png' for metric in ['mean_absolute_value', 'root_mean_squared_error', 
+    #                                                                                           'mean_absolute_percentage_error', 'R_squared']]                                                                                  
+    #     data_path = os.path.join(full_path_lib, 'test_template_num-data')
+    #     output_path = os.path.join(data_path, "test_fairness")
+    #     original_dataset_path = os.path.join(data_path, 'mono_class_multi_label.csv')
 
-        # "Basic" case with binary target
-        if os.path.exists(output_path):
-            remove_dir(output_path)
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_fairness_metrics.py -f mono_class_multi_label.csv -t y_col_2 -s col_1 col_2 -o test_fairness -n 3 -p y_col_1"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        for filename in base_filenames_fairlens+base_filenames_fairlearn+binary_target_filenames:
-            self.assertTrue(os.path.exists(os.path.join(output_path, filename)))
-        for filename in continuous_target_filenames:
-                self.assertFalse(os.path.exists(os.path.join(output_path, filename)))
+    #     # "Basic" case with binary target
+    #     if os.path.exists(output_path):
+    #         remove_dir(output_path)
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_fairness_metrics.py -f mono_class_multi_label.csv -t y_col_2 -s col_1 col_2 -o test_fairness -n 3 -p y_col_1"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     for filename in base_filenames_fairlens+base_filenames_fairlearn+binary_target_filenames:
+    #         self.assertTrue(os.path.exists(os.path.join(output_path, filename)))
+    #     filename = 
+    #     if os.path.exists(os.path.join(output_path, filename)) and filename[-4:]=='.csv':
+    #         df = pd.read_csv(os.path.join(output_path, filename), sep=';', encoding='utf-8')
 
-        # "Basic" case with continuous target
-        if os.path.exists(output_path):
-            remove_dir(output_path)
-        with tempfile.NamedTemporaryFile(dir=data_path) as tmp_file:
-            # Read dataset, add a tmp target as continuous variable & save it in the tmp file
-            df = pd.read_csv(original_dataset_path, sep=';', encoding='utf-8')
-            df['tmp_target'] = df['y_col_1'].apply(lambda x:random.gauss(3, 1))
-            df['tmp_target_pred'] = df['y_col_1'].apply(lambda x:random.gauss(3, 1))
-            df.to_csv(tmp_file.name, sep=';', encoding='utf-8', index=None)
-            basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_fairness_metrics.py -f {tmp_file.name} -t tmp_target -s col_1 col_2 -o test_fairness -n 3 -p tmp_target_pred"
-            self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-            for filename in base_filenames_fairlens+base_filenames_fairlearn+continuous_target_filenames:
-                self.assertTrue(os.path.exists(os.path.join(output_path, filename)))
-            for filename in binary_target_filenames+categorical_target_filenames:
-                self.assertFalse(os.path.exists(os.path.join(output_path, filename)))
+    #     for filename in continuous_target_filenames:
+    #             self.assertFalse(os.path.exists(os.path.join(output_path, filename)))
 
-        # "Basic" case with categorical target
-        if os.path.exists(output_path):
-            remove_dir(output_path)
-        with tempfile.NamedTemporaryFile(dir=data_path) as tmp_file:
-            # Read dataset, add a tmp target as categorical variable & save it in the tmp file
-            df = pd.read_csv(original_dataset_path, sep=';', encoding='utf-8')
-            df['tmp_target'] = df['y_col_1'].apply(lambda x:random.sample(['coucou', 'coucou2', 'coucou3'],1)[0])
-            df['tmp_target_pred'] = df['y_col_1'].apply(lambda x:random.sample(['coucou', 'coucou2', 'coucou3'],1)[0])
-            df.to_csv(tmp_file.name, sep=';', encoding='utf-8', index=None)
-            basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_fairness_metrics.py -f {tmp_file.name} -t tmp_target -s col_1 col_2 -o test_fairness -n 3 -p tmp_target_pred"
-            self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-            for filename in base_filenames_fairlens+base_filenames_fairlearn+categorical_target_filenames:
-                self.assertTrue(os.path.exists(os.path.join(output_path, filename)))
-            for filename in continuous_target_filenames:
-                self.assertFalse(os.path.exists(os.path.join(output_path, filename)))
+    #     # "Basic" case with continuous target
+    #     if os.path.exists(output_path):
+    #         remove_dir(output_path)
+    #     with tempfile.NamedTemporaryFile(dir=data_path) as tmp_file:
+    #         # Read dataset, add a tmp target as continuous variable & save it in the tmp file
+    #         df = pd.read_csv(original_dataset_path, sep=';', encoding='utf-8')
+    #         df['tmp_target'] = df['y_col_1'].apply(lambda x:random.gauss(3, 1))
+    #         df['tmp_target_pred'] = df['y_col_1'].apply(lambda x:random.gauss(3, 1))
+    #         df.to_csv(tmp_file.name, sep=';', encoding='utf-8', index=None)
+    #         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_fairness_metrics.py -f {tmp_file.name} -t tmp_target -s col_1 col_2 -o test_fairness -n 3 -p tmp_target_pred"
+    #         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #         for filename in base_filenames_fairlens+base_filenames_fairlearn+continuous_target_filenames:
+    #             self.assertTrue(os.path.exists(os.path.join(output_path, filename)))
+    #         for filename in binary_target_filenames+categorical_target_filenames:
+    #             self.assertFalse(os.path.exists(os.path.join(output_path, filename)))
 
-        if os.path.exists(output_path):
-            remove_dir(output_path)
+    #     # "Basic" case with categorical target
+    #     if os.path.exists(output_path):
+    #         remove_dir(output_path)
+    #     with tempfile.NamedTemporaryFile(dir=data_path) as tmp_file:
+    #         # Read dataset, add a tmp target as categorical variable & save it in the tmp file
+    #         df = pd.read_csv(original_dataset_path, sep=';', encoding='utf-8')
+    #         df['tmp_target'] = df['y_col_1'].apply(lambda x:random.sample(['coucou', 'coucou2', 'coucou3'],1)[0])
+    #         df['tmp_target_pred'] = df['y_col_1'].apply(lambda x:random.sample(['coucou', 'coucou2', 'coucou3'],1)[0])
+    #         df.to_csv(tmp_file.name, sep=';', encoding='utf-8', index=None)
+    #         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_fairness_metrics.py -f {tmp_file.name} -t tmp_target -s col_1 col_2 -o test_fairness -n 3 -p tmp_target_pred"
+    #         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #         for filename in base_filenames_fairlens+base_filenames_fairlearn+categorical_target_filenames:
+    #             self.assertTrue(os.path.exists(os.path.join(output_path, filename)))
+    #         for filename in continuous_target_filenames:
+    #             self.assertFalse(os.path.exists(os.path.join(output_path, filename)))
+
+    #     if os.path.exists(output_path):
+    #         remove_dir(output_path)
 
     def test06_PreProcessData(self):
         '''Test of the file 1_preprocess_data.py'''

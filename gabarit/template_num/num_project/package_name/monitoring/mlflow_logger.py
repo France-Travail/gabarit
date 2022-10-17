@@ -25,7 +25,6 @@ import math
 import mlflow
 import pathlib
 import logging
-import matplotlib
 import pandas as pd
 from typing import Union
 
@@ -220,18 +219,9 @@ class MLflowLogger:
 
         Args:
             text (str): A text
-            artifact_file (str): The run-relative artifact file path in posixpath format to which the text is saved
+            artifact_file (str): The run-relative artifact file path in posixpath format to which the dictionary is saved
         '''
         mlflow.log_text(text=text, artifact_file=artifact_file)
-
-    def log_figure(self, figure: matplotlib.figure.Figure, artifact_file: str) -> None:
-        '''Logs a text as an artifact in MLflow
-
-        Args:
-            figure (matplotlib.figure.Figure): A matplotlib figure
-            artifact_file (str): The run-relative artifact file path in posixpath format to which the figure is saved
-        '''
-        mlflow.log_figure(figure=figure, artifact_file=artifact_file)
 
 
 if __name__ == '__main__':
