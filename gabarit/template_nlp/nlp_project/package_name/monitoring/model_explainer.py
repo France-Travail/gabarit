@@ -100,7 +100,7 @@ class LimeExplainer(Explainer):
         self.model_conf = model_conf
         self.class_names = self.model.list_classes
         self.explainer = LimeTextExplainer(class_names=self.class_names)
-        self.current_labels = None
+        self.current_labels: Union[list, None] = None
 
     def explain_instance(self, text: str, classes: Union[list, None] = None, max_features: int = 15, **kwargs):
         '''Explains a prediction

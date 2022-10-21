@@ -31,7 +31,8 @@ from lime.lime_image import LimeImageExplainer
 
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.models_training.model_class import ModelClass
+from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin  # type: ignore
+# ModelClassifierMixin import must be ignored for mypy as the Mixin class is itself ignored (too complicated to manage)
 
 
 class Explainer:
@@ -41,31 +42,31 @@ class Explainer:
         '''Initialization of the parent class'''
         self.logger = logging.getLogger(__name__)
 
-    def explain_instance(self, text: str, **kwargs) -> Any:
+    def explain_instance(self, img: Image.Image, **kwargs) -> Any:
         '''Explains a prediction
 
         Args:
-            text (str): Text to be explained
+            img (Image.Image): Image to be explained
         Returns:
             (?): An explanation object
         '''
         raise NotImplementedError("'explain_instance' needs to be overridden")
 
-    def explain_instance_as_html(self, text: str, **kwargs) -> str:
+    def explain_instance_as_html(self, img: Image.Image, **kwargs) -> str:
         '''Explains a prediction - returns an HTML object
 
         Args:
-            text (str): Text to be explained
+            img (Image.Image): Image to be explained
         Returns:
             str: An HTML code with the explanation
         '''
         raise NotImplementedError("'explain_instance_as_html' needs to be overridden")
 
-    def explain_instance_as_list(self, text: str, **kwargs) -> list:
+    def explain_instance_as_list(self, img: Image.Image, **kwargs) -> list:
         '''Explains a prediction - returns a list object
 
         Args:
-            text (str): Text to be explained
+            img (Image.Image): Image to be explained
         Returns:
             list: List of tuples with words and corresponding weights
         '''
@@ -75,7 +76,7 @@ class Explainer:
 class LimeExplainer(Explainer):
     '''Lime Explainer wrapper class'''
 
-    def __init__(self, model: Type[ModelClass], model_conf: dict) -> None:
+    def __init__(self, model: Type[ModelClassifierMixin], model_conf: dict) -> None:
         ''' Initialization
 
         Args:
@@ -83,19 +84,15 @@ class LimeExplainer(Explainer):
             model_conf (dict): The model's configuration
         Raises:
             ValueError: If the provided model is not a classifier
-            TypeError: If the provided model does not implement a `predict` function
-            TypeError: If the provided model does not implement a `predict_proba` function
+            TypeError: If the provided model does not implement a `pred_with_proba_op` function
             TypeError: If the provided model does not have a `list_classes` attribute
         '''
         super().__init__()
-        pred_op = getattr(model, "predict", None)
-        pred_proba_op = getattr(model, "predict_proba", None)
+        pred_with_proba_op = getattr(model, "predict_with_proba", None)
 
         # Check needed methods
-        if pred_op is None or not callable(pred_op):
-            raise TypeError("The supplied model must implement a predict() function")
-        if pred_proba_op is None or not callable(pred_proba_op):
-            raise TypeError("The supplied model must implement a predict_proba() function")
+        if pred_with_proba_op is None or not callable(pred_with_proba_op):
+            raise TypeError("The supplied model must implement a predict_with_proba() function")
         if getattr(model, "list_classes", None) is None:
             raise TypeError("The supplied model must have a list_classes attribute")
         # Check classifier
