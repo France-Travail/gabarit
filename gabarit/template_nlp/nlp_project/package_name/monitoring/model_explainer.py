@@ -100,6 +100,7 @@ class LimeExplainer(Explainer):
         self.model_conf = model_conf
         self.class_names = self.model.list_classes
         self.explainer = LimeTextExplainer(class_names=self.class_names)
+        self.current_labels: Union[list, None] = None
 
     def explain_instance(self, text: str, classes: Union[list, None] = None, max_features: int = 15, **kwargs):
         '''Explains a prediction
@@ -110,17 +111,28 @@ class LimeExplainer(Explainer):
         Args:
             text (str): Text to be explained
         Kwargs:
-            classes (list): Classes to be compared
+            classes (list): Classes to be compared - names
             max_features (int): Maximum number of features (cf. Lime documentation)
         Returns:
             (?): An explanation object
         '''
         # If no class provided, we only consider the predicted one against all others
         if classes is None:
-            classes = [self.class_names.index(self.model.predict(text))]
+            if self.model.multi_label:
+                # Get proba
+                probas = self.model.predict(text, return_proba=True)
+                # Consider max proba
+                labels = [probas.argmax(axis=-1)]
+            else:
+                # Prediction is directly the class name
+                prediction = self.model.predict(text)
+                labels = [self.class_names.index(prediction)]
         # Ohterwise we consider the provided ones
         else:
-            classes = [self.class_names.index(x) for x in classes]
+            labels = [self.class_names.index(x) for x in classes]
+
+        # Set current labels (used for as_list)
+        self.current_labels = labels
 
         # Define classifier_fn
         def classifier_fn(list_text: list) -> np.ndarray:
@@ -137,7 +149,7 @@ class LimeExplainer(Explainer):
             return self.model.predict_proba(list_text_preprocessed)
 
         # Get explanations
-        return self.explainer.explain_instance(text, classifier_fn, labels=classes, num_features=max_features)
+        return self.explainer.explain_instance(text, classifier_fn, labels=self.current_labels, num_features=max_features)
 
     def explain_instance_as_html(self, text: str, classes: Union[list, None] = None, max_features: int = 15, **kwargs) -> str:
         '''Explains a prediction - returns an HTML object
@@ -163,7 +175,9 @@ class LimeExplainer(Explainer):
         Returns:
             list: List of tuples with words and corresponding weights
         '''
-        return self.explain_instance(text, classes, max_features).as_list()
+        explanation = self.explain_instance(text, classes, max_features)
+        # Return as list for first label (either first element in classes or highest pred if classes is None)
+        return explanation.as_list(label=self.current_labels[0])
 
 
 # ** EXPERIMENTAL **
