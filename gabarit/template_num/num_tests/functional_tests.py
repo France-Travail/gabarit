@@ -270,7 +270,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
                     self.assertTrue(len(df)==(nb_groups_intersection+1))
             else:
                 filename = 'algo_metrics_by_groups.csv'
-                self.assertFalse(os.path.join(output_path, filename))
+                self.assertFalse(os.path.exists(os.path.join(output_path, filename)))
             
             if os.path.exists(output_path):
                 remove_dir(output_path)
