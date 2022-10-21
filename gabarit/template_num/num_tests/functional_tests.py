@@ -279,7 +279,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         test_fairness_script(target='biased_target_binary_int', sensitive_cols=['sex_label', 'citizenship'], nb_bins=3)
         test_fairness_script(target='biased_target_str', sensitive_cols=['sex_label', 'citizenship'], nb_bins=3)
         test_fairness_script(target='biased_target', sensitive_cols=['sex_label', 'birth_date'], nb_bins=4)
-        test_fairness_script(target='biased_target_binary_int', sensitive_cols=['citizenship', 'birth_date'], nb_bins=5)
+        test_fairness_script(target='biased_target_binary_int', sensitive_cols=['citizenship', 'birth_date'], nb_bins=2)
         test_fairness_script(target='biased_target_str', sensitive_cols=['age', 'citizenship'], nb_bins=2)
         test_fairness_script(target='biased_target', sensitive_cols=['age', 'citizenship', 'sex_label'], nb_bins=3)
         test_fairness_script(target='biased_target', sensitive_cols=['sex_label', 'citizenship'], nb_bins=3, with_pred=False)
