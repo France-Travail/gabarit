@@ -18,7 +18,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelAggregationClassifier -> model aggregation for classification
+# - ModelAggregationClassifier -> Model to aggregate several classifier models
 
 import os
 import json
@@ -26,8 +26,9 @@ import logging
 import numpy as np
 import pandas as pd
 import dill as pickle
-from types import FunctionType, MethodType
 from typing import Callable, Union, List
+from types import FunctionType, MethodType
+
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_models
@@ -36,7 +37,7 @@ from {{package_name}}.models_training.classifiers.model_classifier import ModelC
 
 
 class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
-    '''Model for aggregating multiple ModelClasses'''
+    '''Model for aggregating several classifier models'''
     _default_name = 'model_aggregation_classifier'
 
     def __init__(self, list_models: Union[list, None] = None, aggregation_function: Union[Callable, str] = 'majority_vote', using_proba: Union[bool, None] = None, multi_label: Union[bool, None] = None, **kwargs) -> None:
@@ -45,16 +46,15 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
         Kwargs:
             list_models (list) : The list of model to be aggregated
             aggregation_function (Callable or str) : The aggregation function used
-            using_proba (bool) : Which object is being aggregated (the probas or the predictions).
+            using_proba (bool) : Which object is being aggregated (the probabilities or the predictions).
             multi_label (bool): If the classification is multi-labels
-
         Raises:
             ValueError : If the object aggregation_function is a str but not found in the dictionary dict_aggregation_function
-            ValueError : If the object aggregation_function is not compatible with value using_proba
-            ValueError : If the object aggregation_function is not compatible with value multi_label
-            ValueError : If aggregation_function object is Callable and using_proba/multi_label is None
+            ValueError : If the object aggregation_function is not compatible with the value of using_proba
+            ValueError : If the object aggregation_function is not compatible with the value of multi_label
+            ValueError : If aggregation_function object is Callable and using_proba or multi_label is None
             ValueError : If the object list_model has other model than model calssifier (model_aggregation_classifier is only compatible with model classifier)
-            ValueError : The 'multi_label' parameters of the list models are inconsistent with the model_aggregation_classifier
+            ValueError : The multi_label attributes of the aggregated models are inconsistent with multi_label
         '''
         # Init.
         super().__init__(**kwargs)
@@ -74,18 +74,18 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
                 raise ValueError(f"When aggregation_function is Callable, using_proba(bool) and multi_label(bool) cannot be None ")
         elif isinstance(aggregation_function, str):
             if aggregation_function not in dict_aggregation_function.keys():
-                raise ValueError(f"The aggregation_function object ({aggregation_function}) is not a valid option ({dict_aggregation_function.keys()})")
+                raise ValueError(f"The aggregation_function ({aggregation_function}) is not a valid option ({dict_aggregation_function.keys()})")
             if using_proba is None:
                 self.using_proba = dict_aggregation_function[aggregation_function]['using_proba'] # type: ignore
             elif using_proba != dict_aggregation_function[aggregation_function]['using_proba']:
-                raise ValueError(f"The aggregation_function object ({aggregation_function}) is not compatible with using_proba=({using_proba})")
+                raise ValueError(f"The aggregation_function ({aggregation_function}) is not compatible with using_proba=({using_proba})")
             if multi_label is None:
                 self.multi_label = dict_aggregation_function[aggregation_function]['multi_label'] # type: ignore
             elif multi_label != dict_aggregation_function[aggregation_function]['multi_label']:
-                raise ValueError(f"The aggregation_function object ({aggregation_function}) is not compatible with multi_label=({multi_label})")
+                raise ValueError(f"The aggregation_function ({aggregation_function}) is not compatible with multi_label=({multi_label})")
             aggregation_function = dict_aggregation_function[aggregation_function]['function'] # type: ignore
 
-        # Manage model
+        # Manage aggregated models
         self.aggregation_function = aggregation_function
         self.list_real_models: list = None
         self.list_models: list = None
@@ -95,28 +95,28 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
         if self.list_real_models is not None:
             # Error: The classifier and regressor models cannot be combined in list_models
             if False in [isinstance(model, ModelClassifierMixin) for model in self.list_real_models]:
-                raise ValueError(f"model_aggregation_classifier only accepts model classifier")
+                raise ValueError(f"model_aggregation_classifier only accepts classifier models")
 
-            # Error for multi label inconsistency
+            # Check for multi label inconsistencies
             set_multi_label = {model.multi_label for model in self.list_real_models}
             if True in set_multi_label and not self.multi_label:
-                raise ValueError(f"The 'multi_label' parameters of the list models are inconsistent with the model_aggregation_classifier.")
+                raise ValueError(f"The 'multi_label' parameters of the list models are inconsistent with self.multi_label = {self.multi_label}")
             # set list_models_trained
             self.list_models_trained: List[bool] = [model.trained for model in self.list_real_models]
 
         self._check_trained()
 
     def _sort_model_type(self, list_models: list) -> None:
-        '''Populate the self.list_real_models if it is None.
-           Init list_real_models with each model and list_models with each model_name.
+        '''Populates the self.list_real_models if it is None.
+           Initializes self.list_real_models with each model and self.list_models with each model's name.
 
         Args:
-            list_models (list): list of the models or of their name
+            list_models (list): list of models or name of models
         '''
         if self.list_real_models is None:
             list_real_models = []
             new_list_models = []
-            # Get the real model and model name
+            # Get the actual model and its name
             for model in list_models:
                 if isinstance(model, str):
                     real_model, _ = utils_models.load_model(model)
@@ -129,9 +129,10 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
             self.list_models = new_list_models
 
     def _check_trained(self):
-        '''Check and sets various attributes related to the fitting of underlying models
+        '''Checks and sets various attributes related to the fitting of underlying models
 
-        Raises more than one type of labels in list models
+        Raises:
+            TypeError : The classes of all the aggregated models are not of the same type 
         '''
         # Check fitted
         if self.list_real_models is not None:
@@ -145,10 +146,10 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
                 list_label_str = [label for label in self.list_classes if isinstance(label, str)]
                 list_label_other = [int(label) for label in self.list_classes if label not in list_label_str]
                 if len(list_label_str) > 0 and len(list_label_other) > 0:
-                    raise TypeError('There are more than one type of labels in the list models.')
+                    raise TypeError('The classes of all the aggregated models are not of the same type.')
                 self.list_classes.sort()
 
-                # Set dict_classes based on list classes
+                # Set dict_classes based on self.list_classes
                 self.dict_classes = {i: col for i, col in enumerate(self.list_classes)}
 
     def fit(self, x_train, y_train, **kwargs) -> None:
@@ -163,11 +164,11 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
             ValueError : if model needs multi_label but y_train is mono_label
         '''
         if isinstance(y_train, pd.DataFrame):
-            bool_multi_label = True if len(y_train.iloc[0]) > 1 else False
+            y_train_multi_label = True if len(y_train.iloc[0]) > 1 else False
         elif isinstance(y_train, np.ndarray):
-            bool_multi_label = True if y_train.shape != (len(x_train),) else False
+            y_train_multi_label = True if y_train.shape != (len(x_train),) else False
         else:
-            bool_multi_label = False
+            y_train_multi_label = False
 
         # We check input format
         x_train, y_train = self._check_input_format(x_train, y_train, fit_function=True)
@@ -175,16 +176,16 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
         # Fit each model
         for model in self.list_real_models:
             if not model.trained:
-                if bool_multi_label and not model.multi_label:
-                    raise ValueError(f"Model {model} (model_name: {model.model_name}) needs y_train_mono_label to fit")
-                if not bool_multi_label and model.multi_label:
-                    raise ValueError(f"Model {model}(model_name: {model.model_name}) needs y_train_multi_label to fit")
+                if y_train_multi_label and not model.multi_label:
+                    raise ValueError(f"Model {model} (model_name: {model.model_name}) needs y_train to be mono-label when fitting")
+                if not y_train_multi_label and model.multi_label:
+                    raise ValueError(f"Model {model}(model_name: {model.model_name}) needs y_train to be multi-labels when fitting")
                 model.fit(x_train, y_train, **kwargs)
 
         self._check_trained()
 
     @utils.trained_needed
-    def predict(self, x_test, return_proba: Union[bool, None] = False, **kwargs) -> np.ndarray:
+    def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
         '''Prediction
 
         Args:
@@ -204,7 +205,7 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
 
     @utils.trained_needed
     def _get_probas(self, x_test, **kwargs) -> np.ndarray:
-        '''Recover the probability of each model being aggregated
+        '''Recover the probabilities of each model being aggregated
 
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
@@ -217,13 +218,13 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
 
     @utils.trained_needed
     def _get_predictions(self, x_test, **kwargs) -> np.ndarray:
-        '''Recover the probability of each model being aggregated
+        '''Recover the predictions of each model being aggregated
 
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
         Returns:
-            (np.ndarray): not multi-label : array of shape = [n_samples, nb_model]
-                          multi-label : array of shape = [n_samples, nb_model, n_classes]
+            (np.ndarray): not multi_label : array of shape = [n_samples, nb_model]
+                          multi_label : array of shape = [n_samples, nb_model, n_classes]
         '''
         if self.multi_label:
             array_predict = np.array([self._predict_model_with_full_list_classes(model, x_test, return_proba=False) for model in self.list_real_models])
@@ -243,18 +244,19 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
             (np.ndarray): array of shape = [n_samples, n_classes]
         '''
         probas = self._get_probas(x_test, **kwargs)
-        # The probas of all models are averaged.
+        # The probas of all models are averaged
         return np.sum(probas, axis=1) / probas.shape[1]
 
-    def _predict_model_with_full_list_classes(self, model, x_test, return_proba: Union[bool, None] = False) -> np.ndarray:
-        '''For multi_label: Complete columns missing in the prediction of model (label missing in their list_classes)
+    def _predict_model_with_full_list_classes(self, model, x_test, return_proba: bool = False) -> np.ndarray:
+        '''For multi_label: Adds missing columns in the prediction of model (class missing in their list_classes)
+        Or, if return_proba, adds a proba of zero to the missing classes in their list_classes
 
         Args:
-            model (?): model to predict
-            x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
+            model (?): Model to use
+            x_test (?): Array-like or sparse matrix of shape = [n_samples, n_features]
             return_proba (bool): If the function should return the probabilities instead of the classes
         Returns:
-            (np.ndarray): predict complete (0 for missing columns)
+            (np.ndarray): The array with the missing columns added
         '''
         pred = model.predict(x_test, return_proba=return_proba)
 
@@ -267,28 +269,28 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
         elif not self.multi_label and not return_proba:
             return pred
         else:
-            return np.array([[1 if pred[n_test] == col else 0 for col in self.list_classes] for n_test in range(len(pred))])
+            return np.array([[1 if one_pred == col else 0 for col in self.list_classes] for one_pred in pred])
 
     def proba_argmax(self, proba: np.ndarray):
-        '''Aggregation_function: We take the argmax of the mean of the probabilities of the underlying models to provide a prediction
+        '''Gives the class corresponding to the argmax of the average of the given probabilities.
 
         Args:
-            proba (np.ndarray): array of shape (nb_models, nb_classes) the probability of each model for each class
+            proba (np.ndarray): The probabilities of each model for each class, array of shape (nb_models, nb_classes) 
         Returns:
-            the prediction
+            The prediction
         '''
         proba_average = np.sum(proba, axis=0) / proba.shape[0]
         index_class = np.argmax(proba_average)
         return self.list_classes[index_class]
 
     def majority_vote(self, predictions: np.ndarray):
-        '''Aggregation_function: A majority voting system of multiple predictions is used.
-        In the case of a tie, we use the first model's prediction (even if it is not in the first votes)
+        '''Gives the class corresponding to the most present prediction in the given predictions. 
+        In case of a tie, gives the first prediction (even if not the most present) 
 
         Args:
-            (np.ndarray) : shape (n_models) the array containing the predictions of each models
+            predictions (np.ndarray) : The array containing the predictions of each model (shape (n_models)) 
         Returns:
-            the prediction
+            The prediction
         '''
         labels, counts = np.unique(predictions, return_counts=True)
         votes = [(label, count) for label, count in zip(labels, counts)]
@@ -299,54 +301,37 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
             return votes[0][0]
 
     def all_predictions(self, predictions: np.ndarray) -> np.ndarray:
-        '''Returns all labels predicted by the list of models ie returns 1 if at least one model
-        predicts this label  (multi_label only)
+        '''Calculates the sum of the arrays along axis 0 casts it to bool and then to int. 
+        Expects a numpy array containing only zeroes and ones. 
+        When used as an aggregation function, keeps all the prediction of each model (multi-labels)
 
         Args:
-            (np.ndarray) : array of shape : (n_models, n_classes)
+            predictions (np.ndarray) : Array of shape : (n_models, n_classes)
         Return:
-            (np.ndarray) : prediction
+            (np.ndarray) : The prediction
         '''
         return np.sum(predictions, axis=0, dtype=bool).astype(int)
 
     def vote_labels(self, predictions: np.ndarray) -> np.ndarray:
-        '''Returns the labels predicted by majority_vote for each labels
-        predicts this label (multi_label only)
+        '''Gives the result of majority_vote applied on the second axis. 
+        When used as an aggregation_function, for each class, performs a majority vote for the aggregated models. 
+        It gives a multi-labels result
 
         Args:
             (np.ndarray) : array of shape : (n_models, n_classes)
         Return:
             (np.ndarray) : prediction
         '''
-        predictions = predictions.T
-        return np.array([self.majority_vote(preds) for preds in predictions])
+        return np.apply_along_axis(self.majority_vote, 1, predictions)
 
-    def median_predict(self, predictions: np.ndarray) -> np.float64:
-        '''Returns the median predicted by predictions of each models
-
-        Args:
-            (np.ndarray) : shape (n_models) the array containing the predictions of each models
-        Return:
-            (np.float64) : predict
-        '''
-        return np.median(predictions)
-
-    def mean_predict(self, predictions: np.ndarray) -> np.float64:
-        '''Returns the mean predicted by predictions of each models
-
-        Args:
-            (np.ndarray) : shape (n_models) the array containing the predictions of each models
-        Return:
-            (np.float64) : predict
-        '''
-        return np.mean(predictions)
-
-    def save(self, json_data: Union[dict, None] = {}) -> None:
+    def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model
 
         Kwargs:
             json_data (dict): Additional configurations to be saved
         '''
+        if json_data is None:
+            json_data = {}
         # Save each trained and unsaved model
         for tuple_trained_model in zip(self.list_models_trained, self.list_real_models):
             if (not tuple_trained_model[0]) and tuple_trained_model[1].trained:
