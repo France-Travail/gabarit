@@ -25,7 +25,7 @@ sweetviz==2.1.4
 
 # Optionnals - useless in prod.
 pydot==1.4.1  # Needed to plot models architecture
-lime==0.2.0.1  # Needed to get a model explanation
+shap==0.41.0  # Needed to get a model explanation
 
 # Optionnals - streamlit POC
 streamlit==1.12.2
