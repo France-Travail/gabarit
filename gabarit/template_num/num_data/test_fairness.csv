@@ -1,4 +1,4 @@
-;birth_date;age;citizenship;sex_label;biased_target;biased_target_binary_int;biased_target_str;biased_target_pred;biased_target_binary_int_pred;biased_target_str_pred
+;birth_date;age;citizenship;genre;biased_target;biased_target_binary_int;biased_target_str;biased_target_pred;biased_target_binary_int_pred;biased_target_str_pred
 0;1994-09-02 18:28:51;28;english;Homme;3.303734911402824;1;passable;3.5844950377394054;1;passable
 1;2001-09-11 00:15:41;21;french;Homme;2.4087275943988247;0;passable;2.731535359386112;0;passable
 2;2001-05-26 00:07:00;21;english;Femme;3.3349095328729783;1;passable;3.260810900951986;1;passable

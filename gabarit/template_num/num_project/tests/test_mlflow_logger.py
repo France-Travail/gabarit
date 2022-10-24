@@ -24,6 +24,7 @@ import shutil
 import mlflow
 import urllib
 import pathlib
+import matplotlib.pyplot as plt
 import numpy as np
 import pandas as pd
 
@@ -231,6 +232,27 @@ class MLflowLoggerTests(unittest.TestCase):
             saved_txt = f.read()
         self.assertEqual(saved_txt, text)
         # Clear
+        mlflow_logger.end_run()
+
+    def test13_mlflow_logger_log_figure(self):
+        '''Test of {{package_name}}.monitoring.mlflow_logger.MLflowLogger.log_figure'''
+        experiment_name = 'test_mlflow_logger_log_figure'
+        mlflow_logger = MLflowLogger(experiment_name=experiment_name, tracking_uri=LOCAL_TRACKING_URI)
+        # Nominal case
+        plt.pie([0.4, 0.3, 0.3])
+        figure = plt.gcf()
+        figure.canvas.draw()
+        image_from_figure = np.frombuffer(figure.canvas.tostring_rgb(), dtype=np.uint8)
+        artifact_file = 'figure.png'
+        mlflow_logger.log_figure(figure, artifact_file)
+        artifact_location = urllib.request.url2pathname(urllib.parse.urlparse(mlflow.get_experiment_by_name(experiment_name).artifact_location).path)
+        run_id = mlflow.last_active_run().info.run_id
+        saved_png_path = os.path.join(artifact_location, run_id, 'artifacts', 'figure.png')
+        self.assertTrue(os.path.exists(saved_png_path))
+        saved_png = (plt.imread(saved_png_path) * 255).astype('uint8')
+        saved_png = saved_png[:, :, :3]
+        self.assertAlmostEqual(np.mean(image_from_figure), np.mean(saved_png))
+        # # Clear
         mlflow_logger.end_run()
 
 

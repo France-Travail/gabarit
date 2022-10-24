@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-# Ex: python 0_generate_report.py -s train.csv -c valid.csv test.csv
+# Ex: python 0_sweetviz_report.py -s train.csv -c valid.csv test.csv
 # --source_names "Training data" --compare_names "Validation data" "Testing data"
 # --config sweetviz_config.json
 
@@ -34,7 +34,7 @@ from typing import List, Union, Tuple
 from {{package_name}} import utils
 
 # Get logger
-logger = logging.getLogger("{{package_name}}.0_generate_report.py")
+logger = logging.getLogger("{{package_name}}.0_sweetviz_report.py")
 
 
 def main(source_paths: List[str], source_names: List[str] = None, compare_paths: List[str] = None,
