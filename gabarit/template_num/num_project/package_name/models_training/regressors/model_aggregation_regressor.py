@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Model Aggregation Regressors
+## Model Aggregation Regressor
 
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
@@ -18,7 +18,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelAggregationRegressors -> model aggregation for regressor
+# - ModelAggregationRegressor -> Model to aggregate several regressor models
 
 import os
 import json
@@ -34,7 +34,7 @@ from {{package_name}}.models_training.regressors.model_regressor import ModelReg
 
 
 class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
-    '''Model for aggregating multiple ModelClasses'''
+    '''Model for aggregating several regressor models'''
     _default_name = 'model_aggregation_regressor'
 
     def __init__(self, list_models: Union[list, None] = None, aggregation_function: Union[Callable, str] = 'median_predict', **kwargs) -> None:
@@ -43,7 +43,6 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
         Kwargs:
             list_models (list) : The list of model to be aggregated
             aggregation_function (Callable or str) : The aggregation function used
-
         Raises:
             ValueError : If the object list_model has other model than model regressor (model_aggregation_regressor is only compatible with model regressor)
             ValueError : If the object aggregation_function is a str but not found in the dictionary dict_aggregation_function
@@ -59,10 +58,10 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
                                      'mean_predict': self.mean_predict}
         if isinstance(aggregation_function, str):
             if aggregation_function not in dict_aggregation_function.keys():
-                raise ValueError(f"The aggregation_function object ({aggregation_function}) is not a valid option ({dict_aggregation_function.keys()})")
+                raise ValueError(f"The aggregation_function ({aggregation_function}) is not a valid option ({dict_aggregation_function.keys()})")
             aggregation_function = dict_aggregation_function[aggregation_function] # type: ignore
 
-        # Manage model
+        # Manage aggregated models
         self.aggregation_function = aggregation_function
         self.list_real_models: list = None
         self.list_models: list = None
@@ -72,23 +71,23 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
         # Error: The classifier and regressor models cannot be combined in list_models
         if self.list_real_models is not None:
             if False in [isinstance(model, ModelRegressorMixin) for model in self.list_real_models]:
-                raise ValueError(f"model_aggregation_regressor only accepts model regressor")
+                raise ValueError(f"model_aggregation_regressor only accepts regressor models")
             # set list_models_trained
             self.list_models_trained: List[bool] = [model.trained for model in self.list_real_models]
 
         self._check_trained()
 
     def _sort_model_type(self, list_models: list) -> None:
-        '''Populate the self.list_real_models if it is None.
-           Init list_real_models with each model and list_models with each model_name.
+        '''Populates the self.list_real_models if it is None.
+           Initializes self.list_real_models with each model and self.list_models with each model's name.
 
         Args:
-            list_models (list): list of the models or of their name
+            list_models (list): list of models or name of models
         '''
         if self.list_real_models is None:
             list_real_models = []
             new_list_models = []
-            # Get the real model and model name
+            # Get the actual model and its name
             for model in list_models:
                 if isinstance(model, str):
                     real_model, _ = utils_models.load_model(model)
@@ -101,9 +100,7 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
             self.list_models = new_list_models
 
     def _check_trained(self):
-        '''Check and sets various attributes related to the fitting of underlying models
-
-        Raises more than one type of labels in list models
+        '''Checks and sets various attributes related to the fitting of underlying models
         '''
         # Check fitted
         if self.list_real_models is not None:
@@ -137,7 +134,7 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
             return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
         Returns:
-            (np.ndarray): array of shape = [n_samples]
+            (np.ndarray): Array of shape = [n_samples]
         Raises:
             ValueError: If return_proba=True
         '''
@@ -159,7 +156,7 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
 
     @utils.trained_needed
     def _get_predictions(self, x_test, **kwargs) -> np.ndarray:
-        '''Recover the probability of each model being aggregated
+        '''Recover the predictions of each model being aggregated
 
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
@@ -171,31 +168,33 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
         return array_predict
 
     def median_predict(self, predictions: np.ndarray) -> np.float64:
-        '''Returns the median predicted by predictions of each models
+        '''Returns the median of the predictions of each model
 
         Args:
-            (np.ndarray) : shape (n_models) the array containing the predictions of each models
+            predictions (np.ndarray) : The array containing the predictions of each models (shape (n_models))
         Return:
-            (np.float64) : predict
+            (np.float64) : The median of the predictions
         '''
         return np.median(predictions)
 
     def mean_predict(self, predictions: np.ndarray) -> np.float64:
-        '''Returns the mean predicted by predictions of each models
+        '''Returns the mean of predictions of each model
 
         Args:
-            (np.ndarray) : shape (n_models) the array containing the predictions of each models
+            predictions (np.ndarray) : The array containing the predictions of each models (shape (n_models))
         Return:
-            (np.float64) : predict
+            (np.float64) : The mean of the predictions
         '''
         return np.mean(predictions)
 
-    def save(self, json_data: Union[dict, None] = {}) -> None:
+    def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model
 
         Kwargs:
             json_data (dict): Additional configurations to be saved
         '''
+        if json_data is None:
+            json_data = {}
         # Save each trained and unsaved model
         for tuple_trained_model in zip(self.list_models_trained, self.list_real_models):
             if (not tuple_trained_model[0]) and tuple_trained_model[1].trained:
