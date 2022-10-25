@@ -52,14 +52,12 @@ def remove_dir(path):
 class ModelClassTests(unittest.TestCase):
     '''Main class to test model_class'''
 
-
     def setUp(self):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-
 
     def test01_model_class_init(self):
         '''Test of the initialization of {{package_name}}.models_training.model_class.ModelClass'''
@@ -132,7 +130,6 @@ class ModelClassTests(unittest.TestCase):
             preprocess_pipeline = preprocess.get_pipeline("no_preprocess")
             ModelClass(model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
 
-
     def test02_model_class_save(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass.save'''
 
@@ -186,7 +183,6 @@ class ModelClassTests(unittest.TestCase):
             configs = json.load(f)
         self.assertEqual(configs['test'], 8)
         remove_dir(model_dir)
-
 
     def test03_model_class_save_upload_properties(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass._save_upload_properties'''
@@ -302,7 +298,6 @@ class ModelClassTests(unittest.TestCase):
         self.assertFalse('autre_bruit' in proprietes.keys())
         remove_dir(model_dir)
 
-
     def test04_model_class_get_model_dir(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass._get_model_dir'''
 
@@ -317,7 +312,6 @@ class ModelClassTests(unittest.TestCase):
         res_dir = model._get_model_dir()
         self.assertTrue(res_dir.startswith(expected_dir))
         remove_dir(model_dir)
-
 
     def test05_model_class_check_input_format(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass._check_input_format
@@ -821,7 +815,6 @@ class ModelClassTests(unittest.TestCase):
             model = ModelClass(model_dir=model_dir, model_name=model_name, preprocess_pipeline=preprocess_pipeline, x_col=x_col, y_col=y_col_multi)
             model._check_input_format(x_input, y_input_multi_bad_format)
             remove_dir(model_dir)
-
 
     def test06_model_class_is_gpu_activated(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass._is_gpu_activated'''

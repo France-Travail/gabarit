@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -238,8 +238,8 @@ class ModelPipelineTests(unittest.TestCase):
         model.fit(x_train, y_train_mono_2)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 2)) # 2 classes
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -252,8 +252,8 @@ class ModelPipelineTests(unittest.TestCase):
         model.fit(x_train, y_train_mono_3)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 3)) # 3 classes
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -266,8 +266,8 @@ class ModelPipelineTests(unittest.TestCase):
         model.fit(x_train, y_train_multi)
         preds = model.predict(x_train)
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), len(y_col_multi)))
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
         remove_dir(model_dir)
 
         # Regressor
@@ -280,7 +280,7 @@ class ModelPipelineTests(unittest.TestCase):
         preds = model.predict(x_train)
         self.assertEqual(preds.shape, (len(x_train),))
         with self.assertRaises(ValueError):
-            proba = model.predict(x_train, return_proba=True)
+            probas = model.predict(x_train, return_proba=True)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -314,9 +314,9 @@ class ModelPipelineTests(unittest.TestCase):
         model.model_type = 'classifier'
         model.multi_label = False
         model.fit(x_train, y_train_mono_2)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), 2)) # 2 classes
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -327,9 +327,9 @@ class ModelPipelineTests(unittest.TestCase):
         model.model_type = 'classifier'
         model.multi_label = False
         model.fit(x_train, y_train_mono_3)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), 3)) # 3 classes
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -340,9 +340,9 @@ class ModelPipelineTests(unittest.TestCase):
         model.model_type = 'classifier'
         model.multi_label = True
         model.fit(x_train, y_train_multi)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), len(y_col_multi))) # 3 labels
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi))) # 3 labels
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
 
         # Regressor

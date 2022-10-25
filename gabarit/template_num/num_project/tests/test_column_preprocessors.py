@@ -36,14 +36,12 @@ logging.disable(logging.CRITICAL)
 class ColumnPreprocessorsTests(unittest.TestCase):
     '''Main class to test all functions in {{package_name}}.preprocessing.column_preprocessors'''
 
-
     def setUp(self):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-
 
     def test01_AutoLogTransform(self):
         '''Test of the class column_preprocessors.AutoLogTransform'''

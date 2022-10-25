@@ -44,14 +44,12 @@ def remove_dir(path):
 class ModelDenseRegressorTests(unittest.TestCase):
     '''Main class to test model_dense_regressor'''
 
-
     def setUp(self):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-
 
     def test01_model_dense_regressor_init(self):
         '''Test of the initialization of {{package_name}}.models_training.model_dense_regressor.ModelDenseRegressor'''
@@ -103,6 +101,7 @@ class ModelDenseRegressorTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
         x_col = ['col_1', 'col_2']
         y_col_mono = ['toto']
@@ -113,11 +112,13 @@ class ModelDenseRegressorTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         with self.assertRaises(ValueError):
-            proba = model.predict(x_train, return_proba=True)
+            probas = model.predict(x_train, return_proba=True)
         preds = model.predict(x_train, return_proba=False, experimental_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
         with self.assertRaises(ValueError):
-            proba = model.predict(x_train, return_proba=True, experimental_version=True)
+            probas = model.predict(x_train, return_proba=True, experimental_version=True)
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv)
         remove_dir(model_dir)
 
         # Model needs to be fitted

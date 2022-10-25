@@ -281,8 +281,8 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_mono_2)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 2)) # 2 classes
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -290,8 +290,8 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_mono_3)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 3)) # 3 classes
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -300,8 +300,8 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_multi)
         preds = model.predict(x_train)
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), len(y_col_multi)))
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -329,26 +329,26 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         # Classification - Mono-label - Mono-Class
         model = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, xgboost_params={'n_estimators': 5})
         model.fit(x_train, y_train_mono_2)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), 2)) # 2 classes
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
         model = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, xgboost_params={'n_estimators': 5})
         model.fit(x_train, y_train_mono_3)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), 3)) # 3 classes
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
 
         # Classification - Multi-labels
         # We also check without x_col & y_col
         model = ModelXgboostClassifier(model_dir=model_dir, multi_label=True, xgboost_params={'n_estimators': 5})
         model.fit(x_train, y_train_multi)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), len(y_col_multi))) # 3 labels
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi))) # 3 labels
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
 
         # Model needs to be fitted

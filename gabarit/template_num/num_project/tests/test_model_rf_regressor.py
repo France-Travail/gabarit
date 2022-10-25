@@ -91,7 +91,7 @@ class ModelRFRegressorTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         with self.assertRaises(ValueError):
-            proba = model.predict(x_train, return_proba=True)
+            probas = model.predict(x_train, return_proba=True)
         remove_dir(model_dir)
 
         # Model needs to be fitted

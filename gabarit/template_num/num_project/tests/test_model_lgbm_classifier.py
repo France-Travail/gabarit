@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -41,14 +41,12 @@ def remove_dir(path):
 class ModelLGBMClassifierTests(unittest.TestCase):
     '''Main class to test model_lgbm_classifier'''
 
-
     def setUp(self):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-
 
     def test01_model_lgbm_classifier_init(self):
         '''Test of {{package_name}}.models_training.classifiers.model_lgbm_classifier.ModelLGBMClassifier.__init__'''
@@ -115,6 +113,7 @@ class ModelLGBMClassifierTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
@@ -127,22 +126,26 @@ class ModelLGBMClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_mono_2)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 2)) # 2 classes
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
         remove_dir(model_dir)
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovr')
         model.fit(x_train, y_train_mono_2)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 2)) # 2 classes
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
         remove_dir(model_dir)
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovo')
         model.fit(x_train, y_train_mono_2)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 2)) # 2 classes
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv)
+        probas_inv = model.predict(x_train_inv, return_proba=True)
+        np.testing.assert_almost_equal(probas, probas_inv)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -150,22 +153,26 @@ class ModelLGBMClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_mono_3)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 3)) # 3 classes
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
         remove_dir(model_dir)
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovr')
         model.fit(x_train, y_train_mono_3)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 3)) # 3 classes
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
         remove_dir(model_dir)
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovo')
         model.fit(x_train, y_train_mono_3)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 3)) # 3 classes
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv)
+        probas_inv = model.predict(x_train_inv, return_proba=True)
+        np.testing.assert_almost_equal(probas, probas_inv)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -173,22 +180,26 @@ class ModelLGBMClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_multi)
         preds = model.predict(x_train)
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), len(y_col_multi)))
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
         remove_dir(model_dir)
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True, multiclass_strategy='ovr')
         model.fit(x_train, y_train_multi)
         preds = model.predict(x_train)
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), len(y_col_multi)))
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
         remove_dir(model_dir)
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True, multiclass_strategy='ovo')
         model.fit(x_train, y_train_multi)
         preds = model.predict(x_train)
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), len(y_col_multi)))
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv)
+        probas_inv = model.predict(x_train_inv, return_proba=True)
+        np.testing.assert_almost_equal(probas, probas_inv)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -205,6 +216,7 @@ class ModelLGBMClassifierTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
@@ -215,61 +227,67 @@ class ModelLGBMClassifierTests(unittest.TestCase):
         # Classification - Mono-label - Mono-Class
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir)
         model.fit(x_train, y_train_mono_2)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), 2)) # 2 classes
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovr')
         model.fit(x_train, y_train_mono_2)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), 2)) # 2 classes
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovo')
         model.fit(x_train, y_train_mono_2)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), 2)) # 2 classes
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        probas_inv = model.predict_proba(x_train_inv)
+        np.testing.assert_almost_equal(probas, probas_inv)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir)
         model.fit(x_train, y_train_mono_3)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), 3)) # 3 classes
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovr')
         model.fit(x_train, y_train_mono_3)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), 3)) # 3 classes
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovo')
         model.fit(x_train, y_train_mono_3)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), 3)) # 3 classes
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        probas_inv = model.predict_proba(x_train_inv)
+        np.testing.assert_almost_equal(probas, probas_inv)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True)
         model.fit(x_train, y_train_multi)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), len(y_col_multi))) # 3 labels
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi))) # 3 labels
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True, multiclass_strategy='ovr')
         model.fit(x_train, y_train_multi)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), len(y_col_multi))) # 3 labels
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi))) # 3 labels
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
         model = ModelLGBMClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True, multiclass_strategy='ovo')
         model.fit(x_train, y_train_multi)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), len(y_col_multi))) # 3 labels
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi))) # 3 labels
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        probas_inv = model.predict_proba(x_train_inv)
+        np.testing.assert_almost_equal(probas, probas_inv)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -286,6 +304,7 @@ class ModelLGBMClassifierTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
@@ -308,6 +327,8 @@ class ModelLGBMClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_mono_2)
         predict_positions = model.get_predict_position(x_train, y_train_mono_2)
         self.assertEqual(predict_positions.shape, (len(x_train),))
+        predict_positions_inv = model.get_predict_position(x_train_inv, y_train_mono_2)
+        np.testing.assert_almost_equal(predict_positions, predict_positions_inv)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -325,6 +346,8 @@ class ModelLGBMClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_mono_3)
         predict_positions = model.get_predict_position(x_train, y_train_mono_2)
         self.assertEqual(predict_positions.shape, (len(x_train),))
+        predict_positions_inv = model.get_predict_position(x_train_inv, y_train_mono_2)
+        np.testing.assert_almost_equal(predict_positions, predict_positions_inv)
         remove_dir(model_dir)
 
         # Classification - Multi-labels

@@ -43,14 +43,12 @@ def remove_dir(path):
 class ModelDenseClassifierTests(unittest.TestCase):
     '''Main class to test model_dense_classifier'''
 
-
     def setUp(self):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-
 
     def test01_model_dense_classifier_init(self):
         '''Test of {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier.__init__'''
@@ -105,6 +103,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
@@ -117,12 +116,16 @@ class ModelDenseClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_mono_2)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 2)) # 2 classes
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
         preds = model.predict(x_train, return_proba=False, experimental_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True, experimental_version=True)
-        self.assertEqual(proba.shape, (len(x_train), 2)) # 2 classes
+        probas = model.predict(x_train, return_proba=True, experimental_version=True)
+        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv)
+        probas_inv = model.predict(x_train_inv, return_proba=True)
+        np.testing.assert_almost_equal(probas, probas_inv)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -130,12 +133,16 @@ class ModelDenseClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_mono_3)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 3)) # 3 classes
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
         preds = model.predict(x_train, return_proba=False, experimental_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
-        proba = model.predict(x_train, return_proba=True, experimental_version=True)
-        self.assertEqual(proba.shape, (len(x_train), 3)) # 3 classes
+        probas = model.predict(x_train, return_proba=True, experimental_version=True)
+        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv)
+        probas_inv = model.predict(x_train_inv, return_proba=True)
+        np.testing.assert_almost_equal(probas, probas_inv)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -143,12 +150,16 @@ class ModelDenseClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_multi)
         preds = model.predict(x_train)
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), len(y_col_multi)))
+        probas = model.predict(x_train, return_proba=True)
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
         preds = model.predict(x_train, return_proba=False, experimental_version=True)
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        proba = model.predict(x_train, return_proba=True, experimental_version=True)
-        self.assertEqual(proba.shape, (len(x_train), len(y_col_multi)))
+        probas = model.predict(x_train, return_proba=True, experimental_version=True)
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv)
+        probas_inv = model.predict(x_train_inv, return_proba=True)
+        np.testing.assert_almost_equal(probas, probas_inv)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -156,7 +167,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
             model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
             model.predict(x_train)
         remove_dir(model_dir)
-
 
     def test03_model_dense_classifier_predict_proba(self):
         '''Test of the method predict_proba of {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier'''
@@ -166,6 +176,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
@@ -176,25 +187,31 @@ class ModelDenseClassifierTests(unittest.TestCase):
         # Classification - Mono-label - Mono-Class
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono_2)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), 2)) # 2 classes
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        probas_inv = model.predict_proba(x_train_inv)
+        np.testing.assert_almost_equal(probas, probas_inv)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono_3)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), 3)) # 3 classes
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        probas_inv = model.predict_proba(x_train_inv)
+        np.testing.assert_almost_equal(probas, probas_inv)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         model.fit(x_train, y_train_multi)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), len(y_col_multi))) # 3 labels
-        self.assertTrue(isinstance(preds[0][0], (np.floating, float)))
+        probas = model.predict_proba(x_train)
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi))) # 3 labels
+        self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        probas_inv = model.predict_proba(x_train_inv)
+        np.testing.assert_almost_equal(probas, probas_inv)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -202,7 +219,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
             model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
             model.predict_proba('test')
         remove_dir(model_dir)
-
 
     def test04_model_dense_classifier_get_predict_position(self):
         '''Test of the method {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier.get_predict_position'''
@@ -212,6 +228,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
@@ -224,6 +241,8 @@ class ModelDenseClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_mono_2)
         predict_positions = model.get_predict_position(x_train, y_train_mono_2)
         self.assertEqual(predict_positions.shape, (len(x_train),))
+        predict_positions_inv = model.get_predict_position(x_train_inv, y_train_mono_2)
+        np.testing.assert_almost_equal(predict_positions, predict_positions_inv)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -231,6 +250,8 @@ class ModelDenseClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_mono_3)
         predict_positions = model.get_predict_position(x_train, y_train_mono_2)
         self.assertEqual(predict_positions.shape, (len(x_train),))
+        predict_positions_inv = model.get_predict_position(x_train_inv, y_train_mono_2)
+        np.testing.assert_almost_equal(predict_positions, predict_positions_inv)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -239,7 +260,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             model.get_predict_position(x_train, y_train_multi)
         remove_dir(model_dir)
-
 
     def test05_model_dense_classifier_get_model(self):
         '''Test of the method {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier._get_model'''
@@ -277,7 +297,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
-
 
     def test06_model_dense_classifier_save(self):
         '''Test of the method save of {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier'''
@@ -372,7 +391,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertTrue('multi_label' in configs.keys())
         remove_dir(model_dir)
 
-
     def test07_model_dense_classifier_reload_model(self):
         '''Test of the method reload_model of {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier'''
 
@@ -432,7 +450,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
         np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3)
         # Clean
         remove_dir(model_dir)
-
 
     def test08_model_dense_classifier_reload_from_standalone(self):
         '''Test of the method {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier.reload_from_standalone'''
