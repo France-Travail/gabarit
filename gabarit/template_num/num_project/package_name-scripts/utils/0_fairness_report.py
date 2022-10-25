@@ -260,7 +260,7 @@ def plot_count(df_metrics: pd.DataFrame) -> matplotlib.axes._axes.Axes:
     Returns:
         matplotlib.axes._axes.Axes : The matplotlib axes for the figure
     '''
-    fig = df_metrics[['count']].plot(kind="pie", subplots=True, layout=[1,1], legend=False, figsize=[12,8],
+    fig = df_metrics[['count']].plot(kind="pie", subplots=True, layout=[1, 1], legend=False, figsize=[12, 8],
                          title='Size of each sensitive subgroup')
     ax = fig[0][0]
     return ax
@@ -281,7 +281,7 @@ def plot_one_metric(df_metrics: pd.DataFrame, metric_name: str) -> matplotlib.ax
         index_overall = list(ordered_df.index).index('overall')
     else:
         index_overall = list(ordered_df.index).index(('overall',)*nlevels)
-    fig = ordered_df.plot(kind="bar", subplots=True, layout=[1,1], legend=False, figsize=[12,8],
+    fig = ordered_df.plot(kind="bar", subplots=True, layout=[1, 1], legend=False, figsize=[12, 8],
                          title=metric_name+' for each sensitive subgroup')
     ax = fig[0][0]
     # Color in orange the bar corresponding to the whole dataset

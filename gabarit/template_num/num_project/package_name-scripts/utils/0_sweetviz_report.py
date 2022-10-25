@@ -26,6 +26,7 @@ import json
 import logging
 import sweetviz
 import argparse
+import datetime
 import pandas as pd
 from pathlib import Path
 from itertools import product
@@ -62,7 +63,7 @@ def main(source_paths: List[str], source_names: List[str] = None, compare_paths:
     # Get data path
     data_path = utils.get_data_path()
     # Set report folder
-    report_folder = os.path.join(data_path, 'reports')
+    report_folder = os.path.join(data_path, 'reports', 'sweetviz')
     if not os.path.exists(report_folder):
         os.makedirs(report_folder)
 
@@ -90,14 +91,15 @@ def main(source_paths: List[str], source_names: List[str] = None, compare_paths:
         # Set compare and output filename
         if compare_path is None:
             compare = None
-            output_path = os.path.join(report_folder, f"report_{source_filename}.html")
+            output_filename = datetime.datetime.now().strftime(f"report_{source_filename}_%Y_%m_%d-%H_%M_%S.html")
             logger.info(f"Generating report for dataset '{source_filename}'")
         else:
             compare_df = pd.read_csv(compare_path, sep=sep, encoding=encoding)
             compare = [compare_df, compare_name]
             compare_filename = compare_name.replace(" ", "_")
-            output_path = os.path.join(report_folder, f"report_{source_filename}_{compare_filename}.html")
+            output_filename = datetime.datetime.now().strftime(f"report_{source_filename}_{compare_filename}_%Y_%m_%d-%H_%M_%S.html")
             logger.info(f"Generating report between datasets '{source_filename}' and '{compare_filename}'")
+        output_path = os.path.join(report_folder, output_filename)
 
         # Generate report
         report: sweetviz.DataframeReport = sweetviz.compare(source, compare, target_feat=target,

@@ -240,7 +240,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
             self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
             path_fairness = os.path.join(data_path, 'reports', 'fairness')
-            folder_name = list(os.walk(path_fairness))[0][1]
+            folder_name = list(os.walk(path_fairness))[0][1][0]
             output_path = os.path.join(path_fairness, folder_name)
             
             # Test the presence (or absence) of files
