@@ -163,7 +163,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
             os.remove(config_path)
         with open(config_path, 'w') as f:
             json.dump({"open_browser": False}, f)
-        report_path = os.path.join(full_path_lib, "test_template_num-data", "reports", "sweetviz")
+        report_path = os.path.join(full_path_lib, "test_template_nlp-data", "reports", "sweetviz")
         remove_dir(report_path)
 
         # "Basic" case
