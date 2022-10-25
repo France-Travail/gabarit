@@ -154,17 +154,21 @@ class Case1_e2e_pipeline(unittest.TestCase):
             os.remove(config_path)
         with open(config_path, 'w') as f:
             json.dump({"open_browser": False}, f)
+        report_path = os.path.join(full_path_lib, "test_template_num-data", "reports", "sweetviz")
+        remove_dir(report_path)
 
         # "Basic" case
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label.csv --source_names source --config {config_path}"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_num-data", "reports", "report_source.html")))
+        list_filenames = list(os.walk(report_path))[0][2]
+        self.assertTrue(len([filename for filename in list_filenames if "report_source" in filename and "report_source_w" not in filename]) == 1)
 
         # Compare datasets
         test_compare = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path}"
         self.assertEqual(subprocess.run(test_compare, shell=True).returncode, 0)
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_num-data", "reports", "report_train_valid.html")))
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_num-data", "reports", "report_train_test.html")))
+        list_filenames = list(os.walk(report_path))[0][2]
+        self.assertTrue(len([filename for filename in list_filenames if "report_train_valid" in filename]) == 1)
+        self.assertTrue(len([filename for filename in list_filenames if "report_train_test" in filename]) == 1)
 
         # With target
         # Sweetviz does not with categorical target. Hence, we'll create a temporary dataframe with a binary target.
@@ -177,7 +181,8 @@ class Case1_e2e_pipeline(unittest.TestCase):
             df.to_csv(tmp_file.name, sep=';', encoding='utf-8', index=None)
             test_target = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s {tmp_file.name} --source_names source_with_target -t tmp_target --config {config_path}"
             self.assertEqual(subprocess.run(test_target, shell=True).returncode, 0)
-            self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_num-data", "reports", "report_source_with_target.html")))
+            list_filenames = list(os.walk(report_path))[0][2]
+            self.assertTrue(len([filename for filename in list_filenames if "report_source_with_target" in filename]) == 1)
 
         # Clean up sweetviz config path (useful ?)
         os.remove(config_path)
