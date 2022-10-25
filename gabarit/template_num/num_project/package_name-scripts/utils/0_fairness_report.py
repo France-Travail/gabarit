@@ -311,7 +311,7 @@ def get_and_save_metrics_graphs(metric_frame: fairlearn.metrics.MetricFrame, out
     nb_level_index = df_metrics.index.nlevels
     df_overall = pd.DataFrame(metric_frame._overall).T
     if nb_level_index == 1:
-        df_overall.index = pd.Index(['overall'])
+        df_overall.index = pd.Index(['overall'], name=df_metrics.index.name)
     else:
         df_overall.index = pd.MultiIndex.from_arrays([['overall']]*nb_level_index, names=df_metrics.index.names)
     df_metrics = pd.concat([df_metrics, df_overall])
