@@ -101,7 +101,7 @@ class ModelDenseRegressorTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
-        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'fake_col': [0.5, -3, 5, 5, 2, 0, 8] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
         x_col = ['col_1', 'col_2']
         y_col_mono = ['toto']
@@ -117,6 +117,7 @@ class ModelDenseRegressorTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train),))
         with self.assertRaises(ValueError):
             probas = model.predict(x_train, return_proba=True, experimental_version=True)
+        # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
@@ -252,11 +253,11 @@ class ModelDenseRegressorTests(unittest.TestCase):
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
         # Test without custom_objects
         model.custom_objects = None
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
         # Clean
         remove_dir(model_dir)
 

@@ -103,7 +103,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
-        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'fake_col': [0.5, -3, 5, 5, 2, 0, 8] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
@@ -122,10 +122,11 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True, experimental_version=True)
         self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
+        # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         probas_inv = model.predict(x_train_inv, return_proba=True)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -139,10 +140,11 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True, experimental_version=True)
         self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
+        # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         probas_inv = model.predict(x_train_inv, return_proba=True)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -156,10 +158,11 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
         probas = model.predict(x_train, return_proba=True, experimental_version=True)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
+        # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         probas_inv = model.predict(x_train_inv, return_proba=True)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -176,7 +179,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
-        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'fake_col': [0.5, -3, 5, 5, 2, 0, 8] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
@@ -190,8 +193,9 @@ class ModelDenseClassifierTests(unittest.TestCase):
         probas = model.predict_proba(x_train)
         self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        # Test inversed columns order
         probas_inv = model.predict_proba(x_train_inv)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -200,8 +204,9 @@ class ModelDenseClassifierTests(unittest.TestCase):
         probas = model.predict_proba(x_train)
         self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        # Test inversed columns order
         probas_inv = model.predict_proba(x_train_inv)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -210,8 +215,9 @@ class ModelDenseClassifierTests(unittest.TestCase):
         probas = model.predict_proba(x_train)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))  # 3 labels
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        # Test inversed columns order
         probas_inv = model.predict_proba(x_train_inv)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -228,7 +234,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
-        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'fake_col': [0.5, -3, 5, 5, 2, 0, 8] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
@@ -241,8 +247,9 @@ class ModelDenseClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_mono_2)
         predict_positions = model.get_predict_position(x_train, y_train_mono_2)
         self.assertEqual(predict_positions.shape, (len(x_train),))
+        # Test inversed columns order
         predict_positions_inv = model.get_predict_position(x_train_inv, y_train_mono_2)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal(predict_positions, predict_positions_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -250,8 +257,9 @@ class ModelDenseClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_mono_3)
         predict_positions = model.get_predict_position(x_train, y_train_mono_2)
         self.assertEqual(predict_positions.shape, (len(x_train),))
+        # Test inversed columns order
         predict_positions_inv = model.get_predict_position(x_train_inv, y_train_mono_2)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal(predict_positions, predict_positions_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -413,11 +421,11 @@ class ModelDenseClassifierTests(unittest.TestCase):
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
         # Test without custom_objects
         model.custom_objects = None
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
         # Clean
         remove_dir(model_dir)
 
@@ -428,11 +436,11 @@ class ModelDenseClassifierTests(unittest.TestCase):
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
         # Test without custom_objects
         model.custom_objects = None
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
         # Clean
         remove_dir(model_dir)
 
@@ -443,11 +451,11 @@ class ModelDenseClassifierTests(unittest.TestCase):
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
         # Test without custom_objects
         model.custom_objects = None
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
         # Clean
         remove_dir(model_dir)
 

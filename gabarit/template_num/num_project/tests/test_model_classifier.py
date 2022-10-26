@@ -143,7 +143,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 3, 12, 2] * 10})
-        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'fake_col': [0.5, -3, 5, 5, 2, 0, 8] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono = pd.Series([0, 0, 0, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1] * 10})
         cols = list(y_train_multi.columns)
@@ -154,6 +154,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
         preds, probas = model.predict_with_proba(x_train)
         self.assertEqual(preds.shape, (len(x_train),))
         self.assertEqual(probas.shape, (len(x_train), 2))
+        # Test inversed columns order
         preds_inv, probas_inv = model.predict_with_proba(x_train)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
@@ -165,6 +166,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
         preds, probas = model.predict_with_proba(x_train)
         self.assertEqual(preds.shape, (len(x_train), len(cols)))
         self.assertEqual(probas.shape, (len(x_train), len(cols)))
+        # Test inversed columns order
         preds_inv, probas_inv = model.predict_with_proba(x_train)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
@@ -186,7 +188,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 3, 12, 2] * 10})
-        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'fake_col': [0.5, -3, 5, 5, 2, 0, 8] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono = pd.Series([0, 0, 0, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1] * 10})
         cols = list(y_train_multi.columns)
@@ -196,6 +198,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
         model.fit(x_train, y_train_mono)
         predict_positions = model.get_predict_position(x_train, y_train_mono)
         self.assertEqual(predict_positions.shape, (len(x_train),))
+        # Test inversed columns order
         predict_positions_inv = model.get_predict_position(x_train, y_train_mono)
         np.testing.assert_almost_equal(predict_positions, predict_positions_inv, decimal=5)
         remove_dir(model_dir)

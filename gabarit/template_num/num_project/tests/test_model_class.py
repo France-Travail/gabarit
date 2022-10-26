@@ -332,14 +332,16 @@ class ModelClassTests(unittest.TestCase):
         x_input = pd.DataFrame({'test_x1_prep': [2, 4], 'test_x2_prep': [6, 8]})
         x_input_bad_order = pd.DataFrame({'test_x2_prep': [6, 8], 'test_x1_prep': [2, 4]})
         x_input_bad_columns = pd.DataFrame({'test_x1_prep': [2, 4], 'toto': [6, 8]})
-        x_input_bad_format = pd.DataFrame({'test_x1_prep': [2, 4], 'test_x2_prep': [6, 8], 'test_x3': [5, 6]})
+        x_input_too_much_ok = pd.DataFrame({'test_x2_prep': [6, 8], 'test_x3': [5, 6], 'test_x1_prep': [2, 4]})
+        x_input_too_much_ko = pd.DataFrame({'titi': [6, 8], 'test_x3': [5, 6], 'test_x1_prep': [2, 4]})
         y_input = pd.Series([0, 1])
         y_input_df = pd.DataFrame({'test_y': [0, 1]})
         y_col_multi = ['test_y1', 'test_y2']
         y_input_multi = pd.DataFrame({'test_y1': [0, 1], 'test_y2': [1, 0]})
         y_input_multi_bad_order = pd.DataFrame({'test_y2': [1, 0], 'test_y1': [0, 1]})
         y_input_multi_bad_columns = pd.DataFrame({'toto': [0, 1], 'titi': [1, 0]})
-        y_input_multi_bad_format = pd.DataFrame({'test_y1': [0, 1], 'test_y2': [1, 0], 'toto': [0, 1]})
+        y_input_multi_too_much_ok = pd.DataFrame({'test_y2': [1, 0], 'toto': [0, 1], 'test_y1': [0, 1]})
+        y_input_multi_too_much_ko = pd.DataFrame({'titi': [1, 0], 'toto': [0, 1], 'test_y1': [0, 1]})
         class customFunctionTransformer(FunctionTransformer):
             def __init__(self, func=None) -> None:
                 super().__init__(func=func)
@@ -430,6 +432,50 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input_bad_order, y_input, fit_function=True)
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
+        self.assertEqual(_, None)
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        # too much columns - no y - fit_function=False
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        x_output, _ = model._check_input_format(x_input_too_much_ok, fit_function=False)
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        self.assertEqual(_, None)
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        # too much columns - with y - fit_function=False
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        x_output, y_output = model._check_input_format(x_input_too_much_ok, y_input, fit_function=False)
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
+        self.assertEqual(_, None)
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        # too much columns - with y - fit_function=True
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        x_output, y_output = model._check_input_format(x_input_too_much_ok, y_input, fit_function=True)
         pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
         pd.testing.assert_series_equal(y_output, y_input)  # No modifications
         self.assertEqual(_, None)
@@ -565,6 +611,50 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input_bad_order, y_input_multi_bad_order, fit_function=True)
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        pd.testing.assert_frame_equal(y_output, y_input_multi)  # No modifications
+        self.assertEqual(_, None)
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col_multi)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        # too much columns - no y - fit_function=False
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col_multi)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        x_output, _ = model._check_input_format(x_input_too_much_ok, fit_function=False)
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        self.assertEqual(_, None)
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col_multi)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        # too much columns - with y - fit_function=False
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col_multi)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        x_output, y_output = model._check_input_format(x_input_too_much_ok, y_input_multi_too_much_ok, fit_function=False)
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        pd.testing.assert_frame_equal(y_output, y_input_multi)  # No modifications
+        self.assertEqual(_, None)
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col_multi)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        # too much columns - with y - fit_function=True
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col_multi)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        x_output, y_output = model._check_input_format(x_input_too_much_ok, y_input_multi_too_much_ok, fit_function=True)
         pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
         pd.testing.assert_frame_equal(y_output, y_input_multi)  # No modifications
         self.assertEqual(_, None)
@@ -809,11 +899,11 @@ class ModelClassTests(unittest.TestCase):
             remove_dir(model_dir)
         with self.assertRaises(ValueError):
             model = ModelClass(model_dir=model_dir, model_name=model_name, preprocess_pipeline=preprocess_pipeline, x_col=x_col, y_col=y_col)
-            model._check_input_format(x_input_bad_format)
+            model._check_input_format(x_input_too_much_ko)
             remove_dir(model_dir)
         with self.assertRaises(ValueError):
             model = ModelClass(model_dir=model_dir, model_name=model_name, preprocess_pipeline=preprocess_pipeline, x_col=x_col, y_col=y_col_multi)
-            model._check_input_format(x_input, y_input_multi_bad_format)
+            model._check_input_format(x_input, y_input_multi_too_much_ko)
             remove_dir(model_dir)
 
     def test06_model_class_is_gpu_activated(self):

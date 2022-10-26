@@ -79,7 +79,7 @@ class ModelRFRegressorTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
-        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'fake_col': [0.5, -3, 5, 5, 2, 0, 8] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
         x_col = ['col_1', 'col_2']
         y_col_mono = ['toto']
@@ -91,6 +91,7 @@ class ModelRFRegressorTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train),))
         with self.assertRaises(ValueError):
             probas = model.predict(x_train, return_proba=True)
+        # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
