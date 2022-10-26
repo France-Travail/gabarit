@@ -41,14 +41,12 @@ def remove_dir(path):
 class ModelXgboostClassifierTests(unittest.TestCase):
     '''Main class to test model_xgboost_classifier'''
 
-
     def setUp(self):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-
 
     def test01_model_xgboost_classifier_init(self):
         '''Test of the initialization of {{package_name}}.models_training.classifiers.model_xgboost_classifier.ModelXgboostClassifier'''
@@ -82,7 +80,6 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         model = ModelXgboostClassifier(model_dir=model_dir, validation_split=0.3)
         self.assertEqual(model.validation_split, 0.3)
         remove_dir(model_dir)
-
 
     def test02_model_xgboost_classifier_fit(self):
         '''Test of the method fit of {{package_name}}.models_training.classifiers.model_xgboost_classifier.ModelXgboostClassifier'''
@@ -260,7 +257,6 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         self.assertEqual(model_dir, model.model_dir)
         remove_dir(model_dir)
 
-
     def test03_model_xgboost_classifier_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.classifiers.model_xgboost_classifier.ModelXgboostClassifier'''
 
@@ -269,6 +265,7 @@ class ModelXgboostClassifierTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
@@ -282,7 +279,11 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True)
-        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        probas_inv = model.predict(x_train_inv, return_proba=True)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -291,7 +292,11 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True)
-        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        probas_inv = model.predict(x_train_inv, return_proba=True)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -302,6 +307,10 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
         probas = model.predict(x_train, return_proba=True)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        probas_inv = model.predict(x_train_inv, return_proba=True)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -309,7 +318,6 @@ class ModelXgboostClassifierTests(unittest.TestCase):
             model = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir)
             model.predict(pd.Series([-2, 3]))
         remove_dir(model_dir)
-
 
     def test04_model_xgboost_classifier_predict_proba(self):
         '''Test of the method predict_proba of {{package_name}}.models_training.classifiers.model_xgboost_classifier.ModelXgboostClassifier'''
@@ -319,6 +327,7 @@ class ModelXgboostClassifierTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
@@ -330,16 +339,20 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         model = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, xgboost_params={'n_estimators': 5})
         model.fit(x_train, y_train_mono_2)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        probas_inv = model.predict_proba(x_train_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
         model = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, xgboost_params={'n_estimators': 5})
         model.fit(x_train, y_train_mono_3)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        probas_inv = model.predict_proba(x_train_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -347,8 +360,10 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         model = ModelXgboostClassifier(model_dir=model_dir, multi_label=True, xgboost_params={'n_estimators': 5})
         model.fit(x_train, y_train_multi)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi))) # 3 labels
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))  # 3 labels
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        probas_inv = model.predict_proba(x_train_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -357,8 +372,48 @@ class ModelXgboostClassifierTests(unittest.TestCase):
             model.predict_proba('test')
         remove_dir(model_dir)
 
+    def test05_model_xgboost_classifier_get_predict_position(self):
+        '''Test of the method {{package_name}}.models_training.classifiers.model_xgboost_classifier.ModelXgboostClassifier.get_predict_position'''
 
-    def test05_model_xgboost_classifier_save(self):
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Set vars
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
+        y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
+        y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
+        y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
+        x_col = ['col_1', 'col_2']
+        y_col_mono = ['toto']
+        y_col_multi = ['y1', 'y2', 'y3']
+
+        # Classification - Mono-label - Mono-Class
+        model = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir)
+        model.fit(x_train, y_train_mono_2)
+        predict_positions = model.get_predict_position(x_train, y_train_mono_2)
+        self.assertEqual(predict_positions.shape, (len(x_train),))
+        predict_positions_inv = model.get_predict_position(x_train_inv, y_train_mono_2)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        remove_dir(model_dir)
+
+        # Classification - Mono-label - Multi-Classes
+        model = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir)
+        model.fit(x_train, y_train_mono_3)
+        predict_positions = model.get_predict_position(x_train, y_train_mono_2)
+        self.assertEqual(predict_positions.shape, (len(x_train),))
+        predict_positions_inv = model.get_predict_position(x_train_inv, y_train_mono_2)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        remove_dir(model_dir)
+
+        # Classification - Multi-labels
+        model = ModelXgboostClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True)
+        model.fit(x_train, y_train_multi)  # Unavailable in multi-labels
+        with self.assertRaises(ValueError):
+            model.get_predict_position(x_train, y_train_multi)
+        remove_dir(model_dir)
+
+    def test06_model_xgboost_classifier_save(self):
         '''Test of the method save of {{package_name}}.models_training.classifiers.model_xgboost_classifier.ModelXgboostClassifier'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -479,8 +534,7 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         self.assertTrue('multi_label' in configs.keys())
         remove_dir(model_dir)
 
-
-    def test06_model_xgboost_classifier_reload_from_standalone(self):
+    def test07_model_xgboost_classifier_reload_from_standalone(self):
         '''Test of the method {{package_name}}.models_training.classifiers.model_xgboost_classifier.ModelXgboostClassifier.reload_from_standalone'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')

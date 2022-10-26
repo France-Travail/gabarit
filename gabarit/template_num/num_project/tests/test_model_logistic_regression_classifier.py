@@ -127,25 +127,25 @@ class ModelLogisticRegressionClassifierTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True)
-        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         remove_dir(model_dir)
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovr')
         model.fit(x_train, y_train_mono_2)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True)
-        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         remove_dir(model_dir)
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovo')
         model.fit(x_train, y_train_mono_2)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True)
-        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         preds_inv = model.predict(x_train_inv, return_proba=False)
-        np.testing.assert_almost_equal(preds, preds_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         probas_inv = model.predict(x_train_inv, return_proba=True)
-        np.testing.assert_almost_equal(probas, probas_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -154,25 +154,25 @@ class ModelLogisticRegressionClassifierTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True)
-        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         remove_dir(model_dir)
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovr')
         model.fit(x_train, y_train_mono_3)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True)
-        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         remove_dir(model_dir)
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovo')
         model.fit(x_train, y_train_mono_3)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True)
-        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         preds_inv = model.predict(x_train_inv, return_proba=False)
-        np.testing.assert_almost_equal(preds, preds_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         probas_inv = model.predict(x_train_inv, return_proba=True)
-        np.testing.assert_almost_equal(probas, probas_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -197,9 +197,9 @@ class ModelLogisticRegressionClassifierTests(unittest.TestCase):
         probas = model.predict(x_train, return_proba=True)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
         preds_inv = model.predict(x_train_inv, return_proba=False)
-        np.testing.assert_almost_equal(preds, preds_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         probas_inv = model.predict(x_train_inv, return_proba=True)
-        np.testing.assert_almost_equal(probas, probas_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -228,66 +228,66 @@ class ModelLogisticRegressionClassifierTests(unittest.TestCase):
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir)
         model.fit(x_train, y_train_mono_2)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovr')
         model.fit(x_train, y_train_mono_2)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovo')
         model.fit(x_train, y_train_mono_2)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         probas_inv = model.predict_proba(x_train_inv)
-        np.testing.assert_almost_equal(probas, probas_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir)
         model.fit(x_train, y_train_mono_3)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovr')
         model.fit(x_train, y_train_mono_3)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovo')
         model.fit(x_train, y_train_mono_3)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         probas_inv = model.predict_proba(x_train_inv)
-        np.testing.assert_almost_equal(probas, probas_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True)
         model.fit(x_train, y_train_multi)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi))) # 3 labels
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))  # 3 labels
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True, multiclass_strategy='ovr')
         model.fit(x_train, y_train_multi)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi))) # 3 labels
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))  # 3 labels
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True, multiclass_strategy='ovo')
         model.fit(x_train, y_train_multi)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi))) # 3 labels
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))  # 3 labels
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         probas_inv = model.predict_proba(x_train_inv)
-        np.testing.assert_almost_equal(probas, probas_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -328,7 +328,7 @@ class ModelLogisticRegressionClassifierTests(unittest.TestCase):
         predict_positions = model.get_predict_position(x_train, y_train_mono_2)
         self.assertEqual(predict_positions.shape, (len(x_train),))
         predict_positions_inv = model.get_predict_position(x_train_inv, y_train_mono_2)
-        np.testing.assert_almost_equal(predict_positions, predict_positions_inv)
+        np.testing.assert_almost_equal(predict_positions, predict_positions_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -347,22 +347,22 @@ class ModelLogisticRegressionClassifierTests(unittest.TestCase):
         predict_positions = model.get_predict_position(x_train, y_train_mono_2)
         self.assertEqual(predict_positions.shape, (len(x_train),))
         predict_positions_inv = model.get_predict_position(x_train_inv, y_train_mono_2)
-        np.testing.assert_almost_equal(predict_positions, predict_positions_inv)
+        np.testing.assert_almost_equal(predict_positions, predict_positions_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True)
-        model.fit(x_train, y_train_multi) # Unavailable in multi-labels
+        model.fit(x_train, y_train_multi)  # Unavailable in multi-labels
         with self.assertRaises(ValueError):
             model.get_predict_position(x_train, y_train_multi)
         remove_dir(model_dir)
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True, multiclass_strategy='ovr')
-        model.fit(x_train, y_train_multi) # Unavailable in multi-labels
+        model.fit(x_train, y_train_multi)  # Unavailable in multi-labels
         with self.assertRaises(ValueError):
             model.get_predict_position(x_train, y_train_multi)
         remove_dir(model_dir)
         model = ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True, multiclass_strategy='ovo')
-        model.fit(x_train, y_train_multi) # Unavailable in multi-labels
+        model.fit(x_train, y_train_multi)  # Unavailable in multi-labels
         with self.assertRaises(ValueError):
             model.get_predict_position(x_train, y_train_multi)
         remove_dir(model_dir)

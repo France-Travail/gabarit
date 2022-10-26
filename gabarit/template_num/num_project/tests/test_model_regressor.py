@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # Copyright (C) <2018-2021>  <Agence Data Services, DSI Pôle Emploi>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -72,14 +72,12 @@ class ModelMockRegressor(ModelRegressorMixin, ModelClass):
 class ModelRegressorMixinTests(unittest.TestCase):
     '''Main class to test model_regressor'''
 
-
     def setUp(self):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-
 
     def test01_model_regressor_init(self):
         '''Test of the initialization of {{package_name}}.models_training.regressors.model_regressor.ModelRegressorMixin'''
@@ -115,7 +113,6 @@ class ModelRegressorMixinTests(unittest.TestCase):
             ModelMockRegressor(model_dir=model_dir, model_name=model_name, level_save='toto')
         remove_dir(model_dir)
 
-
     def test02_model_regressor_inverse_transform(self):
         '''Test of the method {{package_name}}.models_training.regressors.model_regressor.ModelRegressorMixin.inverse_transform'''
 
@@ -134,7 +131,6 @@ class ModelRegressorMixinTests(unittest.TestCase):
         self.assertEqual(model.inverse_transform(y2), expected_result2)
         remove_dir(model_dir)
 
-
     def test03_model_regressor_get_and_save_metrics(self):
         '''Test of the method {{package_name}}.models_training.regressors.model_regressor.ModelRegressorMixin.get_and_save_metrics'''
 
@@ -148,7 +144,7 @@ class ModelRegressorMixinTests(unittest.TestCase):
         y_true = np.array([0.12, 1.5, -1.6, 12.1])
         y_pred = np.array([0.32, 1.4, -1.3, 11.9])
         df_metrics = model.get_and_save_metrics(y_true, y_pred)
-        self.assertEqual(df_metrics.shape[0], 1) # All
+        self.assertEqual(df_metrics.shape[0], 1)  # All
         self.assertEqual(df_metrics.loc[0, :]['Label'], 'All')
         self.assertAlmostEqual(df_metrics.loc[0, :]['MAE'], 0.2)
         mse = (0.1*0.1 + 0.3*0.3 + 0.2*0.2 + 0.2*0.2)/4
@@ -170,7 +166,7 @@ class ModelRegressorMixinTests(unittest.TestCase):
         series_to_add = [pd.Series(['a', 'b', 'c', 'd'], name='test')]
         type_data = 'toto'
         df_metrics = model.get_and_save_metrics(y_true, y_pred, df_x=df_x, series_to_add=series_to_add, type_data=type_data)
-        self.assertEqual(df_metrics.shape[0], 1) # All
+        self.assertEqual(df_metrics.shape[0], 1)  # All
         self.assertEqual(df_metrics.loc[0, :]['Label'], 'All')
         self.assertAlmostEqual(df_metrics.loc[0, :]['MAE'], 0.2)
         mse = (0.1*0.1 + 0.3*0.3 + 0.2*0.2 + 0.2*0.2)/4
@@ -192,7 +188,6 @@ class ModelRegressorMixinTests(unittest.TestCase):
         self.assertTrue('test' in df_preds.columns)
         remove_dir(model_dir)
 
-
     def test04_model_regressor_get_metrics_simple(self):
         '''Test of the method {{package_name}}.models_training.regressors.model_regressor.ModelRegressorMixin.get_metrics_simple_monolabel'''
 
@@ -206,7 +201,7 @@ class ModelRegressorMixinTests(unittest.TestCase):
         y_true = np.array([0.12, 1.5, -1.6, 12.1])
         y_pred = np.array([0.32, 1.4, -1.3, 11.9])
         df_metrics = model.get_metrics_simple(y_true, y_pred)
-        self.assertEqual(df_metrics.shape[0], 1) # All
+        self.assertEqual(df_metrics.shape[0], 1)  # All
         self.assertEqual(df_metrics.loc[0, :]['Label'], 'All')
         self.assertAlmostEqual(df_metrics.loc[0, :]['MAE'], 0.2)
         mse = (0.1*0.1 + 0.3*0.3 + 0.2*0.2 + 0.2*0.2)/4
@@ -216,7 +211,6 @@ class ModelRegressorMixinTests(unittest.TestCase):
         self.assertTrue(df_metrics.loc[0, :]['Coefficient of determination'] > 0.99)
         remove_dir(model_dir)
 
-
     def test05_model_regressor_save(self):
         '''Test of the method {{package_name}}.models_training.regressors.model_regressor.ModelRegressorMixin.save'''
 
@@ -224,7 +218,7 @@ class ModelRegressorMixinTests(unittest.TestCase):
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
         model_name = 'test'
-        preprocess_pipeline = preprocess.get_pipeline("no_preprocess") # Warning, needs to be fitted
+        preprocess_pipeline = preprocess.get_pipeline("no_preprocess")  # Warning, needs to be fitted
         preprocess_pipeline.fit(pd.DataFrame({'test_x1': [1, 2, 3], 'test_x2': [4, 5, 6]}))
 
         # test save

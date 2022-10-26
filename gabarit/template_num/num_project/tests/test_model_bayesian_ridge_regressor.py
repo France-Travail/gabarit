@@ -90,7 +90,7 @@ class ModelBayesianRidgeRegressorTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         preds_inv = model.predict(x_train_inv, return_proba=False)
-        np.testing.assert_almost_equal(preds, preds_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         with self.assertRaises(ValueError):
             probas = model.predict(x_train, return_proba=True)
         remove_dir(model_dir)

@@ -92,7 +92,7 @@ class ModelKNNRegressorTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             probas = model.predict(x_train, return_proba=True)
         preds_inv = model.predict(x_train_inv, return_proba=False)
-        np.testing.assert_almost_equal(preds, preds_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted

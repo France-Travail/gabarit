@@ -44,14 +44,12 @@ def remove_dir(path):
 class ModelPipelineTests(unittest.TestCase):
     '''Main class to test model_pipeline'''
 
-
     def setUp(self):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-
 
     def test01_model_pipeline_init(self):
         '''Test of the initialization of {{package_name}}.models_training.model_pipeline.ModelPipeline'''
@@ -76,7 +74,6 @@ class ModelPipelineTests(unittest.TestCase):
         model.save()
         self.assertEqual(model.pipeline, pipeline)
         remove_dir(model_dir)
-
 
     def test02_model_pipeline_fit(self):
         '''Test of the method fit of {{package_name}}.models_training.model_pipeline.ModelPipeline'''
@@ -211,7 +208,6 @@ class ModelPipelineTests(unittest.TestCase):
             model.fit(x_train, y_train_mono_2)
         remove_dir(model_dir)
 
-
     def test03_model_pipeline_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_pipeline.ModelPipeline'''
 
@@ -220,6 +216,7 @@ class ModelPipelineTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
@@ -239,7 +236,11 @@ class ModelPipelineTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True)
-        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        probas_inv = model.predict(x_train_inv, return_proba=True)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -253,7 +254,11 @@ class ModelPipelineTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True)
-        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        probas_inv = model.predict(x_train_inv, return_proba=True)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -268,6 +273,10 @@ class ModelPipelineTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
         probas = model.predict(x_train, return_proba=True)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        probas_inv = model.predict(x_train_inv, return_proba=True)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Regressor
@@ -281,6 +290,8 @@ class ModelPipelineTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train),))
         with self.assertRaises(ValueError):
             probas = model.predict(x_train, return_proba=True)
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -288,7 +299,6 @@ class ModelPipelineTests(unittest.TestCase):
             model = ModelPipeline(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, pipeline=pipeline)
             model.predict(pd.Series([-2, 3]))
         remove_dir(model_dir)
-
 
     def test04_model_pipeline_predict_proba(self):
         '''Test of the method predict_proba of {{package_name}}.models_training.model_pipeline.ModelPipeline'''
@@ -298,6 +308,7 @@ class ModelPipelineTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
@@ -315,8 +326,10 @@ class ModelPipelineTests(unittest.TestCase):
         model.multi_label = False
         model.fit(x_train, y_train_mono_2)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        probas_inv = model.predict_proba(x_train_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -328,8 +341,10 @@ class ModelPipelineTests(unittest.TestCase):
         model.multi_label = False
         model.fit(x_train, y_train_mono_3)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        probas_inv = model.predict_proba(x_train_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -341,8 +356,10 @@ class ModelPipelineTests(unittest.TestCase):
         model.multi_label = True
         model.fit(x_train, y_train_multi)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi))) # 3 labels
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))  # 3 labels
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
+        probas_inv = model.predict_proba(x_train_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Regressor
@@ -361,7 +378,6 @@ class ModelPipelineTests(unittest.TestCase):
             model = ModelPipeline(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, pipeline=pipeline)
             model.predict_proba('test')
         remove_dir(model_dir)
-
 
     def test05_model_pipeline_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_pipeline.ModelPipeline'''
@@ -403,9 +419,9 @@ class ModelPipelineTests(unittest.TestCase):
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())
         self.assertEqual(configs['librairie'], 'scikit-learn')
-        self.assertTrue('list_classes' not in configs.keys()) # not in because we do not use the Classifier mixin
-        self.assertTrue('dict_classes' not in configs.keys()) # not in because we do not use the Classifier mixin
-        self.assertTrue('multi_label' not in configs.keys()) # not in because we do not use the Classifier mixin
+        self.assertTrue('list_classes' not in configs.keys())  # not in because we do not use the Classifier mixin
+        self.assertTrue('dict_classes' not in configs.keys())  # not in because we do not use the Classifier mixin
+        self.assertTrue('multi_label' not in configs.keys())  # not in because we do not use the Classifier mixin
         # Specific model used
         self.assertTrue('rf_confs' in configs.keys())
         remove_dir(model_dir)
@@ -442,9 +458,9 @@ class ModelPipelineTests(unittest.TestCase):
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())
         self.assertEqual(configs['librairie'], 'scikit-learn')
-        self.assertTrue('list_classes' not in configs.keys()) # Not in because Regressor
-        self.assertTrue('dict_classes' not in configs.keys()) # Not in because Regressor
-        self.assertTrue('multi_label' not in configs.keys()) # Not in because Regressor
+        self.assertTrue('list_classes' not in configs.keys())  # Not in because Regressor
+        self.assertTrue('dict_classes' not in configs.keys())  # Not in because Regressor
+        self.assertTrue('multi_label' not in configs.keys())  # Not in because Regressor
         # Specific model used
         self.assertTrue('rf_confs' in configs.keys())
         remove_dir(model_dir)
@@ -477,9 +493,9 @@ class ModelPipelineTests(unittest.TestCase):
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())
         self.assertEqual(configs['librairie'], 'scikit-learn')
-        self.assertTrue('list_classes' not in configs.keys()) # not in because we do not use the Classifier mixin
-        self.assertTrue('dict_classes' not in configs.keys()) # not in because we do not use the Classifier mixin
-        self.assertTrue('multi_label' not in configs.keys()) # not in because we do not use the Classifier mixin
+        self.assertTrue('list_classes' not in configs.keys())  # not in because we do not use the Classifier mixin
+        self.assertTrue('dict_classes' not in configs.keys())  # not in because we do not use the Classifier mixin
+        self.assertTrue('multi_label' not in configs.keys())  # not in because we do not use the Classifier mixin
         # Specific model used
         self.assertTrue('rf_confs' not in configs.keys())
         remove_dir(model_dir)
@@ -516,9 +532,9 @@ class ModelPipelineTests(unittest.TestCase):
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())
         self.assertEqual(configs['librairie'], 'scikit-learn')
-        self.assertTrue('list_classes' not in configs.keys()) # not in because we do not use the Classifier mixin
-        self.assertTrue('dict_classes' not in configs.keys()) # not in because we do not use the Classifier mixin
-        self.assertTrue('multi_label' not in configs.keys()) # not in because we do not use the Classifier mixin
+        self.assertTrue('list_classes' not in configs.keys())  # not in because we do not use the Classifier mixin
+        self.assertTrue('dict_classes' not in configs.keys())  # not in because we do not use the Classifier mixin
+        self.assertTrue('multi_label' not in configs.keys())  # not in because we do not use the Classifier mixin
         # Specific model used
         self.assertTrue('rf_confs' in configs.keys())
         remove_dir(model_dir)

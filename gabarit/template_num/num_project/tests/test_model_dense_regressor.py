@@ -118,7 +118,7 @@ class ModelDenseRegressorTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             probas = model.predict(x_train, return_proba=True, experimental_version=True)
         preds_inv = model.predict(x_train_inv, return_proba=False)
-        np.testing.assert_almost_equal(preds, preds_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -252,11 +252,11 @@ class ModelDenseRegressorTests(unittest.TestCase):
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         # Test without custom_objects
         model.custom_objects = None
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         # Clean
         remove_dir(model_dir)
 

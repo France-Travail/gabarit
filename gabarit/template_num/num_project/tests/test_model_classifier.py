@@ -155,8 +155,8 @@ class ModelClassifierMixinTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train),))
         self.assertEqual(probas.shape, (len(x_train), 2))
         preds_inv, probas_inv = model.predict_with_proba(x_train)
-        np.testing.assert_almost_equal(preds, preds_inv)
-        np.testing.assert_almost_equal(probas, probas_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Multi-labels
@@ -166,8 +166,8 @@ class ModelClassifierMixinTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train), len(cols)))
         self.assertEqual(probas.shape, (len(x_train), len(cols)))
         preds_inv, probas_inv = model.predict_with_proba(x_train)
-        np.testing.assert_almost_equal(preds, preds_inv)
-        np.testing.assert_almost_equal(probas, probas_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -197,7 +197,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
         predict_positions = model.get_predict_position(x_train, y_train_mono)
         self.assertEqual(predict_positions.shape, (len(x_train),))
         predict_positions_inv = model.get_predict_position(x_train, y_train_mono)
-        np.testing.assert_almost_equal(predict_positions, predict_positions_inv)
+        np.testing.assert_almost_equal(predict_positions, predict_positions_inv, decimal=5)
         remove_dir(model_dir)
 
         # Multi-labels
@@ -348,7 +348,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
         y_true = np.array([[0, 1, 0], [1, 1, 0], [0, 0, 0]])
         y_pred = np.array([[0, 1, 1], [1, 1, 0], [0, 1, 0]])
         df_metrics = model.get_and_save_metrics(y_true, y_pred)
-        self.assertEqual(df_metrics.shape[0], 4) # 3 classes + All
+        self.assertEqual(df_metrics.shape[0], 4)  # 3 classes + All
         self.assertEqual(df_metrics.loc[3, :]['Label'], 'All')
         self.assertEqual(df_metrics.loc[0, :]['Accuracy'], 1.0)
         plots_path = os.path.join(model.model_dir, 'plots')
@@ -425,7 +425,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
         y_true = np.array([[0, 1, 0], [1, 1, 0], [0, 0, 0]])
         y_pred = np.array([[0, 1, 1], [1, 1, 0], [0, 1, 0]])
         df_metrics = model.get_metrics_simple_multilabel(y_true, y_pred)
-        self.assertEqual(df_metrics.shape[0], 4) # 3 classes + All
+        self.assertEqual(df_metrics.shape[0], 4)  # 3 classes + All
         self.assertEqual(df_metrics.loc[3, :]['Label'], 'All')
         self.assertEqual(df_metrics.loc[0, :]['Accuracy'], 1.0)
         remove_dir(model_dir)
@@ -472,7 +472,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
         model_name = 'test'
-        preprocess_pipeline = preprocess.get_pipeline("no_preprocess") # Warning, needs to be fitted
+        preprocess_pipeline = preprocess.get_pipeline("no_preprocess")  # Warning, needs to be fitted
         preprocess_pipeline.fit(pd.DataFrame({'test_x1': [1, 2, 3], 'test_x2': [4, 5, 6]}))
 
         # test save

@@ -470,15 +470,15 @@ class ModelKerasTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True)
-        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         preds = model.predict(x_train, return_proba=False, experimental_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True, experimental_version=True)
-        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         preds_inv = model.predict(x_train_inv, return_proba=False)
-        np.testing.assert_almost_equal(preds, preds_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         probas_inv = model.predict(x_train_inv, return_proba=True)
-        np.testing.assert_almost_equal(probas, probas_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -487,15 +487,15 @@ class ModelKerasTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True)
-        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         preds = model.predict(x_train, return_proba=False, experimental_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True, experimental_version=True)
-        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         preds_inv = model.predict(x_train_inv, return_proba=False)
-        np.testing.assert_almost_equal(preds, preds_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         probas_inv = model.predict(x_train_inv, return_proba=True)
-        np.testing.assert_almost_equal(probas, probas_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -510,9 +510,9 @@ class ModelKerasTests(unittest.TestCase):
         probas = model.predict(x_train, return_proba=True, experimental_version=True)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
         preds_inv = model.predict(x_train_inv, return_proba=False)
-        np.testing.assert_almost_equal(preds, preds_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         probas_inv = model.predict(x_train_inv, return_proba=True)
-        np.testing.assert_almost_equal(probas, probas_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Regressor
@@ -527,7 +527,7 @@ class ModelKerasTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             probas = model.predict(x_train, return_proba=True, experimental_version=True)
         preds_inv = model.predict(x_train_inv, return_proba=False)
-        np.testing.assert_almost_equal(preds, preds_inv)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -557,30 +557,30 @@ class ModelKerasTests(unittest.TestCase):
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono_2)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), 2)) # 2 classes
+        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         probas_inv = model.predict_proba(x_train_inv)
-        np.testing.assert_almost_equal(probas, probas_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono_3)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), 3)) # 3 classes
+        self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         probas_inv = model.predict_proba(x_train_inv)
-        np.testing.assert_almost_equal(probas, probas_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         model.fit(x_train, y_train_multi)
         probas = model.predict_proba(x_train)
-        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi))) # 3 labels
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))  # 3 labels
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         probas_inv = model.predict_proba(x_train_inv)
-        np.testing.assert_almost_equal(probas, probas_inv)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Regressor
@@ -684,9 +684,9 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue('_get_model' in configs.keys())
         self.assertTrue('_get_learning_rate_scheduler' in configs.keys())
         self.assertTrue('custom_objects' in configs.keys())
-        self.assertTrue('list_classes' not in configs.keys()) # not in because we do not use the Classifier mixin
-        self.assertTrue('dict_classes' not in configs.keys()) # not in because we do not use the Classifier mixin
-        self.assertTrue('multi_label' not in configs.keys()) # not in because we do not use the Classifier mixin
+        self.assertTrue('list_classes' not in configs.keys())  # not in because we do not use the Classifier mixin
+        self.assertTrue('dict_classes' not in configs.keys())  # not in because we do not use the Classifier mixin
+        self.assertTrue('multi_label' not in configs.keys())  # not in because we do not use the Classifier mixin
         remove_dir(model_dir)
 
         # Use custom_objects containing a "partial" function
@@ -727,9 +727,9 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue('_get_model' in configs.keys())
         self.assertTrue('_get_learning_rate_scheduler' in configs.keys())
         self.assertTrue('custom_objects' in configs.keys())
-        self.assertTrue('list_classes' not in configs.keys()) # not in because we do not use the Classifier mixin
-        self.assertTrue('dict_classes' not in configs.keys()) # not in because we do not use the Classifier mixin
-        self.assertTrue('multi_label' not in configs.keys()) # not in because we do not use the Classifier mixin
+        self.assertTrue('list_classes' not in configs.keys())  # not in because we do not use the Classifier mixin
+        self.assertTrue('dict_classes' not in configs.keys())  # not in because we do not use the Classifier mixin
+        self.assertTrue('multi_label' not in configs.keys())  # not in because we do not use the Classifier mixin
         remove_dir(model_dir)
 
     def test08_model_keras_reload_model(self):
@@ -755,11 +755,11 @@ class ModelKerasTests(unittest.TestCase):
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
         # Test without custom_objects
         model.custom_objects = None
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
         # Clean
         remove_dir(model_dir)
 
@@ -770,11 +770,11 @@ class ModelKerasTests(unittest.TestCase):
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
         # Test without custom_objects
         model.custom_objects = None
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
         # Clean
         remove_dir(model_dir)
 
@@ -785,11 +785,11 @@ class ModelKerasTests(unittest.TestCase):
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
         # Test without custom_objects
         model.custom_objects = None
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
         # Clean
         remove_dir(model_dir)
 
@@ -800,11 +800,11 @@ class ModelKerasTests(unittest.TestCase):
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [[_] for _ in model.predict(x_train)], 3)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [[_] for _ in model.predict(x_train)], 3, decimal=5)
         # Test without custom_objects
         model.custom_objects = None
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [[_] for _ in model.predict(x_train)], 3)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [[_] for _ in model.predict(x_train)], 3, decimal=5)
         # Clean
         remove_dir(model_dir)
 
