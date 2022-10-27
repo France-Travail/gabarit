@@ -331,16 +331,6 @@ class ModelClass:
         if fit_function:
             if y_input is None:
                 raise AttributeError("The argument y_input is mandatory if fit_function == True")
-            # If pipeline, columns_in or mandatory_columns is None, sets it
-            # Must be done before checking x_col as we might transform input data (change the cols names)
-            if self.preprocess_pipeline is None:  # ie no pipeline given when initializing the class
-                preprocess_str = "no_preprocess"
-                preprocess_pipeline = preprocess.get_pipeline(preprocess_str)  # Warning, the pipeline must be fitted
-                preprocess_pipeline.fit(x_input)  # We fit the pipeline to set the necessary columns for the pipeline
-                x_input = utils_models.apply_pipeline(x_input, preprocess_pipeline)  # Transform dataset (basically just retrieve correct cols names)
-                # Set attributes
-                self.preprocess_pipeline = preprocess_pipeline
-                self.columns_in, self.mandatory_columns = utils_models.get_columns_pipeline(self.preprocess_pipeline)
             # Set x_col if not set yet
             if self.x_col is None:
                 self.logger.warning("Warning, the attribute x_col was not given when creating the model")
@@ -362,6 +352,14 @@ class ModelClass:
                 # If there is only one element, we get rid of the list
                 if y_input_shape == 1:
                     self.y_col = self.y_col[0]
+            # If pipeline, columns_in or mandatory_columns is None, sets it
+            if self.preprocess_pipeline is None:  # ie no pipeline given when initializing the class
+                preprocess_str = "no_preprocess"
+                preprocess_pipeline = preprocess.get_pipeline(preprocess_str)  # Warning, the pipeline must be fitted
+                preprocess_pipeline.fit(x_input)  # We fit the pipeline to set the necessary columns for the pipeline
+                # Set attributes
+                self.preprocess_pipeline = preprocess_pipeline
+                self.columns_in, self.mandatory_columns = utils_models.get_columns_pipeline(self.preprocess_pipeline)
 
         # Checking x_input
         if self.x_col is None:

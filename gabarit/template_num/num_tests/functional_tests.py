@@ -207,6 +207,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         pipeline_path = os.path.join(pipelines_dirpath, os.listdir(pipelines_dirpath)[0])
         self.assertTrue('pipeline.info' in os.listdir(pipeline_path))
         self.assertTrue('pipeline.pkl' in os.listdir(pipeline_path))
+        self.assertTrue('dataset_sample.csv' in os.listdir(pipeline_path))
 
         # "Basic" case - regression
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/1_preprocess_data.py -f mono_output_regression_train.csv -p preprocess_P1 --target_cols y_col"
@@ -227,6 +228,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         pipeline_path = os.path.join(pipelines_dirpath, os.listdir(pipelines_dirpath)[-1])
         self.assertTrue('pipeline.info' in os.listdir(pipeline_path))
         self.assertTrue('pipeline.pkl' in os.listdir(pipeline_path))
+        self.assertTrue('dataset_sample.csv' in os.listdir(pipeline_path))
 
     def test06_ApplyPipeline(self):
         '''Test of the file 2_apply_existing_pipeline.py'''
