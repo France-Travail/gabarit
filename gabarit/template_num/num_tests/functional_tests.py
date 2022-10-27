@@ -144,7 +144,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(df_valid.shape[0], 42)
         self.assertEqual(df_test.shape[0], 42)
 
-    def test04_GenerateReport(self):
+    def test04_sweetviz_report(self):
         '''Test of the file utils/0_sweetviz_report.py'''
         print("Test of the file utils/0_sweetviz_report.py")
 
@@ -158,13 +158,13 @@ class Case1_e2e_pipeline(unittest.TestCase):
         remove_dir(report_path)
 
         # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label.csv --source_names source --config {config_path}"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         list_filenames = list(os.walk(report_path))[0][2]
         self.assertTrue(len([filename for filename in list_filenames if "report_source" in filename and "report_source_w" not in filename]) == 1)
 
         # Compare datasets
-        test_compare = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path}"
+        test_compare = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path} --mlflow_experiment sweetviz_experiment_2"
         self.assertEqual(subprocess.run(test_compare, shell=True).returncode, 0)
         list_filenames = list(os.walk(report_path))[0][2]
         self.assertTrue(len([filename for filename in list_filenames if "report_train_valid" in filename]) == 1)
@@ -179,7 +179,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
             df = pd.read_csv(original_dataset_path, sep=';', encoding='utf-8')
             df['tmp_target'] = df['y_col'].apply(lambda x: 1. if x == 'oui' else 0.)
             df.to_csv(tmp_file.name, sep=';', encoding='utf-8', index=None)
-            test_target = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s {tmp_file.name} --source_names source_with_target -t tmp_target --config {config_path}"
+            test_target = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s {tmp_file.name} --source_names source_with_target -t tmp_target --config {config_path} --mlflow_experiment sweetviz_experiment_3"
             self.assertEqual(subprocess.run(test_target, shell=True).returncode, 0)
             list_filenames = list(os.walk(report_path))[0][2]
             self.assertTrue(len([filename for filename in list_filenames if "report_source_with_target" in filename]) == 1)
@@ -187,7 +187,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         # Clean up sweetviz config path (useful ?)
         os.remove(config_path)
 
-    def test05_fairness_metrics(self):
+    def test05_fairness_report(self):
         '''Test of the file utils/0_fairness_report.py'''
         print("Test of the file utils/0_fairness_report.py")
 
@@ -237,7 +237,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
             nb_groups_whole = nb_groups_whole - 1
 
             # Run the script
-            basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_fairness_report.py -f {filename_test_fairness} -t {target} -n {nb_bins} -s"
+            basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_fairness_report.py -f {filename_test_fairness} -t {target} -n {nb_bins} --mlflow_experiment fairness_experiment -s "
             for col in sensitive_cols:
                 basic_run += f' {col}'
             if with_pred:

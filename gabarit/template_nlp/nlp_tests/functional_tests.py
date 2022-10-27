@@ -153,7 +153,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertFalse(any([_ in df_test.x_col.values for _ in df_train.x_col.values]))
         self.assertFalse(any([_ in df_valid.x_col.values for _ in df_test.x_col.values]))
 
-    def test05_GenerateReport(self):
+    def test05_sweetviz_report(self):
         '''Test of the file utils/0_sweetviz_report.py'''
         print("Test of the file utils/0_sweetviz_report.py")
 
@@ -167,13 +167,13 @@ class Case1_e2e_pipeline(unittest.TestCase):
         remove_dir(report_path)
 
         # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label.csv --source_names source --config {config_path}"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         list_filenames = list(os.walk(report_path))[0][2]
         self.assertTrue(len([filename for filename in list_filenames if "report_source" in filename and "report_source_w" not in filename]) == 1)
 
         # Compare datasets
-        test_compare = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path}"
+        test_compare = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path} --mlflow_experiment sweetviz_experiment_2"
         self.assertEqual(subprocess.run(test_compare, shell=True).returncode, 0)
         list_filenames = list(os.walk(report_path))[0][2]
         self.assertTrue(len([filename for filename in list_filenames if "report_train_valid" in filename]) == 1)
@@ -188,7 +188,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
             df = pd.read_csv(original_dataset_path, sep=';', encoding='utf-8')
             df['tmp_target'] = df['y_col'].apply(lambda x: 1. if x == 'oui' else 0.)
             df.to_csv(tmp_file.name, sep=';', encoding='utf-8', index=None)
-            test_target = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py -s {tmp_file.name} --source_names source_with_target -t tmp_target --config {config_path}"
+            test_target = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py -s {tmp_file.name} --source_names source_with_target -t tmp_target --config {config_path} --mlflow_experiment sweetviz_experiment_3"
             self.assertEqual(subprocess.run(test_target, shell=True).returncode, 0)
             list_filenames = list(os.walk(report_path))[0][2]
             self.assertTrue(len([filename for filename in list_filenames if "report_source_with_target" in filename]) == 1)
