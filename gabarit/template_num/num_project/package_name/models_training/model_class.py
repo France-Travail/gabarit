@@ -442,9 +442,7 @@ class ModelClass:
 *    (~~~)           (~~~)                                                                                                  (~~~)           (~~~)    *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
             '''
-        else:
-            ascii_art = ''
-        print(ascii_art)
+            print(ascii_art)
 
     def _is_gpu_activated(self) -> bool:
         '''Checks if we use a GPU
