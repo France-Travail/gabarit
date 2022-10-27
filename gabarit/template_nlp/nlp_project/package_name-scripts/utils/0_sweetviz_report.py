@@ -16,7 +16,7 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
-# Ex: python 0_generate_report.py -s train.csv -c valid.csv test.csv
+# Ex: python 0_sweetviz_report.py -s train.csv -c valid.csv test.csv
 # --source_names "Training data" --compare_names "Validation data" "Testing data"
 # --config sweetviz_config.json
 
@@ -26,20 +26,23 @@ import json
 import logging
 import sweetviz
 import argparse
+import datetime
 import pandas as pd
 from pathlib import Path
 from itertools import product
 from typing import List, Union, Tuple
 
 from {{package_name}} import utils
+from {{package_name}}.monitoring.mlflow_logger import MLflowLogger
 
 # Get logger
-logger = logging.getLogger("{{package_name}}.0_generate_report.py")
+logger = logging.getLogger("{{package_name}}.0_sweetviz_report.py")
 
 
 def main(source_paths: List[str], source_names: List[str] = None, compare_paths: List[str] = None,
          compare_names: List[str] = None, target: str = None, config: str = None,
-         sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}') -> None:
+         sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}', 
+         mlflow_experiment: Union[str, None] = None) -> None:
     '''Uses Sweetviz to get an automatic report of some datasets. It can also make comparisons between
     datasets using the compare_X arguments. Every source/compare combination will be processed.
 
@@ -53,6 +56,7 @@ def main(source_paths: List[str], source_names: List[str] = None, compare_paths:
         config (str): Path to a json configuration file
         sep (str): Separator to use with the .csv files
         encoding (str): Encoding to use with the .csv files
+        mlflow_experiment (str): Name of the current experiment. If None, no experiment will be saved.
     '''
 
     ##############################################
@@ -62,7 +66,7 @@ def main(source_paths: List[str], source_names: List[str] = None, compare_paths:
     # Get data path
     data_path = utils.get_data_path()
     # Set report folder
-    report_folder = os.path.join(data_path, 'reports')
+    report_folder = os.path.join(data_path, 'reports', 'sweetviz')
     if not os.path.exists(report_folder):
         os.makedirs(report_folder)
 
@@ -90,14 +94,15 @@ def main(source_paths: List[str], source_names: List[str] = None, compare_paths:
         # Set compare and output filename
         if compare_path is None:
             compare = None
-            output_path = os.path.join(report_folder, f"report_{source_filename}.html")
+            output_filename = datetime.datetime.now().strftime(f"report_{source_filename}_%Y_%m_%d-%H_%M_%S.html")
             logger.info(f"Generating report for dataset '{source_filename}'")
         else:
             compare_df = pd.read_csv(compare_path, sep=sep, encoding=encoding)
             compare = [compare_df, compare_name]
             compare_filename = compare_name.replace(" ", "_")
-            output_path = os.path.join(report_folder, f"report_{source_filename}_{compare_filename}.html")
+            output_filename = datetime.datetime.now().strftime(f"report_{source_filename}_{compare_filename}_%Y_%m_%d-%H_%M_%S.html")
             logger.info(f"Generating report between datasets '{source_filename}' and '{compare_filename}'")
+        output_path = os.path.join(report_folder, output_filename)
 
         # Generate report
         report: sweetviz.DataframeReport = sweetviz.compare(source, compare, target_feat=target,
@@ -106,6 +111,15 @@ def main(source_paths: List[str], source_names: List[str] = None, compare_paths:
 
         # Save report
         report.show_html(output_path, **sweetviz_config.show_html_cfg)
+
+        # Save report in mlflow
+        if mlflow_experiment:
+            # Get logger
+            mlflow_logger = MLflowLogger(
+                experiment_name=f"{{package_name}}/{mlflow_experiment}",
+                tracking_uri="{{mlflow_tracking_uri}}",
+            )
+            mlflow_logger.log_text(report._page_html, output_filename)
 
 
 def get_paths_and_names(dataset_paths: List[str], dataset_names: List[str]) -> Tuple[List[str], List[str]]:
@@ -227,7 +241,9 @@ if __name__ == "__main__":
     parser.add_argument('--config', default=None, help="JSON Sweetviz configuration for compare and show_html arguments, cf. https://github.com/fbdesignpro/sweetviz")
     parser.add_argument('--sep', default='{{default_sep}}', help="Separator to use with the .csv files.")
     parser.add_argument('--encoding', default='{{default_encoding}}', help="Encoding to use with the .csv files.")
+    parser.add_argument('--mlflow_experiment', help="Name of the current experiment. MLflow tracking is activated only if fulfilled.")
     #TODO: add --overwrite, cf. https://github.com/OSS-Pole-Emploi/gabarit/issues/71
     args = parser.parse_args()
     main(source_paths=args.source_paths, source_names=args.source_names, compare_paths=args.compare_paths,
-         compare_names=args.compare_names, target=args.target, config=args.config, sep=args.sep, encoding=args.encoding)
+         compare_names=args.compare_names, target=args.target, config=args.config, sep=args.sep, encoding=args.encoding, 
+         mlflow_experiment=args.mlflow_experiment)

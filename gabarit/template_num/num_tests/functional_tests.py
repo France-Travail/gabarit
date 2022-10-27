@@ -144,9 +144,9 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(df_valid.shape[0], 42)
         self.assertEqual(df_test.shape[0], 42)
 
-    def test04_GenerateReport(self):
-        '''Test of the file utils/0_generate_report.py'''
-        print("Test of the file utils/0_generate_report.py")
+    def test04_sweetviz_report(self):
+        '''Test of the file utils/0_sweetviz_report.py'''
+        print("Test of the file utils/0_sweetviz_report.py")
 
         # We first create a sweetviz configuration file
         config_path = os.path.join(full_path_lib, "test_config.json")
@@ -154,17 +154,21 @@ class Case1_e2e_pipeline(unittest.TestCase):
             os.remove(config_path)
         with open(config_path, 'w') as f:
             json.dump({"open_browser": False}, f)
+        report_path = os.path.join(full_path_lib, "test_template_num-data", "reports", "sweetviz")
+        remove_dir(report_path)
 
         # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_generate_report.py -s mono_class_mono_label.csv --source_names source --config {config_path}"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_num-data", "reports", "report_source.html")))
+        list_filenames = list(os.walk(report_path))[0][2]
+        self.assertTrue(len([filename for filename in list_filenames if "report_source" in filename and "report_source_w" not in filename]) == 1)
 
         # Compare datasets
-        test_compare = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_generate_report.py -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path}"
+        test_compare = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path} --mlflow_experiment sweetviz_experiment_2"
         self.assertEqual(subprocess.run(test_compare, shell=True).returncode, 0)
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_num-data", "reports", "report_train_valid.html")))
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_num-data", "reports", "report_train_test.html")))
+        list_filenames = list(os.walk(report_path))[0][2]
+        self.assertTrue(len([filename for filename in list_filenames if "report_train_valid" in filename]) == 1)
+        self.assertTrue(len([filename for filename in list_filenames if "report_train_test" in filename]) == 1)
 
         # With target
         # Sweetviz does not with categorical target. Hence, we'll create a temporary dataframe with a binary target.
@@ -175,14 +179,122 @@ class Case1_e2e_pipeline(unittest.TestCase):
             df = pd.read_csv(original_dataset_path, sep=';', encoding='utf-8')
             df['tmp_target'] = df['y_col'].apply(lambda x: 1. if x == 'oui' else 0.)
             df.to_csv(tmp_file.name, sep=';', encoding='utf-8', index=None)
-            test_target = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_generate_report.py -s {tmp_file.name} --source_names source_with_target -t tmp_target --config {config_path}"
+            test_target = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s {tmp_file.name} --source_names source_with_target -t tmp_target --config {config_path} --mlflow_experiment sweetviz_experiment_3"
             self.assertEqual(subprocess.run(test_target, shell=True).returncode, 0)
-            self.assertTrue(os.path.exists(os.path.join(full_path_lib, "test_template_num-data", "reports", "report_source_with_target.html")))
+            list_filenames = list(os.walk(report_path))[0][2]
+            self.assertTrue(len([filename for filename in list_filenames if "report_source_with_target" in filename]) == 1)
 
         # Clean up sweetviz config path (useful ?)
         os.remove(config_path)
 
-    def test05_PreProcessData(self):
+    def test05_fairness_report(self):
+        '''Test of the file utils/0_fairness_report.py'''
+        print("Test of the file utils/0_fairness_report.py")
+
+        base_filenames_fairlens = ['data_biased_groups.csv', 'data_distribution_score.csv', 'data_distributions.png']
+        set_columns_data_distribution = {'Group', 'Distance', 'Proportion', 'Counts', 'P-Value'}
+        set_columns_data_biased = {'Group', 'Distance', 'Proportion', 'Counts', 'P-Value', 'number_of_attributes'}
+        base_filenames_fairlearn = ['algo_metrics_by_groups.csv', 'fairness_count_groups.png']
+        list_metrics_binary = ['accuracy', 'precision', 'false_positive_rate', 'false_negative_rate', 'f1_score']
+        list_metrics_categorical = ['f1_score_weighted', 'f1_score_macro', 'precision_weighted', 'precision_macro', 'accuracy']
+        list_metrics_continuous = ['mean_absolute_value', 'root_mean_squared_error', 'mean_absolute_percentage_error', 'R_squared']
+        data_path = os.path.join(full_path_lib, 'test_template_num-data')
+        filename_test_fairness = 'test_fairness.csv'
+
+        def test_fairness_script(target, sensitive_cols, nb_bins, with_pred=True):
+            output_folder = os.path.join(data_path, 'reports', 'fairness')
+            if os.path.exists(output_folder):
+                remove_dir(output_folder)
+
+            # Constitutes the list of files that should be present
+            if target == 'biased_target_binary_int':
+                list_metrics = list_metrics_binary
+            if target == 'biased_target':
+                list_metrics = list_metrics_continuous
+            if target == 'biased_target_str':
+                list_metrics = list_metrics_categorical
+            filenames = ['fairness_algo_barplot_' + metric + '.png' for metric in list_metrics]
+            list_filenames_to_check = base_filenames_fairlens.copy()
+            if with_pred:
+                list_filenames_to_check += base_filenames_fairlearn.copy()
+                list_filenames_to_check += filenames.copy()
+
+            # Calculate the theoretical length of the files
+            nb_groups_whole = 1
+            nb_groups_intersection = 1
+            if 'birth_date' in sensitive_cols:
+                nb_groups_whole = nb_groups_whole * (nb_bins + 1)
+                nb_groups_intersection = nb_groups_intersection * nb_bins
+            if 'age' in sensitive_cols:
+                nb_groups_whole = nb_groups_whole * (nb_bins + 1)
+                nb_groups_intersection = nb_groups_intersection * nb_bins
+            if 'citizenship' in sensitive_cols:
+                nb_groups_whole = nb_groups_whole * (2 + 1)
+                nb_groups_intersection = nb_groups_intersection * 2
+            if 'genre' in sensitive_cols:
+                nb_groups_whole = nb_groups_whole * (2 + 1)
+                nb_groups_intersection = nb_groups_intersection * 2
+            nb_groups_whole = nb_groups_whole - 1
+
+            # Run the script
+            basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_fairness_report.py -f {filename_test_fairness} -t {target} -n {nb_bins} --mlflow_experiment fairness_experiment -s "
+            for col in sensitive_cols:
+                basic_run += f' {col}'
+            if with_pred:
+                 basic_run += f' -p {target}_pred'
+            self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+
+            path_fairness = os.path.join(data_path, 'reports', 'fairness')
+            folder_name = list(os.walk(path_fairness))[0][1][0]
+            output_path = os.path.join(path_fairness, folder_name)
+            
+            # Test the presence (or absence) of files
+            for filename in list_filenames_to_check:
+                self.assertTrue(os.path.exists(os.path.join(output_path, filename)))
+            if not with_pred:
+                for filename in base_filenames_fairlearn+filenames:
+                    self.assertFalse(os.path.exists(os.path.join(output_path, filename)))
+
+            # Test the file data_distribution_score.csv
+            filename = 'data_distribution_score.csv'
+            if os.path.exists(os.path.join(output_path, filename)):
+                df = pd.read_csv(os.path.join(output_path, filename), sep=';', encoding='utf-8')
+                self.assertTrue(set_columns_data_distribution.issubset(set(df.columns)))
+                self.assertTrue(len(df) == nb_groups_whole)
+            
+            # Test the file data_biased_groups.csv
+            filename = 'data_biased_groups.csv'
+            if os.path.exists(os.path.join(output_path, filename)):
+                df = pd.read_csv(os.path.join(output_path, filename), sep=';', encoding='utf-8')
+                self.assertTrue(set_columns_data_biased.issubset(set(df.columns)))
+            
+            # Test the file algo_metrics_by_groups.csv
+            if with_pred:
+                filename = 'algo_metrics_by_groups.csv'
+                if os.path.exists(os.path.join(output_path, filename)) and filename[-4:]=='.csv':
+                    df = pd.read_csv(os.path.join(output_path, filename), sep=';', encoding='utf-8')
+                    set_columns = {'count'}.union(set(list_metrics).union(sensitive_cols))
+                    self.assertTrue(set_columns.issubset(set(df.columns)))
+                    self.assertTrue(len(df) == (nb_groups_intersection + 1))
+            else:
+                filename = 'algo_metrics_by_groups.csv'
+                self.assertFalse(os.path.exists(os.path.join(output_path, filename)))
+            
+            if os.path.exists(output_path):
+                remove_dir(output_path)
+
+        test_fairness_script(target='biased_target', sensitive_cols=['genre', 'citizenship'], nb_bins=3)
+        test_fairness_script(target='biased_target_binary_int', sensitive_cols=['genre', 'citizenship'], nb_bins=3)
+        test_fairness_script(target='biased_target_str', sensitive_cols=['genre', 'citizenship'], nb_bins=3)
+        test_fairness_script(target='biased_target', sensitive_cols=['genre', 'birth_date'], nb_bins=4)
+        test_fairness_script(target='biased_target_binary_int', sensitive_cols=['citizenship', 'birth_date'], nb_bins=2)
+        test_fairness_script(target='biased_target_str', sensitive_cols=['age', 'citizenship'], nb_bins=2)
+        test_fairness_script(target='biased_target_str', sensitive_cols=['citizenship'], nb_bins=2)
+        test_fairness_script(target='biased_target_str', sensitive_cols=['age'], nb_bins=2)
+        test_fairness_script(target='biased_target', sensitive_cols=['age', 'citizenship', 'genre'], nb_bins=3)
+        test_fairness_script(target='biased_target', sensitive_cols=['genre', 'citizenship'], nb_bins=3, with_pred=False)
+
+    def test06_PreProcessData(self):
         '''Test of the file 1_preprocess_data.py'''
         print("Test of the file 1_preprocess_data.py")
 
@@ -228,7 +340,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue('pipeline.info' in os.listdir(pipeline_path))
         self.assertTrue('pipeline.pkl' in os.listdir(pipeline_path))
 
-    def test06_ApplyPipeline(self):
+    def test07_ApplyPipeline(self):
         '''Test of the file 2_apply_existing_pipeline.py'''
         print("Test of the file 2_apply_existing_pipeline.py")
 
@@ -276,7 +388,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(sorted(df_train.num__col_2.unique()), sorted(df_valid.num__col_2.unique()))
         self.assertEqual(sorted(df_train.y_col.unique()), sorted(df_valid.y_col.unique()))
 
-    def test07_TrainingE2E(self):
+    def test08_TrainingE2E(self):
         '''Test of files 3_training_classification.py & 3_training_regression.py'''
         print("Test of files 3_training_classification.py & 3_training_regression.py")
 
@@ -334,7 +446,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         listdir = os.listdir(os.path.join(save_model_dir))
         self.assertEqual(len(listdir), 2)
 
-    def test08_PredictE2E(self):
+    def test09_PredictE2E(self):
         '''Test of the file 4_predict.py'''
         print("Test of the file 4_predict.py")
 
