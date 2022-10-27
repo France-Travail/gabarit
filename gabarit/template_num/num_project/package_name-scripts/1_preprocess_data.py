@@ -109,6 +109,7 @@ def main(filenames: List[str], preprocessing: Union[str, None], target_cols: Lis
             preprocess_pipeline = preprocess.get_pipeline(preprocess_str)
             # Get dataset
             df = pd.read_csv(dataset_path, sep=sep, encoding=encoding)
+            df_sample = df.sample(min(100, df.shape[0]))  # Keep samples to be saved alongside the pipeline (used by explainers)
             # Split X, y
             y = df[target_cols]
             X = df.drop(target_cols, axis=1)
@@ -129,10 +130,7 @@ def main(filenames: List[str], preprocessing: Union[str, None], target_cols: Lis
             pipeline_dir, pipeline_name = get_pipeline_dir(preprocess_str)
             pipeline_path = os.path.join(pipeline_dir, 'pipeline.pkl')
             # We save the pipeline as a dictionnary (pipeline object + preprocess name)
-            pipeline_dict = {
-                                'preprocess_pipeline': preprocess_pipeline,
-                                'preprocess_str': preprocess_str,
-                            }
+            pipeline_dict = {'preprocess_pipeline': preprocess_pipeline, 'preprocess_str': preprocess_str}
             with open(pipeline_path, 'wb') as f:
                 pickle.dump(pipeline_dict, f)
             # We also save a readable file alongside the pkl file (only informative)
@@ -140,6 +138,9 @@ def main(filenames: List[str], preprocessing: Union[str, None], target_cols: Lis
             with open(info_path, 'w', encoding='{{default_encoding}}') as f:
                 f.write(f"'preprocess_str': {preprocess_str}\n")
                 f.write(f"'preprocess_pipeline': {str(preprocess_pipeline)}")
+            # Save original dataset sample
+            sample_path = os.path.join(pipeline_dir, 'dataset_sample.csv')
+            utils.to_csv(df_sample, sample_path, sep=sep, encoding=encoding)
 
             # Save preprocessed dataframe ({{default_encoding}}, '{{default_sep}}')
             # First line is a metadata with the name of the pipeline file

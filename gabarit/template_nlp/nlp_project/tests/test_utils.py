@@ -21,6 +21,7 @@ from unittest.mock import patch
 
 # Utils libs
 import os
+import tempfile
 import numpy as np
 import pandas as pd
 
@@ -215,6 +216,33 @@ class UtilsTests(unittest.TestCase):
         # Nominal case
         version = utils.get_package_version()
         self.assertEqual(type(version), str)
+
+    def test10_find_folder_path(self):
+        '''Test of the function utils.find_folder_path'''
+
+        with tempfile.TemporaryDirectory(dir=os.getcwd()) as tmp_dir:
+            # Create a fake directory structure
+            base_folder = tmp_dir
+            folderA = os.path.join(base_folder, 'folderA')
+            folderB = os.path.join(folderA, 'folderB')
+            folderC = os.path.join(base_folder, 'folderC')
+            os.makedirs(folderA)
+            os.makedirs(folderB)
+            os.makedirs(folderC)
+
+            # Nominal case
+            self.assertEqual(folderA, utils.find_folder_path('folderA', base_folder))
+            self.assertEqual(folderB, utils.find_folder_path('folderB', base_folder))
+            self.assertEqual(folderC, utils.find_folder_path('folderC', base_folder))
+            self.assertEqual(folderA, utils.find_folder_path(folderA, None))
+            self.assertEqual(folderB, utils.find_folder_path(folderB, None))
+            self.assertEqual(folderC, utils.find_folder_path(folderC, None))
+
+            # Errors
+            with self.assertRaises(FileNotFoundError):
+                utils.find_folder_path('folderD', base_folder)
+            with self.assertRaises(FileNotFoundError):
+                utils.find_folder_path('this/is/not/a/path', None)
 
 
 # TODO: test trained_needed & data_agnostic_str_to_list
