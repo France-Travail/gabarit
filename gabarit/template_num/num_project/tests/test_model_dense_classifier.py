@@ -421,11 +421,11 @@ class ModelDenseClassifierTests(unittest.TestCase):
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], decimal=3)
         # Test without custom_objects
         model.custom_objects = None
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], decimal=3)
         # Clean
         remove_dir(model_dir)
 
@@ -436,11 +436,11 @@ class ModelDenseClassifierTests(unittest.TestCase):
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], decimal=3)
         # Test without custom_objects
         model.custom_objects = None
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], decimal=3)
         # Clean
         remove_dir(model_dir)
 
@@ -451,11 +451,11 @@ class ModelDenseClassifierTests(unittest.TestCase):
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], decimal=3)
         # Test without custom_objects
         model.custom_objects = None
         reloaded_model = model.reload_model(hdf5_path)
-        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], 3, decimal=5)
+        np.testing.assert_almost_equal([list(_) for _ in reloaded_model.predict(x_train)], [list(_) for _ in model.model.predict(x_train)], decimal=3)
         # Clean
         remove_dir(model_dir)
 
