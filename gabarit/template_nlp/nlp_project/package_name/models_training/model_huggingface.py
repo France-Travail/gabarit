@@ -57,7 +57,7 @@ class ModelHuggingFace(ModelClass):
     # -> _get_model
     # -> reload_from_standalone
 
-    def __init__(self, batch_size: int = 64, epochs: int = 99, validation_split: float = 0.2
+    def __init__(self, batch_size: int = 64, epochs: int = 99, validation_split: float = 0.2,
                  transformer_name: str = 'Geotrend/distilbert-base-fr-cased', transformers_params: Union[dict, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelClass for more arguments)
 
