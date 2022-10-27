@@ -298,7 +298,7 @@ class ModelClass:
         '''Checks the inputs of a function. We check the number of columns and the ordering.
 
         Strategy :
-            - If fit function, set x_col (if not set), y_col (if not set), columns_in, mandatory_columns with input data & preprocessing pipeline
+            - If fit function, set preprocessing pipeline, columns_in, mandatory_columns, x_col (if not set), y_col (if not set) with input data
             - Then, for both x & y
                 - If input data has a column attribute
                     - If we can find all needed columns, reorder the dataset using only the needed columns (so it works if we have more columns)
@@ -331,6 +331,17 @@ class ModelClass:
         if fit_function:
             if y_input is None:
                 raise AttributeError("The argument y_input is mandatory if fit_function == True")
+            # If pipeline, columns_in or mandatory_columns is None, sets it
+            # Must be done before checking x_col as we might transform input data (change the cols names)
+            if self.preprocess_pipeline is None:  # ie no pipeline given when initializing the class
+                preprocess_str = "no_preprocess"
+                preprocess_pipeline = preprocess.get_pipeline(preprocess_str)  # Warning, the pipeline must be fitted
+                preprocess_pipeline.fit(x_input)  # We fit the pipeline to set the necessary columns for the pipeline
+                x_input = utils_models.apply_pipeline(x_input, preprocess_pipeline)  # Transform dataset (basically just retrieve correct cols names)
+                # Set attributes
+                self.preprocess_pipeline = preprocess_pipeline
+                self.columns_in, self.mandatory_columns = utils_models.get_columns_pipeline(self.preprocess_pipeline)
+            # Set x_col if not set yet
             if self.x_col is None:
                 self.logger.warning("Warning, the attribute x_col was not given when creating the model")
                 self.logger.warning("We set it now with the input data of the fit function")
@@ -351,13 +362,6 @@ class ModelClass:
                 # If there is only one element, we get rid of the list
                 if y_input_shape == 1:
                     self.y_col = self.y_col[0]
-            # If pipeline, columns_in or mandatory_columns is None, sets it
-            if self.preprocess_pipeline is None:  # ie no pipeline given when initializing the class
-                preprocess_str = "no_preprocess"
-                preprocess_pipeline = preprocess.get_pipeline(preprocess_str)  # Warning, the pipeline must be fitted
-                preprocess_pipeline.fit(x_input)  # We fit the pipeline to set the necessary columns for the pipeline
-                self.preprocess_pipeline = preprocess_pipeline
-                self.columns_in, self.mandatory_columns = utils_models.get_columns_pipeline(self.preprocess_pipeline)
 
         # Checking x_input
         if self.x_col is None:
@@ -373,12 +377,14 @@ class ModelClass:
                         can_reorder = False
                         self.logger.warning(f"The column {col} is missing from the input (x)")
                 # If we can't reorder :
-                # 1. Exact number of columns : we write a warning message and continue
+                # 1. Exact number of columns : we write a warning message and continue with columns renamed
                 # 2. Not the correct number of column : raise an error
                 if not can_reorder:
                     if x_input_shape != x_col_len:
                         raise ValueError(f"Input data (x) is not in the right format ({x_input_shape} != {x_col_len})")
                     self.logger.warning("The names of the columns (x) do not match. The process continues since there is the right number of columns")
+                    x_input = x_input.copy()  # needs a copy as we wil change columns names
+                    x_input.columns = self.x_col
                 # If we can reorder :
                 # 1. Same number of inputs but not the same order -> we just reorder
                 # 2. More columns ? -> we just take the needed subset + log a warning message
@@ -412,12 +418,14 @@ class ModelClass:
                             can_reorder = False
                             self.logger.warning(f"The column {col} is missing from the input (y)")
                     # If we can't reorder :
-                    # 1. Exact number of columns : we write a warning message and continue
+                    # 1. Exact number of columns : we write a warning message and continue with columns renamed
                     # 2. Not the correct number of column : raise an error
                     if not can_reorder:
                         if y_input_shape != y_col_len:
                             raise ValueError(f"Input data (y) is not in the right format ({y_input_shape} != {y_col_len})")
                         self.logger.warning("The names of the columns (y) do not match. The process continues since there is the right number of columns")
+                        y_input = y_input.copy()  # needs a copy as we wil change columns names
+                        y_input.columns = self.y_col
                     # If we can reorder :
                     # 1. Same number of inputs but not the same order -> we just reorder
                     # 2. More columns ? -> we just take the needed subset + log a warning message
