@@ -119,7 +119,7 @@ def main(source_paths: List[str], source_names: List[str] = None, compare_paths:
                 experiment_name=f"{{package_name}}/{mlflow_experiment}",
                 tracking_uri="{{mlflow_tracking_uri}}",
             )
-            mlflow_logger.log_text(report, output_filename)
+            mlflow_logger.log_text(report._page_html, output_filename)
 
 
 def get_paths_and_names(dataset_paths: List[str], dataset_names: List[str]) -> Tuple[List[str], List[str]]:
