@@ -382,7 +382,7 @@ class ModelClass:
                         raise ValueError(f"Input data (x) is not in the right format ({x_input_shape} != {x_col_len})")
                     self.logger.warning("The names of the columns (x) do not match. The process continues since there is the right number of columns")
                     x_input = x_input.copy()  # needs a copy as we wil change columns names
-                    x_input.columns = self.x_col
+                    x_input.columns = self.x_col  # type: ignore
                 # If we can reorder :
                 # 1. Same number of inputs but not the same order -> we just reorder
                 # 2. More columns ? -> we just take the needed subset + log a warning message
@@ -423,7 +423,7 @@ class ModelClass:
                             raise ValueError(f"Input data (y) is not in the right format ({y_input_shape} != {y_col_len})")
                         self.logger.warning("The names of the columns (y) do not match. The process continues since there is the right number of columns")
                         y_input = y_input.copy()  # needs a copy as we wil change columns names
-                        y_input.columns = self.y_col
+                        y_input.columns = self.y_col  # type: ignore
                     # If we can reorder :
                     # 1. Same number of inputs but not the same order -> we just reorder
                     # 2. More columns ? -> we just take the needed subset + log a warning message
