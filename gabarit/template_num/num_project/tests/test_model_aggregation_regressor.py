@@ -98,9 +98,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertEqual(model.median_predict.__code__.co_code, model.aggregation_function.__code__.co_code)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
         model.display_if_gpu_activated()
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model_name]
         # aggregation_function: mean_predict
@@ -120,9 +118,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertEqual(model.mean_predict.__code__.co_code, model.aggregation_function.__code__.co_code)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
         model.display_if_gpu_activated()
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model]
         # aggregation_function: median_predict
@@ -142,9 +138,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertEqual(model.median_predict.__code__.co_code, model.aggregation_function.__code__.co_code)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
         model.display_if_gpu_activated()
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model]
         # aggregation_function: Callable
@@ -168,9 +162,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertEqual(function_test.__code__.co_code, model.aggregation_function.__code__.co_code)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
         model.display_if_gpu_activated()
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         ############################################
         # Error
@@ -188,9 +180,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         list_models = [gbt, sgd_regressor]
         with self.assertRaises(ValueError):
             model = ModelAggregationRegressor(model_dir=model_dir, list_models=list_models)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
         remove_dir(sgd_regressor.model_dir)
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
@@ -210,9 +200,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertTrue(isinstance(model.list_real_models[1], type(sgd)))
         self.assertEqual(len(model.list_models), len(list_models))
         self.assertEqual(model.list_models, [gbt_name, sgd_name])
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model_name]
         gbt, sgd, gbt_name, sgd_name = self.create_models()
@@ -223,9 +211,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertTrue(isinstance(model.list_real_models[1], type(sgd)))
         self.assertEqual(len(model.list_models), len(list_models))
         self.assertEqual(model.list_models, [gbt_name, sgd_name])
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model]
         gbt, sgd, gbt_name, sgd_name = self.create_models()
@@ -236,9 +222,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertTrue(isinstance(model.list_real_models[1], type(sgd)))
         self.assertEqual(len(model.list_models), len(list_models))
         self.assertEqual(model.list_models, [gbt_name, sgd_name])
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
@@ -261,9 +245,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         model._sort_model_type([gbt, sgd])
         model._check_trained()
         self.assertTrue(model.trained)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # not trained
         gbt, sgd, _, _ = self.create_models()
@@ -272,9 +254,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         model._sort_model_type([gbt, sgd])
         model._check_trained()
         self.assertFalse(model.trained)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregationRegressor(model_dir=model_dir)
@@ -283,9 +263,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         model._sort_model_type([gbt, sgd])
         model._check_trained()
         self.assertFalse(model.trained)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
@@ -310,9 +288,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         for submodel in model.list_real_models:
             self.assertTrue(submodel.trained)
             self.assertEqual(submodel.nb_fit, 1)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # Some model trained
         gbt, sgd, _, _ = self.create_models()
@@ -326,9 +302,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         for submodel in model.list_real_models:
             self.assertTrue(submodel.trained)
             self.assertEqual(submodel.nb_fit, 1)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
@@ -445,18 +419,14 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         model = ModelAggregationRegressor(model_dir=model_dir, list_models=[gbt, sgd])
         with self.assertRaises(AttributeError):
             model.predict(x_train)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregationRegressor(model_dir=model_dir, list_models=[gbt, sgd])
         model.fit(x_train, y_train_mono)
         with self.assertRaises(ValueError):
             model.predict(x_train, return_proba=True)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
@@ -474,9 +444,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         model.fit(x_train, y_train_mono)
         with self.assertRaises(ValueError):
             model.predict_proba(x_train)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
@@ -499,9 +467,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertEqual(len(preds), len(x_train))
         self.assertTrue(([preds[i][0] for i in range(len(x_train))] == gbt.predict(x_train)).all())
         self.assertTrue(([preds[i][1] for i in range(len(x_train))] == sgd.predict(x_train)).all())
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregationRegressor(model_dir=model_dir, list_models=[gbt, sgd])
@@ -511,9 +477,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertEqual(len(preds), len(x_train))
         self.assertTrue(([preds[i][0] for i in range(len(x_train))] == gbt.predict(x_train)).all())
         self.assertTrue(([preds[i][1] for i in range(len(x_train))] == sgd.predict(x_train)).all())
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # Model needs to be fitted
         model = ModelAggregationRegressor(model_dir=model_dir)
@@ -654,7 +618,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertEqual(model.aggregation_function.__code__.co_code, model_new.aggregation_function.__code__.co_code)
         self.assertTrue((model.predict(x_test) == model_new.predict(x_test)).all())
         for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
+            remove_dir(os.path.join(models_path, os.path.split(submodel.model_dir)[-1]))
         for submodel in model_new.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
         remove_dir(model_dir)

@@ -132,7 +132,7 @@ class ModelAggregation(ModelClass):
         '''Checks and sets various attributes related to the fitting of underlying models
 
         Raises:
-            TypeError : The classes of all the aggregated models are not of the same type 
+            TypeError : The classes of all the aggregated models are not of the same type
         '''
         # Check fitted
         if self.list_real_models is not None:
@@ -143,7 +143,7 @@ class ModelAggregation(ModelClass):
 
                 # Set list_classes
                 self.list_classes = list({label for model in self.list_real_models for label in model.list_classes})
-                list_label_str = [label for label in self.list_classes if isinstance(label, (str, np.str))]
+                list_label_str = [label for label in self.list_classes if isinstance(label, str)]
                 list_label_other = [int(label) for label in self.list_classes if label not in list_label_str]
                 if len(list_label_str) > 0 and len(list_label_other) > 0:
                     raise TypeError('The classes of all the aggregated models are not of the same type.')
@@ -325,7 +325,7 @@ class ModelAggregation(ModelClass):
         Return:
             (np.ndarray) : prediction
         '''
-        return np.apply_along_axis(self.majority_vote, 1, predictions)
+        return np.apply_along_axis(self.majority_vote, 0, predictions)
 
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model

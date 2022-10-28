@@ -100,9 +100,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertEqual(model.proba_argmax.__code__.co_code, model.aggregation_function.__code__.co_code)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
         model.display_if_gpu_activated()
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model_name]
         # aggregation_function: majority_vote
@@ -124,9 +122,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertEqual(model.majority_vote.__code__.co_code, model.aggregation_function.__code__.co_code)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
         model.display_if_gpu_activated()
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model]
         # aggregation_function: all_predictions
@@ -148,9 +144,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertEqual(model.all_predictions.__code__.co_code, model.aggregation_function.__code__.co_code)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
         model.display_if_gpu_activated()
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model]
         # aggregation_function: vote_labels
@@ -172,9 +166,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertEqual(model.vote_labels.__code__.co_code, model.aggregation_function.__code__.co_code)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
         model.display_if_gpu_activated()
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model]
         # aggregation_function: Callable
@@ -207,9 +199,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertEqual(function_test.__code__.co_code, model.aggregation_function.__code__.co_code)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
         model.display_if_gpu_activated()
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         ############################################
         # Error
@@ -276,9 +266,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         list_models = [gbt, sgd_regressor]
         with self.assertRaises(ValueError):
             model = ModelAggregationClassifier(model_dir=model_dir, list_models=list_models)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
         remove_dir(sgd_regressor.model_dir)
 
         # if 'multi_label' inconsistent
@@ -286,9 +274,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         list_models = [gbt, sgd]
         with self.assertRaises(ValueError):
             model = ModelAggregationClassifier(model_dir=model_dir, list_models=list_models, multi_label=False)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
@@ -307,9 +293,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertTrue(isinstance(model.list_real_models[1], type(sgd)))
         self.assertEqual(len(model.list_models), len(list_models))
         self.assertEqual(model.list_models, [gbt_name, sgd_name])
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model_name]
         gbt, sgd, gbt_name, sgd_name = self.create_models()
@@ -320,9 +304,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertTrue(isinstance(model.list_real_models[1], type(sgd)))
         self.assertEqual(len(model.list_models), len(list_models))
         self.assertEqual(model.list_models, [gbt_name, sgd_name])
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model]
         gbt, sgd, gbt_name, sgd_name = self.create_models()
@@ -333,9 +315,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertTrue(isinstance(model.list_real_models[1], type(sgd)))
         self.assertEqual(len(model.list_models), len(list_models))
         self.assertEqual(model.list_models, [gbt_name, sgd_name])
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
@@ -370,9 +350,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertTrue(len(model.list_classes), n_classes_int)
         self.assertEqual(model.list_classes, list_classes_int)
         self.assertEqual(model.dict_classes, dict_classes_int)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # str
         gbt, sgd, _, _ = self.create_models()
@@ -388,9 +366,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertTrue(len(model.list_classes), n_classes_str)
         self.assertEqual(model.list_classes, list_classes_str)
         self.assertEqual(model.dict_classes, dict_classes_str)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # not trained
         gbt, sgd, _, _ = self.create_models()
@@ -403,9 +379,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertFalse(model.trained)
         self.assertTrue(model.list_classes is None)
         self.assertTrue(model.dict_classes is None)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregationClassifier(model_dir=model_dir)
@@ -418,9 +392,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertFalse(model.trained)
         self.assertTrue(model.list_classes is None)
         self.assertTrue(model.dict_classes is None)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # Error
         gbt, sgd, _, _ = self.create_models()
@@ -430,9 +402,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         model._sort_model_type([gbt, sgd])
         with self.assertRaises(TypeError):
             model._check_trained()
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
@@ -462,9 +432,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         for submodel in model.list_real_models:
             self.assertTrue(submodel.trained)
             self.assertEqual(submodel.nb_fit, 1)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # Some model trained
         gbt, sgd, _, _ = self.create_models()
@@ -478,9 +446,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         for submodel in model.list_real_models:
             self.assertTrue(submodel.trained)
             self.assertEqual(submodel.nb_fit, 1)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         ############################################
         # multi_label
@@ -498,9 +464,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         for submodel in model.list_real_models:
             self.assertTrue(submodel.trained)
             self.assertEqual(submodel.nb_fit, 1)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # Some sub-models are mono_label
         gbt, sgd, _, _ = self.create_models(gbt_param={'multi_label': True})
@@ -514,9 +478,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         for submodel in model.list_real_models:
             self.assertTrue(submodel.trained)
             self.assertEqual(submodel.nb_fit, 1)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         gbt, sgd, _, _ = self.create_models(sgd_param={'multi_label': True})
         sgd.fit(x_train, y_train_multi)
@@ -529,9 +491,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         for submodel in model.list_real_models:
             self.assertTrue(submodel.trained)
             self.assertEqual(submodel.nb_fit, 1)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # All sub-models are mono_label
         gbt, sgd, _, _ = self.create_models()
@@ -544,9 +504,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         for submodel in model.list_real_models:
             self.assertTrue(submodel.trained)
             self.assertEqual(submodel.nb_fit, 1)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         ############################################
         # Error
@@ -557,18 +515,14 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         model = ModelAggregationClassifier(model_dir=model_dir, list_models=[gbt, sgd], multi_label=True, aggregation_function='all_predictions')
         with self.assertRaises(ValueError):
             model.fit(x_train, y_train_mono)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # if model needs mono_label but y_train is multi_label
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregationClassifier(model_dir=model_dir, list_models=[gbt, sgd], multi_label=False)
         with self.assertRaises(ValueError):
             model.fit(x_train, y_train_multi)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
@@ -827,9 +781,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         model = ModelAggregationClassifier(model_dir=model_dir, list_models=[gbt, sgd])
         with self.assertRaises(AttributeError):
             model.predict('test')
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
@@ -854,9 +806,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertEqual(probas.shape, (len(x_train), len(list_models), n_classes))
         self.assertTrue(([probas[i][0] for i in range(len(probas))] == gbt.predict_proba(x_train)).all())
         self.assertTrue(([probas[i][1] for i in range(len(probas))] == sgd.predict_proba(x_train)).all())
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # Model needs to be fitted
         model = ModelAggregationClassifier(model_dir=model_dir)
@@ -889,9 +839,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertEqual(len(preds), len(x_train))
         self.assertTrue(([preds[i][0] for i in range(len(x_train))] == gbt.predict(x_train)).all())
         self.assertTrue(([preds[i][1] for i in range(len(x_train))] == sgd.predict(x_train)).all())
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # multi_label
         gbt, sgd, _, _ = self.create_models(gbt_param={'multi_label': True}, sgd_param={'multi_label': True})
@@ -906,9 +854,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         preds_sgd = model._predict_model_with_full_list_classes(sgd, x_train, return_proba=False)
         self.assertTrue(([preds[i][0] for i in range(len(x_train))] == preds_gbt).all())
         self.assertTrue(([preds[i][1] for i in range(len(x_train))] == preds_sgd).all())
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # Model needs to be fitted
         model = ModelAggregationClassifier(model_dir=model_dir)
@@ -939,9 +885,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         probas_sgd = sgd.predict(x_train, return_proba=True)
         probas_agg = [(probas_gbt[i] + probas_sgd[i]) / 2 for i in range(len(probas_gbt))]
         self.assertTrue((probas == probas_agg).all())
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         # Model needs to be fitted
         model = ModelAggregationClassifier(model_dir=model_dir)
@@ -986,9 +930,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         gbt1_predict_full_classes = model._predict_model_with_full_list_classes(gbt1, x_test, return_proba=False)
         self.assertEqual(gbt1_predict_full_classes.shape, (len(x_test),))
         self.assertEqual(gbt1_predict_full_classes, target_predict_gbt1)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
 
         ############################################
         # multi_label
@@ -1022,9 +964,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertEqual(gbt1_predict_full_classes.shape, (len(x_test), cols_all))
         for i in range(len(target_predict_model_with_full_list_classes)):
             self.assertAlmostEqual(gbt1_predict_full_classes[0][i], target_predict_model_with_full_list_classes[i], places=2)
-        for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
-        remove_dir(model_dir)
+        remove_dir_model(model, model_dir)
         remove_dir(gbt1.model_dir)
         remove_dir(gbt2.model_dir)
 
@@ -1266,7 +1206,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertTrue((model.predict(x_test) == model_new.predict(x_test)).all())
         self.assertTrue((model.predict_proba(x_test) == model_new.predict_proba(x_test)).all())
         for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
+            remove_dir(os.path.join(models_path, os.path.split(submodel.model_dir)[-1]))
         for submodel in model_new.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
         remove_dir(model_dir)
@@ -1313,7 +1253,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         self.assertTrue((model.predict(x_test) == model_new.predict(x_test)).all())
         self.assertTrue((model.predict_proba(x_test) == model_new.predict_proba(x_test)).all())
         for submodel in model.list_real_models:
-            remove_dir(os.path.split(submodel.model_dir)[-1])
+            remove_dir(os.path.join(models_path, os.path.split(submodel.model_dir)[-1]))
         for submodel in model_new.list_real_models:
             remove_dir(os.path.split(submodel.model_dir)[-1])
         remove_dir(model_dir)
