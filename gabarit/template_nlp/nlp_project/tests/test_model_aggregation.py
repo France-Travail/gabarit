@@ -15,7 +15,6 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 # Libs unittest
-import configparser
 import unittest
 
 # Utils libs
@@ -409,8 +408,8 @@ class Modelaggregation(unittest.TestCase):
         remove_dir(model_dir)
 
         def check_sort_model_type(model, list_models_name):
-            self.assertTrue(isinstance(model.list_real_models[0], type(svm)))
-            self.assertTrue(isinstance(model.list_real_models[1], type(gbt)))
+            self.assertTrue(isinstance(model.list_real_models[0], ModelTfidfSvm))
+            self.assertTrue(isinstance(model.list_real_models[1], ModelTfidfGbt))
             self.assertEqual(len(model.list_models), len(list_models))
             self.assertEqual(model.list_models, list_models_name)
 
@@ -647,7 +646,7 @@ class Modelaggregation(unittest.TestCase):
             else:
                 return votes[0][0]
 
-        # Function including all the checks one has to perform
+        # Function including all the checks we have to perform
         def test_predict(model, x_test, target_predict, target_probas):
             preds = model.predict(x_test)
             probas = model.predict(x_test, return_proba=True)

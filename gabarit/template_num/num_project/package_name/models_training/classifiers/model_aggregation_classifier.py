@@ -322,7 +322,7 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
         Return:
             (np.ndarray) : prediction
         '''
-        return np.apply_along_axis(self.majority_vote, 1, predictions)
+        return np.apply_along_axis(self.majority_vote, 0, predictions)
 
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model
