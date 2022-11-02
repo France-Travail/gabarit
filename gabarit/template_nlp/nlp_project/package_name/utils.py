@@ -237,6 +237,19 @@ def get_models_path() -> str:
         os.mkdir(dir_path)
     return os.path.abspath(dir_path)
 
+def get_transformers_path() -> str:
+    '''Returns the path to the transformers folder
+
+    Returns:
+        str: Path of the transformers folder
+    '''
+    if DIR_PATH is None:
+        dir_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), '{{package_name}}-transformers')
+    else:
+        dir_path = os.path.join(os.path.abspath(DIR_PATH), '{{package_name}}-transformers')
+    if not os.path.isdir(dir_path):
+        os.mkdir(dir_path)
+    return os.path.abspath(dir_path)
 
 def get_ressources_path() -> str:
     '''Returns the path to the ressources folder

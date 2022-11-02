@@ -32,19 +32,19 @@ import pandas as pd
 import dill as pickle
 import seaborn as sns
 import matplotlib.pyplot as plt
-
-import torch 
-
 from typing import Optional, no_type_check, Union, Tuple, Callable, Any
 
+import torch 
+from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer
 
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training import utils_deep_keras, utils_models
+from {{package_name}}.models_training import utils_models
 
 sns.set(style="darkgrid")
 
+HF_CACHE_DIR = utils.get_transformers_path()
 
 class ModelHuggingFace(ModelClass):
     '''Generic model for Huggingface NN'''
@@ -82,21 +82,15 @@ class ModelHuggingFace(ModelClass):
         self.batch_size = batch_size
         self.epochs = epochs
         self.validation_split = validation_split
-        self.patience = patience
+        
+        # Param embedding (can be None if no embedding)
+        self.transformer_name = transformer_name
+        self.transformers_params = transformers_params
 
+        # Model has to be fitted before use
+        self.tokenizer = AutoTokenizer.from_pretrained(self.transformer_name, cache_dir="new_cache_dir/")
         # Model set on fit
         self.model: Any = None
-
-        # Param embedding (can be None if no embedding)
-        self.embedding_name = embedding_name
-
-        # Keras params
-        if keras_params is None:
-            keras_params = {}
-        self.keras_params = keras_params.copy()
-
-        # Keras custom objects : we get the ones specified in utils_deep_keras
-        self.custom_objects = utils_deep_keras.custom_objects
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:
         '''Fits the model
@@ -226,16 +220,28 @@ class ModelHuggingFace(ModelClass):
 
         # Get model (if already fitted we do not load a new one)
         if not self.trained:
-            self.model = self._get_model()
+            self.model = AutoModelForSequenceClassification.from_pretrained('text-classification', self.transformer_name, cache_dir = HF_CACHE_DIR)
 
-        # Get callbacks (early stopping & checkpoint)
-        callbacks = self._get_callbacks()
-
+        
         # Fit
         # We use a try...except in order to save the model if an error arises
         # after more than a minute into training
         start_time = time.time()
         try:
+            training_args = TrainingArguments(
+            output_dir="self.model_dir,
+            learning_rate=2e-5,
+            per_device_train_batch_size=self.batch_size,
+            per_device_eval_batch_size=self.batch_size,
+            num_train_epochs=self.epochs,
+            weight_decay=0.01,
+        )
+            trainer = Trainer(
+                model=model,
+                args=training_args,
+                train_dataset=x_train,
+                eval_dataset=
+            )
             fit_history = self.model.fit(  # type: ignore
                 x_train,
                 y_train_dummies,
@@ -246,43 +252,8 @@ class ModelHuggingFace(ModelClass):
                 callbacks=callbacks,
                 verbose=1,
             )
-        except (RuntimeError, SystemError, SystemExit, EnvironmentError, KeyboardInterrupt, tf.errors.ResourceExhaustedError, tf.errors.InternalError,
-                tf.errors.UnavailableError, tf.errors.UnimplementedError, tf.errors.UnknownError, Exception) as e:
-            # Steps:
-            # 1. Display tensorflow error
-            # 2. Check if more than one minute elapsed & existence best.hdf5
-            # 3. Reload best model
-            # 4. We consider that a fit occured (trained = True, nb_fit += 1)
-            # 5. Save & create a warning file
-            # 6. Display error messages
-            # 7. Raise an error
-
-            # 1.
+        except (RuntimeError, SystemError, SystemExit, EnvironmentError, KeyboardInterrupt, Exception) as e:
             self.logger.error(repr(e))
-
-            # 2.
-            best_path = os.path.join(self.model_dir, 'best.hdf5')
-            time_spent = time.time() - start_time
-            if time_spent >= 60 and os.path.exists(best_path):
-                # 3.
-                self.model = load_model(best_path, custom_objects=self.custom_objects)
-                # 4.
-                self.trained = True
-                self.nb_fit += 1
-                # 5.
-                self.save()
-                with open(os.path.join(self.model_dir, "0_MODEL_INCOMPLETE"), 'w'):
-                    pass
-                with open(os.path.join(self.model_dir, "1_TRAINING_NEEDS_TO_BE_RESUMED"), 'w'):
-                    pass
-                # 6.
-                self.logger.error("[EXPERIMENTAL] Error during model training")
-                self.logger.error(f"[EXPERIMENTAL] The error happened after {round(time_spent, 2)}s of training")
-                self.logger.error("[EXPERIMENTAL] A saving of the model is done but this model won't be usable as is.")
-                self.logger.error(f"[EXPERIMENTAL] In order to resume the training, we have to specify this model ({ntpath.basename(self.model_dir)}) in the file 2_training.py")
-                self.logger.error("[EXPERIMENTAL] Warning, the preprocessing is not saved in the configuration file")
-                self.logger.error("[EXPERIMENTAL] Warning, the best model might be corrupted in some cases")
-            # 7.
             raise RuntimeError("Error during model training")
 
         # Print accuracy & loss if level_save > 'LOW'
@@ -341,23 +312,6 @@ class ModelHuggingFace(ModelClass):
         else:
             return self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
-    @utils.trained_needed
-    def experimental_predict_proba(self, x_test, **kwargs) -> np.ndarray:
-        '''Predicts probabilities on the test dataset - Experimental function
-        Preprocessings must be done before (in predict_proba)
-        Here we only do the prediction and return the result
-
-        Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples]
-        Returns:
-            (np.ndarray): Array, shape = [n_samples, n_classes]
-        '''
-        @tf.function
-        def serve(x):
-            return self.model(x, training=False)
-
-        return serve(x_test).numpy()
-
     def _prepare_x_train(self, x_train) -> np.ndarray:
         '''Prepares the input data for the model
 
@@ -378,65 +332,6 @@ class ModelHuggingFace(ModelClass):
         '''
         raise NotImplementedError("'_prepare_x_test' needs to be overridden")
 
-    def _get_embedding_matrix(self, tokenizer) -> Tuple[np.ndarray, int]:
-        '''Get embedding matrix
-
-        Args:
-            tokenizer (?): Tokenizer to use (useful to test with a new matrice embedding)
-        Returns:
-            np.ndarray: Embedding matrix
-            int: Embedding size
-        '''
-        # Get embedding indexes
-        embedding_indexes = utils_models.get_embedding(self.embedding_name)
-        # Get embedding_size
-        embedding_size = len(embedding_indexes[list(embedding_indexes.keys())[0]])
-
-        # Get embedding matrix
-        # The first line of this matrix is a zero vector
-        # The following lines are the projections of the words obtained by the tokenizer (same index)
-
-        # We keep only the max tokens 'num_words'
-        # https://github.com/keras-team/keras/issues/8092
-        if tokenizer.num_words is None:
-            word_index = {e: i for e, i in tokenizer.word_index.items()}
-        else:
-            word_index = {e: i for e, i in tokenizer.word_index.items() if i <= tokenizer.num_words}
-        # Create embedding matrix
-        embedding_matrix = np.zeros((len(word_index) + 1, embedding_size))
-        # Fill it
-        for word, i in word_index.items():
-            embedding_vector = embedding_indexes.get(word)
-            if embedding_vector is not None:
-                # words not found in embedding index will be all-zeros.
-                embedding_matrix[i] = embedding_vector
-        self.logger.info(f"Size of the embedding matrix (ie. number of matches on the input) : {len(embedding_matrix)}")
-        return embedding_matrix, embedding_size
-
-    def _get_sequence(self, x_test, tokenizer, maxlen: int, padding: str = 'pre', truncating: str = 'post') -> np.ndarray:
-        '''Transform input of text into sequences. Needs a tokenizer.
-
-        Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
-            tokenizer (?): Tokenizer to use (useful to test with a new matrice embedding)
-            maxlen (int): maximum sequence length
-        Kwargs:
-            padding (str): Padding (add zeros) at the beginning ('pre') or at the end ('post') of the sequences
-            truncating (str): Truncating the beginning ('pre') or the end ('post') of the sequences (if superior to max_sequence_length)
-        Raises:
-            ValueError: If the object padding is not a valid choice (['pre', 'post'])
-            ValueError: If the object truncating is not a valid choice (['pre', 'post'])
-        Returns:
-            (np.ndarray): Padded sequence
-        '''
-        if padding not in ['pre', 'post']:
-            raise ValueError(f"The object padding ({padding}) is not a valid choice (['pre', 'post'])")
-        if truncating not in ['pre', 'post']:
-            raise ValueError(f"The object truncating ({truncating}) is not a valid choice (['pre', 'post'])")
-        # Process
-        sequences = tokenizer.texts_to_sequences(x_test)
-        return pad_sequences(sequences, maxlen=maxlen, padding=padding, truncating=truncating)
-
     def _get_model(self) -> Model:
         '''Gets a model structure
 
@@ -445,88 +340,7 @@ class ModelHuggingFace(ModelClass):
         '''
         raise NotImplementedError("'_get_model' needs to be overridden")
 
-    def _get_callbacks(self) -> list:
-        '''Gets model callbacks
-
-        Returns:
-            list: List of callbacks
-        '''
-        # Get classic callbacks
-        callbacks = [EarlyStopping(monitor='val_loss', patience=self.patience, restore_best_weights=True)]
-        if self.level_save in ['MEDIUM', 'HIGH']:
-            callbacks.append(
-                ModelCheckpoint(
-                    filepath=os.path.join(self.model_dir, f'best.hdf5'), monitor='val_loss', save_best_only=True, mode='auto'
-                )
-            )
-        callbacks.append(CSVLogger(filename=os.path.join(self.model_dir, f'logger.csv'), separator='{{default_sep}}', append=False))
-        callbacks.append(TerminateOnNaN())
-
-        # Get LearningRateScheduler
-        scheduler = self._get_learning_rate_scheduler()
-        if scheduler is not None:
-            callbacks.append(LearningRateScheduler(scheduler))
-
-        # Manage tensorboard
-        if self.level_save in ['HIGH']:
-            # Get log directory
-            models_path = utils.get_models_path()
-            tensorboard_dir = os.path.join(models_path, 'tensorboard_logs')
-            # We add a prefix so that the function load_model works correctly (it looks for a sub-folder with model name)
-            log_dir = os.path.join(tensorboard_dir, f"tensorboard_{ntpath.basename(self.model_dir)}")
-            if not os.path.exists(log_dir):
-                os.makedirs(log_dir)
-
-            # TODO: check if this class does not slow proccesses
-            # -> For now: comment
-            # Create custom class to monitore LR changes
-            # https://stackoverflow.com/questions/49127214/keras-how-to-output-learning-rate-onto-tensorboard
-            # class LRTensorBoard(TensorBoard):
-            #     def __init__(self, log_dir, **kwargs) -> None:  # add other arguments to __init__ if you need
-            #         super().__init__(log_dir=log_dir, **kwargs)
-            #
-            #     def on_epoch_end(self, epoch, logs=None):
-            #         logs.update({'lr': K.eval(self.model.optimizer.lr)})
-            #         super().on_epoch_end(epoch, logs)
-
-            # Append tensorboard callback
-            # TODO: check compatibility tensorflow 2.3
-            # WARNING : https://stackoverflow.com/questions/63619763/model-training-hangs-forever-when-using-a-tensorboard-callback-with-an-lstm-laye
-            # A compatibility problem TensorBoard / TensorFlow 2.3 (cuDNN implementation of LSTM/GRU) can arise
-            # In this case, the training of the model can be "blocked" and does not respond anymore
-            # This problem has arisen two times on Pôle Emploi computers (windows 7 & VM Ubuntu on windows 7 host)
-            # No problem on Valeuriad computers (windows 10)
-            # Thus, TensorBoard is deactivated by default for now
-            # While awaiting a possible fix, you are responsible for checking if TensorBoard works on your computer
-            self.logger.warning(" ###################### ")
-            self.logger.warning("TensorBoard deactivated : compatibility problem TensorBoard / TensorFlow 2.3 (cuDNN implementation of LSTM/GRU) can arise")
-            self.logger.warning("https://stackoverflow.com/questions/63619763/model-training-hangs-forever-when-using-a-tensorboard-callback-with-an-lstm-laye")
-            self.logger.warning(" In order to activate if, one has to modify the method _get_callbacks of model_keras.py")
-            self.logger.warning(" ###################### ")
-            # callbacks.append(TensorBoard(log_dir=log_dir, write_grads=False, write_images=False))
-            # self.logger.info(f"To start tensorboard: python -m tensorboard.main --logdir {tensorboard_dir}")
-
-        return callbacks
-
-    def _get_learning_rate_scheduler(self) -> Union[Callable, None]:
-        '''Fonction to define a Learning Rate Scheduler
-           -> if it returns None, no scheduler will be used. (def.)
-           -> This function will be save directly in the model configuration file
-           -> This can be overridden at runing time
-
-        Returns:
-            (Callable | None): A learning rate Scheduler
-        '''
-        # e.g.
-        # def scheduler(epoch):
-        #     lim_epoch = 75
-        #     if epoch < lim_epoch:
-        #         return 0.01
-        #     else:
-        #         return max(0.001, 0.01 * math.exp(0.01 * (lim_epoch - epoch)))
-        scheduler = None
-        return scheduler
-
+    
     def _plot_metrics_and_loss(self, fit_history) -> None:
         '''Plots accuracy & loss
 
