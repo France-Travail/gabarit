@@ -33,6 +33,10 @@ from {{package_name}}.models_training import utils_models
 from {{package_name}}.models_training.model_class import ModelClass
 
 
+# Init. shap JS
+shap.initjs()
+
+
 class Explainer:
     '''Parent class for the explainers'''
 
@@ -136,7 +140,7 @@ class ShapExplainer(Explainer):
         # Get predictions
         return self.model.predict(content_prep)
 
-    def explain_instance(self, content: pd.DataFrame, class_or_label_index: int = None, **kwargs) -> Any:
+    def explain_instance(self, content: pd.DataFrame, class_or_label_index: Union[int, None] = None, **kwargs) -> Any:
         '''Explains a prediction
 
         This function calls the Shap module.
@@ -160,7 +164,7 @@ class ShapExplainer(Explainer):
         # Get explanations
         return self.explainer(df_prep)  # Shap values
 
-    def explain_instance_as_html(self, content: pd.DataFrame, class_or_label_index: int = None, **kwargs) -> str:
+    def explain_instance_as_html(self, content: pd.DataFrame, class_or_label_index: Union[int, None] = None, **kwargs) -> str:
         '''Explains a prediction - returns an HTML object
 
         Args:
@@ -179,11 +183,11 @@ class ShapExplainer(Explainer):
             plt_file.seek(0)
             encoded = base64.b64encode(plt_file.read())
         plt.clf()
-        html_waterfall = f"<img src=\'data:image/png;base64, {encoded.decode('utf-8')}\'>"
+        html_waterfall = f"<img src=\'data:image/png;base64, {encoded.decode('utf-8')}\' class=\"shap_fig\" >"  # Class name is used in the demonstrator
         # Force figure
         html_force = shap.plots.force(shap_values[0]).html()
         # Combine & return
-        final_html = f"{html_waterfall}<br>{html_force}"
+        final_html = f"<head>{shap.getjs()}</head>{html_waterfall}<br><body>{html_force}</body>"
         return final_html
 
 
