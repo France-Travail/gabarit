@@ -474,7 +474,8 @@ if selected_model is not None:
                 # Add some css
                 html += "<style>.shap_fig {max-width: 100%}</style>"
                 # Chosen class or label
-                st.write(f"Explanation for {'label' if  model.multi_label else 'class'} {model.dict_classes[class_or_label_index]}")
+                if model.model_type == 'classifier':
+                    st.write(f"Explanation for {'label' if model.multi_label else 'class'} {model.dict_classes[class_or_label_index]}")
                 # Display html
                 st.components.v1.html(html, height=800, scrolling=True)  # We could pby have a better height
 
