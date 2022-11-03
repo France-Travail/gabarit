@@ -35,8 +35,8 @@ import matplotlib.pyplot as plt
 from typing import Optional, no_type_check, Union, Tuple, Callable, Any
 
 import torch 
-from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer
-
+from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer, DataCollatorWithPadding, AutoTokenizer, TextClassificationPipeline
+from datasets import Dataset
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_class import ModelClass
@@ -52,13 +52,18 @@ class ModelHuggingFace(ModelClass):
     _default_name = 'model_huggingface'
 
     # Not implemented :
-    # -> _prepare_x_train
     # -> _prepare_x_test
     # -> _get_model
     # -> reload_from_standalone
+    # -> _save_model_png
+
+    # TODO: perhaps it would be smarter to have this class behaving as the abstract class for all the model types 
+    # implemented on the HF hub and to create model specific subclasses. 
+    # => might change it as use cases grow
 
     def __init__(self, batch_size: int = 64, epochs: int = 99, validation_split: float = 0.2,
-                 transformer_name: str = 'Geotrend/distilbert-base-fr-cased', transformers_params: Union[dict, None] = None, **kwargs) -> None:
+                 transformer_name: str = 'Geotrend/distilbert-base-fr-cased', transformer_params: Union[dict, None] = None,
+                 trainer_params: Union[dict, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelClass for more arguments)
 
         Kwargs:
@@ -67,7 +72,7 @@ class ModelHuggingFace(ModelClass):
             validation_split (float): Percentage for the validation set split
                 Only used if no input validation set when fitting
             transformer_name (str) : The name of the transformer backbone to use
-            transformers_params (dict): Parameters used by the Transformer model.
+            transformer_params (dict): Parameters used by the Transformer model.
                 The purpose of this dictionary is for the user to use it as they wants in the _get_model function
                 This parameter was initially added in order to do an hyperparameters search
         '''
@@ -85,12 +90,24 @@ class ModelHuggingFace(ModelClass):
         
         # Param embedding (can be None if no embedding)
         self.transformer_name = transformer_name
-        self.transformers_params = transformers_params
+        self.transformer_params = transformer_params
 
-        # Model has to be fitted before use
-        self.tokenizer = AutoTokenizer.from_pretrained(self.transformer_name, cache_dir="new_cache_dir/")
-        # Model set on fit
+        
+        # Trainer params 
+        if trainer_params is None:
+            trainer_params = TrainingArguments(
+                output_dir=self.model_dir,
+                learning_rate=2e-5,
+                per_device_train_batch_size=self.batch_size,
+                per_device_eval_batch_size=self.batch_size,
+                num_train_epochs=self.epochs,
+                weight_decay=0.01)
+        self.trainer_params = trainer_params
+
+        # Model set on fit or on reload
         self.model: Any = None
+        self.pipe: Any = None
+        self.tokenizer = None
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:
         '''Fits the model
@@ -202,56 +219,41 @@ class ModelHuggingFace(ModelClass):
         # Also get y_valid_dummies as numpy
         y_valid_dummies = np.array(y_valid_dummies)
 
-        # Prepare x_train
-        x_train = self._prepare_x_train(x_train)
-
-        # If available, also prepare x_valid & get validation_data (tuple)
-        validation_data: Optional[tuple] = None  # Def. None if y_valid is None
-        if y_valid is not None:
-            x_valid = self._prepare_x_test(x_valid)
-            validation_data = (x_valid, y_valid_dummies)
-
-        if validation_data is None:
+        if y_valid is None:
             self.logger.warning(f"Warning, no validation set. The training set will be splitted (validation fraction = {self.validation_split})")
-
+            p = np.random.permutation(len(x_train))
+            cutoff = int(len(p) * self.validation_split)
+            x_valid = x_train[p[0:cutoff]]
+            x_train = x_train[p[cutoff:]]
+            y_valid_dummies = y_valid_dummies[p[0:cutoff]]
+            y_train_dummies = y_train_dummies[p[cutoff:]]
+        
         ##############################################
         # Fit
         ##############################################
 
         # Get model (if already fitted we do not load a new one)
-        if not self.trained:
-            self.model = AutoModelForSequenceClassification.from_pretrained('text-classification', self.transformer_name, cache_dir = HF_CACHE_DIR)
+        if not self.trained or self.model is None:
+            self.model = self._get_model()
+            self.tokenizer = self._get_tokenizer()
 
-        
+        train_dataset = self._prepare_x_train(x_train, y_train_dummies)
+        valid_dataset = self._prepare_x_train(x_valid, y_valid_dummies)
+
         # Fit
-        # We use a try...except in order to save the model if an error arises
-        # after more than a minute into training
-        start_time = time.time()
         try:
-            training_args = TrainingArguments(
-            output_dir="self.model_dir,
-            learning_rate=2e-5,
-            per_device_train_batch_size=self.batch_size,
-            per_device_eval_batch_size=self.batch_size,
-            num_train_epochs=self.epochs,
-            weight_decay=0.01,
-        )
             trainer = Trainer(
                 model=model,
-                args=training_args,
-                train_dataset=x_train,
-                eval_dataset=
+                args=self.trainer_params,
+                train_dataset=train_dataset,
+                eval_dataset=valid_dataset,
+                tokenizer=self.tokenizer,
+                data_collator=DataCollatorWithPadding(tokenizer=tokenizer)
             )
-            fit_history = self.model.fit(  # type: ignore
-                x_train,
-                y_train_dummies,
-                batch_size=self.batch_size,
-                epochs=self.epochs,
-                validation_split=self.validation_split if validation_data is None else None,
-                validation_data=validation_data,
-                callbacks=callbacks,
-                verbose=1,
-            )
+            fit_history = trainer.train()
+            trainer.model.save_pretrained(output_dir = self.model_dir)
+            tokenizer.save_pretrained(output_dir = self.model_dir)
+
         except (RuntimeError, SystemError, SystemExit, EnvironmentError, KeyboardInterrupt, Exception) as e:
             self.logger.error(repr(e))
             raise RuntimeError("Error during model training")
@@ -261,7 +263,7 @@ class ModelHuggingFace(ModelClass):
             # Plot accuracy
             self._plot_metrics_and_loss(fit_history)
             # Reload best model
-            self.model = load_model(os.path.join(self.model_dir, 'best.hdf5'), custom_objects=self.custom_objects)
+            #self.model = load_model(os.path.join(self.model_dir, 'best.hdf5'), custom_objects=self.custom_objects)
 
         # Set trained
         self.trained = True
@@ -280,10 +282,13 @@ class ModelHuggingFace(ModelClass):
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
         # Cast in pd.Series
-        x_test = pd.Series(x_test)
+        x_test = self._prepare_x_test(pd.Series(x_test))
 
         # Predict
-        predicted_proba = self.predict_proba(x_test)
+        if self.pipe is None:
+            self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True)
+        
+        predicted_proba = self.pipe(x_test)
 
         # We return the probabilities if wanted
         if return_proba:
@@ -307,20 +312,23 @@ class ModelHuggingFace(ModelClass):
         # Prepare input
         x_test = self._prepare_x_test(x_test)
         # Process
-        if experimental_version:
-            return self.experimental_predict_proba(x_test)
-        else:
-            return self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
+        if self.pipe is None:
+            self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True)
+        
+        return self.pipe(x_test)
 
-    def _prepare_x_train(self, x_train) -> np.ndarray:
+    def _prepare_x_train(self, x_train, y_train_dummies) -> Dataset:
         '''Prepares the input data for the model
 
         Args:
             x_train (?): Array-like, shape = [n_samples, n_features]
         Returns:
-            (np.ndarray): Prepared data
+            (datasets.Dataset): Prepared dataset
         '''
-        raise NotImplementedError("'_prepare_x_train' needs to be overridden")
+        def tokenize_function(examples):
+            return tokenizer(examples["text"], truncation=True)
+        return Dataset.from_dict({'texts': x_train.tolist(), 'labels': y_train_dummies.tolist()}).map(tokenize_function, batched=True)
+
 
     def _prepare_x_test(self, x_test) -> np.ndarray:
         '''Prepares the input data for the model
@@ -328,21 +336,39 @@ class ModelHuggingFace(ModelClass):
         Args:
             x_test (?): Array-like, shape = [n_samples, n_features]
         Returns:
-            (np.ndarray): Prepared data
+            (datasets.Dataset): Prepared dataset
         '''
-        raise NotImplementedError("'_prepare_x_test' needs to be overridden")
+        def tokenize_function(examples):
+            return tokenizer(examples["text"], truncation=True)
+        return Dataset.from_dict({'texts': x_train.tolist()}).map(tokenize_function, batched=True)
 
-    def _get_model(self) -> Model:
+    def _get_model(self, model_path: str = None) -> Any:
         '''Gets a model structure
 
         Returns:
-            (Model): a Keras model
+            (Any): a HF model
         '''
-        raise NotImplementedError("'_get_model' needs to be overridden")
+        model = AutoModelForSequenceClassification.from_pretrained(
+                'text-classification', 
+                self.transformer_name if model_path is None else model_path, 
+                problem_type="multi_label_classification" if self.multi_label else "single_label_classification",
+                cache_dir = HF_CACHE_DIR)
+        return model
+
+    def _get_tokenizer(self, model_path: str = None) -> Tokenizer:
+        '''Gets a tokenizer
+
+        Returns:
+            (Tokenizer): a HF tokenizer
+        '''
+        tokenizer = AutoTokenizer.from_pretrained(
+            self.transformer_name if model_path is None else model_path, 
+            cache_dir=HF_CACHE_DIR)
+        return tokenizer
 
     
     def _plot_metrics_and_loss(self, fit_history) -> None:
-        '''Plots accuracy & loss
+        '''Plots TrainOutput, for legacy and compatibility purpose
 
         Arguments:
             fit_history (?) : fit history
@@ -360,16 +386,17 @@ class ModelHuggingFace(ModelClass):
             'f1': ['F1-score', 'f1_score'],
             'precision': ['Precision', 'precision'],
             'recall': ['Recall', 'recall'],
+            'train_loss': ['Train Loss', 'train_loss']
         }
 
         # Plot each available metric
-        for metric in fit_history.history.keys():
+        for metric in fit_history.metrics.keys():
             if metric in metrics_dir.keys():
                 title = metrics_dir[metric][0]
                 filename = metrics_dir[metric][1]
                 plt.figure(figsize=(10, 8))
-                plt.plot(fit_history.history[metric])
-                plt.plot(fit_history.history[f'val_{metric}'])
+                plt.plot(fit_history.metrics[metric])
+                plt.plot(fit_history.metrics[f'val_{metric}'])
                 plt.title(f"Model {title}")
                 plt.ylabel(title)
                 plt.xlabel('Epoch')
@@ -388,13 +415,7 @@ class ModelHuggingFace(ModelClass):
         Args:
             model (?): model to plot
         '''
-        # Check if graphiz is intalled
-        # TODO : to be improved !
-        graphiz_path = 'C:/Program Files (x86)/Graphviz2.38/bin/'
-        if os.path.isdir(graphiz_path):
-            os.environ["PATH"] += os.pathsep + 'C:/Program Files (x86)/Graphviz2.38/bin/'
-            img_path = os.path.join(self.model_dir, 'model.png')
-            plot_model(model, to_file=img_path)
+        raise NotImplementedError("'_save_model_png' needs to be overridden")
 
     @no_type_check  # We do not check the type, because it is complicated with managing custom_objects_str
     def save(self, json_data: Union[dict, None] = None) -> None:
@@ -407,41 +428,14 @@ class ModelHuggingFace(ModelClass):
         if json_data is None:
             json_data = {}
 
-        json_data['librairie'] = 'keras'
+        json_data['librairie'] = 'huggingface'
         json_data['batch_size'] = self.batch_size
         json_data['epochs'] = self.epochs
         json_data['validation_split'] = self.validation_split
-        json_data['patience'] = self.patience
-        json_data['embedding_name'] = self.embedding_name
-        json_data['keras_params'] = self.keras_params
-        if self.model is not None:
-            json_data['keras_model'] = json.loads(self.model.to_json())
-        else:
-            json_data['keras_model'] = None
-
-        # Add _get_model code if not in json_data
-        if '_get_model' not in json_data.keys():
-            json_data['_get_model'] = pickle.source.getsourcelines(self._get_model)[0]
-        # Add _get_learning_rate_scheduler code if not in json_data
-        if '_get_learning_rate_scheduler' not in json_data.keys():
-            json_data['_get_learning_rate_scheduler'] = pickle.source.getsourcelines(self._get_learning_rate_scheduler)[0]
-        # Add custom_objects code if not in json_data
-        if 'custom_objects' not in json_data.keys():
-            custom_objects_str = self.custom_objects.copy()
-            for key in custom_objects_str.keys():
-                if callable(custom_objects_str[key]):
-                    # Nominal case
-                    if not type(custom_objects_str[key]) == functools.partial:
-                        custom_objects_str[key] = pickle.source.getsourcelines(custom_objects_str[key])[0]
-                    # Manage partials
-                    else:
-                        custom_objects_str[key] = {
-                            'type': 'partial',
-                            'args': custom_objects_str[key].args,
-                            'function': pickle.source.getsourcelines(custom_objects_str[key].func)[0],
-                        }
-            json_data['custom_objects'] = custom_objects_str
-
+        json_data['transformer_name'] = self.transformer_name
+        json_data['transformer_params'] = self.transformer_params
+        json_data['trainer_params'] = self.trainer_params
+                
         # Save strategy :
         # - best.hdf5 already saved in fit()
         # - can't pickle keras model, so we drop it, save, and reload it
@@ -450,40 +444,25 @@ class ModelHuggingFace(ModelClass):
         super().save(json_data=json_data)
         self.model = keras_model
 
-    def reload_model(self, hdf5_path: str) -> Any:
-        '''Loads a Keras model from a HDF5 file
+    def reload_model(self, model_path: str) -> Any:
+        '''Loads a HF model from a directory
 
         Args:
-            hdf5_path (str): Path to the hdf5 file
+            model_path (str): Path to the directory containing both the model.bin and its conf
         Returns:
-            ?: Keras model
+            ?: HF model
         '''
-        # Fix tensorflow GPU if not already done (useful if we reload a model)
-        try:
-            gpu_devices = tf.config.experimental.list_physical_devices('GPU')
-            for device in gpu_devices:
-                tf.config.experimental.set_memory_growth(device, True)
-        except Exception:
-            pass
-
-        # We check if we already have the custom objects
-        if hasattr(self, 'custom_objects') and self.custom_objects is not None:
-            custom_objects = self.custom_objects
-        else:
-            self.logger.warning("Can't find the attribute 'custom_objects' in the model to be reloaded")
-            self.logger.warning("Backup on the default custom_objects of utils_deep_keras")
-            custom_objects = utils_deep_keras.custom_objects
-
+        
         # Loading of the model
-        keras_model = load_model(hdf5_path, custom_objects=custom_objects)
-
+        self.model = self._get_model(model_path)
+        self.tokenizer = self._get_tokenizer(model_path)
         # Set trained to true if not already true
         if not self.trained:
             self.trained = True
             self.nb_fit = 1
 
         # Return
-        return keras_model
+        return self.model
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files
@@ -498,11 +477,7 @@ class ModelHuggingFace(ModelClass):
             bool: whether GPU is available or not
         '''
         # Check for available GPU devices
-        physical_devices = tf.config.list_physical_devices('GPU')
-        if len(physical_devices) > 0:
-            return True
-        else:
-            return False
+        return torch.cuda.is_available()
 
 
 if __name__ == '__main__':

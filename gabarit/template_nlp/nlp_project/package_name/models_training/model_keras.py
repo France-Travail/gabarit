@@ -640,11 +640,14 @@ class ModelKeras(ModelClass):
 
         # Save strategy :
         # - best.hdf5 already saved in fit()
-        # - can't pickle keras model, so we drop it, save, and reload it
-        keras_model = self.model
+        # - can't pickle hf model, so we drop it, save, and reload it
+        hf_model = self.model
+        hf_tokenizer = self.tokenizer
         self.model = None
+        self.tokenizer = None
         super().save(json_data=json_data)
-        self.model = keras_model
+        self.model = hf_model
+        self.tokenizer = hf_tokenizer
 
     def reload_model(self, hdf5_path: str) -> Any:
         '''Loads a Keras model from a HDF5 file
