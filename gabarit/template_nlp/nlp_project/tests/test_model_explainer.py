@@ -63,7 +63,7 @@ class ModelExplainerTest(unittest.TestCase):
             pickle.dump(fake_embedding, f, pickle.HIGHEST_PROTOCOL)
 
     def test01_lime_explainer_nominal(self):
-        '''Test of the mono-class mono-label case'''
+        '''Test of the Lime explainer'''
 
         # Model dir
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -82,29 +82,29 @@ class ModelExplainerTest(unittest.TestCase):
         # Mono-label
         model = ModelTfidfSvm(model_dir=model_dir, multi_label=False)
         model.fit(x_train, y_train_mono)
-        exp = LimeExplainer(model, model_conf)
-        explanation = exp.explain_instance(text="ceci est un test")
-        txt = exp.explain_instance_as_list(text="ceci est un test")
-        html = exp.explain_instance_as_html(text="ceci est un test")
-        explanation = exp.explain_instance(text="ceci est un test", classes=['y_2', 'y_1'])
-        txt = exp.explain_instance_as_list(text="ceci est un test", classes=['y_2', 'y_1'])
-        html = exp.explain_instance_as_html(text="ceci est un test", classes=['y_0', 'y_1', 'y_2'])
+        explainer = LimeExplainer(model, model_conf)
+        explanation = explainer.explain_instance(text="ceci est un test")
+        txt = explainer.explain_instance_as_list(text="ceci est un test")
+        html = explainer.explain_instance_as_html(text="ceci est un test")
+        explanation = explainer.explain_instance(text="ceci est un test", classes=['y_2', 'y_1'])
+        txt = explainer.explain_instance_as_list(text="ceci est un test", classes=['y_2', 'y_1'])
+        html = explainer.explain_instance_as_html(text="ceci est un test", classes=['y_0', 'y_1', 'y_2'])
         remove_dir(model_dir)
 
         # Multi-labels
         model = ModelTfidfSvm(model_dir=model_dir, multi_label=True)
         model.fit(x_train, y_train_multi[cols])
-        exp = LimeExplainer(model, model_conf)
-        explanation = exp.explain_instance(text="ceci est un test")
-        txt = exp.explain_instance_as_list(text="ceci est un test")
-        html = exp.explain_instance_as_html(text="ceci est un test")
-        explanation = exp.explain_instance(text="ceci est un test", classes=['test3', 'test2'])
-        txt = exp.explain_instance_as_list(text="ceci est un test", classes=['test3', 'test2'])
-        html = exp.explain_instance_as_html(text="ceci est un test", classes=['test1', 'test2', 'test3'])
+        explainer = LimeExplainer(model, model_conf)
+        explanation = explainer.explain_instance(text="ceci est un test")
+        txt = explainer.explain_instance_as_list(text="ceci est un test")
+        html = explainer.explain_instance_as_html(text="ceci est un test")
+        explanation = explainer.explain_instance(text="ceci est un test", classes=['test3', 'test2'])
+        txt = explainer.explain_instance_as_list(text="ceci est un test", classes=['test3', 'test2'])
+        html = explainer.explain_instance_as_html(text="ceci est un test", classes=['test1', 'test2', 'test3'])
         remove_dir(model_dir)
 
     def test02_attention_explainer_nominal(self):
-        '''Test of the mono-class mono-label case'''
+        '''Test of the attention explainer'''
 
         # Model creation
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -125,10 +125,10 @@ class ModelExplainerTest(unittest.TestCase):
                                                       padding='pre', truncating='post',
                                                       embedding_name='fake_embedding.pkl')
         model.fit(x_train, y_train_mono)
-        exp = AttentionExplainer(model)
-        explanation = exp.explain_instance(text="ceci est un test")
-        txt = exp.explain_instance_as_list(text="ceci est un test")
-        html = exp.explain_instance_as_html(text="ceci est un test")
+        explainer = AttentionExplainer(model)
+        explanation = explainer.explain_instance(text="ceci est un test")
+        txt = explainer.explain_instance_as_list(text="ceci est un test")
+        html = explainer.explain_instance_as_html(text="ceci est un test")
         remove_dir(model_dir)
 
 

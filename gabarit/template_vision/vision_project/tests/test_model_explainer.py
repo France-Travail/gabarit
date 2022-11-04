@@ -63,7 +63,7 @@ class ModelExplainerTest(unittest.TestCase):
             pickle.dump(fake_embedding, f, pickle.HIGHEST_PROTOCOL)
 
     def test01_lime_explainer_nominal(self):
-        '''Test of the mono-class mono-label case'''
+        '''Test of the Lime explainer'''
 
         # Model dir
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -88,18 +88,18 @@ class ModelExplainerTest(unittest.TestCase):
         # Nominal case
         model = ModelCnnClassifier(model_dir=model_dir, batch_size=2, epochs=2)
         model.fit(df_train_mono, df_valid=df_train_mono)
-        exp = LimeExplainer(model, model_conf)
-        explanation = exp.explain_instance(img)
-        explanation = exp.explain_instance(img, classes=['cat'])
-        explanation = exp.explain_instance(img, classes=['cat', 'dog'])
+        explainer = LimeExplainer(model, model_conf)
+        explanation = explainer.explain_instance(img)
+        explanation = explainer.explain_instance(img, classes=['cat'])
+        explanation = explainer.explain_instance(img, classes=['cat', 'dog'])
         remove_dir(model_dir)
 
         # Multi classes
         model = ModelCnnClassifier(model_dir=model_dir, batch_size=2, epochs=2)
         model.fit(df_train_mono, df_valid=df_train_mono)
-        exp = LimeExplainer(model, model_conf)
-        explanation = exp.explain_instance(img)
-        explanation = exp.explain_instance(img, classes=['shiba', 'bombay'])
+        explainer = LimeExplainer(model, model_conf)
+        explanation = explainer.explain_instance(img)
+        explanation = explainer.explain_instance(img, classes=['shiba', 'bombay'])
         remove_dir(model_dir)
 
 

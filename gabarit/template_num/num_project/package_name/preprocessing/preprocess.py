@@ -40,7 +40,10 @@ def get_pipelines_dict() -> dict:
         dict: Dictionary of preprocessing pipelines
     '''
     pipelines_dict = {
-        'no_preprocess': ColumnTransformer([('identity', FunctionTransformer(lambda x: x), make_column_selector())]),  # - /!\ DO NOT DELETE -> necessary for compatibility /!\ -
+        # - /!\ DO NOT DELETE no_preprocess -> necessary for compatibility /!\ -
+        # Identity transformer, hence we specify verbose_feature_names_out to False to not change columns names
+        'no_preprocess': ColumnTransformer([('identity', FunctionTransformer(lambda x: x),
+                                             make_column_selector())], verbose_feature_names_out=False),
         'preprocess_P1': preprocess_P1(),  # Example of a pipeline
         # 'preprocess_AUTO': preprocess_auto(), # Automatic preprocessing based on statistics on data
         # 'preprocess_P2': preprocess_P2 , ETC ...

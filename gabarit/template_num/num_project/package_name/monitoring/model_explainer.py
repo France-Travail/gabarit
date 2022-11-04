@@ -112,7 +112,7 @@ class ShapExplainer(Explainer):
         else:
             # Check columns
             try:
-                anchor_prep = anchor_prep[self.model.x_col]
+                anchor_prep = anchor_data[self.model.x_col]
             except:
                 raise ValueError("Provided anchor data (already preprocessed) do not match model's inputs columns")
         # Create the explainer
