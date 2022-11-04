@@ -404,6 +404,19 @@ if selected_model is not None:
 
 
     # ---------------------
+    # Checks
+    # ---------------------
+
+    # In some cases, if input form features are automatically generated from the model's mendatory columns,
+    # st.session_state.content could still be defined with previous model's input columns
+    # Hence, we check if all mendatory columns are in st.session_state.content, and reset it to None if it is not the case
+    if st.session_state.content is not None and any([col not in st.session_state.content.columns for col in model.mandatory_columns]):
+        st.session_state.content = None
+        logger.warning("Input content had been reset because it does not match the model's mendatory columns")
+        logger.warning("You probably just changed the model, try to submit a new content")
+
+
+    # ---------------------
     # Prediction
     # ---------------------
 
