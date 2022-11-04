@@ -162,6 +162,24 @@ class ModelExplainerTest(unittest.TestCase):
         html = explainer.explain_instance_as_html(content, class_or_label_index=None)
         remove_dir(model_dir)
 
+        # Check errors
+        # Regressor withtout predict
+        class FakeModelClass1():
+            def __init__(self):
+                self.model_type = 'regressor'
+            def predict_proba(self):
+                pass
+        with self.assertRaises(TypeError):
+            ShapExplainer(FakeModelClass1(), anchor_data=x_train, anchor_preprocessed=False)
+        # Classifier withtout predict_proba
+        class FakeModelClass2():
+            def __init__(self):
+                self.model_type = 'classifier'
+            def predict(self):
+                pass
+        with self.assertRaises(TypeError):
+            ShapExplainer(FakeModelClass2(), anchor_data=x_train, anchor_preprocessed=False)
+
 
 # Perform tests
 if __name__ == '__main__':

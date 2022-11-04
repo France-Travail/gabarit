@@ -273,7 +273,8 @@ def get_histogram(probas: np.ndarray, list_classes: List[str], is_multi_label: b
     return df_probabilities, alt.layer(bars + text)
 
 
-def get_explanation(model: Type[ModelClass], model_conf: dict, content: str, class_or_label_index: Union[int, None] = None) -> str:
+def get_explanation(model: Type[ModelClass], model_conf: dict, content: str,
+                    class_or_label_index: Union[int, None] = None) -> str:
     '''Explains the model's prediction on a given content
 
     Args:

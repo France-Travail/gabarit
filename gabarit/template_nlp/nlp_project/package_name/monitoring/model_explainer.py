@@ -78,7 +78,6 @@ class LimeExplainer(Explainer):
             model: A model instance with predict & predict_proba functions, and list_classes attribute
             model_conf (dict): The model's configuration
         Raises:
-            TypeError: If the provided model does not implement a `predict` function
             TypeError: If the provided model does not implement a `predict_proba` function
             TypeError: If the provided model does not have a `list_classes` attribute
         '''

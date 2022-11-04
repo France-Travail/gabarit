@@ -274,38 +274,6 @@ def get_img_with_bbox(img: Image.Image, bboxes: List[dict]) -> Image.Image:
     return Image.fromarray(img_2, mode=mode)
 
 
-def explain_image(model: Type[ModelClass], model_conf: dict, img: Image.Image) -> plt.Figure:
-    '''Explains the model's prediction on a given image
-
-    Args:
-        model (ModelClass): Model to use
-        model_conf (dict): The model's configuration
-        img (Image.Image): input Image
-    Returns:
-        (plt.Figure): Figure to be displayed
-    '''
-    # Get lime explainer
-    explainer = model_explainer.LimeExplainer(model, model_conf)
-
-    # Get explanation
-    explanation = explainer.explain_instance(img, classes=model.list_classes, num_samples=100, batch_size=100, hide_color=0, top_labels=3)
-
-    # Preprare figure & return
-    new_im_1, mask_1 = explanation.get_image_and_mask(explanation.top_labels[0], positive_only=True, num_features=15, hide_rest=False)
-    new_im_2, mask_2 = explanation.get_image_and_mask(explanation.top_labels[0], positive_only=True, num_features=15, hide_rest=True)
-    new_im_3, mask_3 = explanation.get_image_and_mask(explanation.top_labels[0], positive_only=False, num_features=15, hide_rest=False)
-    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(30,30))
-    ax1.imshow(img.convert('RGB'))
-    ax2.imshow(mark_boundaries(new_im_1, mask_1))
-    ax3.imshow(mark_boundaries(new_im_2, mask_2))
-    ax4.imshow(mark_boundaries(new_im_3, mask_3))
-    ax1.axis('off')
-    ax2.axis('off')
-    ax3.axis('off')
-    ax4.axis('off')
-    return fig
-
-
 def get_histogram(probas: np.ndarray, list_classes: List[str]) -> Tuple[pd.DataFrame, alt.LayerChart]:
     '''Gets a probabilities histogram (to be plotted)
 
@@ -339,6 +307,41 @@ def get_histogram(probas: np.ndarray, list_classes: List[str]) -> Tuple[pd.DataF
                .encode(text=alt.Text('probabilities:Q', format='.2f'))
 
     return df_probabilities, alt.layer(bars + text)
+
+
+def get_explanation(model: Type[ModelClass], model_conf: dict, content: Image.Image,
+                    class_index: Union[int, None] = None) -> plt.Figure:
+    '''Explains the model's prediction on a given image
+
+    Args:
+        model (ModelClass): Model to use
+        model_conf (dict): The model's configuration
+        content (Image.Image): input Image
+    Kwargs:
+        class_index (int): for classification only. Class or label index to be considered.
+    Returns:
+        (plt.Figure): Figure to be displayed
+    '''
+    # Get lime explainer
+    explainer = model_explainer.LimeExplainer(model, model_conf)
+
+    # Get explanation
+    explanation = explainer.explain_instance(content, class_index=class_index, num_samples=100, batch_size=100, hide_color=0)
+
+    # Preprare figure & return
+    new_im_1, mask_1 = explanation.get_image_and_mask(class_index, positive_only=True, num_features=15, hide_rest=False)
+    new_im_2, mask_2 = explanation.get_image_and_mask(class_index, positive_only=True, num_features=15, hide_rest=True)
+    new_im_3, mask_3 = explanation.get_image_and_mask(class_index, positive_only=False, num_features=15, hide_rest=False)
+    fig, ((ax1, ax2), (ax3, ax4)) = plt.subplots(2, 2, figsize=(30,30))
+    ax1.imshow(content.convert('RGB'))
+    ax2.imshow(mark_boundaries(new_im_1, mask_1))
+    ax3.imshow(mark_boundaries(new_im_2, mask_2))
+    ax4.imshow(mark_boundaries(new_im_3, mask_3))
+    ax1.axis('off')
+    ax2.axis('off')
+    ax3.axis('off')
+    ax4.axis('off')
+    return fig
 
 
 # ---------------------
@@ -468,8 +471,32 @@ if selected_model is not None:
             # ---------------------
 
             if checkbox_explanation:
-                st.write("Explanation")
-                fig = explain_image(model, model_conf, img)
-                st.pyplot(fig)
+
+                st.write("---  \n")
+                st.subheader('Explanation')
+
+                # Set form
+                form_explanation = st.form(key='my-form-explanation')
+                inv_dict = {v: k for k, v in model.dict_classes.items()}
+                index_max = probas.argmax()
+                form_explanation.write("Class to be explained")
+                selected_class = form_explanation.selectbox("Class :", ['Predicted class'] + model.list_classes, index=0)
+                inv_dict['Predicted class'] = index_max
+                # Set submit button
+                submit_explanation = form_explanation.form_submit_button("Explain")
+                # On click, get explanation
+                if submit_explanation:
+                    class_index = inv_dict[selected_class]
+                    fig = get_explanation(model, model_conf, img, class_index)
+                else:
+                    fig = None
+
+                # If fig set ...
+                if fig is not None:
+                    # Chosen class
+                    st.write(f"Explanation for class {model.dict_classes[class_index]}")
+                    # Plot figure
+                    st.pyplot(fig)
+
 
         st.write("---  \n")

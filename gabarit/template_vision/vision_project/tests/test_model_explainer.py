@@ -85,22 +85,50 @@ class ModelExplainerTest(unittest.TestCase):
         })
         img = Image.open(df_train_mono['file_path'].values[0])
 
-        # Nominal case
+        # Mono Class
         model = ModelCnnClassifier(model_dir=model_dir, batch_size=2, epochs=2)
         model.fit(df_train_mono, df_valid=df_train_mono)
         explainer = LimeExplainer(model, model_conf)
-        explanation = explainer.explain_instance(img)
-        explanation = explainer.explain_instance(img, classes=['cat'])
-        explanation = explainer.explain_instance(img, classes=['cat', 'dog'])
+        explanation = explainer.explain_instance(content=img, class_or_label_index=0)
+        explanation = explainer.explain_instance(content=img, class_or_label_index=1)
+        explanation = explainer.explain_instance(content=img, class_or_label_index=None)
         remove_dir(model_dir)
 
         # Multi classes
         model = ModelCnnClassifier(model_dir=model_dir, batch_size=2, epochs=2)
-        model.fit(df_train_mono, df_valid=df_train_mono)
+        model.fit(df_train_multi, df_valid=df_train_multi)
         explainer = LimeExplainer(model, model_conf)
-        explanation = explainer.explain_instance(img)
-        explanation = explainer.explain_instance(img, classes=['shiba', 'bombay'])
+        explanation = explainer.explain_instance(content=img, class_or_label_index=0)
+        explanation = explainer.explain_instance(content=img, class_or_label_index=1)
+        explanation = explainer.explain_instance(content=img, class_or_label_index=2)
+        explanation = explainer.explain_instance(content=img, class_or_label_index=None)
         remove_dir(model_dir)
+
+        # Check errors
+        # Not a classifier
+        class FakeModelClass1():
+            def __init__(self):
+                self.list_classes = ['a', 'b', 'c']
+                self.model_type = 'regressor'
+            def predict_proba(self):
+                pass
+        with self.assertRaises(ValueError):
+            LimeExplainer(FakeModelClass1(), model_conf)
+        # No predict_proba
+        class FakeModelClass2():
+            def __init__(self):
+                self.list_classes = ['a', 'b', 'c']
+                self.model_type = 'classifier'
+        with self.assertRaises(TypeError):
+            LimeExplainer(FakeModelClass2(), model_conf)
+        # No list_classes
+        class FakeModelClass3():
+            def __init__(self):
+                self.model_type = 'classifier'
+            def predict_proba(self):
+                pass
+        with self.assertRaises(TypeError):
+            LimeExplainer(FakeModelClass3(), model_conf)
 
 
 # Perform tests

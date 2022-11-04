@@ -127,6 +127,19 @@ class ModelExplainerTest(unittest.TestCase):
         exp_list = explainer.explain_instance_as_list(content="ceci est un test", class_or_label_index=None)
         remove_dir(model_dir)
 
+        # Check errors
+        # No predict_proba
+        with self.assertRaises(TypeError):
+            LimeExplainer(5, model_conf)
+        class FakeModelClass():
+            def __init__(self):
+                pass
+            def predict_proba(self):
+                pass
+        # No list_classes
+        with self.assertRaises(TypeError):
+            LimeExplainer(FakeModelClass(), model_conf)
+
 
 # Perform tests
 if __name__ == '__main__':
