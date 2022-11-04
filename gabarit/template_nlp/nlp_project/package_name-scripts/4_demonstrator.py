@@ -31,9 +31,8 @@ from typing import Union, List, Type, Tuple
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
 from {{package_name}}.models_training import utils_models
-from {{package_name}}.monitoring.model_explainer import LimeExplainer
-from {{package_name}}.monitoring.model_explainer import AttentionExplainer
 from {{package_name}}.models_training.model_class import ModelClass
+from {{package_name}}.monitoring.model_explainer import LimeExplainer
 
 # TMP FIX: somehow, a json method prevents us to cache most of our models with Streamlit
 # That was not the case before, something must have changed within a third party library ?
@@ -274,29 +273,21 @@ def get_histogram(probas: np.ndarray, list_classes: List[str], is_multi_label: b
     return df_probabilities, alt.layer(bars + text)
 
 
-def get_explanation(model: Type[ModelClass], model_conf: dict, content: str, is_multi_label: bool, probas: np.ndarray) -> str:
+def get_explanation(model: Type[ModelClass], model_conf: dict, content: str, class_or_label_index: Union[int, None] = None) -> str:
     '''Explains the model's prediction on a given content
 
     Args:
         model (ModelClass): Model to use
         model_conf (dict): The model's configuration
         content (str): Input content
-        is_multi_label (bool): If the model is multi-labels or not
-        probas (np.ndarray): Probabilities
+    Kwargs:
+        class_or_label_index (int): for classification only. Class or label index to be considered.
     Returns:
         (str): HTML content to be rendered
     '''
-    if hasattr(model, 'explain'):
-        logger.info("Explain results via the model's own explain function")
-        exp = AttentionExplainer(model)
-    else:
-        logger.info("Explain results via LIME")
-        exp = LimeExplainer(model, model_conf)
-    if is_multi_label:  # multi-labels : compare the two main probas
-        classes = [model.list_classes[i] for i in np.argsort(probas)[-2:][::-1]]
-    else:
-        classes = model.list_classes
-    html = exp.explain_instance_as_html(text=content, classes=classes)
+    logger.info("Explain results via LIME")
+    explainer = LimeExplainer(model, model_conf)
+    html = explainer.explain_instance_as_html(content, class_or_label_index)
     return html
 
 
@@ -418,7 +409,36 @@ if selected_model is not None:
         # ---------------------
 
         if checkbox_explanation:
-            html = get_explanation(model, model_conf, content, model.multi_label, probas)
-            st.components.v1.html(html, height=500)
+
+            st.write("---  \n")
+            st.subheader('Explanation')
+
+            # Set form
+            form_explanation = st.form(key='my-form-explanation')
+            inv_dict = {v: k for k, v in model.dict_classes.items()}
+            index_max = probas.argmax()
+            if model.multi_label:
+                form_explanation.write("Select the label to be explained")
+                selected_class_or_label = form_explanation.selectbox("Label :", ['Highest prediction score label'] + model.list_classes, index=0)
+                inv_dict['Highest prediction score label'] = index_max
+            else:
+                form_explanation.write("Class to be explained")
+                selected_class_or_label = form_explanation.selectbox("Class :", ['Predicted class'] + model.list_classes, index=0)
+                inv_dict['Predicted class'] = index_max
+            # Set submit button
+            submit_explanation = form_explanation.form_submit_button("Explain")
+            # On click, get explanation
+            if submit_explanation:
+                class_or_label_index = inv_dict[selected_class_or_label]
+                html = get_explanation(model, model_conf, content, class_or_label_index)
+            else:
+                html = None
+
+            # If html set ...
+            if html is not None:
+                # Chosen class or label
+                st.write(f"Explanation for {'label' if model.multi_label else 'class'} {model.dict_classes[class_or_label_index]}")
+                # Display html
+                st.components.v1.html(html, height=800, scrolling=True)  # We could pby have a better height
 
         st.write("---  \n")

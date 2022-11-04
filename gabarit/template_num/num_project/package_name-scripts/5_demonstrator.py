@@ -462,6 +462,7 @@ if selected_model is not None:
 
             # Get shap explanations
             if model.model_type == 'classifier':
+                # Set form
                 form_explanation = st.form(key='my-form-explanation')
                 inv_dict = {v: k for k, v in model.dict_classes.items()}
                 index_max = probas.argmax()
@@ -473,13 +474,16 @@ if selected_model is not None:
                     form_explanation.write("Class to be explained")
                     selected_class_or_label = form_explanation.selectbox("Class :", ['Predicted class'] + model.list_classes, index=0)
                     inv_dict['Predicted class'] = index_max
+                # Set submit button
                 submit_explanation = form_explanation.form_submit_button("Explain")
+                # On click, get explanation
                 if submit_explanation:
                     class_or_label_index = inv_dict[selected_class_or_label]
                     html = get_explanation(model, st.session_state.content, class_or_label_index)
                 else:
                     html = None
             else:
+                # Automatically get explanation
                 html = get_explanation(model, st.session_state.content, None)
 
             # If html set ...

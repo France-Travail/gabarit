@@ -72,32 +72,29 @@ class ShapExplainer(Explainer):
         ''' Initialization
 
         Args:
-            model: A model instance with predict & predict_proba functions, and list_classes attribute
+            model: A model instance with predict (regressors) or predict_proba (classifiers) functions
             anchor_data (pd.DataFrame): data anchor needed by shap (usually 100 data points)
         Kwargs:
             anchor_preprocessed (bool): If the anchor data has already been preprocessed
         Raises:
-            TypeError: If the provided model does not implement a `predict` function
+            TypeError: If the provided model is a regressor and does not implement a `predict` function
             TypeError: If the provided model is a classifier and does not implement a `predict_proba` function
-            TypeError: If the provided model is a classifier and does not have a `list_classes` attribute
         '''
         super().__init__()
         pred_op = getattr(model, "predict", None)
         pred_proba_op = getattr(model, "predict_proba", None)
 
-        if pred_op is None or not callable(pred_op):
-            raise TypeError("The supplied model must implement a predict() function")
+        if model.model_type == 'regressor':
+            if pred_op is None or not callable(pred_op):
+                raise TypeError("The supplied model must implement a predict() function")
         # Check classifier
         if model.model_type == 'classifier':
             if pred_proba_op is None or not callable(pred_proba_op):
                 raise TypeError("The supplied model must implement a predict_proba() function")
-            if getattr(model, "list_classes", None) is None:
-                raise TypeError("The supplied model must have a list_classes attribute")
 
         # Set attributes
         self.model = model
         self.model_type = model.model_type
-        self.class_names = getattr(model, "list_classes", None)
         # Our explainers will explain a prediction for a given class / label
         # These atributes are set on the fly and will change the proba function used by the explainer
         self.current_class_or_label_index = 0
