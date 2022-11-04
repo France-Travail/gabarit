@@ -95,8 +95,8 @@ st.markdown(css, unsafe_allow_html=True)
 # Manage session variables
 # ---------------------
 
-if 'text_areas_content' not in st.session_state:
-    st.session_state['text_areas_content'] = None
+if 'text_area_content' not in st.session_state:
+    st.session_state['text_area_content'] = None
 
 
 # ---------------------
@@ -316,10 +316,6 @@ selected_model = st.sidebar.selectbox('Model selection', get_available_models(),
 # Add a button to have multiple lines input
 checkbox_multilines = st.sidebar.checkbox('Multiple lines', False)
 
-# If not checked, we allow several entries at once
-if not checkbox_multilines:
-    nb_entries = st.sidebar.slider("Number of entries", 1, 5)
-
 # Add a checkbox to get explanation
 checkbox_explanation = st.sidebar.checkbox('With explanation', False)
 
@@ -353,10 +349,8 @@ if selected_model is not None:
     # Text input
     # ---------------------
 
-    if checkbox_multilines:
-        text_areas = [form.text_area('Input text')]
-    else:
-        text_areas = [form.text_input(f'Input text n° {i}') for i in range(nb_entries)]
+    text_area = form.text_area('Input text') if checkbox_multilines else form.text_input(f'Input text')
+
     form.markdown("---  \n")
 
     # ---------------------
@@ -366,7 +360,7 @@ if selected_model is not None:
     # Prediction starts by clicking this button
     submit = form.form_submit_button("Predict")
     if submit:
-        st.session_state.text_areas_content = text_areas
+        st.session_state.text_area_content = text_area
 
 
     # ---------------------
@@ -375,7 +369,7 @@ if selected_model is not None:
 
     # Clear everything by clicking this button
     if st.button("Clear"):
-        st.session_state.text_areas_content = None
+        st.session_state.text_area_content = None
 
 
     # ---------------------
@@ -383,49 +377,48 @@ if selected_model is not None:
     # ---------------------
 
     # Prediction and results diplay
-    if st.session_state.text_areas_content is not None and st.session_state.text_areas_content != '':
+    if st.session_state.text_area_content is not None and st.session_state.text_area_content != '':
         st.write("---  \n")
         st.markdown("## Results  \n")
         st.markdown("  \n")
 
-        # Process contents one by one
-        for content in st.session_state.text_areas_content:
-            if len(content) > 0:
+        # Process content one by one
+        content = st.session_state.text_area_content
 
-                # ---------------------
-                # Prediction
-                # ---------------------
+        # ---------------------
+        # Prediction
+        # ---------------------
 
-                prediction, probas, content_preprocessed, prediction_time = get_prediction(model, model_conf, content)
+        prediction, probas, content_preprocessed, prediction_time = get_prediction(model, model_conf, content)
 
-                st.write(f"Original text: `{content}`")
-                st.write(f"Preprocessed text: `{content_preprocessed}`")
-                st.write(f"Prediction (inference time : {int(round(prediction_time*1000, 0))}ms) :")
+        st.write(f"Original text: `{content}`")
+        st.write(f"Preprocessed text: `{content_preprocessed}`")
+        st.write(f"Prediction (inference time : {int(round(prediction_time*1000, 0))}ms) :")
 
-                # ---------------------
-                # Format prediction
-                # ---------------------
+        # ---------------------
+        # Format prediction
+        # ---------------------
 
-                markdown_content = get_prediction_formatting_text(model, model_conf, prediction, probas)
-                st.markdown(markdown_content)
+        markdown_content = get_prediction_formatting_text(model, model_conf, prediction, probas)
+        st.markdown(markdown_content)
 
-                # ---------------------
-                # Histogram probabilities
-                # ---------------------
+        # ---------------------
+        # Histogram probabilities
+        # ---------------------
 
-                df_probabilities, altair_layer = get_histogram(probas, model.list_classes, model.multi_label)
+        df_probabilities, altair_layer = get_histogram(probas, model.list_classes, model.multi_label)
 
-                # Display dataframe probabilities & plot altair
-                st.subheader('Probabilities histogram')
-                st.write(df_probabilities)
-                st.altair_chart(altair_layer)
+        # Display dataframe probabilities & plot altair
+        st.subheader('Probabilities histogram')
+        st.write(df_probabilities)
+        st.altair_chart(altair_layer)
 
-                # ---------------------
-                # Explainer
-                # ---------------------
+        # ---------------------
+        # Explainer
+        # ---------------------
 
-                if checkbox_explanation:
-                    html = get_explanation(model, model_conf, content, model.multi_label, probas)
-                    st.components.v1.html(html, height=500)
+        if checkbox_explanation:
+            html = get_explanation(model, model_conf, content, model.multi_label, probas)
+            st.components.v1.html(html, height=500)
 
-                st.write("---  \n")
+        st.write("---  \n")
