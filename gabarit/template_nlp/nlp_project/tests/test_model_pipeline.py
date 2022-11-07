@@ -23,6 +23,7 @@ from unittest.mock import patch
 import os
 import json
 import shutil
+import pickle
 import numpy as np
 import pandas as pd
 
@@ -34,6 +35,8 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_pipeline import ModelPipeline
+from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
+
 
 # Disable logging
 import logging
@@ -68,6 +71,14 @@ class ModelPipelineTests(unittest.TestCase):
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
         self.assertTrue(type(model._is_gpu_activated()) == bool)
         model.display_if_gpu_activated()
+        remove_dir(model_dir)
+
+        # test with super documents
+        model = ModelPipeline(model_dir=model_dir)
+        self.assertFalse(model.with_super_documents)
+        remove_dir(model_dir)
+        model = ModelPipeline(model_dir=model_dir, with_super_documents=True)
+        self.assertTrue(model.with_super_documents)
         remove_dir(model_dir)
 
         tfidf = TfidfVectorizer()
@@ -113,6 +124,20 @@ class ModelPipelineTests(unittest.TestCase):
         self.assertEqual(model.nb_fit, 0)
         self.assertFalse(hasattr(model.pipeline['svc'], "classes_"))
         model.fit(x_train, y_train_mono, x_valid='toto', y_valid='titi', test=5)
+        self.assertTrue(model.trained)
+        self.assertEqual(model.nb_fit, 1)
+        self.assertTrue(hasattr(model.pipeline['svc'], "classes_"))
+        remove_dir(model_dir)
+
+        # Mono-label super documents
+        tfidf = TfidfVectorizer()
+        svc = LinearSVC()
+        pipeline = Pipeline([('tfidf', tfidf), ('svc', svc)])
+        model = ModelPipeline(model_dir=model_dir, pipeline=pipeline, multi_label=False, with_super_documents=True)
+        self.assertFalse(model.trained)
+        self.assertEqual(model.nb_fit, 0)
+        self.assertFalse(hasattr(model.pipeline['svc'], "classes_"))
+        model.fit(x_train, y_train_mono)
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertTrue(hasattr(model.pipeline['svc'], "classes_"))
@@ -279,6 +304,42 @@ class ModelPipelineTests(unittest.TestCase):
         # Specific model used
         self.assertTrue('tfidf_confs' in configs.keys())
         self.assertTrue('rf_confs' in configs.keys())
+        remove_dir(model_dir)
+
+        # With Pipeline, with super_documents
+        tfidf = TfidfVectorizerSuperDocuments()
+        tfidf.fit(np.array(['ceci est un test', 'cela aussi']), np.array(['non', 'oui']))
+        rf = RandomForestClassifier(n_estimators=10)
+        pipeline = Pipeline([('tfidf', tfidf), ('rf', rf)])
+        model = ModelPipeline(model_dir=model_dir, pipeline=pipeline)
+        model.save(json_data={'test': 8})
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"{model.model_name}.pkl")))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")))
+        with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='{{default_encoding}}') as f:
+            configs = json.load(f)
+        self.assertEqual(configs['test'], 8)
+        self.assertTrue('package_version' in configs.keys())
+        self.assertEqual(configs['package_version'], utils.get_package_version())
+        self.assertTrue('model_name' in configs.keys())
+        self.assertTrue('model_dir' in configs.keys())
+        self.assertTrue('trained' in configs.keys())
+        self.assertTrue('nb_fit' in configs.keys())
+        self.assertTrue('list_classes' in configs.keys())
+        self.assertTrue('dict_classes' in configs.keys())
+        self.assertTrue('x_col' in configs.keys())
+        self.assertTrue('y_col' in configs.keys())
+        self.assertTrue('multi_label' in configs.keys())
+        self.assertTrue('level_save' in configs.keys())
+        self.assertTrue('librairie' in configs.keys())
+        self.assertEqual(configs['librairie'], 'scikit-learn')
+        # Specific model used
+        self.assertTrue('tfidf_confs' in configs.keys())
+        self.assertTrue('rf_confs' in configs.keys())
+        with open(os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl"), 'rb') as f:
+            pipeline = pickle.load(f)
+        self.assertFalse(pipeline[0].tfidf_super_documents is None)
+        self.assertTrue((pipeline[0].classes_ == np.array(['non', 'oui'])).all())
         remove_dir(model_dir)
 
         # Without Pipeline

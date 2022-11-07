@@ -27,11 +27,11 @@ import pickle
 import numpy as np
 import pandas as pd
 
-import tensorflow
 import tensorflow.keras as keras
+from sklearn.feature_extraction.text import TfidfVectorizer
 
-from {{package_name}} import utils
 from {{package_name}}.models_training.model_tfidf_dense import ModelTfidfDense
+from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
 
 # Disable logging
 import logging
@@ -72,6 +72,20 @@ class ModelTfidfDenseTests(unittest.TestCase):
         self.assertEqual(model.tfidf.analyzer, 'char')
         self.assertEqual(model.tfidf.binary, True)
         remove_dir(model_dir)
+
+        # Check with super documents
+        model = ModelTfidfDense(model_dir=model_dir)
+        self.assertFalse(model.with_super_documents)
+        remove_dir(model_dir)
+        model = ModelTfidfDense(model_dir=model_dir, with_super_documents=True)
+        self.assertTrue(model.with_super_documents)
+        remove_dir(model_dir)
+
+        # Error
+        with self.assertRaises(ValueError):
+            model = ModelTfidfDense(model_dir=model_dir, multi_label=True, with_super_documents=True)
+        remove_dir(model_dir)
+
 
     def test02_model_tfidf_dense_predict_proba(self):
         '''Test of {{package_name}}.models_training.test_model_tfidf_dense.ModelTfidfDense.predict_proba'''
@@ -163,18 +177,37 @@ class ModelTfidfDenseTests(unittest.TestCase):
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
-        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+
+        # Set vars
+        x_train = ['test titi toto', 'toto', 'titi test test toto', 'titi']
+        y_train = np.array([0, 1, 0, 1])
 
         # Nominal case
-        x_train = ['test titi toto', 'toto', 'titi test test toto', 'titi']
+        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         x_train_prepared = model._prepare_x_train(x_train)
         # Hard to easily test the results. We "only" check shapes
         size_vocab = len(set([word for elem in x_train for word in elem.split()]))
         nb_elems = len(x_train_prepared)
         self.assertEqual(x_train_prepared.shape[0], nb_elems)
         self.assertEqual(x_train_prepared.shape[1], size_vocab)
+        self.assertFalse(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
+        remove_dir(model_dir)
 
-        # Clean
+        # with super documents case
+        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, with_super_documents=True)
+        model.tfidf.fit(x_train, y_train)
+        self.assertTrue(isinstance(model.tfidf, TfidfVectorizerSuperDocuments))
+        x_train_prepared = model._prepare_x_train(x_train)
+        size_label = len(set(y_train))
+        nb_elems = len(x_train_prepared)
+        self.assertEqual(x_train_prepared.shape[0], nb_elems)
+        self.assertEqual(x_train_prepared.shape[1], size_label)
+        remove_dir(model_dir)
+
+        # Error
+        with self.assertRaises(AttributeError):
+            model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, with_super_documents=True)
+            x_train_prepared = model._prepare_x_train(x_train)
         remove_dir(model_dir)
 
     def test05_model_tfidf_dense_prepare_x_test(self):
@@ -204,16 +237,28 @@ class ModelTfidfDenseTests(unittest.TestCase):
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
-        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
 
         # Nominal case
+        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         x_train = ['test titi toto', 'toto', 'titi test test toto']
         model._prepare_x_train(x_train)  # We force the creation of the tokenizer
         model.list_classes = ['a', 'b']  # We force the creation of a list of classes
         model_res = model._get_model()
         self.assertTrue(isinstance(model_res, keras.Model))
+        remove_dir(model_dir)
 
-        # Clean
+        # with super documents
+        model = ModelTfidfDense(model_dir=model_dir, with_super_documents=True)
+        x_train = ['test titi toto', 'toto', 'titi test test toto']
+        y_train = ['a', 'b', 'a']
+        model.list_classes = ['a', 'b']  # We force the creation of a list of classes
+        # TypeError because need model tfidf fitted, it try to input_dim = len(model.tfidf.classes_)
+        with self.assertRaises(TypeError):
+            model_res = model._get_model()
+        model.tfidf.fit(x_train, y_train)
+        model._prepare_x_train(x_train)  # We force the creation of the tokenizer
+        model_res = model._get_model()
+        self.assertTrue(isinstance(model_res, keras.Model))
         remove_dir(model_dir)
 
     def test07_model_tfidf_dense_save(self):
@@ -305,6 +350,50 @@ class ModelTfidfDenseTests(unittest.TestCase):
         self.assertEqual(model.validation_split, new_model.validation_split)
         self.assertEqual(model.patience, new_model.patience)
         self.assertEqual(model.embedding_name, new_model.embedding_name)
+        self.assertEqual(model.with_super_documents, new_model.with_super_documents)
+        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        ############################
+        # with_super_documents
+        ############################
+
+        # Create model
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
+        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
+        y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'none'])
+        param = {'ngram_range': [2, 3], 'min_df': 0.02, 'max_df': 0.8, 'binary': False}
+        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False, with_super_documents=True, tfidf_params=param)
+        model.fit(x_train, y_train_mono)
+        model.save()
+
+        # Reload
+        conf_path = os.path.join(model.model_dir, "configurations.json")
+        hdf5_path = os.path.join(model.model_dir, "best.hdf5")
+        tfidf_path = os.path.join(model.model_dir, f"tfidf_standalone.pkl")
+        new_model = ModelTfidfDense()
+        new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tfidf_path=tfidf_path)
+
+        # Test
+        self.assertEqual(model.model_name, new_model.model_name)
+        self.assertEqual(model.x_col, new_model.x_col)
+        self.assertEqual(model.y_col, new_model.y_col)
+        self.assertEqual(model.list_classes, new_model.list_classes)
+        self.assertEqual(model.dict_classes, new_model.dict_classes)
+        self.assertEqual(model.multi_label, new_model.multi_label)
+        self.assertEqual(model.level_save, new_model.level_save)
+        self.assertEqual(model.nb_fit, new_model.nb_fit)
+        self.assertEqual(model.trained, new_model.trained)
+        self.assertEqual(model.batch_size, new_model.batch_size)
+        self.assertEqual(model.epochs, new_model.epochs)
+        self.assertEqual(model.validation_split, new_model.validation_split)
+        self.assertEqual(model.patience, new_model.patience)
+        self.assertEqual(model.embedding_name, new_model.embedding_name)
+        self.assertEqual(model.with_super_documents, new_model.with_super_documents)
+        self.assertTrue((model.tfidf.tfidf_super_documents == new_model.tfidf.tfidf_super_documents).all())
+        self.assertTrue((model.tfidf.classes_ == new_model.tfidf.classes_).all())
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
