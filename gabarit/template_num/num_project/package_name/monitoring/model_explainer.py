@@ -124,7 +124,8 @@ class ShapExplainer(Explainer):
             np.array: probabilities
         '''
         # Get probabilities
-        return self.model.predict_proba(content_prep)[:, self.current_class_or_label_index]
+        # Mypy raises a false error here, needs to be ignored
+        return self.model.predict_proba(content_prep)[:, self.current_class_or_label_index]  # type: ignore
 
     def regressor_fn(self, content_prep: pd.DataFrame) -> np.ndarray:
         '''Function to get predictions from a dataset (already preprocessed) - regressors
@@ -135,7 +136,8 @@ class ShapExplainer(Explainer):
             np.array: predictions
         '''
         # Get predictions
-        return self.model.predict(content_prep)
+        # Mypy raises a false error here, needs to be ignored
+        return self.model.predict(content_prep)  # type: ignore
 
     def explain_instance(self, content: pd.DataFrame, class_or_label_index: Union[int, None] = None, **kwargs) -> Any:
         '''Explains a prediction
