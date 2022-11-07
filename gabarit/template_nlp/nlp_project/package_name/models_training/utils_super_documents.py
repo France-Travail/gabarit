@@ -28,6 +28,7 @@ from __future__ import annotations
 import logging
 import numpy as np
 import pandas as pd
+from typing import Tuple
 
 from scipy.sparse import csr_matrix
 from sklearn.feature_extraction.text import TfidfVectorizer
@@ -45,9 +46,9 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
         # Init.
         super().__init__(**kwargs)
         self.tfidf_super_documents = None
-        self.classes_ = None
+        self.classes_ = np.array([])
 
-    def get_super_documents(self, x_train, y_train) -> tuple[np.array, np.array]:
+    def get_super_documents(self, x_train, y_train) -> Tuple[np.ndarray, np.ndarray]:
         '''Transform the documents to super documents
 
         Args:
@@ -65,7 +66,7 @@ class TfidfVectorizerSuperDocuments(TfidfVectorizer):
 
         return np.array(super_train[x_train.name]), np.array(super_train.index)
 
-    def fit(self, raw_documents, y=None) -> TfidfVectorizerSuperDocuments:
+    def fit(self, raw_documents, y) -> TfidfVectorizerSuperDocuments:
         '''Trains the model with super documents
 
         Args:

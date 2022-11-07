@@ -55,7 +55,8 @@ class tfidfSuperDocumentsTests(unittest.TestCase):
         self.assertEqual(vec.min_df, param['min_df'])
         self.assertEqual(vec.max_df, param['max_df'])
         self.assertEqual(vec.binary, param['binary'])
-        self.assertTrue(vec.classes_ is None)
+        self.assertTrue(isinstance(vec.classes_, np.ndarray))
+        self.assertTrue(vec.classes_.shape, (0))
 
     def test02_get_super_documents(self):
         '''Test the get_super_documents of {{package_name}}.models_training.utils_super_documents.TfidfVectorizerSuperDocuments.get_super_documents'''

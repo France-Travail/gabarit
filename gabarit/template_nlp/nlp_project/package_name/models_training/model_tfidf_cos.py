@@ -71,7 +71,7 @@ class ModelTfidfCos(ModelPipeline):
 
         self.multiclass_strategy = multiclass_strategy
         self.matrix_train = None
-        self.array_target = None
+        self.array_target = np.array([])
 
         # Can't do multi-labels / multi-classes
         if not self.multi_label:
