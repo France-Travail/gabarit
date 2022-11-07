@@ -1178,7 +1178,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_DenseClassifier failed')
 
-    def test12_Model_AggregationClassifiersClassifier(self):
+    def test12_Model_AggregationClassifier(self):
         '''Test of the model AggregationClassifier'''
         print('            ------------------ >     Test of the model AggregationClassifiers    /   Mono-class & Mono-label')
 

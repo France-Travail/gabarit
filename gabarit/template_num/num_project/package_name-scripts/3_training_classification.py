@@ -37,8 +37,8 @@ from typing import Union, List, Type, Tuple
 
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.models_training import utils_models, model_aggregation
-from {{package_name}}.monitoring.model_logger import MLflowLogger
+from {{package_name}}.models_training import utils_models
+from {{package_name}}.monitoring.mlflow_logger import MLflowLogger
 from {{package_name}}.models_training.model_class import ModelClass
 from {{package_name}}.models_training.classifiers import (model_rf_classifier,
                                                           model_dense_classifier,
