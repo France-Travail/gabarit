@@ -27,6 +27,8 @@ import logging
 import numpy as np
 import seaborn as sns
 from typing import Union, List, Callable
+
+from sklearn.exceptions import NotFittedError
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from tensorflow.keras.optimizers import Adam
@@ -37,6 +39,7 @@ from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
 from {{package_name}}.models_training.model_keras import ModelKeras
+from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
 
 
 sns.set(style="darkgrid")
@@ -47,21 +50,49 @@ class ModelTfidfDense(ModelKeras):
 
     _default_name = 'model_tfidf_dense'
 
-    def __init__(self, tfidf_params: Union[dict, None] = None, **kwargs) -> None:
+    def __init__(self, tfidf_params: Union[dict, None] = None, with_super_documents: bool = False, **kwargs) -> None:
         '''Initialization of the class (see ModelClass & ModelKeras for more arguments).
 
         Kwargs:
             tfidf_params (dict) : Parameters for the tfidf
+        Raises:
+            ValueError: If with_super_documents and multi_label
         '''
         # Init.
         super().__init__(**kwargs)
+
+        # Super documents (only for tfidf: collects all documents and gather them by label)
+        self.with_super_documents = with_super_documents
+
+        if self.with_super_documents and self.multi_label:
+            raise ValueError("The method with super documents does not support multi-labels")
 
         # Get logger (must be done after super init)
         self.logger = logging.getLogger(__name__)
 
         if tfidf_params is None:
             tfidf_params = {}
-        self.tfidf = TfidfVectorizer(**tfidf_params)
+        self.tfidf = TfidfVectorizer(**tfidf_params) if not with_super_documents else TfidfVectorizerSuperDocuments(**tfidf_params)
+
+    def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:
+        '''Fits the model
+
+        Args:
+            x_train (?): Array-like, shape = [n_samples, n_features]
+            y_train (?): Array-like, shape = [n_samples, n_targets]
+            x_valid (?): Array-like, shape = [n_samples, n_features]
+            y_valid (?): Array-like, shape = [n_samples, n_targets]
+        Kwargs:
+            with_shuffle (bool): If x, y must be shuffled before fitting
+                Experimental: We must verify if it works as intended depending on the formats of x and y
+                This should be used if y is not shuffled as the split_validation takes the lines in order.
+                Thus, the validation set might get classes which are not in the train set ...
+        Raises:
+            RuntimeError: If one tries to fit again a model with nb_iter_keras > 1
+            AssertionError: If different classes when comparing an already fitted model and a new dataset
+        '''
+        self.tfidf.fit(x_train, y_train)
+        super().fit(x_train, y_train, x_valid, y_valid, with_shuffle)
 
     def _prepare_x_train(self, x_train) -> np.ndarray:
         '''Prepares the input data for the model. Called when fitting the model
@@ -70,11 +101,20 @@ class ModelTfidfDense(ModelKeras):
             x_train (?): Array-like, shape = [n_samples, n_features]
         Returns:
             (np.ndarray): Prepared data
+        Raises:
+            If self.tfidf not fitted and with_super_documents
         '''
-        # Fit tfidf & return x transformed
-        self.tfidf.fit(x_train)
-        # TODO: Use of todense because tensorflow 2.3 does not support sparse data anymore
-        return self.tfidf.transform(x_train).todense()
+        try:
+            # TODO: Use of todense because tensorflow 2.3 does not support sparse data anymore
+            return self.tfidf.transform(x_train).todense()
+        except NotFittedError:
+            if not self.with_super_documents:
+                self.tfidf.fit(x_train)
+                # TODO: Use of todense because tensorflow 2.3 does not support sparse data anymore
+                return self.tfidf.transform(x_train).todense()
+            else:
+                raise AttributeError("The function _prepare_x_train with option with_super_documents can't be called as long as the tfidf vector hasn't been fitted, \
+                        fit tfidf vector with : self.tfidf.fit(x_train, y_train)")
 
     def _prepare_x_test(self, x_test) -> np.ndarray:
         '''Prepares the input data for the model. Called when fitting the model
@@ -95,7 +135,10 @@ class ModelTfidfDense(ModelKeras):
             (Model): a Keras model
         '''
         # Get input/output dimensions
-        input_dim = len(self.tfidf.get_feature_names())
+        if not self.with_super_documents:
+            input_dim = len(self.tfidf.get_feature_names())
+        else:
+            input_dim = len(self.tfidf.classes_)
         num_classes = len(self.list_classes)
 
         # Process
@@ -149,6 +192,8 @@ class ModelTfidfDense(ModelKeras):
         # Save configuration JSON
         if json_data is None:
             json_data = {}
+
+        json_data['with_super_documents'] = self.with_super_documents
 
         # Add tfidf params
         confs = self.tfidf.get_params()
@@ -224,7 +269,7 @@ class ModelTfidfDense(ModelKeras):
         for attribute in ['x_col', 'y_col',
                           'list_classes', 'dict_classes', 'multi_label', 'level_save',
                           'batch_size', 'epochs', 'validation_split', 'patience',
-                          'keras_params', 'embedding_name']:
+                          'keras_params', 'embedding_name', 'with_super_documents']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload model
