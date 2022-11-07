@@ -362,6 +362,10 @@ class Case3_unit_tests(unittest.TestCase):
             shutil.rmtree(models_path)
             os.makedirs(models_path)
 
+    def test35_test_model_explainer(self):
+        '''Launches tests of file model_explainer.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_explainer.py', shell=True).returncode, 0)
+
 
 if __name__ == '__main__':
     # Retrieve pip params

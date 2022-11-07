@@ -36,14 +36,12 @@ logging.disable(logging.CRITICAL)
 class ColumnPreprocessorsTests(unittest.TestCase):
     '''Main class to test all functions in {{package_name}}.preprocessing.column_preprocessors'''
 
-
     def setUp(self):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-
 
     def test01_AutoLogTransform(self):
         '''Test of the class column_preprocessors.AutoLogTransform'''
@@ -158,7 +156,7 @@ class ColumnPreprocessorsTests(unittest.TestCase):
             'tata': [2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11],
         }).to_numpy()
         transformer = column_preprocessors.ThresholdingTransform(thresholds=[(2, 6), (None, 100), (None, None)], quantiles=(0.10, 0.90))
-        transformer.fit(arr) # Fit on a numpy array to test while at it
+        transformer.fit(arr)  # Fit on a numpy array to test while at it
         self.assertTrue(hasattr(transformer, 'fitted_'))
         self.assertEqual(len(transformer.fitted_thresholds), 3)
         np.testing.assert_array_equal(transformer.transform(df), transformed_arr_quantiles_diff)
@@ -239,7 +237,7 @@ class ColumnPreprocessorsTests(unittest.TestCase):
             'z': ['a', 'b', 'b', 'c'] * 930 + ['other_'] * 200 + ['other_', 'other_'] * 55,
         }).to_numpy()
         transformer = column_preprocessors.AutoBinner(strategy="threshold", min_cat_count=3, threshold=0.05)
-        transformer.fit(arr) # Fit on a numpy array to test while at it
+        transformer.fit(arr)  # Fit on a numpy array to test while at it
         np.testing.assert_array_equal(transformer.transform(df), transformed_arr_strat_threshold)
 
         # min_cat_count > nb categories
@@ -354,7 +352,7 @@ class ColumnPreprocessorsTests(unittest.TestCase):
 
         # get_feature_names
         transformer = column_preprocessors.EmbeddingTransformer(embedding=embedding)
-        transformer.fit(arr) # Fit on a numpy array to test while at it
+        transformer.fit(arr)  # Fit on a numpy array to test while at it
         features_out = transformer.get_feature_names(['toto', 'test'])
         expected_features_out = np.array([
             'emb_toto_0', 'emb_toto_1', 'emb_toto_2',

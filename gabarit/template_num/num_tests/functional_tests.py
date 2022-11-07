@@ -319,6 +319,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         pipeline_path = os.path.join(pipelines_dirpath, os.listdir(pipelines_dirpath)[0])
         self.assertTrue('pipeline.info' in os.listdir(pipeline_path))
         self.assertTrue('pipeline.pkl' in os.listdir(pipeline_path))
+        self.assertTrue('dataset_sample.csv' in os.listdir(pipeline_path))
 
         # "Basic" case - regression
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/1_preprocess_data.py -f mono_output_regression_train.csv -p preprocess_P1 --target_cols y_col"
@@ -339,6 +340,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         pipeline_path = os.path.join(pipelines_dirpath, os.listdir(pipelines_dirpath)[-1])
         self.assertTrue('pipeline.info' in os.listdir(pipeline_path))
         self.assertTrue('pipeline.pkl' in os.listdir(pipeline_path))
+        self.assertTrue('dataset_sample.csv' in os.listdir(pipeline_path))
 
     def test07_ApplyPipeline(self):
         '''Test of the file 2_apply_existing_pipeline.py'''
@@ -404,6 +406,9 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue(os.path.exists(save_model_dir))
         listdir = os.listdir(os.path.join(save_model_dir))
         self.assertEqual(len(listdir), 1)
+        model_path = os.path.join(save_model_dir, listdir[0])
+        self.assertTrue(os.path.exists(os.path.join(model_path, 'pipeline.info')))
+        self.assertTrue(os.path.exists(os.path.join(model_path, 'original_data_samples.csv')))
 
         # With excluded_cols
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_classification.py -f mono_class_mono_label_train_preprocess_P1.csv -y y_col --filename_valid mono_class_mono_label_valid_preprocess_P1.csv --excluded_cols col_2 --mlflow_experiment gabarit_ci/mlflow_test"
@@ -413,6 +418,9 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue(os.path.exists(save_model_dir))
         listdir = os.listdir(os.path.join(save_model_dir))
         self.assertEqual(len(listdir), 2)
+        model_path = os.path.join(save_model_dir, listdir[1])
+        self.assertTrue(os.path.exists(os.path.join(model_path, 'pipeline.info')))
+        self.assertTrue(os.path.exists(os.path.join(model_path, 'original_data_samples.csv')))
 
         # Multilabel - no preprocess - no valid
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_classification.py -f mono_class_multi_label.csv -y y_col_1 y_col_2 --mlflow_experiment gabarit_ci/mlflow_test"
@@ -422,6 +430,9 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue(os.path.exists(save_model_dir))
         listdir = os.listdir(os.path.join(save_model_dir))
         self.assertEqual(len(listdir), 3)
+        model_path = os.path.join(save_model_dir, listdir[2])
+        self.assertTrue(os.path.exists(os.path.join(model_path, 'pipeline.info')))
+        self.assertTrue(os.path.exists(os.path.join(model_path, 'original_data_samples.csv')))
 
         ############
         # Regression
@@ -436,6 +447,9 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue(os.path.exists(save_model_dir))
         listdir = os.listdir(os.path.join(save_model_dir))
         self.assertEqual(len(listdir), 1)
+        model_path = os.path.join(save_model_dir, listdir[0])
+        self.assertTrue(os.path.exists(os.path.join(model_path, 'pipeline.info')))
+        self.assertTrue(os.path.exists(os.path.join(model_path, 'original_data_samples.csv')))
 
         # With excluded_cols
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_regression.py -f mono_output_regression_train.csv -y y_col --filename_valid mono_output_regression_valid.csv --excluded_cols col_2 --mlflow_experiment gabarit_ci/mlflow_test"
@@ -445,6 +459,9 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue(os.path.exists(save_model_dir))
         listdir = os.listdir(os.path.join(save_model_dir))
         self.assertEqual(len(listdir), 2)
+        model_path = os.path.join(save_model_dir, listdir[1])
+        self.assertTrue(os.path.exists(os.path.join(model_path, 'pipeline.info')))
+        self.assertTrue(os.path.exists(os.path.join(model_path, 'original_data_samples.csv')))
 
     def test09_PredictE2E(self):
         '''Test of the file 4_predict.py'''

@@ -52,14 +52,12 @@ def remove_dir(path):
 class ModelClassTests(unittest.TestCase):
     '''Main class to test model_class'''
 
-
     def setUp(self):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-
 
     def test01_model_class_init(self):
         '''Test of the initialization of {{package_name}}.models_training.model_class.ModelClass'''
@@ -105,8 +103,8 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.y_col, y_col)
         remove_dir(model_dir)
 
-        preprocess_pipeline = preprocess.get_pipeline("no_preprocess") # Warning, needs to be fitted
-        preprocess_pipeline.fit(pd.DataFrame({'test_x1': [1, 2, 3], 'test_x2': [4, 5, 6]})) # Fit the pipeline
+        preprocess_pipeline = preprocess.get_pipeline("no_preprocess")  # Warning, needs to be fitted
+        preprocess_pipeline.fit(pd.DataFrame({'test_x1': [1, 2, 3], 'test_x2': [4, 5, 6]}))  # Fit the pipeline
         model = ModelClass(model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
         self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
         self.assertEqual(model.columns_in, x_col)
@@ -132,7 +130,6 @@ class ModelClassTests(unittest.TestCase):
             preprocess_pipeline = preprocess.get_pipeline("no_preprocess")
             ModelClass(model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
 
-
     def test02_model_class_save(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass.save'''
 
@@ -140,7 +137,7 @@ class ModelClassTests(unittest.TestCase):
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
         model_name = 'test'
-        preprocess_pipeline = preprocess.get_pipeline("no_preprocess") # Warning, needs to be fitted
+        preprocess_pipeline = preprocess.get_pipeline("no_preprocess")  # Warning, needs to be fitted
         preprocess_pipeline.fit(pd.DataFrame({'test_x1': [1, 2, 3], 'test_x2': [4, 5, 6]}))
 
         # test save
@@ -186,7 +183,6 @@ class ModelClassTests(unittest.TestCase):
             configs = json.load(f)
         self.assertEqual(configs['test'], 8)
         remove_dir(model_dir)
-
 
     def test03_model_class_save_upload_properties(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass._save_upload_properties'''
@@ -302,7 +298,6 @@ class ModelClassTests(unittest.TestCase):
         self.assertFalse('autre_bruit' in proprietes.keys())
         remove_dir(model_dir)
 
-
     def test04_model_class_get_model_dir(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass._get_model_dir'''
 
@@ -317,7 +312,6 @@ class ModelClassTests(unittest.TestCase):
         res_dir = model._get_model_dir()
         self.assertTrue(res_dir.startswith(expected_dir))
         remove_dir(model_dir)
-
 
     def test05_model_class_check_input_format(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass._check_input_format
@@ -338,14 +332,16 @@ class ModelClassTests(unittest.TestCase):
         x_input = pd.DataFrame({'test_x1_prep': [2, 4], 'test_x2_prep': [6, 8]})
         x_input_bad_order = pd.DataFrame({'test_x2_prep': [6, 8], 'test_x1_prep': [2, 4]})
         x_input_bad_columns = pd.DataFrame({'test_x1_prep': [2, 4], 'toto': [6, 8]})
-        x_input_bad_format = pd.DataFrame({'test_x1_prep': [2, 4], 'test_x2_prep': [6, 8], 'test_x3': [5, 6]})
+        x_input_too_much_ok = pd.DataFrame({'test_x2_prep': [6, 8], 'test_x3': [5, 6], 'test_x1_prep': [2, 4]})
+        x_input_too_much_ko = pd.DataFrame({'titi': [6, 8], 'test_x3': [5, 6], 'test_x1_prep': [2, 4]})
         y_input = pd.Series([0, 1])
         y_input_df = pd.DataFrame({'test_y': [0, 1]})
         y_col_multi = ['test_y1', 'test_y2']
         y_input_multi = pd.DataFrame({'test_y1': [0, 1], 'test_y2': [1, 0]})
         y_input_multi_bad_order = pd.DataFrame({'test_y2': [1, 0], 'test_y1': [0, 1]})
         y_input_multi_bad_columns = pd.DataFrame({'toto': [0, 1], 'titi': [1, 0]})
-        y_input_multi_bad_format = pd.DataFrame({'test_y1': [0, 1], 'test_y2': [1, 0], 'toto': [0, 1]})
+        y_input_multi_too_much_ok = pd.DataFrame({'test_y2': [1, 0], 'toto': [0, 1], 'test_y1': [0, 1]})
+        y_input_multi_too_much_ko = pd.DataFrame({'titi': [1, 0], 'toto': [0, 1], 'test_y1': [0, 1]})
         class customFunctionTransformer(FunctionTransformer):
             def __init__(self, func=None) -> None:
                 super().__init__(func=func)
@@ -363,7 +359,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, _ = model._check_input_format(x_input, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col)
@@ -377,8 +373,8 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input, y_input, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
-        pd.testing.assert_series_equal(y_output, y_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col)
@@ -392,8 +388,8 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input, y_input, fit_function=True)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
-        pd.testing.assert_series_equal(y_output, y_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col)
@@ -407,7 +403,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, _ = model._check_input_format(x_input_bad_order, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input) # Get it with the right order
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col)
@@ -421,8 +417,8 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input_bad_order, y_input, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input) # Get it with the right order
-        pd.testing.assert_series_equal(y_output, y_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col)
@@ -436,8 +432,52 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input_bad_order, y_input, fit_function=True)
-        pd.testing.assert_frame_equal(x_output, x_input) # Get it with the right order
-        pd.testing.assert_series_equal(y_output, y_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
+        self.assertEqual(_, None)
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        # too much columns - no y - fit_function=False
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        x_output, _ = model._check_input_format(x_input_too_much_ok, fit_function=False)
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        self.assertEqual(_, None)
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        # too much columns - with y - fit_function=False
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        x_output, y_output = model._check_input_format(x_input_too_much_ok, y_input, fit_function=False)
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
+        self.assertEqual(_, None)
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        # too much columns - with y - fit_function=True
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        x_output, y_output = model._check_input_format(x_input_too_much_ok, y_input, fit_function=True)
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col)
@@ -451,7 +491,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, _ = model._check_input_format(x_input_bad_columns, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input_bad_columns) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # Renamed columns
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col)
@@ -465,8 +505,8 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input_bad_columns, y_input, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input_bad_columns) # No modifications
-        pd.testing.assert_series_equal(y_output, y_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # Renamed columns
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col)
         self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
@@ -479,8 +519,8 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input_bad_columns, y_input, fit_function=True)
-        pd.testing.assert_frame_equal(x_output, x_input_bad_columns) # No modifications
-        pd.testing.assert_series_equal(y_output, y_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # Renamed columns
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col)
         self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
@@ -498,7 +538,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, _ = model._check_input_format(x_input, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col_multi)
@@ -512,8 +552,8 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input, y_input_multi, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
-        pd.testing.assert_frame_equal(y_output, y_input_multi) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
+        pd.testing.assert_frame_equal(y_output, y_input_multi)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col_multi)
@@ -527,8 +567,8 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input, y_input_multi, fit_function=True)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
-        pd.testing.assert_frame_equal(y_output, y_input_multi) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
+        pd.testing.assert_frame_equal(y_output, y_input_multi)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col_multi)
@@ -542,7 +582,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, _ = model._check_input_format(x_input_bad_order, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input) # Get it with the right order
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col_multi)
@@ -556,8 +596,8 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input_bad_order, y_input_multi_bad_order, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input) # Get it with the right order
-        pd.testing.assert_frame_equal(y_output, y_input_multi) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        pd.testing.assert_frame_equal(y_output, y_input_multi)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col_multi)
@@ -571,8 +611,52 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input_bad_order, y_input_multi_bad_order, fit_function=True)
-        pd.testing.assert_frame_equal(x_output, x_input) # Get it with the right order
-        pd.testing.assert_frame_equal(y_output, y_input_multi) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        pd.testing.assert_frame_equal(y_output, y_input_multi)  # No modifications
+        self.assertEqual(_, None)
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col_multi)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        # too much columns - no y - fit_function=False
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col_multi)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        x_output, _ = model._check_input_format(x_input_too_much_ok, fit_function=False)
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        self.assertEqual(_, None)
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col_multi)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        # too much columns - with y - fit_function=False
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col_multi)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        x_output, y_output = model._check_input_format(x_input_too_much_ok, y_input_multi_too_much_ok, fit_function=False)
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        pd.testing.assert_frame_equal(y_output, y_input_multi)  # No modifications
+        self.assertEqual(_, None)
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col_multi)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        # too much columns - with y - fit_function=True
+        self.assertEqual(model.x_col, x_col)
+        self.assertEqual(model.y_col, y_col_multi)
+        self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
+        self.assertEqual(model.columns_in, columns_in)
+        self.assertEqual(model.mandatory_columns, mandatory_columns)
+        x_output, y_output = model._check_input_format(x_input_too_much_ok, y_input_multi_too_much_ok, fit_function=True)
+        pd.testing.assert_frame_equal(x_output, x_input)  # Get it with the right order
+        pd.testing.assert_frame_equal(y_output, y_input_multi)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col_multi)
@@ -586,7 +670,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, _ = model._check_input_format(x_input_bad_columns, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input_bad_columns) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # Renamed columns
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col_multi)
@@ -600,8 +684,8 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input_bad_columns, y_input_multi_bad_columns, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input_bad_columns) # No modifications
-        pd.testing.assert_frame_equal(y_output, y_input_multi_bad_columns) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # Renamed columns
+        pd.testing.assert_frame_equal(y_output, y_input_multi)  # Renamed columns
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col_multi)
         self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
@@ -614,8 +698,8 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input_bad_columns, y_input_multi_bad_columns, fit_function=True)
-        pd.testing.assert_frame_equal(x_output, x_input_bad_columns) # No modifications
-        pd.testing.assert_frame_equal(y_output, y_input_multi_bad_columns) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # Renamed columns
+        pd.testing.assert_frame_equal(y_output, y_input_multi)  # Renamed columns
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col_multi)
         self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
@@ -633,9 +717,9 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, _ = model._check_input_format(x_input, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
         self.assertEqual(_, None)
-        self.assertEqual(model.x_col, None) # Still None because fit_function=False
+        self.assertEqual(model.x_col, None)  # Still None because fit_function=False
         self.assertEqual(model.y_col, y_col)
         self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
         self.assertEqual(model.columns_in, columns_in)
@@ -647,10 +731,10 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input, y_input, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
-        pd.testing.assert_series_equal(y_output, y_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
         self.assertEqual(_, None)
-        self.assertEqual(model.x_col, None) # Still None because fit_function=False
+        self.assertEqual(model.x_col, None)  # Still None because fit_function=False
         self.assertEqual(model.y_col, y_col)
         self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
         self.assertEqual(model.columns_in, columns_in)
@@ -662,10 +746,10 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input, y_input, fit_function=True)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
-        pd.testing.assert_series_equal(y_output, y_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
         self.assertEqual(_, None)
-        self.assertEqual(model.x_col, x_col) # x_col now set
+        self.assertEqual(model.x_col, x_col)  # x_col now set
         self.assertEqual(model.y_col, y_col)
         self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
         self.assertEqual(model.columns_in, columns_in)
@@ -678,10 +762,10 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(np.array(x_input), y_input, fit_function=True)
-        np.testing.assert_array_equal(x_output, np.array(x_input)) # No modifications
-        pd.testing.assert_series_equal(y_output, y_input) # No modifications
+        np.testing.assert_array_equal(x_output, np.array(x_input))  # No modifications
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
         self.assertEqual(_, None)
-        self.assertEqual(model.x_col, [0, 1]) # x_col now set - but no columns in a numpy array
+        self.assertEqual(model.x_col, [0, 1])  # x_col now set - but no columns in a numpy array
         self.assertEqual(model.y_col, y_col)
         self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
         self.assertEqual(model.columns_in, columns_in)
@@ -699,10 +783,10 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, _ = model._check_input_format(x_input, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
-        self.assertEqual(model.y_col, None) # Still None because fit_function=False
+        self.assertEqual(model.y_col, None)  # Still None because fit_function=False
         self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
@@ -713,11 +797,11 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input, y_input, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
-        pd.testing.assert_series_equal(y_output, y_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
-        self.assertEqual(model.y_col, None) # Still None because fit_function=False
+        self.assertEqual(model.y_col, None)  # Still None because fit_function=False
         self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
@@ -728,11 +812,11 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input, y_input, fit_function=True)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
-        pd.testing.assert_series_equal(y_output, y_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
-        self.assertEqual(model.y_col, 0) # y_col now set
+        self.assertEqual(model.y_col, 0)  # y_col now set
         self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
@@ -744,11 +828,11 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
         x_output, y_output = model._check_input_format(x_input, y_input_df, fit_function=True)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
-        pd.testing.assert_frame_equal(y_output, y_input_df) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
+        pd.testing.assert_frame_equal(y_output, y_input_df)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
-        self.assertEqual(model.y_col, y_col) # y_col now set
+        self.assertEqual(model.y_col, y_col)  # y_col now set
         self.assertEqual(model.preprocess_pipeline, preprocess_pipeline)
         self.assertEqual(model.columns_in, columns_in)
         self.assertEqual(model.mandatory_columns, mandatory_columns)
@@ -765,7 +849,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, None)
         self.assertEqual(model.mandatory_columns, None)
         x_output, _ = model._check_input_format(x_input, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col)
@@ -779,8 +863,8 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, None)
         self.assertEqual(model.mandatory_columns, None)
         x_output, y_output = model._check_input_format(x_input, y_input, fit_function=False)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
-        pd.testing.assert_series_equal(y_output, y_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col)
@@ -794,17 +878,17 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.columns_in, None)
         self.assertEqual(model.mandatory_columns, None)
         x_output, y_output = model._check_input_format(x_input, y_input, fit_function=True)
-        pd.testing.assert_frame_equal(x_output, x_input) # No modifications
-        pd.testing.assert_series_equal(y_output, y_input) # No modifications
+        pd.testing.assert_frame_equal(x_output, x_input)  # No modifications
+        pd.testing.assert_series_equal(y_output, y_input)  # No modifications
         self.assertEqual(_, None)
         self.assertEqual(model.x_col, x_col)
         self.assertEqual(model.y_col, y_col)
         # We can't test the equality of the pipeline. But we test the identity function on original_df
         x_input_transformed = model.preprocess_pipeline.transform(x_input)
-        x_input_transformed = pd.DataFrame(x_input_transformed, columns=x_col) # Recast to dataframe
-        pd.testing.assert_frame_equal(x_input_transformed, x_input) # No modifications
-        self.assertEqual(model.columns_in, x_col) # Here x_col as columns in
-        self.assertEqual(model.mandatory_columns, x_col) # Here x_col as mandatory columns
+        x_input_transformed = pd.DataFrame(x_input_transformed, columns=x_col)  # Recast to dataframe
+        pd.testing.assert_frame_equal(x_input_transformed, x_input)  # No modifications
+        self.assertEqual(model.columns_in, x_col)  # Here x_col as columns in
+        self.assertEqual(model.mandatory_columns, x_col)  # Here x_col as mandatory columns
         #
         remove_dir(model_dir)
 
@@ -815,13 +899,12 @@ class ModelClassTests(unittest.TestCase):
             remove_dir(model_dir)
         with self.assertRaises(ValueError):
             model = ModelClass(model_dir=model_dir, model_name=model_name, preprocess_pipeline=preprocess_pipeline, x_col=x_col, y_col=y_col)
-            model._check_input_format(x_input_bad_format)
+            model._check_input_format(x_input_too_much_ko)
             remove_dir(model_dir)
         with self.assertRaises(ValueError):
             model = ModelClass(model_dir=model_dir, model_name=model_name, preprocess_pipeline=preprocess_pipeline, x_col=x_col, y_col=y_col_multi)
-            model._check_input_format(x_input, y_input_multi_bad_format)
+            model._check_input_format(x_input, y_input_multi_too_much_ko)
             remove_dir(model_dir)
-
 
     def test06_model_class_is_gpu_activated(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass._is_gpu_activated'''

@@ -27,9 +27,8 @@ import numpy as np
 import pandas as pd
 
 from {{package_name}} import utils
+from {{package_name}}.monitoring.model_explainer import LimeExplainer
 from {{package_name}}.models_training.model_tfidf_svm import ModelTfidfSvm
-from {{package_name}}.monitoring.model_explainer import LimeExplainer, AttentionExplainer
-from {{package_name}}.models_training.model_embedding_lstm_structured_attention import ModelEmbeddingLstmStructuredAttention
 
 
 # Disable logging
@@ -63,7 +62,7 @@ class ModelExplainerTest(unittest.TestCase):
             pickle.dump(fake_embedding, f, pickle.HIGHEST_PROTOCOL)
 
     def test01_lime_explainer_nominal(self):
-        '''Test of the mono-class mono-label case'''
+        '''Test of the Lime explainer'''
 
         # Model dir
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -72,64 +71,74 @@ class ModelExplainerTest(unittest.TestCase):
         model_conf = {'preprocess_str': 'no_preprocess'}
         # Set vars
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
-        x_test = np.array(["cela est un test", "ni cela", "non plus", "ici test", "là, rien de rien!"] * 100)
-        y_train_mono = np.array(['y_0', 'y_1', 'y_0', 'y_1', 'y_2'] * 100)
-        y_test_mono = y_train_mono.copy()
+        y_train_mono_2 = np.array(['y_0', 'y_1', 'y_0', 'y_1', 'y_1'] * 100)
+        y_train_mono_3 = np.array(['y_0', 'y_1', 'y_0', 'y_1', 'y_2'] * 100)
         y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
         y_test_multi = y_train_multi.copy()
-        cols = ['test1', 'test2', 'test3']
 
-        # Mono-label
+        # Mono-label - Mono class
         model = ModelTfidfSvm(model_dir=model_dir, multi_label=False)
-        model.fit(x_train, y_train_mono)
-        exp = LimeExplainer(model, model_conf)
-        explanation = exp.explain_instance(text="ceci est un test")
-        txt = exp.explain_instance_as_list(text="ceci est un test")
-        html = exp.explain_instance_as_html(text="ceci est un test")
-        explanation = exp.explain_instance(text="ceci est un test", classes=['y_2', 'y_1'])
-        txt = exp.explain_instance_as_list(text="ceci est un test", classes=['y_2', 'y_1'])
-        html = exp.explain_instance_as_html(text="ceci est un test", classes=['y_0', 'y_1', 'y_2'])
+        model.fit(x_train, y_train_mono_2)
+        explainer = LimeExplainer(model, model_conf)
+        explanation = explainer.explain_instance(content="ceci est un test", class_or_label_index=0)
+        html = explainer.explain_instance_as_html(content="ceci est un test", class_or_label_index=0)
+        exp_list = explainer.explain_instance_as_list(content="ceci est un test", class_or_label_index=0)
+        explanation = explainer.explain_instance(content="ceci est un test", class_or_label_index=1)
+        html = explainer.explain_instance_as_html(content="ceci est un test", class_or_label_index=1)
+        exp_list = explainer.explain_instance_as_list(content="ceci est un test", class_or_label_index=1)
+        explanation = explainer.explain_instance(content="ceci est un test", class_or_label_index=None)
+        html = explainer.explain_instance_as_html(content="ceci est un test", class_or_label_index=None)
+        exp_list = explainer.explain_instance_as_list(content="ceci est un test", class_or_label_index=None)
+        remove_dir(model_dir)
+
+        # Mono-label - Multi classes
+        model = ModelTfidfSvm(model_dir=model_dir, multi_label=False)
+        model.fit(x_train, y_train_mono_3)
+        explainer = LimeExplainer(model, model_conf)
+        explanation = explainer.explain_instance(content="ceci est un test", class_or_label_index=0)
+        html = explainer.explain_instance_as_html(content="ceci est un test", class_or_label_index=0)
+        exp_list = explainer.explain_instance_as_list(content="ceci est un test", class_or_label_index=0)
+        explanation = explainer.explain_instance(content="ceci est un test", class_or_label_index=1)
+        html = explainer.explain_instance_as_html(content="ceci est un test", class_or_label_index=1)
+        exp_list = explainer.explain_instance_as_list(content="ceci est un test", class_or_label_index=1)
+        explanation = explainer.explain_instance(content="ceci est un test", class_or_label_index=2)
+        html = explainer.explain_instance_as_html(content="ceci est un test", class_or_label_index=2)
+        exp_list = explainer.explain_instance_as_list(content="ceci est un test", class_or_label_index=2)
+        explanation = explainer.explain_instance(content="ceci est un test", class_or_label_index=None)
+        html = explainer.explain_instance_as_html(content="ceci est un test", class_or_label_index=None)
+        exp_list = explainer.explain_instance_as_list(content="ceci est un test", class_or_label_index=None)
         remove_dir(model_dir)
 
         # Multi-labels
         model = ModelTfidfSvm(model_dir=model_dir, multi_label=True)
-        model.fit(x_train, y_train_multi[cols])
-        exp = LimeExplainer(model, model_conf)
-        explanation = exp.explain_instance(text="ceci est un test")
-        txt = exp.explain_instance_as_list(text="ceci est un test")
-        html = exp.explain_instance_as_html(text="ceci est un test")
-        explanation = exp.explain_instance(text="ceci est un test", classes=['test3', 'test2'])
-        txt = exp.explain_instance_as_list(text="ceci est un test", classes=['test3', 'test2'])
-        html = exp.explain_instance_as_html(text="ceci est un test", classes=['test1', 'test2', 'test3'])
+        model.fit(x_train, y_train_multi)
+        explainer = LimeExplainer(model, model_conf)
+        explanation = explainer.explain_instance(content="ceci est un test", class_or_label_index=0)
+        html = explainer.explain_instance_as_html(content="ceci est un test", class_or_label_index=0)
+        exp_list = explainer.explain_instance_as_list(content="ceci est un test", class_or_label_index=0)
+        explanation = explainer.explain_instance(content="ceci est un test", class_or_label_index=1)
+        html = explainer.explain_instance_as_html(content="ceci est un test", class_or_label_index=1)
+        exp_list = explainer.explain_instance_as_list(content="ceci est un test", class_or_label_index=1)
+        explanation = explainer.explain_instance(content="ceci est un test", class_or_label_index=2)
+        html = explainer.explain_instance_as_html(content="ceci est un test", class_or_label_index=2)
+        exp_list = explainer.explain_instance_as_list(content="ceci est un test", class_or_label_index=2)
+        explanation = explainer.explain_instance(content="ceci est un test", class_or_label_index=None)
+        html = explainer.explain_instance_as_html(content="ceci est un test", class_or_label_index=None)
+        exp_list = explainer.explain_instance_as_list(content="ceci est un test", class_or_label_index=None)
         remove_dir(model_dir)
 
-    def test02_attention_explainer_nominal(self):
-        '''Test of the mono-class mono-label case'''
-
-        # Model creation
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
-        x_test = np.array(["cela est un test", "ni cela", "non plus", "ici test", "là, rien de rien!"] * 100)
-        y_train_mono = np.array(['y_0', 'y_1', 'y_0', 'y_1', 'y_2'] * 100)
-        y_test_mono = y_train_mono.copy()
-        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
-        y_test_multi = y_train_multi.copy()
-        cols = ['test1', 'test2', 'test3']
-
-        # Mono-label
-        model = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                                      max_sequence_length=10, max_words=100,
-                                                      padding='pre', truncating='post',
-                                                      embedding_name='fake_embedding.pkl')
-        model.fit(x_train, y_train_mono)
-        exp = AttentionExplainer(model)
-        explanation = exp.explain_instance(text="ceci est un test")
-        txt = exp.explain_instance_as_list(text="ceci est un test")
-        html = exp.explain_instance_as_html(text="ceci est un test")
-        remove_dir(model_dir)
+        # Check errors
+        # No predict_proba
+        with self.assertRaises(TypeError):
+            LimeExplainer(5, model_conf)
+        class FakeModelClass():
+            def __init__(self):
+                pass
+            def predict_proba(self):
+                pass
+        # No list_classes
+        with self.assertRaises(TypeError):
+            LimeExplainer(FakeModelClass(), model_conf)
 
 
 # Perform tests

@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -81,14 +81,12 @@ class ModelMockClassifier(ModelClassifierMixin, ModelClass):
 class ModelClassifierMixinTests(unittest.TestCase):
     '''Main class to test model_classifier'''
 
-
     def setUp(self):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-
 
     def test01_model_classifier_init(self):
         '''Test of initialization of {{package_name}}.models_training.classifiers.model_classifier.ModelClassifierMixin'''
@@ -135,7 +133,6 @@ class ModelClassifierMixinTests(unittest.TestCase):
             ModelMockClassifier(model_dir=model_dir, model_name=model_name, level_save='toto')
         remove_dir(model_dir)
 
-
     def test02_model_classifier_predict_with_proba(self):
         '''Test of the method {{package_name}}.models_training.classifiers.model_classifier.ModelClassifierMixin.predict_with_proba'''
 
@@ -146,6 +143,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'fake_col': [0.5, -3, 5, 5, 2, 0, 8] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono = pd.Series([0, 0, 0, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1] * 10})
         cols = list(y_train_multi.columns)
@@ -156,6 +154,10 @@ class ModelClassifierMixinTests(unittest.TestCase):
         preds, probas = model.predict_with_proba(x_train)
         self.assertEqual(preds.shape, (len(x_train),))
         self.assertEqual(probas.shape, (len(x_train), 2))
+        # Test inversed columns order
+        preds_inv, probas_inv = model.predict_with_proba(x_train)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Multi-labels
@@ -164,6 +166,10 @@ class ModelClassifierMixinTests(unittest.TestCase):
         preds, probas = model.predict_with_proba(x_train)
         self.assertEqual(preds.shape, (len(x_train), len(cols)))
         self.assertEqual(probas.shape, (len(x_train), len(cols)))
+        # Test inversed columns order
+        preds_inv, probas_inv = model.predict_with_proba(x_train)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
+        np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -171,7 +177,6 @@ class ModelClassifierMixinTests(unittest.TestCase):
             model = ModelMockClassifier(model_dir=model_dir, model_name=model_name, multi_label=False)
             model.predict_with_proba(x_train)
         remove_dir(model_dir)
-
 
     def test03_model_classifier_get_predict_position(self):
         '''Test of the method {{package_name}}.models_training.classifiers.model_classifier.ModelClassifierMixin.get_predict_position'''
@@ -183,6 +188,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'fake_col': [0.5, -3, 5, 5, 2, 0, 8] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_mono = pd.Series([0, 0, 0, 1, 1, 1] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1] * 10})
         cols = list(y_train_multi.columns)
@@ -192,6 +198,9 @@ class ModelClassifierMixinTests(unittest.TestCase):
         model.fit(x_train, y_train_mono)
         predict_positions = model.get_predict_position(x_train, y_train_mono)
         self.assertEqual(predict_positions.shape, (len(x_train),))
+        # Test inversed columns order
+        predict_positions_inv = model.get_predict_position(x_train, y_train_mono)
+        np.testing.assert_almost_equal(predict_positions, predict_positions_inv, decimal=5)
         remove_dir(model_dir)
 
         # Multi-labels
@@ -207,7 +216,6 @@ class ModelClassifierMixinTests(unittest.TestCase):
             model = ModelMockClassifier(model_dir=model_dir, model_name=model_name, multi_label=False)
             model.get_predict_position(x_train, y_train_mono)
         remove_dir(model_dir)
-
 
     def test04_model_classifier_get_classes_from_proba(self):
         '''Test of the method {{package_name}}.models_training.classifiers.model_classifier.ModelClassifierMixin.get_classes_from_proba'''
@@ -255,7 +263,6 @@ class ModelClassifierMixinTests(unittest.TestCase):
             self.assertEqual([list(_) for _ in predicted_classes], [[0, 0], [1, 1], pred_col_1, pred_col_2])
         remove_dir(model_dir)
 
-
     def test05_model_classifier_get_top_n_from_proba(self):
         '''Test of the method {{package_name}}.models_training.classifiers.model_classifier.ModelClassifierMixin.get_top_n_from_proba'''
 
@@ -281,7 +288,6 @@ class ModelClassifierMixinTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             model.get_top_n_from_proba(probas)
         remove_dir(model_dir)
-
 
     def test06_model_classifier_inverse_transform(self):
         '''Test of the method {{package_name}}.models_training.classifiers.model_classifier.ModelClassifierMixin.inverse_transform'''
@@ -316,7 +322,6 @@ class ModelClassifierMixinTests(unittest.TestCase):
         self.assertEqual(model.inverse_transform(y2), expected_result2)
         remove_dir(model_dir)
 
-
     def test07_model_classifier_get_and_save_metrics(self):
         '''Test of the method {{package_name}}.models_training.classifiers.model_classifier.ModelClassifierMixin.get_and_save_metrics'''
 
@@ -346,7 +351,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
         y_true = np.array([[0, 1, 0], [1, 1, 0], [0, 0, 0]])
         y_pred = np.array([[0, 1, 1], [1, 1, 0], [0, 1, 0]])
         df_metrics = model.get_and_save_metrics(y_true, y_pred)
-        self.assertEqual(df_metrics.shape[0], 4) # 3 classes + All
+        self.assertEqual(df_metrics.shape[0], 4)  # 3 classes + All
         self.assertEqual(df_metrics.loc[3, :]['Label'], 'All')
         self.assertEqual(df_metrics.loc[0, :]['Accuracy'], 1.0)
         plots_path = os.path.join(model.model_dir, 'plots')
@@ -384,7 +389,6 @@ class ModelClassifierMixinTests(unittest.TestCase):
         self.assertTrue('test' in df_preds.columns)
         remove_dir(model_dir)
 
-
     def test08_model_classifier_get_metrics_simple_monolabel(self):
         '''Test of the method {{package_name}}.models_training.classifiers.model_classifier.ModelClassifierMixin.get_metrics_simple_monolabel'''
 
@@ -410,7 +414,6 @@ class ModelClassifierMixinTests(unittest.TestCase):
             model.get_metrics_simple_monolabel(y_true, y_pred)
         remove_dir(model_dir)
 
-
     def test09_model_classifier_get_metrics_simple_multilabel(self):
         '''Test of the method {{package_name}}.models_training.classifiers.model_classifier.ModelClassifierMixin.get_metrics_simple_multilabel'''
 
@@ -425,7 +428,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
         y_true = np.array([[0, 1, 0], [1, 1, 0], [0, 0, 0]])
         y_pred = np.array([[0, 1, 1], [1, 1, 0], [0, 1, 0]])
         df_metrics = model.get_metrics_simple_multilabel(y_true, y_pred)
-        self.assertEqual(df_metrics.shape[0], 4) # 3 classes + All
+        self.assertEqual(df_metrics.shape[0], 4)  # 3 classes + All
         self.assertEqual(df_metrics.loc[3, :]['Label'], 'All')
         self.assertEqual(df_metrics.loc[0, :]['Accuracy'], 1.0)
         remove_dir(model_dir)
@@ -435,7 +438,6 @@ class ModelClassifierMixinTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             model.get_metrics_simple_multilabel(y_true, y_pred)
         remove_dir(model_dir)
-
 
     def test10_model_classifier_update_info_from_c_mat(self):
         '''Test of the method {{package_name}}.models_training.classifiers.model_classifier.ModelClassifierMixin._update_info_from_c_mat'''
@@ -466,7 +468,6 @@ class ModelClassifierMixinTests(unittest.TestCase):
         info_dict = model._update_info_from_c_mat(c_mat, label='toto', log_info=False)
         self.assertEqual(info_dict, expected_result)
 
-
     def test11_model_classifier_save(self):
         '''Test of the method {{package_name}}.models_training.classifiers.model_classifier.ModelClassifierMixin.save'''
 
@@ -474,7 +475,7 @@ class ModelClassifierMixinTests(unittest.TestCase):
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
         model_name = 'test'
-        preprocess_pipeline = preprocess.get_pipeline("no_preprocess") # Warning, needs to be fitted
+        preprocess_pipeline = preprocess.get_pipeline("no_preprocess")  # Warning, needs to be fitted
         preprocess_pipeline.fit(pd.DataFrame({'test_x1': [1, 2, 3], 'test_x2': [4, 5, 6]}))
 
         # test save

@@ -27,7 +27,9 @@ fairlens==0.1.0
 
 # Optionnals - useless in prod.
 pydot==1.4.1  # Needed to plot models architecture
-lime==0.2.0.1  # Needed to get a model explanation
+shap==0.41.0  # Needed to get a model explanation
+ipython==7.34.0; python_version < "3.8"  # Needed by shap to display js figure
+ipython==8.6.0; python_version >= "3.8"  # Needed by shap to display js figure
 
 # Optionnals - streamlit POC
 streamlit==1.12.2
