@@ -416,7 +416,6 @@ class Modelaggregation(unittest.TestCase):
         # list_models = [model, model]
         svm, gbt, svm_name, gbt_name = self.create_svm_gbt()
         list_models = [svm, gbt]
-        list_real_models = [svm, gbt]
         list_models_name = [svm_name, gbt_name]
         model = ModelAggregation(model_dir=model_dir)
         model._sort_model_type(list_models)
@@ -427,7 +426,6 @@ class Modelaggregation(unittest.TestCase):
         # list_models = [model_name, model_name]
         svm, gbt, svm_name, gbt_name = self.create_svm_gbt()
         list_models = [svm_name, gbt_name]
-        list_real_models = [svm, gbt]
         list_models_name = [svm_name, gbt_name]
         model = ModelAggregation(model_dir=model_dir)
         model._sort_model_type(list_models)
@@ -438,7 +436,6 @@ class Modelaggregation(unittest.TestCase):
         # list_models = [model_name, model]
         svm, gbt, svm_name, gbt_name = self.create_svm_gbt()
         list_models = [svm_name, gbt]
-        list_real_models = [svm, gbt]
         list_models_name = [svm_name, gbt_name]
         model = ModelAggregation(model_dir=model_dir)
         model._sort_model_type(list_models)
