@@ -253,7 +253,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         y_train = ['a', 'b', 'a']
         model.list_classes = ['a', 'b']  # We force the creation of a list of classes
         # TypeError because need model tfidf fitted, it try to input_dim = len(model.tfidf.classes_)
-        with self.assertRaises(TypeError):
+        with self.assertRaises(AttributeError):
             model_res = model._get_model()
         model.tfidf.fit(x_train, y_train)
         model._prepare_x_train(x_train)  # We force the creation of the tokenizer

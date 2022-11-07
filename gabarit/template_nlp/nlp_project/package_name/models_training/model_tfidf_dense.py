@@ -138,7 +138,10 @@ class ModelTfidfDense(ModelKeras):
         if not self.with_super_documents:
             input_dim = len(self.tfidf.get_feature_names())
         else:
-            input_dim = len(self.tfidf.classes_)
+            if len(self.tfidf.classes_):
+                input_dim = len(self.tfidf.classes_)
+            else:
+                raise AttributeError(f"The method _get_model can't be called as long as the tfidf hasn't been fitted")
         num_classes = len(self.list_classes)
 
         # Process
