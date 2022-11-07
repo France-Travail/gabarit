@@ -36,6 +36,7 @@ from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_pipeline import ModelPipeline
+from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
 
 
 class ModelTfidfSgdc(ModelPipeline):
@@ -53,11 +54,16 @@ class ModelTfidfSgdc(ModelPipeline):
             multiclass_strategy (str): Multi-classes strategy, 'ovr' (OneVsRest), or 'ovo' (OneVsOne). If None, use the default of the algorithm.
         Raises:
             ValueError: If multiclass_strategy is not 'ovo', 'ovr' or None
+            ValueError: If with_super_documents and multi_label
         '''
         if multiclass_strategy is not None and multiclass_strategy not in ['ovo', 'ovr']:
             raise ValueError(f"The value of 'multiclass_strategy' must be 'ovo' or 'ovr' (not {multiclass_strategy})")
         # Init.
         super().__init__(**kwargs)
+
+        # Super documents incompatible with multi label tasks
+        if self.with_super_documents and self.multi_label:
+            raise ValueError("The method with super documents does not support multi-labels")
 
         # Get logger (must be done after super init)
         self.logger = logging.getLogger(__name__)
@@ -65,7 +71,7 @@ class ModelTfidfSgdc(ModelPipeline):
         # Manage model
         if tfidf_params is None:
             tfidf_params = {}
-        self.tfidf = TfidfVectorizer(**tfidf_params)
+        self.tfidf = TfidfVectorizer(**tfidf_params) if not self.with_super_documents else TfidfVectorizerSuperDocuments(**tfidf_params)
         if sgdc_params is None:
             sgdc_params = {}
         self.sgdc = SGDClassifier(**sgdc_params)
@@ -190,7 +196,7 @@ class ModelTfidfSgdc(ModelPipeline):
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['x_col', 'y_col',
                           'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'multiclass_strategy']:
+                          'multiclass_strategy', 'with_super_documents']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload pipeline

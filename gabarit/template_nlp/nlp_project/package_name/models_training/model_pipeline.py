@@ -40,11 +40,13 @@ class ModelPipeline(ModelClass):
     # Not implemented :
     # -> reload
 
-    def __init__(self, pipeline: Union[Pipeline, None] = None, **kwargs) -> None:
+    def __init__(self, pipeline: Union[Pipeline, None] = None, with_super_documents: bool = False, **kwargs) -> None:
         '''Initialization of the class (see ModelClass for more arguments)
 
         Kwargs:
             pipeline (Pipeline): Pipeline to use
+            with_super_documents (bool): fit the tfidf on super documents (= all text documents concatenated by label), transform on regular documents
+                -> Only used by tfidf models
         '''
         # Init.
         super().__init__(**kwargs)
@@ -54,6 +56,9 @@ class ModelPipeline(ModelClass):
 
         # Manage model (to implement for children class)
         self.pipeline = pipeline
+
+        # Super documents (only for tfidf: collects all documents and gather them by label)
+        self.with_super_documents = with_super_documents
 
     def fit(self, x_train, y_train, **kwargs) -> None:
         '''Trains the model
@@ -125,7 +130,7 @@ class ModelPipeline(ModelClass):
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
     def predict_proba(self, x_test, **kwargs) -> np.ndarray:
-        '''Predicts probabilities on the test dataset
+        '''Probabilities predicted on the test set
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
@@ -136,7 +141,7 @@ class ModelPipeline(ModelClass):
         # Very specific fix: in some cases, with OvR, strategy, all estimators return 0, which generates a division per 0 when normalizing
         # Hence, we replace NaNs with 1 / nb_classes
         if not self.multi_label:
-            probas = np.nan_to_num(probas, nan=1/len(self.list_classes))
+            probas = np.nan_to_num(probas, nan=1 / len(self.list_classes))
         # If use of MultiOutputClassifier ->  returns probabilities of 0 and 1 for all elements and all classes
         # Same thing for some base models
         # Correction in case where we detect a shape of length > 2 (ie. equals to 3)
@@ -156,6 +161,7 @@ class ModelPipeline(ModelClass):
             json_data = {}
 
         json_data['librairie'] = 'scikit-learn'
+        json_data['with_super_documents'] = self.with_super_documents
 
         # Add each pipeline steps' conf
         if self.pipeline is not None:

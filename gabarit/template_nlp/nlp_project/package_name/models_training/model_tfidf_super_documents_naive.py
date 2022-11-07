@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 
-## Model TFIDF LGBM
+## Model TFIDF Super Documents Naive
+
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,8 +18,12 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelTfidfLgbm -> Model for predictions via TF-IDF + LGBM
-
+# - ModelTfidfSuperDocumentsNaive -> Model for predictions TF-IDF naive with super documents
+# Model_super_documents_naive return the label with the highest tfidf in tfidf_super_documents.
+#
+# Super documents collects all documents and concatenate them by label.
+# Unlike standard tfidf model fitting with [n_samples, n_terms],
+# Super documents fits with [n_labels, n_terms] and transforms with [n_samples, n_labels].
 
 import os
 import json
@@ -27,41 +32,37 @@ import logging
 import numpy as np
 from typing import Union
 
-from lightgbm import LGBMClassifier
 from sklearn.pipeline import Pipeline
-from sklearn.multioutput import MultiOutputClassifier
-from sklearn.feature_extraction.text import TfidfVectorizer
-from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_pipeline import ModelPipeline
 from {{package_name}}.models_training.utils_super_documents import TfidfVectorizerSuperDocuments
 
 
-class ModelTfidfLgbm(ModelPipeline):
-    '''Model for predictions via TF-IDF + LGBM'''
+class ModelTfidfSuperDocumentsNaive(ModelPipeline):
+    '''Model for predictions via TF-IDF + Naive'''
 
-    _default_name = 'model_tfidf_lgbm'
+    _default_name = 'model_tfidf_super_documents_naive'
 
-    def __init__(self, tfidf_params: Union[dict, None] = None, lgbm_params: Union[dict, None] = None,
-                 multiclass_strategy: Union[str, None] = None, **kwargs) -> None:
+    def __init__(self, tfidf_params: Union[dict, None] = None,
+                 multiclass_strategy: Union[str, None] = None, **kwargs):
         '''Initialization of the class (see ModelPipeline & ModelClass for more arguments)
 
         Kwargs:
-            tfidf_params (dict) : Parameters for the tfidf
-            lgbm_params (dict) : Parameters for the lgbm
-            multiclass_strategy (str): Multi-classes strategy, 'ovr' (OneVsRest), or 'ovo' (OneVsOne). If None, use the default of the algorithm.
+            tfidf_params (dict): Parameters for the tfidf TfidfVectorizerSuperDocuments
+            multiclass_strategy (str): Multi-classes strategy, only can be None
         Raises:
             ValueError: If multiclass_strategy is not 'ovo', 'ovr' or None
-            ValueError: If with_super_documents and multi_label
+            ValueError: If multi_label is True
         '''
         if multiclass_strategy is not None and multiclass_strategy not in ['ovo', 'ovr']:
             raise ValueError(f"The value of 'multiclass_strategy' must be 'ovo' or 'ovr' (not {multiclass_strategy})")
         # Init.
         super().__init__(**kwargs)
+        self.with_super_documents = True
 
-        if self.with_super_documents and self.multi_label:
-            raise ValueError("The method with super documents does not support multi-labels")
+        if self.multi_label:
+            raise ValueError("Model_tfidf_super_documents_naive does not support multi-labels")
 
         # Get logger (must be done after super init)
         self.logger = logging.getLogger(__name__)
@@ -69,67 +70,76 @@ class ModelTfidfLgbm(ModelPipeline):
         # Manage model
         if tfidf_params is None:
             tfidf_params = {}
-        self.tfidf = TfidfVectorizer(**tfidf_params) if not self.with_super_documents else TfidfVectorizerSuperDocuments(**tfidf_params)
-        if lgbm_params is None:
-            lgbm_params = {}
-        self.lgbm = LGBMClassifier(**lgbm_params)
-        self.multiclass_strategy = multiclass_strategy
+        self.tfidf = TfidfVectorizerSuperDocuments(**tfidf_params)
 
         # Can't do multi-labels / multi-classes
         if not self.multi_label:
             # If not multi-classes : no impact
-            if multiclass_strategy == 'ovr':
-                self.pipeline = Pipeline([('tfidf', self.tfidf), ('lgbm', OneVsRestClassifier(self.lgbm))])
-            elif multiclass_strategy == 'ovo':
-                self.pipeline = Pipeline([('tfidf', self.tfidf), ('lgbm', OneVsOneClassifier(self.lgbm))])
+            if multiclass_strategy in ['ovr', 'ovo']:
+                raise ValueError("The TFIDF naive super_documents can't do", multiclass_strategy)
             else:
-                self.pipeline = Pipeline([('tfidf', self.tfidf), ('lgbm', self.lgbm)])
+                self.pipeline = Pipeline([('tfidf', self.tfidf)])
 
-        # Manage multi-labels -> add a MultiOutputClassifier
-        # The LGBM does not natively support multi-labels
-        if self.multi_label:
-            self.pipeline = Pipeline([('tfidf', self.tfidf), ('lgbm', MultiOutputClassifier(self.lgbm))])
+    @utils.trained_needed
+    def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
+        '''Predictions on test set
+
+        Args:
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
+        Kwargs:
+            return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
+        Returns:
+            (np.ndarray): Array, shape = [n_samples]
+            return_proba (np.ndarray): Array, shape = [n_samples, n_train]
+        '''
+        if return_proba:
+            return self.predict_proba(x_test)
+        else:
+            return self.compute_predict(x_test)
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
     def predict_proba(self, x_test, **kwargs) -> np.ndarray:
-        '''Probabilities prediction on the test dataset
-            'ovo' can't predict probabilities. By default we return 1 if it is the predicted class, 0 otherwise.
+        '''Predicts the probabilities on the test set
+        - /!\\ THE MODEL NAIVE DOES NOT RETURN PROBABILITIES, HERE WE NORMALIZE TFIDF /!\\ -
 
         Args:
-            x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        # Use super() of Pipeline class if != 'ovo' or multi-labels
-        if self.multi_label or self.multiclass_strategy != 'ovo':
-            return super().predict_proba(x_test, **kwargs)
-        # We return 1 if predicted, otherwise 0
+        if not self.multi_label:
+            # Normalize tfidf to "proba"
+            trans = self.tfidf.transform(x_test).toarray()
+            probas = trans/np.sum(trans , axis=1)[:, None]
         else:
-            preds = self.pipeline.predict(x_test)
-            # Format ['a', 'b', 'c', 'a', ..., 'b']
-            # Transform to "proba"
-            transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
-            probas = np.array([transform_dict[x] for x in preds])
+            raise ValueError("The TFIDF Naive does not support multi label")
         return probas
 
-    def save(self, json_data: Union[dict, None] = None) -> None:
-        '''Saves the model
+    @utils.trained_needed
+    def compute_predict(self, x_test) -> np.ndarray:
+        '''Compute the scores for the prediction
 
-        Kwargs:
-            json_data (dict): Additional configurations to be saved
+        Args:
+            x_test (?): Array-like or sparse matrix, shape = [n_samples]
+        Returns:
+            (np.ndarray): Array, shape = [n_samples]
+        Raise:
+            if self.matrix_train == None
         '''
-        # Save model
-        if json_data is None:
-            json_data = {}
+        # if self.matrix_train is None:
+        if self.tfidf.tfidf_super_documents is None:
+            raise AttributeError('The tfidf not fitted')
+        x_test = np.array([x_test]) if isinstance(x_test, str) else x_test
+        x_test = np.array(x_test) if isinstance(x_test, list) else x_test
 
-        # No need to save the parameters of the pipeline steps, it is already done in ModelPipeline
-        json_data['multiclass_strategy'] = self.multiclass_strategy
+        trans = self.tfidf.transform(x_test).toarray().T
+        index = np.argmax(trans, axis=0)
+        predicts = self.tfidf.classes_[index]
 
-        # Save
-        super().save(json_data=json_data)
+        return predicts
 
-    def reload_from_standalone(self, **kwargs) -> None:
+    def reload_from_standalone(self, **kwargs):
         '''Reloads a model from its configuration and "standalones" files
         - /!\\ Experimental /!\\ -
 
@@ -158,7 +168,8 @@ class ModelTfidfLgbm(ModelPipeline):
 
         # Load confs
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
-            configs = json.load(f)  # Can't set int as keys in json, so need to cast it after reloading
+            configs = json.load(f)
+        # Can't set int as keys in json, so need to cast it after reloading
         # dict_classes keys are always ints
         if 'dict_classes' in configs.keys():
             configs['dict_classes'] = {int(k): v for k, v in configs['dict_classes'].items()}
@@ -173,7 +184,7 @@ class ModelTfidfLgbm(ModelPipeline):
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['x_col', 'y_col',
                           'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'multiclass_strategy', 'with_super_documents']:
+                          'with_super_documents']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload pipeline
@@ -182,12 +193,6 @@ class ModelTfidfLgbm(ModelPipeline):
 
         # Reload pipeline elements
         self.tfidf = self.pipeline['tfidf']
-
-        # Manage multi-labels or multi-classes
-        if not self.multi_label and self.multiclass_strategy is None:
-            self.lgbm = self.pipeline['lgbm']
-        else:
-            self.lgbm = self.pipeline['lgbm'].estimator
 
 
 if __name__ == '__main__':
