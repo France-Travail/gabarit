@@ -119,14 +119,22 @@ class tfidfSuperDocumentsTests(unittest.TestCase):
         count_vec = CountVectorizer().fit(x_train_s)
         count = count_vec.transform(x_test).toarray()
         vec_trans_s = np.dot(count, vec_trans)
-        self.assertTrue((vec.transform(x_test).toarray() == vec_trans_s).all())
+        vec_trans_test = vec.transform(x_test).toarray()
+        self.assertEqual(vec_trans_s.shape, vec_trans_test.shape)
+        for i in range(vec_trans_s.shape[0]):
+            for j in range(vec_trans_s.shape[1]):
+                self.assertAlmostEqual(vec_trans_s[i][j], vec_trans_test[i][j])
 
         vec = TfidfVectorizerSuperDocuments(**param).fit(x_train, y_train)
         vec_trans = TfidfVectorizer(**param).fit_transform(x_train_s).toarray().T
         count_vec = CountVectorizer(**param).fit(x_train_s)
         count = count_vec.transform(x_train).toarray()
         vec_trans_s = np.dot(count, vec_trans)
-        self.assertTrue((vec.transform(x_train).toarray() == vec_trans_s).all())
+        vec_trans_train = vec.transform(x_train).toarray()
+        self.assertEqual(vec_trans_s.shape, vec_trans_train.shape)
+        for i in range(vec_trans_s.shape[0]):
+            for j in range(vec_trans_s.shape[1]):
+                self.assertAlmostEqual(vec_trans_s[i][j], vec_trans_train[i][j])
 
     def test05_TfidfVectorizerSuperDocuments_fit_transform(self):
         '''Test the fit_transform of {{package_name}}.models_training.utils_super_documents.TfidfVectorizerSuperDocuments.fit_transform'''
@@ -146,16 +154,26 @@ class tfidfSuperDocumentsTests(unittest.TestCase):
         count_vec = CountVectorizer().fit(x_train_s)
         count = count_vec.transform(x_train).toarray()
         vec_trans_s = np.dot(count, vec_trans)
-        self.assertTrue((vec.fit_transform(x_train, y_train).toarray() == vec_trans_s).all())
-        self.assertTrue((vec.classes_ == np.array(['s', 'p'])).all())
+        vec_trans_train = vec.fit_transform(x_train, y_train).toarray()
+        self.assertEqual(vec_trans_s.shape, vec_trans_train.shape)
+        for i in range(vec_trans_s.shape[0]):
+            for j in range(vec_trans_s.shape[1]):
+                self.assertAlmostEqual(vec_trans_s[i][j], vec_trans_train[i][j])
+        self.assertTrue(vec.classes_[0] == 's')
+        self.assertTrue(vec.classes_[1] == 'p')
 
         vec = TfidfVectorizerSuperDocuments(**param)
         vec_trans = TfidfVectorizer(**param).fit_transform(x_train_s).toarray().T
         count_vec = CountVectorizer(**param).fit(x_train_s)
         count = count_vec.transform(x_train).toarray()
         vec_trans_s = np.dot(count, vec_trans)
-        self.assertTrue((vec.fit_transform(x_train, y_train).toarray() == vec_trans_s).all())
-        self.assertTrue((vec.classes_ == np.array(['s', 'p'])).all())
+        vec_trans_train = vec.fit_transform(x_train, y_train).toarray()
+        self.assertEqual(vec_trans_s.shape, vec_trans_train.shape)
+        for i in range(vec_trans_s.shape[0]):
+            for j in range(vec_trans_s.shape[1]):
+                self.assertAlmostEqual(vec_trans_s[i][j], vec_trans_train[i][j])
+        self.assertTrue(vec.classes_[0] == 's')
+        self.assertTrue(vec.classes_[1] == 'p')
 
 
 # Perform tests
