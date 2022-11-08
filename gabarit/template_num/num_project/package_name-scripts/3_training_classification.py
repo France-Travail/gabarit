@@ -32,6 +32,7 @@ import argparse
 import warnings
 import numpy as np
 import pandas as pd
+import dill as pickle
 from functools import partialmethod
 from typing import Union, List, Type, Tuple
 
@@ -331,12 +332,31 @@ def main(filename: str, y_col: List[Union[str, int]], excluded_cols: Union[List[
             'excluded_cols': excluded_cols,
         }
     )
+
     # We also try to save some info from the preprocessing pipeline
+    # Define paths
+    new_info_path = os.path.join(model.model_dir, 'pipeline.info')
+    new_sample_path = os.path.join(model.model_dir, 'original_data_samples.csv')
+    # If pipeline already existed (i.e. preprocessed dataset), copy files in the model dir
     if preprocess_pipeline_dir is not None:
-        info_file = os.path.join(preprocess_pipeline_dir, 'pipeline.info')
-        if os.path.exists(info_file):
-            new_info_path = os.path.join(model.model_dir, 'pipeline.info')
-            shutil.copyfile(info_file, new_info_path)
+        pipeline_path = utils.find_folder_path(preprocess_pipeline_dir, utils.get_pipelines_path())
+        info_path = os.path.join(pipeline_path, 'pipeline.info')
+        sample_path = os.path.join(pipeline_path, 'dataset_sample.csv')
+        if os.path.exists(info_path):
+            shutil.copyfile(info_path, new_info_path)
+        if os.path.exists(sample_path):
+            shutil.copyfile(sample_path, new_sample_path)
+    # Else, create files
+    else:
+        # pipeline.info
+        pipeline_dict = {'preprocess_pipeline': preprocess_pipeline, 'preprocess_str': preprocess_str}
+        with open(new_info_path, 'wb') as f:
+            pickle.dump(pipeline_dict, f)
+        # original_data_samples.csv
+        df_sample = df_train.sample(min(100, df_train.shape[0]))
+        utils.to_csv(df_sample, new_sample_path, sep=sep, encoding=encoding)
+
+    #
     logger.info(f"Model {model.model_name} saved in directory {model.model_dir}")
 
 

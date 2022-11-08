@@ -22,6 +22,7 @@ from unittest.mock import patch
 # Utils libs
 import os
 import shutil
+import tempfile
 import numpy as np
 import pandas as pd
 
@@ -41,14 +42,12 @@ class UtilsTests(unittest.TestCase):
     # We avoid tqdm prints
     pd.Series.progress_apply = pd.Series.apply
 
-
     def setUp(self):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-
 
     @patch('logging.Logger._log')
     def test01_read_csv(self, PrintMockLog):
@@ -89,7 +88,6 @@ class UtilsTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             utils.read_csv('toto.csv')
 
-
     @patch('logging.Logger._log')
     def test02_to_csv(self, PrintMockLog):
         '''Test of the function utils.to_csv'''
@@ -121,7 +119,6 @@ class UtilsTests(unittest.TestCase):
         if os.path.exists(fake_filepath):
             os.remove(fake_filepath)
 
-
     @patch('logging.Logger._log')
     def test03_display_shape(self, PrintMockLog):
         '''Test of the function utils.display_shape'''
@@ -140,7 +137,6 @@ class UtilsTests(unittest.TestCase):
         # RESET DEFAULT
         logging.disable(logging.CRITICAL)
 
-
     def test04_get_new_column_name(self):
         '''Test of the function utils.get_new_column_name'''
         # Valids to test
@@ -152,7 +148,6 @@ class UtilsTests(unittest.TestCase):
         new_col = utils.get_new_column_name(column_list, 'toto')
         self.assertTrue(new_col.startswith('toto_'))
         self.assertEqual(len(new_col), len('toto_') + 8)
-
 
     def test05_get_chunk_limits(self):
         '''Test of the function utils.get_chunk_limits'''
@@ -202,7 +197,6 @@ class UtilsTests(unittest.TestCase):
         utils.DIR_PATH = None
         remove_dir(path)
 
-
     def test07_get_models_path(self):
         '''Test of the function utils.get_models_path'''
         # Nominal case
@@ -220,7 +214,6 @@ class UtilsTests(unittest.TestCase):
         # Clean
         utils.DIR_PATH = None
         remove_dir(path)
-
 
     def test08_get_pipelines_path(self):
         '''Test of the function utils.get_pipelines_path'''
@@ -240,7 +233,6 @@ class UtilsTests(unittest.TestCase):
         utils.DIR_PATH = None
         remove_dir(path)
 
-
     def test09_get_ressources_path(self):
         '''Test of the function utils.get_ressources_path'''
         # Nominal case
@@ -248,15 +240,40 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(os.path.isdir(path), True)
         self.assertEqual(path.endswith('{{package_name}}-ressources'), True)
 
-
     def test10_get_package_version(self):
         '''Test of the function utils.get_package_version'''
         # Nominal case
         version = utils.get_package_version()
         self.assertEqual(type(version), str)
 
+    def test11_find_folder_path(self):
+        '''Test of the function utils.find_folder_path'''
 
-    def test11_flatten(self):
+        with tempfile.TemporaryDirectory(dir=os.getcwd()) as tmp_dir:
+            # Create a fake directory structure
+            base_folder = tmp_dir
+            folderA = os.path.join(base_folder, 'folderA')
+            folderB = os.path.join(folderA, 'folderB')
+            folderC = os.path.join(base_folder, 'folderC')
+            os.makedirs(folderA)
+            os.makedirs(folderB)
+            os.makedirs(folderC)
+
+            # Nominal case
+            self.assertEqual(folderA, utils.find_folder_path('folderA', base_folder))
+            self.assertEqual(folderB, utils.find_folder_path('folderB', base_folder))
+            self.assertEqual(folderC, utils.find_folder_path('folderC', base_folder))
+            self.assertEqual(folderA, utils.find_folder_path(folderA, None))
+            self.assertEqual(folderB, utils.find_folder_path(folderB, None))
+            self.assertEqual(folderC, utils.find_folder_path(folderC, None))
+
+            # Errors
+            with self.assertRaises(FileNotFoundError):
+                utils.find_folder_path('folderD', base_folder)
+            with self.assertRaises(FileNotFoundError):
+                utils.find_folder_path('this/is/not/a/path', None)
+
+    def test12_flatten(self):
         '''Test of the function utils.flatten'''
         # Nominal case
         test_list = [[1, 2], 3, [4], [1, [5, 8]]]

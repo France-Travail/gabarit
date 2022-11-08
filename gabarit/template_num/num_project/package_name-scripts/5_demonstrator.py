@@ -32,6 +32,7 @@ from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
 from {{package_name}}.models_training import utils_models
 from {{package_name}}.models_training.model_class import ModelClass
+from {{package_name}}.monitoring.model_explainer import ShapExplainer
 
 # TMP FIX: somehow, a json method prevents us to cache most of our models with Streamlit
 # That was not the case before, something must have changed within a third party library ?
@@ -295,6 +296,30 @@ def get_histogram(probas: np.ndarray, list_classes: List[str], is_multi_label: b
     return df_probabilities, alt.layer(bars + text)
 
 
+def get_explanation(model: Type[ModelClass], content: pd.DataFrame, class_or_label_index: Union[int, None] = None) -> str:
+    '''Explains the model's prediction on a given content
+
+    Args:
+        model (ModelClass): Model to use
+        content (pd.DataFrame): Input content
+    Kwargs:
+        class_or_label_index (int): for classification only. Class or label index to be considered.
+    Returns:
+        (str): HTML content to be rendered
+    '''
+    # Check for anchor data
+    anchor_data_path = os.path.join(model.model_dir, 'original_data_samples.csv')
+    if os.path.exists(anchor_data_path):
+        anchor_data = pd.read_csv(anchor_data_path, sep='{{default_sep}}', encoding='{{default_encoding}}')
+    else:
+        return "<p> No anchor data available for this model, can't produce an explanation</p>"
+    # Explain via SHAP explainer
+    logger.info("Explain results via SHAP")
+    explainer = ShapExplainer(model, anchor_data, anchor_preprocessed=False)
+    html = explainer.explain_instance_as_html(content, class_or_label_index)
+    return html
+
+
 # ---------------------
 # Streamlit.io App
 # ---------------------
@@ -307,6 +332,9 @@ st.markdown("---  \n")
 # Sidebar (model selection)
 st.sidebar.title('Model')
 selected_model = st.sidebar.selectbox('Model selection', get_available_models(), index=0)
+
+# Add a checkbox to get explanation
+checkbox_explanation = st.sidebar.checkbox('With explanation', False)
 
 
 # Get model
@@ -346,7 +374,7 @@ if selected_model is not None:
     # TODO: TO BE CHANGED WITH YOUR DATA
     # TODO: Here is some examples with the "wine" dataset from tutorial
     form.write("Input data")
-    form_values = {col: form.number_input(col) for col in model.x_col}
+    form_values = {col: form.number_input(col) for col in model.mandatory_columns}
     form.markdown("---  \n")
     # TODO TODO TODO TODO TODO
     # TODO TODO TODO TODO TODO
@@ -361,10 +389,7 @@ if selected_model is not None:
         # Construct content from inputs
         # TODO TODO TODO TODO TODO
         # TODO: TO BE CHANGED WITH YOUR DATA
-        content = pd.DataFrame({
-            col: [col_value]
-            for col, col_value in form_values.items()
-        })
+        content = pd.DataFrame({col: [col_value] for col, col_value in form_values.items()})
         # TODO TODO TODO TODO TODO
         st.session_state.content = content
 
@@ -376,6 +401,19 @@ if selected_model is not None:
     # Clear everything by clicking this button
     if st.button("Clear"):
         st.session_state.content = None
+
+
+    # ---------------------
+    # Checks
+    # ---------------------
+
+    # In some cases, if input form features are automatically generated from the model's mendatory columns,
+    # st.session_state.content could still be defined with previous model's input columns
+    # Hence, we check if all mendatory columns are in st.session_state.content, and reset it to None if it is not the case
+    if st.session_state.content is not None and any([col not in st.session_state.content.columns for col in model.mandatory_columns]):
+        st.session_state.content = None
+        logger.warning("Input content had been reset because it does not match the model's mendatory columns")
+        logger.warning("You probably just changed the model, try to submit a new content")
 
 
     # ---------------------
@@ -412,5 +450,50 @@ if selected_model is not None:
             st.subheader('Probabilities histogram')
             st.write(df_probabilities)
             st.altair_chart(altair_layer)
+
+        # ---------------------
+        # Explainer
+        # ---------------------
+
+        if checkbox_explanation:
+
+            st.write("---  \n")
+            st.subheader('Explanation')
+
+            # Get shap explanations
+            if model.model_type == 'classifier':
+                # Set form
+                form_explanation = st.form(key='my-form-explanation')
+                inv_dict = {v: k for k, v in model.dict_classes.items()}
+                index_max = probas.argmax()
+                if model.multi_label:
+                    form_explanation.write("Select the label to be explained")
+                    selected_class_or_label = form_explanation.selectbox("Label :", ['Highest prediction score label'] + model.list_classes, index=0)
+                    inv_dict['Highest prediction score label'] = index_max
+                else:
+                    form_explanation.write("Class to be explained")
+                    selected_class_or_label = form_explanation.selectbox("Class :", ['Predicted class'] + model.list_classes, index=0)
+                    inv_dict['Predicted class'] = index_max
+                # Set submit button
+                submit_explanation = form_explanation.form_submit_button("Explain")
+                # On click, get explanation
+                if submit_explanation:
+                    class_or_label_index = inv_dict[selected_class_or_label]
+                    html = get_explanation(model, st.session_state.content, class_or_label_index)
+                else:
+                    html = None
+            else:
+                # Automatically get explanation
+                html = get_explanation(model, st.session_state.content, None)
+
+            # If html set ...
+            if html is not None:
+                # Add some css
+                html += "<style>.shap_fig {max-width: 100%}</style>"
+                # Chosen class or label
+                if model.model_type == 'classifier':
+                    st.write(f"Explanation for {'label' if model.multi_label else 'class'} {model.dict_classes[class_or_label_index]}")
+                # Display html
+                st.components.v1.html(html, height=800, scrolling=True)  # We could pby have a better height
 
         st.write("---  \n")

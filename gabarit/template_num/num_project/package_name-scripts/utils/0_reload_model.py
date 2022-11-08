@@ -89,14 +89,7 @@ def main(model_dir: str, config_file: str = 'configurations.json',
     ##############################################
 
     # Get model's path
-    models_dir = utils.get_models_path()
-    model_path = None
-    for path, subdirs, files in os.walk(models_dir):
-        for name in subdirs:
-            if name == model_dir:
-                model_path = os.path.join(path, name)
-    if model_path is None:
-        raise FileNotFoundError(f"Can't find model {model_dir}")
+    model_path = utils.find_folder_path(model_dir, utils.get_models_path())
 
     # Load conf
     conf_path = os.path.join(model_path, config_file)
