@@ -49,8 +49,8 @@ from {{package_name}}.models_training import (model_tfidf_dense,
                                               model_embedding_lstm_structured_attention,
                                               model_embedding_lstm_gru_gpu,
                                               model_pytorch_transformers,
-                                              utils_models,
-                                              model_aggregation)
+                                              model_aggregation,
+                                              utils_models)
 
 # Disable some warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -275,7 +275,7 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
         #                                                             tokenizer_special_tokens=tuple(),
         #                                                             padding="max_length", truncation=True,
         #                                                             multi_label=multi_label)
-        # modle = model_aggregation.ModelAggregation(x_col=x_col, y_col=y_col, level_save=level_save,
+        # model = model_aggregation.ModelAggregation(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                            list_models=[model_tfidf_svm.ModelTfidfSvm(), model_tfidf_svm.ModelTfidfSvm()],
         #                                            multi_label=multi_label)
 

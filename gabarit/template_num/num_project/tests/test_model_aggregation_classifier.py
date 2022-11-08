@@ -41,8 +41,8 @@ def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
 def remove_dir_model(model, model_dir):
-    for submodel in model.list_real_models:
-        remove_dir(os.path.join(models_path, os.path.split(submodel.model_dir)[-1]))
+    for sub_model in model.sub_models:
+        remove_dir(os.path.join(models_path, os.path.split(sub_model['model'].model_dir)[-1]))
     remove_dir(model_dir)
 
 # The class to mock the submodels
@@ -193,6 +193,7 @@ target_predict_mono_multi_vote_labels_dict = {(1, 2): [0, 1, 0, 0, 0], (1, 3): [
 target_predict_mono_multi_all_predictions = np.array([target_predict_mono_multi_all_predictions_dict[tuple(x)] for x in x_test])
 target_predict_mono_multi_vote_labels = np.array([target_predict_mono_multi_vote_labels_dict[tuple(x)] for x in x_test])
 target_predict_mono_multi_proba = np.array([target_predict_mono_multi_proba_dict[tuple(x)] for x in x_test])
+
 class ModelAggregationClassifierTests(unittest.TestCase):
     '''Main class to test model_aggregation_classifier'''
 
@@ -242,12 +243,12 @@ class ModelAggregationClassifierTests(unittest.TestCase):
                 self.assertTrue(model.using_proba)
             else:
                 self.assertFalse(model.using_proba)
-            self.assertTrue(isinstance(model.list_models, list))
-            self.assertEqual(model.list_models, list_model_names)
-            self.assertTrue(isinstance(model.list_real_models[0], ModelGBTClassifier))
-            self.assertTrue(isinstance(model.list_real_models[1], ModelSGDClassifier))
-            self.assertEqual(model.list_models_trained, list_models_trained)
-            self.assertEqual(model.trained, sorted(list_models_trained)[0])
+            self.assertTrue(isinstance(model.sub_models, list))
+            self.assertEqual([sub_model['name'] for sub_model in model.sub_models], list_model_names)
+            self.assertTrue(isinstance(model.sub_models[0]['model'], ModelGBTClassifier))
+            self.assertTrue(isinstance(model.sub_models[1]['model'], ModelSGDClassifier))
+            self.assertEqual([sub_model['init_trained'] for sub_model in model.sub_models], list_models_trained)
+            self.assertEqual(model.trained, sorted([sub_model['init_trained'] for sub_model in model.sub_models])[0])
 
             # We test display_if_gpu_activated and _is_gpu_activated just by calling them
             model.display_if_gpu_activated()
@@ -337,55 +338,6 @@ class ModelAggregationClassifierTests(unittest.TestCase):
             model = ModelAggregationClassifier(model_dir=model_dir, aggregation_function='1234')
         remove_dir(model_dir)
 
-        # if the object aggregation_function is not compatible with the value using_proba
-        with self.assertRaises(ValueError):
-            model = ModelAggregationClassifier(model_dir=model_dir, aggregation_function='majority_vote', using_proba=True)
-        remove_dir(model_dir)
-        with self.assertRaises(ValueError):
-            model = ModelAggregationClassifier(model_dir=model_dir, aggregation_function='proba_argmax', using_proba=False)
-        remove_dir(model_dir)
-        with self.assertRaises(ValueError):
-            model = ModelAggregationClassifier(model_dir=model_dir, aggregation_function='all_predictions', using_proba=True)
-        remove_dir(model_dir)
-        with self.assertRaises(ValueError):
-            model = ModelAggregationClassifier(model_dir=model_dir, aggregation_function='vote_labels', using_proba=True)
-        remove_dir(model_dir)
-
-        # if the object aggregation_function is not compatible with the value multi_label
-        with self.assertRaises(ValueError):
-            model = ModelAggregationClassifier(model_dir=model_dir, aggregation_function='majority_vote', multi_label=True)
-        remove_dir(model_dir)
-        with self.assertRaises(ValueError):
-            model = ModelAggregationClassifier(model_dir=model_dir, aggregation_function='proba_argmax', multi_label=True)
-        remove_dir(model_dir)
-        with self.assertRaises(ValueError):
-            model = ModelAggregationClassifier(model_dir=model_dir, aggregation_function='all_predictions', multi_label=False)
-        remove_dir(model_dir)
-        with self.assertRaises(ValueError):
-            model = ModelAggregationClassifier(model_dir=model_dir, aggregation_function='vote_labels', multi_label=False)
-        remove_dir(model_dir)
-
-        # if aggregation_function object is a Callable and using_proba is None
-        model_get_function = ModelAggregationClassifier(model_dir=model_dir)
-        function_test = model_get_function.majority_vote
-        remove_dir(model_dir)
-        with self.assertRaises(ValueError):
-            model = ModelAggregationClassifier(model_dir=model_dir, using_proba=None, aggregation_function=function_test)
-        remove_dir(model_dir)
-        with self.assertRaises(ValueError):
-            model = ModelAggregationClassifier(model_dir=model_dir, using_proba=None, aggregation_function=lambda predictions: np.sum(predictions, axis=0, dtype=bool).astype(int))
-        remove_dir(model_dir)
-        # if aggregation_function object is a Callable and multi_label is None
-        model_get_function = ModelAggregationClassifier(model_dir=model_dir)
-        function_test = model_get_function.majority_vote
-        remove_dir(model_dir)
-        with self.assertRaises(ValueError):
-            model = ModelAggregationClassifier(model_dir=model_dir, multi_label=None, aggregation_function=function_test)
-        remove_dir(model_dir)
-        with self.assertRaises(ValueError):
-            model = ModelAggregationClassifier(model_dir=model_dir, multi_label=None, aggregation_function=lambda predictions: np.sum(predictions, axis=0, dtype=bool).astype(int))
-        remove_dir(model_dir)
-
         # if the object list_model has other model than model classifier (model_aggregation_classifier is only compatible with model classifier)
         gbt, _, _, _ = self.create_models()
         model_dir_regressor = os.path.join(utils.get_models_path(), 'model_test_123456789_regressor')
@@ -405,25 +357,25 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         remove_dir(gbt.model_dir)
         remove_dir(sgd.model_dir)
 
-    def test02_model_aggregation_classifier_sort_model_type(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._sort_model_type'''
+    def test02_model_aggregation_classifier_manage_sub_models(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._manage_sub_models'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
-        def check_sort_model_type(model, list_models_name):
-            self.assertTrue(isinstance(model.list_real_models[0], ModelGBTClassifier))
-            self.assertTrue(isinstance(model.list_real_models[1], ModelSGDClassifier))
-            self.assertEqual(len(model.list_models), len(list_models))
-            self.assertEqual(model.list_models, list_models_name)
+        def check_manage_sub_models(model, list_models_name):
+            self.assertTrue(isinstance(model.sub_models[0]['model'], ModelGBTClassifier))
+            self.assertTrue(isinstance(model.sub_models[1]['model'], ModelSGDClassifier))
+            self.assertEqual(len(model.sub_models), len(list_models))
+            self.assertEqual([sub_model['name'] for sub_model in model.sub_models], list_models_name)
 
         # list_models = [model, model]
         gbt, sgd, gbt_name, sgd_name = self.create_models()
         list_models = [gbt, sgd]
         list_models_name = [gbt_name, sgd_name]
         model = ModelAggregationClassifier(model_dir=model_dir)
-        model._sort_model_type(list_models)
-        check_sort_model_type(model, list_models_name)
+        model._manage_sub_models(list_models)
+        check_manage_sub_models(model, list_models_name)
         remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model_name]
@@ -431,8 +383,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         list_models = [gbt_name, sgd_name]
         list_models_name = [gbt_name, sgd_name]
         model = ModelAggregationClassifier(model_dir=model_dir)
-        model._sort_model_type(list_models)
-        check_sort_model_type(model, list_models_name)
+        model._manage_sub_models(list_models)
+        check_manage_sub_models(model, list_models_name)
         remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model]
@@ -440,8 +392,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         list_models = [gbt_name, sgd]
         list_models_name = [gbt_name, sgd_name]
         model = ModelAggregationClassifier(model_dir=model_dir)
-        model._sort_model_type(list_models)
-        check_sort_model_type(model, list_models_name)
+        model._manage_sub_models(list_models)
+        check_manage_sub_models(model, list_models_name)
         remove_dir_model(model, model_dir)
 
     def test03_model_aggregation_classifier_check_trained(self):
@@ -478,7 +430,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         check_empty(model)
         gbt.fit(x_train, y_train_int)
         sgd.fit(x_train, y_train_int)
-        model._sort_model_type([gbt, sgd])
+        model._manage_sub_models([gbt, sgd])
         model._check_trained()
         check_not_empty(model, n_classes_int, list_classes_int, dict_classes_int)
         remove_dir_model(model, model_dir)
@@ -489,7 +441,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         check_empty(model)
         gbt.fit(x_train, y_train_str)
         sgd.fit(x_train, y_train_str)
-        model._sort_model_type([gbt, sgd])
+        model._manage_sub_models([gbt, sgd])
         model._check_trained()
         check_not_empty(model, n_classes_str, list_classes_str, dict_classes_str)
         remove_dir_model(model, model_dir)
@@ -498,7 +450,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregationClassifier(model_dir=model_dir)
         check_empty(model)
-        model._sort_model_type([gbt, sgd])
+        model._manage_sub_models([gbt, sgd])
         model._check_trained()
         check_empty(model)
         remove_dir_model(model, model_dir)
@@ -507,7 +459,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         model = ModelAggregationClassifier(model_dir=model_dir)
         check_empty(model)
         sgd.fit(x_train, y_train_int)
-        model._sort_model_type([gbt, sgd])
+        model._manage_sub_models([gbt, sgd])
         model._check_trained()
         check_empty(model)
         remove_dir_model(model, model_dir)
@@ -517,7 +469,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         gbt.fit(x_train, y_train_int)
         sgd.fit(x_train, y_train_str)
         model = ModelAggregationClassifier(model_dir=model_dir)
-        model._sort_model_type([gbt, sgd])
+        model._manage_sub_models([gbt, sgd])
         with self.assertRaises(TypeError):
             model._check_trained()
         remove_dir_model(model, model_dir)
@@ -535,9 +487,9 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         def check_trained(model):
             self.assertTrue(model.trained)
             self.assertEqual(model.nb_fit, 1)
-            for submodel in model.list_real_models:
-                self.assertTrue(submodel.trained)
-                self.assertEqual(submodel.nb_fit, 1)
+            for sub_model in model.sub_models:
+                self.assertTrue(sub_model['model'].trained)
+                self.assertEqual(sub_model['model'].nb_fit, 1)
 
         ############################################
         # mono_label
@@ -1019,18 +971,18 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         set_attributes_in_config = {'package_version', 'model_name', 'model_dir', 'trained', 'nb_fit', 
                                     'list_classes', 'dict_classes', 'x_col', 'y_col', 'multi_label', 
                                     'level_save', 'librairie'}
-        set_attributes_in_config_tot = set_attributes_in_config.union({'list_models', 'using_proba'})
+        set_attributes_in_config_tot = set_attributes_in_config.union({'list_models_name', 'using_proba'})
         self.assertTrue(set_attributes_in_config_tot.issubset(set(configs.keys())))
         self.assertEqual(configs['package_version'], utils.get_package_version())
         self.assertEqual(configs['librairie'], None)
-        for submodel in model.list_real_models:
-            self.assertTrue(os.path.exists(os.path.join(submodel.model_dir, 'configurations.json')))
-            self.assertTrue(os.path.exists(os.path.join(submodel.model_dir, f"{submodel.model_name}.pkl")))
-            with open(os.path.join(submodel.model_dir, 'configurations.json'), 'r', encoding='utf-8') as f:
+        for sub_model in model.sub_models:
+            self.assertTrue(os.path.exists(os.path.join(sub_model['model'].model_dir, 'configurations.json')))
+            self.assertTrue(os.path.exists(os.path.join(sub_model['model'].model_dir, f"{sub_model['model'].model_name}.pkl")))
+            with open(os.path.join(sub_model['model'].model_dir, 'configurations.json'), 'r', encoding='utf-8') as f:
                 configs = json.load(f)
             self.assertTrue(set_attributes_in_config.issubset(set(configs.keys())))
             self.assertEqual(configs['package_version'], utils.get_package_version())
-            remove_dir(os.path.join(models_path, os.path.split(submodel.model_dir)[-1]))
+            remove_dir(os.path.join(models_path, os.path.split(sub_model['model'].model_dir)[-1]))
 
         self.assertTrue(os.path.exists(os.path.join(model_dir, "model_upload_instructions.md")))
         with open(os.path.join(model_dir, "model_upload_instructions.md"), 'r') as read_obj:
@@ -1087,11 +1039,12 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         # Test
         for attribute in ['trained', 'nb_fit', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'list_models', 'using_proba']:
+                          'using_proba']:
             self.assertEqual(getattr(model, attribute), getattr(model_new, attribute))
 
-        for submodel, new_submodel in zip(model.list_real_models, model_new.list_real_models):
-            self.assertTrue(isinstance(submodel, type(new_submodel)))
+        for sub_model, new_sub_model in zip(model.sub_models, model_new.sub_models):
+            self.assertTrue(isinstance(sub_model['model'], type(new_sub_model['model'])))
+            self.assertEqual(sub_model['name'], new_sub_model['name'])
         self.assertEqual(model.aggregation_function.__code__.co_code, model_new.aggregation_function.__code__.co_code)
 
         preds = model.predict(x_test)
@@ -1104,10 +1057,10 @@ class ModelAggregationClassifierTests(unittest.TestCase):
             for proba_value, new_proba_value in zip(pred_proba, new_pred_proba):
                 self.assertAlmostEqual(proba_value, new_proba_value)
 
-        for submodel in model.list_real_models:
-            remove_dir(os.path.join(models_path, os.path.split(submodel.model_dir)[-1]))
-        for submodel in model_new.list_real_models:
-            remove_dir(os.path.join(models_path, os.path.split(submodel.model_dir)[-1]))
+        for sub_model in model.sub_models:
+            remove_dir(os.path.join(models_path, os.path.split(sub_model['model'].model_dir)[-1]))
+        for sub_model in model_new.sub_models:
+            remove_dir(os.path.join(models_path, os.path.split(sub_model['model'].model_dir)[-1]))
         remove_dir(model_dir)
         remove_dir(model_new_dir)
 
@@ -1137,11 +1090,12 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         # Test
         for attribute in ['trained', 'nb_fit', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'list_models', 'using_proba']:
+                          'using_proba']:
             self.assertEqual(getattr(model, attribute), getattr(model_new, attribute))
 
-        for submodel, new_submodel in zip(model.list_real_models, model_new.list_real_models):
-            self.assertTrue(isinstance(submodel, type(new_submodel)))
+        for sub_model, new_sub_model in zip(model.sub_models, model_new.sub_models):
+            self.assertTrue(isinstance(sub_model['model'], type(new_sub_model['model'])))
+            self.assertEqual(sub_model['name'], new_sub_model['name'])
         self.assertEqual(model.aggregation_function.__code__.co_code, model_new.aggregation_function.__code__.co_code)
 
         preds = model.predict(x_test)
@@ -1155,10 +1109,10 @@ class ModelAggregationClassifierTests(unittest.TestCase):
             for proba_value, new_proba_value in zip(pred_proba, new_pred_proba):
                 self.assertAlmostEqual(proba_value, new_proba_value)
 
-        for submodel in model.list_real_models:
-            remove_dir(os.path.join(models_path, os.path.split(submodel.model_dir)[-1]))
-        for submodel in model_new.list_real_models:
-            remove_dir(os.path.join(models_path, os.path.split(submodel.model_dir)[-1]))
+        for sub_model in model.sub_models:
+            remove_dir(os.path.join(models_path, os.path.split(sub_model['model'].model_dir)[-1]))
+        for sub_model in model_new.sub_models:
+            remove_dir(os.path.join(models_path, os.path.split(sub_model['model'].model_dir)[-1]))
         remove_dir(model_dir)
         remove_dir(model_new_dir)
 

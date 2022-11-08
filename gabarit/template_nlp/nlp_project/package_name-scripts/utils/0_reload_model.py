@@ -41,10 +41,10 @@ from {{package_name}}.models_training import (model_tfidf_dense,
                                               model_embedding_lstm_gru_gpu,
                                               model_pytorch_light,
                                               model_pytorch_transformers,
+                                              model_aggregation,
                                               utils_models,
                                               utils_deep_keras,
-                                              utils_deep_torch,
-                                              model_aggregation)
+                                              utils_deep_torch)
 
 # Get logger
 logger = logging.getLogger('{{package_name}}.0_reload_model')

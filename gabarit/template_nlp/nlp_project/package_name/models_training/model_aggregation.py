@@ -23,13 +23,10 @@
 import os
 import json
 import logging
-import dill as pickle
-
 import numpy as np
 import pandas as pd
+import dill as pickle
 from typing import Callable, Union, List
-from types import FunctionType, MethodType
-
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_models
@@ -41,19 +38,15 @@ class ModelAggregation(ModelClass):
     _default_name = 'model_aggregation'
 
     def __init__(self, list_models: Union[list, None] = None, aggregation_function: Union[Callable, str] = 'majority_vote', 
-                 using_proba: Union[bool, None] = None, multi_label: Union[bool, None] = None, **kwargs) -> None:
+                 using_proba: bool = False, **kwargs) -> None:
         '''Initialization of the class (see ModelClass for more arguments)
 
         Kwargs:
             list_models (list) : The list of model to be aggregated
             aggregation_function (Callable or str) : The aggregation function used
             using_proba (bool) : Which object is being aggregated (the probabilities or the predictions).
-            multi_label (bool): If the classification is multi-labels
         Raises:
             ValueError : If the object aggregation_function is a str but not found in the dictionary dict_aggregation_function
-            ValueError : If the object aggregation_function is not compatible with the value of using_proba
-            ValueError : If the object aggregation_function is not compatible with the value of multi_label
-            ValueError : If aggregation_function object is Callable and using_proba or multi_label is None
             ValueError : The multi_label attributes of the aggregated models are inconsistent with multi_label
         '''
         # Init.
@@ -63,70 +56,54 @@ class ModelAggregation(ModelClass):
         self.logger = logging.getLogger(__name__)
 
         self.using_proba = using_proba
-        self.multi_label = multi_label
 
         # Get the aggregation function
         dict_aggregation_function = {'majority_vote': {'function': self.majority_vote, 'using_proba': False, 'multi_label': False},
                                      'proba_argmax': {'function': self.proba_argmax, 'using_proba': True, 'multi_label': False},
                                      'all_predictions': {'function': self.all_predictions, 'using_proba': False, 'multi_label': True},
                                      'vote_labels': {'function': self.vote_labels, 'using_proba': False, 'multi_label': True}}
-        if isinstance(aggregation_function, (FunctionType, MethodType)):
-            if using_proba is None or multi_label is None:
-                raise ValueError(f"When aggregation_function is Callable, using_proba(bool) and multi_label(bool) cannot be None.")
-        elif isinstance(aggregation_function, str):
+
+        if isinstance(aggregation_function, str):
             if aggregation_function not in dict_aggregation_function.keys():
                 raise ValueError(f"The aggregation_function ({aggregation_function}) is not a valid option (must be chosen in {dict_aggregation_function.keys()})")
-            
-            if using_proba is None:
-                self.using_proba = dict_aggregation_function[aggregation_function]['using_proba'] # type: ignore
-            elif using_proba != dict_aggregation_function[aggregation_function]['using_proba']:
-                raise ValueError(f"The aggregation_function ({aggregation_function}) is not compatible with using_proba=({using_proba})")
-            
-            if multi_label is None:
-                self.multi_label = dict_aggregation_function[aggregation_function]['multi_label'] # type: ignore
-            elif multi_label != dict_aggregation_function[aggregation_function]['multi_label']:
-                raise ValueError(f"The aggregation_function ({aggregation_function}) is not compatible with multi_label=({multi_label})")
-            
+            using_proba_from_str: bool = dict_aggregation_function[aggregation_function]['using_proba'] # type: ignore
+            multi_label_from_str:bool = dict_aggregation_function[aggregation_function]['multi_label'] # type: ignore
+            if self.using_proba != using_proba_from_str:
+                self.logger.warning(f"using_proba {self.using_proba} is incompatible with the selected aggregation function '{aggregation_function}'. We force using_proba to {using_proba_from_str}")
+            if self.multi_label != multi_label_from_str:
+                self.logger.warning(f"multi_label {self.multi_label} is incompatible with the selected aggregation function '{aggregation_function}'. We force multi_label to {multi_label_from_str}")
+            self.using_proba = using_proba_from_str
+            self.multi_label = multi_label_from_str
             aggregation_function = dict_aggregation_function[aggregation_function]['function'] # type: ignore
+
         self.aggregation_function = aggregation_function
 
-        # Manage aggregated models
-        self.list_real_models: list = None
-        self.list_models: list = None
-        if list_models is not None:
-            self._sort_model_type(list_models)
-        
-        if self.list_real_models is not None:
-            # Check for multi-labels inconsistencies
-            set_multi_label = {model.multi_label for model in self.list_real_models}
-            if True in set_multi_label and not self.multi_label:
-                raise ValueError(f"The multi_label attributes of the aggregated models are inconsistent with self.multi_label = {self.multi_label}.")
-            # Set list_models_trained
-            self.list_models_trained: List[bool] = [model.trained for model in self.list_real_models]
+        self._manage_sub_models(list_models)
+
+        # Check for multi-labels inconsistencies
+        set_multi_label = {sub_model['model'].multi_label for sub_model in self.sub_models}
+        if True in set_multi_label and not self.multi_label:
+            raise ValueError(f"The multi_label attributes of the aggregated models are inconsistent with self.multi_label = {self.multi_label}.")
 
         self._check_trained()
 
-    def _sort_model_type(self, list_models: list) -> None:
-        '''Populates the self.list_real_models if it is None.
-           Initializes self.list_real_models with each model and self.list_models with each model's name.
+    def _manage_sub_models(self, list_models: list) -> None:
+        '''Populates the self.sub_models list
 
         Args:
             list_models (list): List of models or name of models
         '''
-        if self.list_real_models is None:
-            list_real_models = []
-            new_list_models = []
-            # Get the actual model and its name
-            for model in list_models:
-                if isinstance(model, str):
-                    real_model, _ = utils_models.load_model(model)
-                    new_list_models.append(model)
-                else:
-                    real_model = model
-                    new_list_models.append(os.path.split(model.model_dir)[-1])
-                list_real_models.append(real_model)
-            self.list_real_models = list_real_models
-            self.list_models = new_list_models
+        sub_models = []
+        if list_models is None:
+            list_models = []
+        for model in list_models:
+            if isinstance(model, str):
+                real_model, _ = utils_models.load_model(model)
+                dict_model = {'name': model, 'model': real_model, 'init_trained': real_model.trained}
+            else:
+                dict_model = {'name': os.path.split(model.model_dir)[-1], 'model': model, 'init_trained': model.trained}
+            sub_models.append(dict_model.copy())
+        self.sub_models = sub_models.copy()
 
     def _check_trained(self):
         '''Checks and sets various attributes related to the fitting of underlying models
@@ -135,22 +112,21 @@ class ModelAggregation(ModelClass):
             TypeError : The classes of all the aggregated models are not of the same type
         '''
         # Check fitted
-        if self.list_real_models is not None:
-            models_trained = {model.trained for model in self.list_real_models}
-            if False not in models_trained:
-                self.trained = True
-                self.nb_fit += 1
+        models_trained = {sub_model['model'].trained for sub_model in self.sub_models}
+        if len(models_trained) and False not in models_trained:
+            self.trained = True
+            self.nb_fit += 1
 
-                # Set list_classes
-                self.list_classes = list({label for model in self.list_real_models for label in model.list_classes})
-                list_label_str = [label for label in self.list_classes if isinstance(label, str)]
-                list_label_other = [int(label) for label in self.list_classes if label not in list_label_str]
-                if len(list_label_str) > 0 and len(list_label_other) > 0:
-                    raise TypeError('The classes of all the aggregated models are not of the same type.')
-                self.list_classes.sort()
+            # Set list_classes
+            self.list_classes = list({label for sub_model in self.sub_models for label in sub_model['model'].list_classes})
+            list_label_str = [label for label in self.list_classes if isinstance(label, str)]
+            list_label_other = [int(label) for label in self.list_classes if label not in list_label_str]
+            if len(list_label_str) > 0 and len(list_label_other) > 0:
+                raise TypeError('The classes of all the aggregated models are not of the same type.')
+            self.list_classes.sort()
 
-                # Set dict_classes based on self.list_classes
-                self.dict_classes = {i: col for i, col in enumerate(self.list_classes)}
+            # Set dict_classes based on self.list_classes
+            self.dict_classes = {i: col for i, col in enumerate(self.list_classes)}
 
     def fit(self, x_train, y_train, **kwargs) -> None:
         '''Trains the model
@@ -173,7 +149,8 @@ class ModelAggregation(ModelClass):
             y_train_multi_label = False
 
         # Fit each model
-        for model in self.list_real_models:
+        for sub_model in self.sub_models:
+            model = sub_model['model']
             if not model.trained:
                 if y_train_multi_label and not model.multi_label:
                     raise ValueError(f"Model {model} (model_name: {model.model_name}) needs y_train to be mono-label when fitting")
@@ -213,7 +190,7 @@ class ModelAggregation(ModelClass):
         Returns:
             (np.ndarray): array of shape = [n_samples, nb_model, nb_classes]
         '''
-        array_proba = np.array([self._predict_model_with_full_list_classes(model, x_test, return_proba=True) for model in self.list_real_models])
+        array_proba = np.array([self._predict_model_with_full_list_classes(sub_model['model'], x_test, return_proba=True) for sub_model in self.sub_models])
         array_proba = np.transpose(array_proba, (1, 0, 2))
         return array_proba
 
@@ -229,10 +206,10 @@ class ModelAggregation(ModelClass):
                           multi_label : array of shape = [n_samples, nb_model, n_classes]
         '''
         if self.multi_label:
-            array_predict = np.array([self._predict_model_with_full_list_classes(model, x_test, return_proba=False) for model in self.list_real_models])
+            array_predict = np.array([self._predict_model_with_full_list_classes(sub_model['model'], x_test, return_proba=False) for sub_model in self.sub_models])
             array_predict = np.transpose(array_predict, (1, 0, 2))
         else:
-            array_predict = np.array([model.predict(x_test) for model in self.list_real_models])
+            array_predict = np.array([sub_model['model'].predict(x_test) for sub_model in self.sub_models])
             array_predict = np.transpose(array_predict, (1, 0))
         return array_predict
 
@@ -336,11 +313,11 @@ class ModelAggregation(ModelClass):
         if json_data is None:
             json_data = {}
         # Save each trained and unsaved model
-        for i, model in enumerate(self.list_real_models):
-            if not self.list_models_trained[i] and model.trained:
-                model.save()
+        for sub_model in self.sub_models:
+            if not sub_model['init_trained'] and sub_model['model'].trained:
+                sub_model['model'].save()
 
-        json_data['list_models'] = self.list_models.copy()
+        json_data['list_models_name'] = [sub_model['name'] for sub_model in self.sub_models]
         json_data['using_proba'] = self.using_proba
 
         aggregation_function = self.aggregation_function
@@ -354,12 +331,12 @@ class ModelAggregation(ModelClass):
                 pickle.dump(self.aggregation_function, f)
 
         # Save
-        list_real_models = self.list_real_models
-        delattr(self, "list_real_models")
+        sub_models = self.sub_models
+        delattr(self, "sub_models")
         delattr(self, "aggregation_function")
         super().save(json_data=json_data)
         setattr(self, "aggregation_function", aggregation_function)
-        setattr(self, "list_real_models", list_real_models)
+        setattr(self, "sub_models", sub_models)
 
         # Add message in model_upload_instructions.md
         md_path = os.path.join(self.model_dir, f"model_upload_instructions.md")
@@ -383,7 +360,7 @@ class ModelAggregation(ModelClass):
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model aggregation from its configuration and "standalones" files
-            Reloads list model from "list_models" files
+           Reloads the sub_models from their files
 
         Kwargs:
             configuration_path (str): Path to configuration file
@@ -430,10 +407,12 @@ class ModelAggregation(ModelClass):
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['x_col', 'y_col',
                           'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'list_models', 'using_proba']:
+                          'using_proba']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
+        
+        list_models_name = configs.get('list_models_name', [])
+        self._manage_sub_models(list_models_name)
 
-        self._sort_model_type(self.list_models)
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

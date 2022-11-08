@@ -63,51 +63,41 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
 
         # Manage aggregated models
         self.aggregation_function = aggregation_function
-        self.list_real_models: list = None
-        self.list_models: list = None
-        if list_models is not None:
-            self._sort_model_type(list_models)
+
+        self._manage_sub_models(list_models)
 
         # Error: The classifier and regressor models cannot be combined in list_models
-        if self.list_real_models is not None:
-            if False in [isinstance(model, ModelRegressorMixin) for model in self.list_real_models]:
-                raise ValueError(f"model_aggregation_regressor only accepts regressor models")
-            # set list_models_trained
-            self.list_models_trained: List[bool] = [model.trained for model in self.list_real_models]
+        if False in [isinstance(sub_model['model'], ModelRegressorMixin) for sub_model in self.sub_models]:
+            raise ValueError(f"model_aggregation_classifier only accepts classifier models")
 
         self._check_trained()
 
-    def _sort_model_type(self, list_models: list) -> None:
-        '''Populates the self.list_real_models if it is None.
-           Initializes self.list_real_models with each model and self.list_models with each model's name.
+    def _manage_sub_models(self, list_models: list) -> None:
+        '''Populates the self.sub_models list
 
         Args:
-            list_models (list): list of models or name of models
+            list_models (list): List of models or name of models
         '''
-        if self.list_real_models is None:
-            list_real_models = []
-            new_list_models = []
-            # Get the actual model and its name
-            for model in list_models:
-                if isinstance(model, str):
-                    real_model, _ = utils_models.load_model(model)
-                    new_list_models.append(model)
-                else:
-                    real_model = model
-                    new_list_models.append(os.path.split(model.model_dir)[-1])
-                list_real_models.append(real_model)
-            self.list_real_models = list_real_models
-            self.list_models = new_list_models
+        sub_models = []
+        if list_models is None:
+            list_models = []
+        for model in list_models:
+            if isinstance(model, str):
+                real_model, _ = utils_models.load_model(model)
+                dict_model = {'name': model, 'model': real_model, 'init_trained': real_model.trained}
+            else:
+                dict_model = {'name': os.path.split(model.model_dir)[-1], 'model': model, 'init_trained': model.trained}
+            sub_models.append(dict_model.copy())
+        self.sub_models = sub_models.copy()
 
     def _check_trained(self):
         '''Checks and sets various attributes related to the fitting of underlying models
         '''
         # Check fitted
-        if self.list_real_models is not None:
-            models_trained = {model.trained for model in self.list_real_models}
-            if False not in models_trained:
-                self.trained = True
-                self.nb_fit += 1
+        models_trained = {sub_model['model'].trained for sub_model in self.sub_models}
+        if len(models_trained) and False not in models_trained:
+            self.trained = True
+            self.nb_fit += 1
 
     def fit(self, x_train, y_train, **kwargs) -> None:
         '''Trains the model
@@ -121,9 +111,9 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
         x_train, y_train = self._check_input_format(x_train, y_train, fit_function=True)
 
         # Fit each model
-        for model in self.list_real_models:
-            if not model.trained:
-                model.fit(x_train, y_train, **kwargs)
+        for sub_model in self.sub_models:
+            if not sub_model['model'].trained:
+                sub_model['model'].fit(x_train, y_train, **kwargs)
         self._check_trained()
 
     @utils.trained_needed
@@ -163,7 +153,7 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
         Returns:
             (np.ndarray): array of shape = [n_samples, nb_model]
         '''
-        array_predict = np.array([model.predict(x_test) for model in self.list_real_models])
+        array_predict = np.array([sub_model['model'].predict(x_test) for sub_model in self.sub_models])
         array_predict = np.transpose(array_predict, (1, 0))
         return array_predict
 
@@ -195,12 +185,13 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
         '''
         if json_data is None:
             json_data = {}
-        # Save each trained and unsaved model
-        for tuple_trained_model in zip(self.list_models_trained, self.list_real_models):
-            if (not tuple_trained_model[0]) and tuple_trained_model[1].trained:
-                tuple_trained_model[1].save()
 
-        json_data['list_models'] = self.list_models.copy()
+        # Save each trained and unsaved model
+        for sub_model in self.sub_models:
+            if not sub_model['init_trained'] and sub_model['model'].trained:
+                sub_model['model'].save()
+
+        json_data['list_models_name'] = [sub_model['name'] for sub_model in self.sub_models]
 
         aggregation_function = self.aggregation_function
 
@@ -213,12 +204,12 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
                 pickle.dump(self.aggregation_function, f)
 
         # Save
-        list_real_models = self.list_real_models
-        delattr(self, "list_real_models")
+        sub_models = self.sub_models
+        delattr(self, "sub_models")
         delattr(self, "aggregation_function")
         super().save(json_data=json_data)
         setattr(self, "aggregation_function", aggregation_function)
-        setattr(self, "list_real_models", list_real_models)
+        setattr(self, "sub_models", sub_models)
 
         # Add message in model_upload_instructions.md
         md_path = os.path.join(self.model_dir, f"model_upload_instructions.md")
@@ -290,10 +281,11 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
         self.nb_fit = configs.get('nb_fit', 1)  # Consider one unique fit by default
         self.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
-        for attribute in ['x_col', 'y_col', 'level_save', 'list_models']:
+        for attribute in ['x_col', 'y_col', 'level_save']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
-        self._sort_model_type(self.list_models)
+        list_models_name = configs.get('list_models_name', [])
+        self._manage_sub_models(list_models_name)
 
 
 if __name__ == '__main__':

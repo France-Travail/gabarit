@@ -42,8 +42,8 @@ def remove_dir(path):
 models_path = utils.get_models_path()
 
 def remove_dir_model(model, model_dir):
-    for submodel in model.list_real_models:
-        remove_dir(os.path.join(models_path, os.path.split(submodel.model_dir)[-1]))
+    for sub_model in model.sub_models:
+        remove_dir(os.path.join(models_path, os.path.split(sub_model['model'].model_dir)[-1]))
     remove_dir(model_dir)
 
 class MockModel(ModelRegressorMixin):
@@ -122,12 +122,12 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         def test_init_partial(model, model_name, model_dir, list_model_names, list_models_trained):
             self.assertTrue(os.path.isdir(model_dir))
             self.assertEqual(model.model_name, model_name)
-            self.assertTrue(isinstance(model.list_models, list))
-            self.assertEqual(model.list_models, list_model_names)
-            self.assertTrue(isinstance(model.list_real_models[0], ModelGBTRegressor))
-            self.assertTrue(isinstance(model.list_real_models[1], ModelSGDRegressor))
-            self.assertEqual(model.list_models_trained, list_models_trained)
-            self.assertEqual(model.trained, sorted(list_models_trained)[0])
+            self.assertTrue(isinstance(model.sub_models, list))
+            self.assertEqual([sub_model['name'] for sub_model in model.sub_models], list_model_names)
+            self.assertTrue(isinstance(model.sub_models[0]['model'], ModelGBTRegressor))
+            self.assertTrue(isinstance(model.sub_models[1]['model'], ModelSGDRegressor))
+            self.assertEqual([sub_model['init_trained'] for sub_model in model.sub_models], list_models_trained)
+            self.assertEqual(model.trained, sorted([sub_model['init_trained'] for sub_model in model.sub_models])[0])
 
             # We test display_if_gpu_activated and _is_gpu_activated just by calling them
             model.display_if_gpu_activated()
@@ -210,25 +210,25 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         remove_dir(sgd.model_dir)
         remove_dir(sgd_classifier.model_dir)
 
-    def test02_model_aggregation_regressor_sort_model_type(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor._sort_model_type'''
+    def test02_model_aggregation_regressor_manage_sub_models(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor._manage_sub_models'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
-        def check_sort_model_type(model, list_models_name):
-            self.assertTrue(isinstance(model.list_real_models[0], ModelGBTRegressor))
-            self.assertTrue(isinstance(model.list_real_models[1], ModelSGDRegressor))
-            self.assertEqual(len(model.list_models), len(list_models))
-            self.assertEqual(model.list_models, list_models_name)
+        def check_manage_sub_models(model, list_models_name):
+            self.assertTrue(isinstance(model.sub_models[0]['model'], ModelGBTRegressor))
+            self.assertTrue(isinstance(model.sub_models[1]['model'], ModelSGDRegressor))
+            self.assertEqual(len(model.sub_models), len(list_models))
+            self.assertEqual([sub_model['name'] for sub_model in model.sub_models], list_models_name)
 
         # list_models = [model, model]
         gbt, sgd, gbt_name, sgd_name = self.create_models()
         list_models = [gbt, sgd]
         list_models_name = [gbt_name, sgd_name]
         model = ModelAggregationRegressor(model_dir=model_dir)
-        model._sort_model_type(list_models)
-        check_sort_model_type(model, list_models_name)
+        model._manage_sub_models(list_models)
+        check_manage_sub_models(model, list_models_name)
         remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model_name]
@@ -236,8 +236,8 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         list_models = [gbt_name, sgd_name]
         list_models_name = [gbt_name, sgd_name]
         model = ModelAggregationRegressor(model_dir=model_dir)
-        model._sort_model_type(list_models)
-        check_sort_model_type(model, list_models_name)
+        model._manage_sub_models(list_models)
+        check_manage_sub_models(model, list_models_name)
         remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model]
@@ -245,8 +245,8 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         list_models = [gbt_name, sgd]
         list_models_name = [gbt_name, sgd_name]
         model = ModelAggregationRegressor(model_dir=model_dir)
-        model._sort_model_type(list_models)
-        check_sort_model_type(model, list_models_name)
+        model._manage_sub_models(list_models)
+        check_manage_sub_models(model, list_models_name)
         remove_dir_model(model, model_dir)
 
     def test03_model_aggregation_regressor_check_trained(self):
@@ -265,7 +265,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertFalse(model.trained)
         gbt.fit(x_train, y_train_int)
         sgd.fit(x_train, y_train_int)
-        model._sort_model_type([gbt, sgd])
+        model._manage_sub_models([gbt, sgd])
         model._check_trained()
         self.assertTrue(model.trained)
         remove_dir_model(model, model_dir)
@@ -274,7 +274,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregationRegressor(model_dir=model_dir)
         self.assertFalse(model.trained)
-        model._sort_model_type([gbt, sgd])
+        model._manage_sub_models([gbt, sgd])
         model._check_trained()
         self.assertFalse(model.trained)
         remove_dir_model(model, model_dir)
@@ -283,7 +283,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         model = ModelAggregationRegressor(model_dir=model_dir)
         self.assertFalse(model.trained)
         sgd.fit(x_train, y_train_int)
-        model._sort_model_type([gbt, sgd])
+        model._manage_sub_models([gbt, sgd])
         model._check_trained()
         self.assertFalse(model.trained)
         remove_dir_model(model, model_dir)
@@ -303,9 +303,9 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         def check_trained(model):
             self.assertTrue(model.trained)
             self.assertEqual(model.nb_fit, 1)
-            for submodel in model.list_real_models:
-                self.assertTrue(submodel.trained)
-                self.assertEqual(submodel.nb_fit, 1)
+            for sub_model in model.sub_models:
+                self.assertTrue(sub_model['model'].trained)
+                self.assertEqual(sub_model['model'].nb_fit, 1)
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
@@ -483,15 +483,15 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertEqual(configs['test'], 10)
         set_attributes_in_config = {'package_version', 'model_name', 'model_dir', 'trained', 'nb_fit', 
                                     'x_col', 'y_col', 'level_save', 'librairie'}
-        set_attributes_in_config_tot = set_attributes_in_config.union({'list_models'})
+        set_attributes_in_config_tot = set_attributes_in_config.union({'list_models_name'})
         self.assertTrue(set_attributes_in_config_tot.issubset(set(configs.keys())))
         self.assertEqual(configs['package_version'], utils.get_package_version())
         self.assertEqual(configs['librairie'], None)
 
-        for submodel in model.list_real_models:
-            self.assertTrue(os.path.exists(os.path.join(submodel.model_dir, 'configurations.json')))
-            self.assertTrue(os.path.exists(os.path.join(submodel.model_dir, f"{submodel.model_name}.pkl")))
-            with open(os.path.join(submodel.model_dir, 'configurations.json'), 'r', encoding='utf-8') as f:
+        for sub_model in model.sub_models:
+            self.assertTrue(os.path.exists(os.path.join(sub_model['model'].model_dir, 'configurations.json')))
+            self.assertTrue(os.path.exists(os.path.join(sub_model['model'].model_dir, f"{sub_model['model'].model_name}.pkl")))
+            with open(os.path.join(sub_model['model'].model_dir, 'configurations.json'), 'r', encoding='utf-8') as f:
                 configs = json.load(f)
             self.assertTrue(set_attributes_in_config.issubset(set(configs.keys())))
             self.assertEqual(configs['package_version'], utils.get_package_version())
@@ -551,9 +551,9 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertEqual(model.x_col, model_new.x_col)
         self.assertEqual(model.y_col, model_new.y_col)
         self.assertEqual(model.level_save, model_new.level_save)
-        self.assertEqual(model.list_models, model_new.list_models)
-        self.assertTrue(isinstance(model.list_real_models[0], type(model_new.list_real_models[0])))
-        self.assertTrue(isinstance(model.list_real_models[1], type(model_new.list_real_models[1])))
+        self.assertEqual([sub_model['name'] for sub_model in model.sub_models], [sub_model['name'] for sub_model in model_new.sub_models])
+        self.assertTrue(isinstance(model.sub_models[0]['model'], type(model_new.sub_models[0]['model'])))
+        self.assertTrue(isinstance(model.sub_models[1]['model'], type(model_new.sub_models[1]['model'])))
         self.assertEqual(model.aggregation_function.__code__.co_code, model_new.aggregation_function.__code__.co_code)
         preds = model.predict(x_test)
         new_preds = model_new.predict(x_test)
@@ -597,6 +597,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
             model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path=aggregation_function_path)
         remove_dir(model_new.model_dir)
         remove_dir(model_new_dir)
+
 
 # Perform tests
 if __name__ == '__main__':
