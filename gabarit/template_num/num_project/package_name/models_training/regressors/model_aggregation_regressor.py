@@ -130,7 +130,7 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
         '''
         if return_proba:
             raise ValueError(f"Models of the type {self.model_type} can't handle probabilities")
-        preds = self._get_predictions(x_test, **kwargs)
+        preds = self._get_predictions_sub_models(x_test, **kwargs)
         return np.array([self.aggregation_function(array) for array in preds]) # type: ignore
 
     @utils.trained_needed
@@ -145,7 +145,7 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
         raise ValueError(f"Models of type regressor do not implement the method predict_proba")
 
     @utils.trained_needed
-    def _get_predictions(self, x_test, **kwargs) -> np.ndarray:
+    def _get_predictions_sub_models(self, x_test, **kwargs) -> np.ndarray:
         '''Recover the predictions of each model being aggregated
 
         Args:

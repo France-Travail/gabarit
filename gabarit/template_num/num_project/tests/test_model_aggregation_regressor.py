@@ -398,13 +398,13 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         remove_dir_model(model, model_dir)
 
     def test07_model_aggregation_regressor_get_predictions(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor._get_predictions'''
+        '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor._get_predictions_sub_models'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
         model = ModelAggregationRegressor(model_dir=model_dir, list_models=list_mock_model)
-        preds = model._get_predictions(x_test)
+        preds = model._get_predictions_sub_models(x_test)
         self.assertTrue(isinstance(preds, np.ndarray))
         self.assertEqual(target_get_predictions.shape, preds.shape)
         for i in range(target_get_predictions.shape[0]):
@@ -415,7 +415,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         # Model needs to be fitted
         model = ModelAggregationRegressor(model_dir=model_dir)
         with self.assertRaises(AttributeError):
-            model._get_predictions('test')
+            model._get_predictions_sub_models('test')
         remove_dir(model_dir)
 
     def test08_model_aggregation_regressor_median_predict(self):

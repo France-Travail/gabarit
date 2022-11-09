@@ -71,22 +71,22 @@ list_dict_predictions = [dict_predictions_1, dict_predictions_2, dict_prediction
 # Predictions for the mock multi_label models
 dict_predictions_multi_1 = {"ceci est un test": np.array([0, 1]), "pas cela": np.array([0, 0]), 
                             "cela non plus": np.array([0, 0]), "ici test": np.array([1, 0]), "là, rien!": np.array([0, 0])}
-dict_predictions_multi_2 = {"ceci est un test": np.array([0, 1]), "pas cela": np.array([0, 1]), "cela non plus": np.array([0, 0]), 
-                            "ici test": np.array([1, 0]), "là, rien!": np.array([0, 0])}
+dict_predictions_multi_2 = {"ceci est un test": np.array([1, 0]), "pas cela": np.array([1, 0]), "cela non plus": np.array([0, 0]), 
+                            "ici test": np.array([0, 1]), "là, rien!": np.array([0, 0])}
 dict_predictions_multi_3 = {"ceci est un test": np.array([1, 1, 0]), "pas cela": np.array([1, 0, 0]), 
                             "cela non plus": np.array([0, 0, 0]), "ici test": np.array([1, 0, 0]), "là, rien!": np.array([0, 0, 0])}
-dict_predictions_multi_4 = {"ceci est un test": np.array([1, 1, 1]), "pas cela": np.array([1, 0, 0]), 
-                            "cela non plus": np.array([0, 0, 0]), "ici test": np.array([1, 0, 0]), "là, rien!": np.array([0, 0, 0])}
+dict_predictions_multi_4 = {"ceci est un test": np.array([1, 1, 1]), "pas cela": np.array([0, 1, 0]), 
+                            "cela non plus": np.array([0, 0, 0]), "ici test": np.array([0, 1, 0]), "là, rien!": np.array([0, 0, 0])}
 
 # Probabilities for the mock models
 dict_predictions_proba_1 = {"ceci est un test": np.array([0.7, 0.3]), "pas cela": np.array([0.6, 0.4]), 
                             "cela non plus": np.array([0.2, 0.8]), "ici test": np.array([0.9, 0.1]), "là, rien!": np.array([0.1, 0.9])}
-dict_predictions_proba_2 = {"ceci est un test": np.array([0.3, 0.7]), "pas cela": np.array([0.1, 0.9]), 
-                            "cela non plus": np.array([0.6, 0.4]), "ici test": np.array([0.9, 0.1]), "là, rien!": np.array([0.1, 0.9])}
+dict_predictions_proba_2 = {"ceci est un test": np.array([0.7, 0.3]), "pas cela": np.array([0.9, 0.1]), 
+                            "cela non plus": np.array([0.4, 0.6]), "ici test": np.array([0.1, 0.9]), "là, rien!": np.array([0.9, 0.1])}
 dict_predictions_proba_3 = {"ceci est un test": np.array([0.4, 0.25, 0.35]), "pas cela": np.array([0.4, 0.25, 0.35]), 
                             "cela non plus": np.array([0.25, 0.4, 0.35]), "ici test": np.array([0.4, 0.25, 0.35]), "là, rien!": np.array([0.3, 0.25, 0.45])}
-dict_predictions_proba_4 = {"ceci est un test": np.array([0.1, 0.5, 0.4]), "pas cela": np.array([0.25, 0.4, 0.35]), 
-                            "cela non plus": np.array([0.25, 0.3, 0.45]), "ici test": np.array([0.1, 0.4, 0.5]), "là, rien!": np.array([0.4, 0.25, 0.35])}
+dict_predictions_proba_4 = {"ceci est un test": np.array([0.5, 0.1, 0.4]), "pas cela": np.array([0.4, 0.25, 0.35]), 
+                            "cela non plus": np.array([0.3, 0.25, 0.45]), "ici test": np.array([0.4, 0.1, 0.5]), "là, rien!": np.array([0.25, 0.4, 0.35])}
 dict_predictions_proba_5 = {"ceci est un test": np.array([0.1, 0.3, 0.5, 0.1]), "pas cela": np.array([0.1, 0.5, 0.3, 0.1]), 
                             "cela non plus": np.array([0.1, 0.3, 0.1, 0.5]), "ici test": np.array([0.1, 0.3, 0.5, 0.1]), "là, rien!": np.array([0.5, 0.3, 0.1, 0.1])}
 
@@ -158,17 +158,17 @@ target_predict_mono_vote_labels = np.array([target_predict_mono_vote_labels_dict
 
 # Instanciation of the mock mono_label models
 mock_model_mono_1 = MockModel(dict_predictions_1, dict_predictions_proba_1, 'model_mono_1', False, [0, 1])
-mock_model_mono_2 = MockModel(dict_predictions_2, dict_predictions_proba_2, 'model_mono_2', False, [0, 1])
+mock_model_mono_2 = MockModel(dict_predictions_2, dict_predictions_proba_2, 'model_mono_2', False, [1, 0])
 mock_model_mono_3 = MockModel(dict_predictions_3, dict_predictions_proba_3, 'model_mono_3', False, [1, 2, 4])
-mock_model_mono_4 = MockModel(dict_predictions_4, dict_predictions_proba_4, 'model_mono_4', False, [1, 2, 3])
+mock_model_mono_4 = MockModel(dict_predictions_4, dict_predictions_proba_4, 'model_mono_4', False, [2, 1, 3])
 mock_model_mono_5 = MockModel(dict_predictions_5, dict_predictions_proba_5, 'model_mono_5', False, [1, 2, 3, 4])
 list_models_mono = [mock_model_mono_1, mock_model_mono_2, mock_model_mono_3, mock_model_mono_4, mock_model_mono_5]
 
 # Instanciation of the mock multi_label models
 mock_model_multi_1 = MockModel(dict_predictions_multi_1, dict_predictions_proba_1, 'model_multi_1', True, [0, 1])
-mock_model_multi_2 = MockModel(dict_predictions_multi_2, dict_predictions_proba_2, 'model_multi_2', True, [0, 1])
+mock_model_multi_2 = MockModel(dict_predictions_multi_2, dict_predictions_proba_2, 'model_multi_2', True, [1, 0])
 mock_model_multi_3 = MockModel(dict_predictions_multi_3, dict_predictions_proba_3, 'model_multi_3', True, [1, 2, 4])
-mock_model_multi_4 = MockModel(dict_predictions_multi_4, dict_predictions_proba_4, 'model_multi_4', True, [1, 2, 3])
+mock_model_multi_4 = MockModel(dict_predictions_multi_4, dict_predictions_proba_4, 'model_multi_4', True, [2, 1, 3])
 list_models_multi = [mock_model_multi_1, mock_model_multi_2, mock_model_multi_3, mock_model_multi_4]
 
 # Definitions for a mixture of mono/multi-labels models
@@ -674,14 +674,14 @@ class Modelaggregation(unittest.TestCase):
             model.predict('test')
         remove_dir_model(model, model_dir)
 
-    def test06_model_aggregation_get_proba(self):
-        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation._get_proba'''
+    def test06_model_aggregation_get_probas_sub_models(self):
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation._get_probas_sub_models'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
         model = ModelAggregation(model_dir=model_dir, list_models=list_models_mono)
-        probas = model._get_probas(x_test)
+        probas = model._get_probas_sub_models(x_test)
         self.assertTrue(isinstance(probas, np.ndarray))
         self.assertEqual(target_get_proba_mono.shape, probas.shape)
         for i in range(len(x_test)):
@@ -693,18 +693,18 @@ class Modelaggregation(unittest.TestCase):
         # Model needs to be fitted
         model = ModelAggregation(model_dir=model_dir)
         with self.assertRaises(AttributeError):
-            model._get_probas('test')
+            model._get_probas_sub_models('test')
         remove_dir(model_dir)
 
-    def test07_model_aggregation_get_predictions(self):
-        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation._get_predictions'''
+    def test07_model_aggregation_get_predictions_sub_models(self):
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation._get_predictions_sub_models'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
         # mono_label
         model = ModelAggregation(model_dir=model_dir, list_models=list_models_mono)
-        preds = model._get_predictions(x_test)
+        preds = model._get_predictions_sub_models(x_test)
         self.assertTrue(isinstance(preds, np.ndarray))
         self.assertEqual(target_get_predictions_mono.shape, preds.shape)
         for i in range(len(x_test)):
@@ -714,7 +714,7 @@ class Modelaggregation(unittest.TestCase):
 
         # multi_label
         model = ModelAggregation(model_dir=model_dir, list_models=list_models_multi, aggregation_function='all_predictions')
-        preds = model._get_predictions(x_test)
+        preds = model._get_predictions_sub_models(x_test)
         self.assertTrue(isinstance(preds, np.ndarray))
         self.assertEqual(target_get_predictions_multi.shape, preds.shape)
         for i in range(len(x_test)):
@@ -726,7 +726,7 @@ class Modelaggregation(unittest.TestCase):
         # Model needs to be fitted
         model = ModelAggregation(model_dir=model_dir)
         with self.assertRaises(AttributeError):
-            model._get_predictions('test')
+            model._get_predictions_sub_models('test')
         remove_dir(model_dir)
 
     def test08_model_aggregation_predict_proba(self):

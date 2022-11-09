@@ -180,14 +180,15 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
         # We decide whether to rely on each model's probas or their prediction
         if return_proba:
             return self.predict_proba(x_test)
-        elif self.using_proba:
-            preds = self._get_probas(x_test, **kwargs)
         else:
-            preds = self._get_predictions(x_test, **kwargs)
-        return np.array([self.aggregation_function(array) for array in preds]) # type: ignore
+            if self.using_proba:
+                preds = self._get_probas_sub_models(x_test, **kwargs)
+            else:
+                preds = self._get_predictions_sub_models(x_test, **kwargs)
+            return np.array([self.aggregation_function(array) for array in preds]) # type: ignore
 
     @utils.trained_needed
-    def _get_probas(self, x_test, **kwargs) -> np.ndarray:
+    def _get_probas_sub_models(self, x_test, **kwargs) -> np.ndarray:
         '''Recover the probabilities of each model being aggregated
 
         Args:
@@ -200,7 +201,7 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
         return array_proba
 
     @utils.trained_needed
-    def _get_predictions(self, x_test, **kwargs) -> np.ndarray:
+    def _get_predictions_sub_models(self, x_test, **kwargs) -> np.ndarray:
         '''Recover the predictions of each model being aggregated
 
         Args:
@@ -226,7 +227,7 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
         Returns:
             (np.ndarray): array of shape = [n_samples, n_classes]
         '''
-        probas = self._get_probas(x_test, **kwargs)
+        probas = self._get_probas_sub_models(x_test, **kwargs)
         # The probas of all models are averaged
         return np.sum(probas, axis=1) / probas.shape[1]
 
