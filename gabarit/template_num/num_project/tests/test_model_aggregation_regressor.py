@@ -470,7 +470,6 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
-        model_path = utils.get_models_path()
         gbt, sgd, gbt_name, sgd_name = self.create_models()
         model = ModelAggregationRegressor(model_dir=model_dir, list_models=[gbt, sgd])
         model.save(json_data={'test': 10})
@@ -502,6 +501,44 @@ class ModelAggregationRegressorTests(unittest.TestCase):
             self.assertEqual(text[0:20], "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that"[0:20])
         remove_dir_model(model, model_dir)
 
+        # Same thing with a local function
+        # This function is a copy of median_predict function
+        def function_test(predictions):
+            return np.median(predictions)
+
+        gbt, sgd, gbt_name, sgd_name = self.create_models()
+        model = ModelAggregationRegressor(model_dir=model_dir, list_models=[gbt, sgd], aggregation_function=function_test)
+        model.save(json_data={'test': 10})
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"aggregation_function.pkl")))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"{model.model_name}.pkl")))
+
+        with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='utf-8') as f:
+            configs = json.load(f)
+        self.assertEqual(configs['test'], 10)
+        set_attributes_in_config = {'package_version', 'model_name', 'model_dir', 'trained', 'nb_fit', 
+                                    'x_col', 'y_col', 'level_save', 'librairie'}
+        set_attributes_in_config_tot = set_attributes_in_config.union({'list_models_name'})
+        self.assertTrue(set_attributes_in_config_tot.issubset(set(configs.keys())))
+        self.assertEqual(configs['package_version'], utils.get_package_version())
+        self.assertEqual(configs['librairie'], None)
+
+        for sub_model in model.sub_models:
+            self.assertTrue(os.path.exists(os.path.join(sub_model['model'].model_dir, 'configurations.json')))
+            self.assertTrue(os.path.exists(os.path.join(sub_model['model'].model_dir, f"{sub_model['model'].model_name}.pkl")))
+            with open(os.path.join(sub_model['model'].model_dir, 'configurations.json'), 'r', encoding='utf-8') as f:
+                configs = json.load(f)
+            self.assertTrue(set_attributes_in_config.issubset(set(configs.keys())))
+            self.assertEqual(configs['package_version'], utils.get_package_version())
+
+        self.assertTrue(os.path.exists(os.path.join(model_dir, "model_upload_instructions.md")))
+        with open(os.path.join(model_dir, "model_upload_instructions.md"), 'r') as read_obj:
+            text = read_obj.read()
+            self.assertEqual(text[0:20], "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that"[0:20])
+        remove_dir_model(model, model_dir)
+
+
+
     def test11_model_aggregation_prepend_line(self):
         '''Test of {{package_name}}.models_training.model_aggregation_regressor.ModelAggregationRegressor.prepend_line'''
 
@@ -514,7 +551,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
             f.write('toto')
         with open(path, 'r') as f:
             self.assertTrue(f.read() == 'toto')
-        model.prepend_line(path, 'titi')
+        model.prepend_line(path, 'titi\n')
         with open(path, 'r') as f:
             self.assertTrue(f.read() == 'titi\ntoto')
         remove_dir(model_dir)

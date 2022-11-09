@@ -26,8 +26,7 @@ import logging
 import numpy as np
 import pandas as pd
 import dill as pickle
-from typing import Callable, Union, List
-from types import FunctionType, MethodType
+from typing import Callable, Union, Tuple
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_models
@@ -49,7 +48,8 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
             using_proba (bool) : Which object is being aggregated (the probabilities or the predictions).
         Raises:
             ValueError : If the object aggregation_function is a str but not found in the dictionary dict_aggregation_function
-            ValueError : If the object list_model has other model than model classifier (model_aggregation_classifier is only compatible with model classifier)
+            ValueError : If the object aggregation_function is incompatible with multi_label
+            ValueError : All the aggregated sub_models have not the same multi_label attributes
             ValueError : The multi_label attributes of the aggregated models are inconsistent with multi_label
         '''
         # Init.
@@ -73,31 +73,35 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
             if self.using_proba != using_proba_from_str:
                 self.logger.warning(f"using_proba {self.using_proba} is incompatible with the selected aggregation function '{aggregation_function}'. We force using_proba to {using_proba_from_str}")
             if self.multi_label != multi_label_from_str:
-                self.logger.warning(f"multi_label {self.multi_label} is incompatible with the selected aggregation function '{aggregation_function}'. We force multi_label to {multi_label_from_str}")
+                raise ValueError(f"multi_label {self.multi_label} is incompatible with the selected aggregation function '{aggregation_function}'.")
             self.using_proba = using_proba_from_str
-            self.multi_label = multi_label_from_str
             aggregation_function = dict_aggregation_function[aggregation_function]['function'] # type: ignore
 
         # Manage aggregated models
         self.aggregation_function = aggregation_function
         
-        self._manage_sub_models(list_models)
+        sub_models = self._manage_sub_models(list_models)
+        self.sub_models = sub_models
 
         if False in [isinstance(sub_model['model'], ModelClassifierMixin) for sub_model in self.sub_models]:
             raise ValueError(f"model_aggregation_classifier only accepts classifier models")
 
         # Check for multi-labels inconsistencies
         set_multi_label = {sub_model['model'].multi_label for sub_model in self.sub_models}
-        if True in set_multi_label and not self.multi_label:
+        if len(set_multi_label) > 1:
+            raise ValueError(f"All the aggregated sub_models have not the same multi_label attribute")
+        if len(set_multi_label.union({self.multi_label})) > 1:
             raise ValueError(f"The multi_label attributes of the aggregated models are inconsistent with self.multi_label = {self.multi_label}.")
 
-        self._check_trained()
+        self.trained, self.list_classes, self.dict_classes = self._check_trained()
 
-    def _manage_sub_models(self, list_models: list) -> None:
+    def _manage_sub_models(self, list_models: list) -> list:
         '''Populates the self.sub_models list
 
         Args:
             list_models (list): List of models or name of models
+        Returns:
+            A list of dictionaries containing all the information on the sub models 
         '''
         sub_models = []
         if list_models is None:
@@ -109,30 +113,29 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
             else:
                 dict_model = {'name': os.path.split(model.model_dir)[-1], 'model': model, 'init_trained': model.trained}
             sub_models.append(dict_model.copy())
-        self.sub_models = sub_models.copy()
+        return sub_models.copy()
 
-    def _check_trained(self):
+    def _check_trained(self) -> Tuple[bool, list, dict]:
         '''Checks and sets various attributes related to the fitting of underlying models
-
-        Raises:
-            TypeError : The classes of all the aggregated models are not of the same type
+        Returns:
+            If the model is trained, the list of classes and the corresponding dict_classes
         '''
         # Check fitted
+        list_classes = []
+        dict_classes = {}
+        trained = False
         models_trained = {sub_model['model'].trained for sub_model in self.sub_models}
-        if len(models_trained) and False not in models_trained:
-            self.trained = True
+        if len(models_trained) and all(models_trained):
+            trained = True
             self.nb_fit += 1
 
             # Set list_classes
-            self.list_classes = list({label for sub_model in self.sub_models for label in sub_model['model'].list_classes})
-            list_label_str = [label for label in self.list_classes if isinstance(label, str)]
-            list_label_other = [int(label) for label in self.list_classes if label not in list_label_str]
-            if len(list_label_str) > 0 and len(list_label_other) > 0:
-                raise TypeError('The classes of all the aggregated models are not of the same type.')
-            self.list_classes.sort()
+            list_classes = list({label for sub_model in self.sub_models for label in sub_model['model'].list_classes})
+            list_classes.sort()
 
             # Set dict_classes based on self.list_classes
-            self.dict_classes = {i: col for i, col in enumerate(self.list_classes)}
+            dict_classes = {i: col for i, col in enumerate(list_classes)}
+        return trained, list_classes.copy(), dict_classes.copy() 
 
     def fit(self, x_train, y_train, **kwargs) -> None:
         '''Trains the model
@@ -145,13 +148,6 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
             ValueError : if model needs mono_label but y_train is multi_label
             ValueError : if model needs multi_label but y_train is mono_label
         '''
-        if isinstance(y_train, pd.DataFrame):
-            y_train_multi_label = True if len(y_train.iloc[0]) > 1 else False
-        elif isinstance(y_train, np.ndarray):
-            y_train_multi_label = True if y_train.shape != (len(x_train),) else False
-        else:
-            y_train_multi_label = False
-
         # We check input format
         x_train, y_train = self._check_input_format(x_train, y_train, fit_function=True)
 
@@ -159,13 +155,9 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
         for sub_model in self.sub_models:
             model = sub_model['model']
             if not model.trained:
-                if y_train_multi_label and not model.multi_label:
-                    raise ValueError(f"Model {model} (model_name: {model.model_name}) needs y_train to be mono-label when fitting")
-                if not y_train_multi_label and model.multi_label:
-                    raise ValueError(f"Model {model}(model_name: {model.model_name}) needs y_train to be multi-labels when fitting")
                 model.fit(x_train, y_train, **kwargs)
 
-        self._check_trained()
+        self.trained, self.list_classes, self.dict_classes = self._check_trained()
 
     @utils.trained_needed
     def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
@@ -269,8 +261,7 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
 
     def majority_vote(self, predictions: np.ndarray):
         '''Gives the class corresponding to the most present prediction in the given predictions. 
-        In case of a tie, gives the first prediction (even if not the most present) 
-
+        In case of a tie, gives the prediction of the first model involved in the tie
         Args:
             predictions (np.ndarray) : The array containing the predictions of each model (shape (n_models)) 
         Returns:
@@ -279,10 +270,8 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
         labels, counts = np.unique(predictions, return_counts=True)
         votes = [(label, count) for label, count in zip(labels, counts)]
         votes = sorted(votes, key=lambda x: x[1], reverse=True)
-        if len(votes) > 1 and votes[0][1] == votes[1][1]:
-            return predictions[0]
-        else:
-            return votes[0][0]
+        possible_classes = {vote[0] for vote in votes if vote[1]==votes[0][1]}
+        return [prediction for prediction in predictions if prediction in possible_classes][0]
 
     def all_predictions(self, predictions: np.ndarray) -> np.ndarray:
         '''Calculates the sum of the arrays along axis 0 casts it to bool and then to int. 
@@ -344,7 +333,7 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
 
         # Add message in model_upload_instructions.md
         md_path = os.path.join(self.model_dir, f"model_upload_instructions.md")
-        line = r"/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that all sub-models and the aggregation model are manually saved together in order to be able to load it  /!\/!\/!\/!\/!\ "
+        line = r"/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that all sub-models and the aggregation model are manually saved together in order to be able to load it  /!\/!\/!\/!\/!\ \n"
         self.prepend_line(md_path, line)
 
     def prepend_line(self, file_name: str, line: str) -> None:
@@ -354,10 +343,11 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
             file_name (str): Path to file
             line (str): line to insert
         '''
-        with open(file_name, 'r') as original:
-            data = original.read()
-        with open(file_name, 'w') as modified:
-            modified.write(line + "\n" + data)
+        with open(file_name, 'r+') as f:
+            lines = f.readlines()
+            lines.insert(0, line)
+            f.seek(0)
+            f.writelines(lines)
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model aggregation from its configuration and "standalones" files
@@ -423,7 +413,8 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         list_models_name = configs.get('list_models_name', [])
-        self._manage_sub_models(list_models_name)
+        sub_models = self._manage_sub_models(list_models_name)
+        self.sub_models = sub_models
 
 
 if __name__ == '__main__':

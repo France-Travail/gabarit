@@ -213,7 +213,7 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
 
         # Add message in model_upload_instructions.md
         md_path = os.path.join(self.model_dir, f"model_upload_instructions.md")
-        line = r"/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that all sub-models and the aggregation model are manually saved together in order to be able to load it  /!\/!\/!\/!\/!\ "
+        line = r"/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that all sub-models and the aggregation model are manually saved together in order to be able to load it  /!\/!\/!\/!\/!\ \n"
         self.prepend_line(md_path, line)
 
     def prepend_line(self, file_name: str, line: str) -> None:
@@ -223,10 +223,11 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
             file_name (str): Path to file
             line (str): line to insert
         '''
-        with open(file_name, 'r') as original:
-            data = original.read()
-        with open(file_name, 'w') as modified:
-            modified.write(line + "\n" + data)
+        with open(file_name, 'r+') as f:
+            lines = f.readlines()
+            lines.insert(0, line)
+            f.seek(0)
+            f.writelines(lines)
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model aggregation from its configuration and "standalones" files
