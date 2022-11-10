@@ -32,6 +32,7 @@ import pandas as pd
 import dill as pickle
 import seaborn as sns
 import matplotlib.pyplot as plt
+import numpy as np
 from typing import Optional, no_type_check, Union, Tuple, Callable, Any
 
 import torch 
@@ -238,12 +239,6 @@ class ModelHuggingFace(ModelClass):
 
         train_dataset = self._prepare_x_train(x_train, y_train_dummies)
         valid_dataset = self._prepare_x_train(x_valid, y_valid_dummies)
-        print(x_train)
-        print("___")
-        print(y_train_dummies)
-        print("___")
-        print(train_dataset["label"])
-        print(train_dataset["label"])
         # Fit
         try:
             trainer = Trainer(
@@ -255,8 +250,8 @@ class ModelHuggingFace(ModelClass):
                 data_collator=DataCollatorWithPadding(tokenizer=self.tokenizer)
             )
             fit_history = trainer.train()
-            trainer.model.save_pretrained(output_dir = self.model_dir)
-            tokenizer.save_pretrained(output_dir = self.model_dir)
+            trainer.model.save_pretrained(output_dir = self.model_dir, save_directory = self.model_dir)
+            self.tokenizer.save_pretrained(output_dir = self.model_dir, save_directory = self.model_dir)
 
         except (RuntimeError, SystemError, SystemExit, EnvironmentError, KeyboardInterrupt, Exception) as e:
             self.logger.error(repr(e))
@@ -331,7 +326,7 @@ class ModelHuggingFace(ModelClass):
         '''
         def tokenize_function(examples):
             return self.tokenizer(examples["text"], truncation=True)
-        return Dataset.from_dict({'text': x_train.tolist(), 'label': y_train_dummies.tolist()}).map(tokenize_function, batched=True)
+        return Dataset.from_dict({'text': x_train.tolist(), 'label': y_train_dummies.astype(np.float32).tolist()}).map(tokenize_function, batched=True)
 
 
     def _prepare_x_test(self, x_test) -> np.ndarray:
@@ -344,7 +339,7 @@ class ModelHuggingFace(ModelClass):
         '''
         def tokenize_function(examples):
             return self.tokenizer(examples["text"], truncation=True)
-        return Dataset.from_dict({'text': x_train.tolist()}).map(tokenize_function, batched=True)
+        return Dataset.from_dict({'text': x_test.tolist()}).map(tokenize_function, batched=True)
 
     def _get_model(self, model_path: str = None, num_labels: int = None) -> Any:
         '''Gets a model structure
@@ -355,7 +350,7 @@ class ModelHuggingFace(ModelClass):
         model = AutoModelForSequenceClassification.from_pretrained(
                 self.transformer_name if model_path is None else model_path, 
                 num_labels=len(self.list_classes) if num_labels is None else num_labels,
-                problem_type="multi_label_classification" if self.multi_label else "single_label_classification",
+                problem_type="multi_label_classification",
                 cache_dir = HF_CACHE_DIR)
         return model
 
@@ -400,7 +395,7 @@ class ModelHuggingFace(ModelClass):
                 filename = metrics_dir[metric][1]
                 plt.figure(figsize=(10, 8))
                 plt.plot(fit_history.metrics[metric])
-                plt.plot(fit_history.metrics[f'val_{metric}'])
+                #plt.plot(fit_history.metrics[f'val_{metric}'])
                 plt.title(f"Model {title}")
                 plt.ylabel(title)
                 plt.xlabel('Epoch')
@@ -438,7 +433,7 @@ class ModelHuggingFace(ModelClass):
         json_data['validation_split'] = self.validation_split
         json_data['transformer_name'] = self.transformer_name
         json_data['transformer_params'] = self.transformer_params
-        json_data['trainer_params'] = self.trainer_params
+        json_data['trainer_params'] = self.trainer_params.to_dict()
                 
         # Save strategy :
         # - best.hdf5 already saved in fit()

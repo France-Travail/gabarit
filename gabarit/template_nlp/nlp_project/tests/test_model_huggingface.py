@@ -195,9 +195,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Test continue training
 
         # Test mono-label nominal case
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                   max_sequence_length=10, max_words=100,
-                                   embedding_name='fake_embedding.pkl')
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
         model.fit(x_train, y_train_mono, x_valid=None, y_valid=None, with_shuffle=True)
@@ -245,9 +243,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         remove_dir(model_dir_4)
 
         # Test data errors mono-label
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                   max_sequence_length=10, max_words=100,
-                                   embedding_name='fake_embedding.pkl')
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
         model.fit(x_train, y_train_mono, x_valid=None, y_valid=None, with_shuffle=True)
@@ -263,9 +259,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Test multi-labels nominal case
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
-                                   max_sequence_length=10, max_words=100,
-                                   embedding_name='fake_embedding.pkl')
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
         model.fit(x_train, y_train_multi, x_valid=None, y_valid=None, with_shuffle=True)
@@ -311,9 +305,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         remove_dir(model_dir_4)
 
         # Test data errors multi-labels
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
-                                   max_sequence_length=10, max_words=100,
-                                   embedding_name='fake_embedding.pkl')
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
         model.fit(x_train, y_train_multi, x_valid=None, y_valid=None, with_shuffle=True)
@@ -344,9 +336,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         cols = ['test1', 'test2', 'test3']
 
         # Mono-label
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                   max_sequence_length=10, max_words=100,
-                                   embedding_name='fake_embedding.pkl')
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train),))
@@ -359,9 +349,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Multi-labels
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
-                                   max_sequence_length=10, max_words=100,
-                                   embedding_name='fake_embedding.pkl')
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_multi)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train), len(cols)))
@@ -375,143 +363,13 @@ class ModelHuggingFaceTests(unittest.TestCase):
 
         # Model needs to be fitted
         with self.assertRaises(AttributeError):
-            model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                       max_sequence_length=10, max_words=100,
-                                       embedding_name='fake_embedding.pkl')
+            model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
             model.predict('test')
         remove_dir(model_dir)
 
-    def test04_model_huggingface_get_embedding_matrix(self):
-        '''Test of the method _get_embedding_matrix of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
-
-        # Create model
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-        model = ModelHuggingFace(model_dir=model_dir, embedding_name='fake_embedding.pkl')
-        embedding_null = [0., 0., 0.]
-        embedding_toto = [0.25, 0.90, 0.12]
-        embedding_test = [0.5, 0.6, 0.1]
-        expected_result = [embedding_null,  # token null
-                           embedding_toto,  # 'toto'
-                           embedding_test]  # 'test'
-
-        # Nominal case
-        tokenizer = Tokenizer(num_words=5)
-        tokenizer.fit_on_texts(['toto', 'test'])
-        embedding_matrix, embedding_size = model._get_embedding_matrix(tokenizer)
-        self.assertEqual([list(_) for _ in embedding_matrix], expected_result)
-        self.assertEqual(embedding_size, 3)
-
-        # Without num_words
-        tokenizer = Tokenizer()
-        tokenizer.fit_on_texts(['toto', 'test'])
-        embedding_matrix, embedding_size = model._get_embedding_matrix(tokenizer)
-        self.assertEqual([list(_) for _ in embedding_matrix], expected_result)
-        self.assertEqual(embedding_size, 3)
-
-        # Test eager execution that the embedding work as intended
-        max_sequence_length = 2
-        embedding_layer = Embedding(embedding_matrix.shape[0], embedding_matrix.shape[1], weights=[embedding_matrix], trainable=False)
-        x = ['test titi toto', 'toto', 'titi test test toto']
-        sequences = tokenizer.texts_to_sequences(x)
-        expected_result_padding = [[2, 1], [0, 1], [2, 2]]
-        expected_result_embedding = [[embedding_test, embedding_toto],
-                                     [embedding_null, embedding_toto],
-                                     [embedding_test, embedding_test]]
-        # Get results
-        padded_sequences = pad_sequences(sequences, maxlen=2, padding='pre', truncating='post')
-        embedding_out = embedding_layer(padded_sequences)
-        self.assertEqual([list(_) for _ in padded_sequences], expected_result_padding)
-        self.assertEqual([[list(_) for _ in emb_out] for emb_out in embedding_out], expected_result_embedding)
-
-        # Clean
-        remove_dir(model_dir)
-
-    def test05_model_huggingface_get_sequence(self):
-        '''Test of the method _get_sequence of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
-
-        # Create model
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-        model = ModelHuggingFace(model_dir=model_dir, embedding_name='fake_embedding.pkl')
-
-        # Nominal case
-        tokenizer = Tokenizer()
-        tokenizer.fit_on_texts(['toto', 'test'])
-        x = ['test titi toto', 'toto', 'titi test test toto']
-        # def: padding='pre', truncating='post'
-        expected_result = [[2, 1], [0, 1], [2, 2]]
-        # Get results
-        padded_sequences = model._get_sequence(x, tokenizer, maxlen=2)
-        self.assertEqual([list(_) for _ in padded_sequences], expected_result)
-
-        # Test padding = 'post'
-        expected_result_padding = [[2, 1], [1, 0], [2, 2]]
-        padded_sequences = model._get_sequence(x, tokenizer, maxlen=2, padding='post')
-        self.assertEqual([list(_) for _ in padded_sequences], expected_result_padding)
-
-        # Test truncating = 'pre'
-        expected_result_truncating = [[2, 1], [0, 1], [2, 1]]
-        padded_sequences = model._get_sequence(x, tokenizer, maxlen=2, truncating='pre')
-        self.assertEqual([list(_) for _ in padded_sequences], expected_result_truncating)
-
-        # Check errors
-        with self.assertRaises(ValueError):
-            model._get_sequence(x, tokenizer, maxlen=2, padding='toto')
-        with self.assertRaises(ValueError):
-            model._get_sequence(x, tokenizer, maxlen=2, truncating='toto')
-
-        # Clean
-        remove_dir(model_dir)
-
-    def test06_model_huggingface_get_callbacks(self):
-        '''Test of the method _get_callbacks of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
-
-        # Create model
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-        model = ModelHuggingFace(model_dir=model_dir, embedding_name='fake_embedding.pkl')
-
-        # Nominal case
-        callbacks = model._get_callbacks()
-        callbacks_types = [type(_) for _ in callbacks]
-        self.assertTrue(keras.callbacks.EarlyStopping in callbacks_types)
-        self.assertTrue(keras.callbacks.ModelCheckpoint in callbacks_types)
-        self.assertTrue(keras.callbacks.CSVLogger in callbacks_types)
-        self.assertTrue(keras.callbacks.TerminateOnNaN in callbacks_types)
-        checkpoint = callbacks[callbacks_types.index(keras.callbacks.ModelCheckpoint)]
-        csv_logger = callbacks[callbacks_types.index(keras.callbacks.CSVLogger)]
-        self.assertEqual(checkpoint.filepath, os.path.join(model.model_dir, 'best.hdf5'))
-        self.assertEqual(csv_logger.filename, os.path.join(model.model_dir, 'logger.csv'))
-
-        # level save 'LOW'
-        model.level_save = 'LOW'
-        callbacks = model._get_callbacks()
-        callbacks_types = [type(_) for _ in callbacks]
-        self.assertTrue(keras.callbacks.EarlyStopping in callbacks_types)
-        self.assertFalse(keras.callbacks.ModelCheckpoint in callbacks_types)
-        self.assertTrue(keras.callbacks.CSVLogger in callbacks_types)
-        self.assertTrue(keras.callbacks.TerminateOnNaN in callbacks_types)
-        csv_logger = callbacks[callbacks_types.index(keras.callbacks.CSVLogger)]
-        self.assertEqual(csv_logger.filename, os.path.join(model.model_dir, 'logger.csv'))
-
-        # Clean
-        remove_dir(model_dir)
-
-    def test07_model_huggingface_get_learning_rate_scheduler(self):
-        '''Test of the method _get_learning_rate_scheduler of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        # Nominal case
-        model = ModelHuggingFace(model_dir=model_dir, embedding_name='fake_embedding.pkl')
-        self.assertEqual(model._get_learning_rate_scheduler(), None)
-
-        # Clean
-        remove_dir(model_dir)
-
-    def test08_model_huggingface_save(self):
+        
+    
+    def test04_model_huggingface_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -539,16 +397,14 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue('multi_label' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())
-        self.assertEqual(configs['librairie'], 'keras')
+        self.assertEqual(configs['librairie'], 'huggingface')
         self.assertTrue('batch_size' in configs.keys())
         self.assertTrue('epochs' in configs.keys())
         self.assertTrue('validation_split' in configs.keys())
         self.assertTrue('patience' in configs.keys())
-        self.assertTrue('embedding_name' in configs.keys())
-        self.assertTrue('keras_params' in configs.keys())
+        self.assertTrue('transformer_name' in configs.keys())
+        self.assertTrue('trainer_params' in configs.keys())
         self.assertTrue('_get_model' in configs.keys())
-        self.assertTrue('_get_learning_rate_scheduler' in configs.keys())
-        self.assertTrue('custom_objects' in configs.keys())
 
         # Use custom_objects containing a "partial" function
         model = ModelHuggingFace(model_dir=model_dir, embedding_name='fake_embedding.pkl')
@@ -589,7 +445,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test09_model_huggingface_reload_model(self):
+    def test05_model_huggingface_reload_model(self):
         '''Test of the method reload_model of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')

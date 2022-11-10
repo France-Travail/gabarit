@@ -234,11 +234,19 @@ class Case3_unit_tests(unittest.TestCase):
             shutil.rmtree(models_path)
             os.makedirs(models_path)
 
-    def test18_test_mlflow_logger(self):
+    def test18_test_model_huggingface(self):
+        '''Launches tests of file model_huggingface.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_huggingface.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
+
+    def test19_test_mlflow_logger(self):
         '''Launches tests of file mlflow_logger.py'''
         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_mlflow_logger.py', shell=True).returncode, 0)
 
-    def test19_test_model_explainer(self):
+    def test20_test_model_explainer(self):
         '''Launches tests of file model_explainer.py'''
         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_explainer.py', shell=True).returncode, 0)
 
