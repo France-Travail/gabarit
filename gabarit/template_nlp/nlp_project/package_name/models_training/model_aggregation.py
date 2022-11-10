@@ -34,25 +34,80 @@ from {{package_name}}.models_training import utils_models
 from {{package_name}}.models_training.model_class import ModelClass
 
 
+def proba_argmax(proba: np.ndarray, list_classes: list, **kwargs):
+    '''Gives the class corresponding to the argmax of the average of the given probabilities
+
+    Args:
+        proba (np.ndarray): The probabilities of each model for each class, array of shape (nb_models, nb_classes)
+        list_classes (list): List of classes
+    Returns:
+        The prediction
+    '''
+    proba_average = np.sum(proba, axis=0) / proba.shape[0]
+    index_class = np.argmax(proba_average)
+    return list_classes[index_class]
+
+
+def majority_vote(predictions: np.ndarray, **kwargs):
+    '''Gives the class corresponding to the most present prediction in the given predictions.
+    In case of a tie, gives the prediction of the first model involved in the tie
+    Args:
+        predictions (np.ndarray): The array containing the predictions of each model (shape (n_models))
+    Returns:
+        The prediction
+    '''
+    labels, counts = np.unique(predictions, return_counts=True)
+    votes = [(label, count) for label, count in zip(labels, counts)]
+    votes = sorted(votes, key=lambda x: x[1], reverse=True)
+    possible_classes = {vote[0] for vote in votes if vote[1]==votes[0][1]}
+    return [prediction for prediction in predictions if prediction in possible_classes][0]
+
+
+def all_predictions(predictions: np.ndarray, **kwargs) -> np.ndarray:
+    '''Calculates the sum of the arrays along axis 0 casts it to bool and then to int.
+    Expects a numpy array containing only zeroes and ones.
+    When used as an aggregation function, keeps all the prediction of each model (multi-labels)
+
+    Args:
+        predictions (np.ndarray) : Array of shape : (n_models, n_classes)
+    Return:
+        np.ndarray: The prediction
+    '''
+    return np.sum(predictions, axis=0, dtype=bool).astype(int)
+
+
+def vote_labels(predictions: np.ndarray, **kwargs) -> np.ndarray:
+    '''Gives the result of majority_vote applied on the second axis.
+    When used as an aggregation_function, for each class, performs a majority vote for the aggregated models.
+    It gives a multi-labels result
+
+    Args:
+        predictions (np.ndarray): array of shape : (n_models, n_classes)
+    Return:
+        np.ndarray: prediction
+    '''
+    return np.apply_along_axis(majority_vote, 0, predictions)
+
+
 class ModelAggregation(ModelClass):
     '''Model for aggregating several instances of ModelClass'''
 
     _default_name = 'model_aggregation'
-    _dict_aggregation_function = {'majority_vote': {'function': majority_vote, 'using_proba': False, 'multi_label': False},
-                                  'proba_argmax': {'function': proba_argmax, 'using_proba': True, 'multi_label': False},
-                                  'all_predictions': {'function': all_predictions, 'using_proba': False, 'multi_label': True},
-                                  'vote_labels': {'function': vote_labels, 'using_proba': False, 'multi_label': True}}
+    _dict_aggregation_function = {'majority_vote': {'aggregation_function': majority_vote, 'using_proba': False, 'multi_label': False},
+                                  'proba_argmax': {'aggregation_function': proba_argmax, 'using_proba': True, 'multi_label': False},
+                                  'all_predictions': {'aggregation_function': all_predictions, 'using_proba': False, 'multi_label': True},
+                                  'vote_labels': {'aggregation_function': vote_labels, 'using_proba': False, 'multi_label': True}}
 
     def __init__(self, list_models: Union[list, None] = None, aggregation_function: Union[Callable, str] = 'majority_vote',
                  using_proba: bool = False, **kwargs) -> None:
         '''Initialization of the class (see ModelClass for more arguments)
-        This model will aggregate the predictions of several model. The user can choose an aggregation function
+        This model will aggregate the predictions of several model. The user can choose an aggregation function (with **kwargs if not using a list_classes arg)
         from existing ones, or create its own. All models must be either mono label or multi label, we do not accept mixes.
         However, we accept models that do not have the same class / labels. We will consider a meta model with joined classes / labels.
 
         Kwargs:
             list_models (list) : The list of models to be aggregated (can be None if reloading from standalones)
-            aggregation_function (Callable or str) : The aggregation function used
+            aggregation_function (Callable or str) : The aggregation function used (custom function must use **kwargs if not using a list_classes arg)
             using_proba (bool) : Which object is being aggregated (the probabilities or the predictions).
         Raises:
             ValueError: All the aggregated sub_models have not the same multi_label attributes
@@ -90,7 +145,7 @@ class ModelAggregation(ModelClass):
         return self._aggregation_function
 
     @aggregation_function.setter
-    def aggregation_function(self, function: Union[Callable, str]):
+    def aggregation_function(self, agg_function: Union[Callable, str]):
         '''Setter for aggregation_function
         If a string, try to match a predefined function
 
@@ -99,21 +154,30 @@ class ModelAggregation(ModelClass):
             ValueError: If the object aggregation_function is incompatible with multi_label
         '''
         # Retrieve aggregation function from dict if a string
-        if isinstance(aggregation_function, str):
+        if isinstance(agg_function, str):
             # Get infos
-            if aggregation_function not in self._dict_aggregation_function.keys():
-                raise ValueError(f"The aggregation_function ({aggregation_function}) is not a valid option (must be chosen in {self._dict_aggregation_function.keys()})")
-            using_proba = self._dict_aggregation_function[aggregation_function]['using_proba']
-            multi_label = self._dict_aggregation_function[aggregation_function]['multi_label']
-            aggregation_function = self._dict_aggregation_function[aggregation_function]['aggregation_function']
+            if agg_function not in self._dict_aggregation_function.keys():
+                raise ValueError(f"The aggregation_function ({agg_function}) is not a valid option (must be chosen in {self._dict_aggregation_function.keys()})")
+            using_proba = self._dict_aggregation_function[agg_function]['using_proba']
+            multi_label = self._dict_aggregation_function[agg_function]['multi_label']
+            agg_function = self._dict_aggregation_function[agg_function]['aggregation_function']  # type: ignore
             # Apply checks
             if self.using_proba != using_proba:
-                self.logger.warning(f"using_proba {self.using_proba} is incompatible with the selected aggregation function '{aggregation_function}'. We force using_proba to {using_proba}".)
-                self.using_proba = using_proba
+                self.logger.warning(f"using_proba {self.using_proba} is incompatible with the selected aggregation function '{agg_function}'. We force using_proba to {using_proba}.")
+                self.using_proba = using_proba  # type: ignore
             if self.multi_label != multi_label:
-                raise ValueError(f"multi_label {self.multi_label} is incompatible with the selected aggregation function '{aggregation_function}'.")
+                raise ValueError(f"multi_label {self.multi_label} is incompatible with the selected aggregation function '{agg_function}'.")
         # Set aggregation function
-        self._aggregation_function = aggregation_function
+        # If agg function has list_classes argument
+        # Then ...
+        # Else
+        # ...
+        self._aggregation_function = agg_function
+
+    @aggregation_function.deleter
+    def aggregation_function(self):
+        '''Deleter for aggregation_function'''
+        self._aggregation_function = None
 
     @property
     def sub_models(self):
@@ -139,6 +203,11 @@ class ModelAggregation(ModelClass):
             sub_models.append(dict_model.copy())
         self._sub_models = sub_models.copy()
 
+    @sub_models.deleter
+    def sub_models(self):
+        '''Deleter for sub_models'''
+        self._sub_models = None
+
     def _check_trained(self) -> Tuple[bool, list, dict]:
         '''Checks and sets various attributes related to the fitting of underlying models
 
@@ -149,7 +218,7 @@ class ModelAggregation(ModelClass):
         '''
         # Check fitted
         models_trained = {sub_model['model'].trained for sub_model in self.sub_models}
-        if len(models_trained) > 1 and all(models_trained):
+        if len(models_trained) > 0 and all(models_trained):
             # All models trained
             trained = True
             # Set list_classes
@@ -206,7 +275,7 @@ class ModelAggregation(ModelClass):
                 preds_or_probas = self._predict_probas_sub_models(x_test, **kwargs)
             else:
                 preds_or_probas = self._predict_sub_models(x_test, **kwargs)
-            return np.array([self.aggregation_function(array) for array in preds_or_probas])  # type: ignore
+            return np.array([self.aggregation_function(array, list_classes=self.list_classes) for array in preds_or_probas])  # type: ignore
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
@@ -222,7 +291,6 @@ class ModelAggregation(ModelClass):
         # The probas of all models are averaged
         return np.sum(probas_sub_models, axis=1) / probas_sub_models.shape[1]
 
-    @utils.data_agnostic_str_to_list
     @utils.trained_needed
     def _predict_probas_sub_models(self, x_test, **kwargs) -> np.ndarray:
         '''Recover the probabilities of each model being aggregated
@@ -236,7 +304,6 @@ class ModelAggregation(ModelClass):
         array_probas = np.transpose(array_probas, (1, 0, 2))
         return array_probas
 
-    @utils.data_agnostic_str_to_list
     @utils.trained_needed
     def _predict_sub_models(self, x_test, **kwargs) -> np.ndarray:
         '''Recover the predictions of each model being aggregated
@@ -266,26 +333,22 @@ class ModelAggregation(ModelClass):
         Returns:
             np.ndarray: The array with the missing columns added
         '''
-        # False multilabel
-        # True multilabel
-        # True monolabel
         # Get predictions or probas
         preds_or_probas = model.predict(x_test, return_proba=return_proba)
 
         # Manage each cases. Reorder predictions or probas according to aggregation model list_classes
-        # Multi label or return probas
+        # Multi label, proba = True
+        # Multi label, proba = False
+        # Mono label, proba = True
         if model.multi_label or return_proba:
-            df_all = pd.DataFrame(np.zeros((len(preds_or_probas), len(self.list_classes))), columns=self.list_classes)
+            df_all = pd.DataFrame(np.zeros((len(preds_or_probas), len(self.list_classes))), columns=self.list_classes)  # type: ignore
             df_model = pd.DataFrame(preds_or_probas, columns=model.list_classes)
             for col in model.list_classes:
                 df_all[col] = df_model[col]
             return df_all.to_numpy()
-        # Preds mono-label (never happens)
-        elif not self.multi_label and not return_proba:
-            return preds_or_probas
-        # Never happens ? All case managed ?
+        # Mono label, proba = False
         else:
-            return np.array([[1 if pred == col else 0 for col in self.list_classes] for pred in preds_or_probas])
+            return preds_or_probas
 
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model
@@ -295,10 +358,14 @@ class ModelAggregation(ModelClass):
         '''
         if json_data is None:
             json_data = {}
+        # Specific aggregation - save some wanted entries
+        train_keys = ['filename', 'filename_valid', 'preprocess_str']
+        default_json_data = {key: json_data.get(key, None) for key in train_keys}
+        default_json_data['aggregator_dir'] = self.model_dir
         # Save each trained and unsaved model
         for sub_model in self.sub_models:
             if not sub_model['init_trained'] and sub_model['model'].trained:
-                sub_model['model'].save({'aggregator_dir': self.model_dir})
+                sub_model['model'].save(default_json_data)
 
         # Add some specific informations
         json_data['list_models_name'] = [sub_model['name'] for sub_model in self.sub_models]
@@ -313,13 +380,13 @@ class ModelAggregation(ModelClass):
                 pickle.dump(self.aggregation_function, f)
 
         # Save
-        sub_models = self.sub_models
+        models_list = [sub_model['name'] for sub_model in self.sub_models]
         aggregation_function = self.aggregation_function
         delattr(self, "sub_models")
         delattr(self, "aggregation_function")
         super().save(json_data=json_data)
         setattr(self, "aggregation_function", aggregation_function)
-        setattr(self, "sub_models", sub_models)
+        setattr(self, "sub_models", models_list)  # Setter needs list of models, not sub_models itself
 
         # Add message in model_upload_instructions.md
         md_path = os.path.join(self.model_dir, f"model_upload_instructions.md")
@@ -390,61 +457,6 @@ class ModelAggregation(ModelClass):
         for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label',
                           'level_save', 'using_proba']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
-
-
-def proba_argmax(proba: np.ndarray, list_classes: list):
-    '''Gives the class corresponding to the argmax of the average of the given probabilities
-
-    Args:
-        proba (np.ndarray): The probabilities of each model for each class, array of shape (nb_models, nb_classes)
-        list_classes (list): List of classes
-    Returns:
-        The prediction
-    '''
-    proba_average = np.sum(proba, axis=0) / proba.shape[0]
-    index_class = np.argmax(proba_average)
-    return list_classes[index_class]
-
-
-def majority_vote(predictions: np.ndarray):
-    '''Gives the class corresponding to the most present prediction in the given predictions.
-    In case of a tie, gives the prediction of the first model involved in the tie
-    Args:
-        predictions (np.ndarray): The array containing the predictions of each model (shape (n_models))
-    Returns:
-        The prediction
-    '''
-    labels, counts = np.unique(predictions, return_counts=True)
-    votes = [(label, count) for label, count in zip(labels, counts)]
-    votes = sorted(votes, key=lambda x: x[1], reverse=True)
-    possible_classes = {vote[0] for vote in votes if vote[1]==votes[0][1]}
-    return [prediction for prediction in predictions if prediction in possible_classes][0]
-
-
-def all_predictions(predictions: np.ndarray) -> np.ndarray:
-    '''Calculates the sum of the arrays along axis 0 casts it to bool and then to int.
-    Expects a numpy array containing only zeroes and ones.
-    When used as an aggregation function, keeps all the prediction of each model (multi-labels)
-
-    Args:
-        predictions (np.ndarray) : Array of shape : (n_models, n_classes)
-    Return:
-        np.ndarray: The prediction
-    '''
-    return np.sum(predictions, axis=0, dtype=bool).astype(int)
-
-
-def vote_labels(predictions: np.ndarray) -> np.ndarray:
-    '''Gives the result of majority_vote applied on the second axis.
-    When used as an aggregation_function, for each class, performs a majority vote for the aggregated models.
-    It gives a multi-labels result
-
-    Args:
-        predictions (np.ndarray): array of shape : (n_models, n_classes)
-    Return:
-        np.ndarray: prediction
-    '''
-    return np.apply_along_axis(self.majority_vote, 0, predictions)
 
 
 if __name__ == '__main__':
