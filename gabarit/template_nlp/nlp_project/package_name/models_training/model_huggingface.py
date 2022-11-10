@@ -35,7 +35,7 @@ import matplotlib.pyplot as plt
 from typing import Optional, no_type_check, Union, Tuple, Callable, Any
 
 import torch 
-from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer, DataCollatorWithPadding, AutoTokenizer, TextClassificationPipeline
+from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer, DataCollatorWithPadding, AutoTokenizer, TextClassificationPipeline, PreTrainedTokenizer
 from datasets import Dataset
 
 from {{package_name}} import utils
@@ -53,7 +53,6 @@ class ModelHuggingFace(ModelClass):
 
     # Not implemented :
     # -> _prepare_x_test
-    # -> _get_model
     # -> reload_from_standalone
     # -> _save_model_png
 
@@ -61,7 +60,7 @@ class ModelHuggingFace(ModelClass):
     # implemented on the HF hub and to create model specific subclasses. 
     # => might change it as use cases grow
 
-    def __init__(self, batch_size: int = 64, epochs: int = 99, validation_split: float = 0.2,
+    def __init__(self, batch_size: int = 8, epochs: int = 99, validation_split: float = 0.2,
                  transformer_name: str = 'Geotrend/distilbert-base-fr-cased', transformer_params: Union[dict, None] = None,
                  trainer_params: Union[dict, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelClass for more arguments)
@@ -225,7 +224,7 @@ class ModelHuggingFace(ModelClass):
             cutoff = int(len(p) * self.validation_split)
             x_valid = x_train[p[0:cutoff]]
             x_train = x_train[p[cutoff:]]
-            y_valid_dummies = y_valid_dummies[p[0:cutoff]]
+            y_valid_dummies = y_train_dummies[p[0:cutoff]]
             y_train_dummies = y_train_dummies[p[cutoff:]]
         
         ##############################################
@@ -234,21 +233,26 @@ class ModelHuggingFace(ModelClass):
 
         # Get model (if already fitted we do not load a new one)
         if not self.trained or self.model is None:
-            self.model = self._get_model()
+            self.model = self._get_model(num_labels=y_train_dummies.shape[1])
             self.tokenizer = self._get_tokenizer()
 
         train_dataset = self._prepare_x_train(x_train, y_train_dummies)
         valid_dataset = self._prepare_x_train(x_valid, y_valid_dummies)
-
+        print(x_train)
+        print("___")
+        print(y_train_dummies)
+        print("___")
+        print(train_dataset["label"])
+        print(train_dataset["label"])
         # Fit
         try:
             trainer = Trainer(
-                model=model,
+                model=self.model,
                 args=self.trainer_params,
                 train_dataset=train_dataset,
                 eval_dataset=valid_dataset,
                 tokenizer=self.tokenizer,
-                data_collator=DataCollatorWithPadding(tokenizer=tokenizer)
+                data_collator=DataCollatorWithPadding(tokenizer=self.tokenizer)
             )
             fit_history = trainer.train()
             trainer.model.save_pretrained(output_dir = self.model_dir)
@@ -326,8 +330,8 @@ class ModelHuggingFace(ModelClass):
             (datasets.Dataset): Prepared dataset
         '''
         def tokenize_function(examples):
-            return tokenizer(examples["text"], truncation=True)
-        return Dataset.from_dict({'texts': x_train.tolist(), 'labels': y_train_dummies.tolist()}).map(tokenize_function, batched=True)
+            return self.tokenizer(examples["text"], truncation=True)
+        return Dataset.from_dict({'text': x_train.tolist(), 'label': y_train_dummies.tolist()}).map(tokenize_function, batched=True)
 
 
     def _prepare_x_test(self, x_test) -> np.ndarray:
@@ -339,23 +343,23 @@ class ModelHuggingFace(ModelClass):
             (datasets.Dataset): Prepared dataset
         '''
         def tokenize_function(examples):
-            return tokenizer(examples["text"], truncation=True)
-        return Dataset.from_dict({'texts': x_train.tolist()}).map(tokenize_function, batched=True)
+            return self.tokenizer(examples["text"], truncation=True)
+        return Dataset.from_dict({'text': x_train.tolist()}).map(tokenize_function, batched=True)
 
-    def _get_model(self, model_path: str = None) -> Any:
+    def _get_model(self, model_path: str = None, num_labels: int = None) -> Any:
         '''Gets a model structure
 
         Returns:
             (Any): a HF model
         '''
         model = AutoModelForSequenceClassification.from_pretrained(
-                'text-classification', 
                 self.transformer_name if model_path is None else model_path, 
+                num_labels=len(self.list_classes) if num_labels is None else num_labels,
                 problem_type="multi_label_classification" if self.multi_label else "single_label_classification",
                 cache_dir = HF_CACHE_DIR)
         return model
 
-    def _get_tokenizer(self, model_path: str = None) -> Tokenizer:
+    def _get_tokenizer(self, model_path: str = None) -> PreTrainedTokenizer:
         '''Gets a tokenizer
 
         Returns:
