@@ -99,9 +99,9 @@ class ModelPyTorch(ModelClass):
         Args:
             x_train (?): Array-like, shape = [n_samples, n_features]
             y_train (?): Array-like, shape = [n_samples, n_targets]
+        Kwargs:
             x_valid (?): Array-like, shape = [n_samples, n_features]
             y_valid (?): Array-like, shape = [n_samples, n_targets]
-        Kwargs:
             with_shuffle (bool): If x, y must be shuffled before fitting
                 Experimental: We must verify if it works as intended depending on the formats of x and y
                 This should be used if y is not shuffled as the split_validation takes the lines in order.

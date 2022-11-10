@@ -242,9 +242,9 @@ class ModelPyTorchTransformersLight(ModelPyTorch):
         Args:
             x_train (?): Array-like, shape = [n_samples, n_features]
             y_train (?): Array-like, shape = [n_samples, n_features]
+        Kwargs:
             x_valid (?): Array-like, shape = [n_samples, n_features]
             y_valid (?): Array-like, shape = [n_samples, n_features]
-        Kwargs:
             with_shuffle (bool): If x, y must be shuffled before fitting
                 This should be used if y is not shuffled as the split_validation takes the lines in order.
                 Thus, the validation set might get classes which are not in the train set ...
