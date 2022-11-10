@@ -110,7 +110,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
-        #self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         remove_dir(model_dir)
 
         #
@@ -121,7 +121,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
-        #self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         remove_dir(model_dir)
 
         #
@@ -132,7 +132,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
-        #self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         remove_dir(model_dir)
 
         # Validation with y_train & y_valid of shape 2
@@ -143,7 +143,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
-        #self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         remove_dir(model_dir)
 
         # Missing targets in y_valid
@@ -154,7 +154,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
-        #self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         remove_dir(model_dir)
 
         # Multi-labels
@@ -165,7 +165,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), ['test1', 'test2', 'test3'])
-        #self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         remove_dir(model_dir)
    
         #
@@ -176,7 +176,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), ['test1', 'test2', 'test3'])
-        #self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         remove_dir(model_dir)
 
         #
@@ -187,7 +187,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), ['test1', 'test2', 'test3'])
-        #self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         remove_dir(model_dir)
 
 
@@ -202,7 +202,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # Second fit
         y_train_different_order = np.array([1, 0, 0, 1, 2] * 100)
@@ -210,7 +210,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # We do not save on purpose
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 2)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_1.json')))
         model_dir_2 = model.model_dir
         self.assertNotEqual(model_dir, model_dir_2)
@@ -219,7 +219,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 3)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_1.json')))
         self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_2.json')))
@@ -230,7 +230,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 4)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_1.json')))
         self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_2.json')))
@@ -250,7 +250,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # Second fit
         y_train_mono_fake = np.array([3, 1, 0, 1, 2] * 100)
@@ -266,14 +266,14 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # Second fit
         model.fit(x_train[:50], y_train_multi[:50], x_valid=None, y_valid=None, with_shuffle=True)
         # We do not save on purpose
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 2)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_1.json')))
         model_dir_2 = model.model_dir
         self.assertNotEqual(model_dir, model_dir_2)
@@ -282,7 +282,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 3)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_1.json')))
         model_dir_3 = model.model_dir
@@ -292,7 +292,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 4)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_1.json')))
         self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_2.json')))
@@ -312,7 +312,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # Second fit
         y_train_multi_fake = pd.DataFrame({'test3': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test1': [0, 0, 0, 1, 0] * 100})
@@ -376,10 +376,10 @@ class ModelHuggingFaceTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Nominal case
-        model = ModelHuggingFace(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
-        # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5'))) -> no model trained
+        # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin'))) -> no model trained
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'model_huggingface.pkl')))
         with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='{{default_encoding}}') as f:
             configs = json.load(f)
@@ -401,19 +401,15 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue('batch_size' in configs.keys())
         self.assertTrue('epochs' in configs.keys())
         self.assertTrue('validation_split' in configs.keys())
-        self.assertTrue('patience' in configs.keys())
         self.assertTrue('transformer_name' in configs.keys())
         self.assertTrue('trainer_params' in configs.keys())
         self.assertTrue('_get_model' in configs.keys())
 
         # Use custom_objects containing a "partial" function
-        model = ModelHuggingFace(model_dir=model_dir, embedding_name='fake_embedding.pkl')
-        custom_objects = utils_deep_keras.custom_objects
-        custom_objects['fb_loss'] = utils_deep_keras.get_fb_loss(0.5)
-        model.custom_objects = custom_objects
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
-        # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5'))) -> no model trained
+        # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin'))) -> no model trained
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'model_huggingface.pkl')))
         with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='{{default_encoding}}') as f:
             configs = json.load(f)
@@ -431,16 +427,13 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue('multi_label' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())
-        self.assertEqual(configs['librairie'], 'keras')
+        self.assertEqual(configs['librairie'], 'huggingface')
         self.assertTrue('batch_size' in configs.keys())
         self.assertTrue('epochs' in configs.keys())
         self.assertTrue('validation_split' in configs.keys())
-        self.assertTrue('patience' in configs.keys())
-        self.assertTrue('embedding_name' in configs.keys())
-        self.assertTrue('keras_params' in configs.keys())
+        self.assertTrue('transformer_name' in configs.keys())
+        self.assertTrue('trainer_params' in configs.keys())
         self.assertTrue('_get_model' in configs.keys())
-        self.assertTrue('_get_learning_rate_scheduler' in configs.keys())
-        self.assertTrue('custom_objects' in configs.keys())
 
         # Clean
         remove_dir(model_dir)
@@ -461,21 +454,19 @@ class ModelHuggingFaceTests(unittest.TestCase):
         cols = ['test1', 'test2', 'test3']
 
         # We test with a model embedding LSTM
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                   max_sequence_length=10, max_words=100,
-                                   embedding_name='fake_embedding.pkl')
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono)
         model.save()
 
         # Reload keras
-        hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
-        reloaded_model = model.reload_model(hdf5_path)
-        self.assertEqual([list(_) for _ in reloaded_model.predict(model._prepare_x_test(['test', 'toto', 'titi']))], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
+        model_path = os.path.join(model.model_dir, 'pytorch_model.bin')
+        reloaded_model = model.reload_model(model_path)
+        self.assertEqual([list(_) for _ in reloaded_model.predict(['test', 'toto', 'titi'])], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
 
         # Test without custom_objects
         model.custom_objects = None
-        reloaded_model = model.reload_model(hdf5_path)
-        self.assertEqual([list(_) for _ in reloaded_model.predict(model._prepare_x_test(['test', 'toto', 'titi']))], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
+        reloaded_model = model.reload_model(model_path)
+        self.assertEqual([list(_) for _ in reloaded_model.predict(['test', 'toto', 'titi'])], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
 
         remove_dir(model_dir)
 

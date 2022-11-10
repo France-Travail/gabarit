@@ -280,9 +280,8 @@ class ModelHuggingFace(ModelClass):
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        # Cast in pd.Series
-        x_test = self._prepare_x_test(pd.Series(x_test))
-
+        if type(x_test) is np.array:
+            x_test = x_test.tolist()
         # Predict
         if self.pipe is None:
             self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True)
@@ -308,8 +307,8 @@ class ModelHuggingFace(ModelClass):
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        # Prepare input
-        x_test = self._prepare_x_test(x_test)
+        if type(x_test) is np.array:
+            x_test = x_test.tolist()
         # Process
         if self.pipe is None:
             self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True)
@@ -435,6 +434,8 @@ class ModelHuggingFace(ModelClass):
         json_data['transformer_params'] = self.transformer_params
         json_data['trainer_params'] = self.trainer_params.to_dict()
                 
+        if '_get_model' not in json_data.keys():
+            json_data['_get_model'] = pickle.source.getsourcelines(self._get_model)[0]
         # Save strategy :
         # - best.hdf5 already saved in fit()
         # - can't pickle keras model, so we drop it, save, and reload it
