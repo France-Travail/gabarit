@@ -280,13 +280,13 @@ class ModelHuggingFace(ModelClass):
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        if type(x_test) is np.array:
+        if type(x_test) is np.ndarray:
             x_test = x_test.tolist()
         # Predict
         if self.pipe is None:
             self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True)
-        
-        predicted_proba = self.pipe(x_test)
+        results = np.array(self.pipe(x_test))
+        predicted_proba = np.array([[x['score'] for x in x] for x in results])
 
         # We return the probabilities if wanted
         if return_proba:
@@ -307,13 +307,14 @@ class ModelHuggingFace(ModelClass):
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        if type(x_test) is np.array:
+        if type(x_test) is np.ndarray:
             x_test = x_test.tolist()
         # Process
         if self.pipe is None:
             self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True)
-        
-        return self.pipe(x_test)
+        results = np.array(self.pipe(x_test))
+        predicted_proba = np.array([[x['score'] for x in x] for x in results])
+        return predicted_proba
 
     def _prepare_x_train(self, x_train, y_train_dummies) -> Dataset:
         '''Prepares the input data for the model
