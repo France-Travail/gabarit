@@ -1212,9 +1212,12 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
 
             # Set model with function majority_vote and list_models=[model, model, model]
             model_name = 'aggregation_mono_class_mono_label'
-            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            model_dir_svm2 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_name_svm1 = 'aggregation_mono_class_mono_label_svm1'
+            model_name_svm2 = 'aggregation_mono_class_mono_label_svm2'
+            model_name_gbt = 'aggregation_mono_class_mono_label_gbt'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name_svm1, datetime.now().strftime(f"{model_name_svm1}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_svm2 = os.path.join(utils.get_models_path(), model_name_svm2, datetime.now().strftime(f"{model_name_svm2}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_gbt = os.path.join(utils.get_models_path(), model_name_gbt, datetime.now().strftime(f"{model_name_gbt}_%Y_%m_%d-%H_%M_%S"))
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
                            model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
@@ -1258,7 +1261,8 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
 
             # Set model with function proba_argmax and list_models=[model_name, model, model]
             model_name = 'aggregation_mono_class_mono_label'
-            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_name_svm1 = 'aggregation_mono_class_mono_label_svm1'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name_svm1, datetime.now().strftime(f"{model_name_svm1}_%Y_%m_%d-%H_%M_%S"))
             svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col')
             svm1.save()
             list_models = [os.path.split(model_dir_svm1)[-1],
@@ -1769,9 +1773,12 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
 
             # Set model function all_predictions and list_models=[model, model, model]
             model_name = 'aggregation_mono_class_multi_label'
-            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            model_dir_svm2 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_name_svm1 = 'aggregation_mono_class_multi_label_svm1'
+            model_name_svm2 = 'aggregation_mono_class_multi_label_svm2'
+            model_name_gbt = 'aggregation_mono_class_multi_label_gbt'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name_svm1, datetime.now().strftime(f"{model_name_svm1}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_svm2 = os.path.join(utils.get_models_path(), model_name_svm2, datetime.now().strftime(f"{model_name_svm2}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_gbt = os.path.join(utils.get_models_path(), model_name_gbt, datetime.now().strftime(f"{model_name_gbt}_%Y_%m_%d-%H_%M_%S"))
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             list_models = [model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2']),
                            model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2']),
@@ -2603,9 +2610,12 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
 
             # Set model with function majority_vote and list_models=[model, model, model]
             model_name = 'aggregation_multi_class_mono_label'
-            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            model_dir_svm2 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_name_svm1 = 'aggregation_multi_class_mono_label_svm1'
+            model_name_svm2 = 'aggregation_multi_class_mono_label_svm2'
+            model_name_gbt = 'aggregation_multi_class_mono_label_gbt'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name_svm1, datetime.now().strftime(f"{model_name_svm1}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_svm2 = os.path.join(utils.get_models_path(), model_name_svm2, datetime.now().strftime(f"{model_name_svm2}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_gbt = os.path.join(utils.get_models_path(), model_name_gbt, datetime.now().strftime(f"{model_name_gbt}_%Y_%m_%d-%H_%M_%S"))
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
                            model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
@@ -2649,7 +2659,8 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
 
             # Set model with function proba_argmax and list_models=[model_name, model, model]
             model_name = 'aggregation_multi_class_mono_label'
-            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_name_svm1 = 'aggregation_multi_class_mono_label_svm1'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name_svm1, datetime.now().strftime(f"{model_name_svm1}_%Y_%m_%d-%H_%M_%S"))
             svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col')
             svm1.save()
             list_models = [os.path.split(model_dir_svm1)[-1],
@@ -3099,9 +3110,12 @@ class Case5_MonoOutputRegression(unittest.TestCase):
 
             # Set model with function mean_predict and list_models=[model, model, model]
             model_name = 'aggregation_multi_class_mono_label'
-            model_dir_sgd1 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            model_dir_sgd2 = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            model_dir_gbt = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            model_name_sgd1 = 'aggregation_multi_class_mono_label_sgd1'
+            model_name_sgd2 = 'aggregation_multi_class_mono_label_sgd2'
+            model_name_gbt = 'aggregation_multi_class_mono_label_gbt'
+            model_dir_sgd1 = os.path.join(utils.get_models_path(), model_name_sgd1, datetime.now().strftime(f"{model_name_sgd1}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_sgd2 = os.path.join(utils.get_models_path(), model_name_sgd2, datetime.now().strftime(f"{model_name_sgd2}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_gbt = os.path.join(utils.get_models_path(), model_name_gbt, datetime.now().strftime(f"{model_name_gbt}_%Y_%m_%d-%H_%M_%S"))
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             list_models = [model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1, x_col=['col_1', 'col_2'], y_col='y_col'),
                            model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_sgd2, x_col=['col_1', 'col_2'], y_col='y_col'),
