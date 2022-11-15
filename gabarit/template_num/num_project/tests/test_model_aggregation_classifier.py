@@ -29,7 +29,7 @@ from {{package_name}}.models_training.regressors.model_sgd_regressor import Mode
 from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin
 from {{package_name}}.models_training.classifiers.model_gbt_classifier import ModelGBTClassifier
 from {{package_name}}.models_training.classifiers.model_sgd_classifier import ModelSGDClassifier
-from {{package_name}}.models_training.classifiers.model_aggregation_classifier import ModelAggregationClassifier
+from {{package_name}}.models_training.classifiers.model_aggregation_classifier import ModelAggregationClassifier, proba_argmax, majority_vote, all_predictions, vote_labels
 
 # Disable logging
 import logging
@@ -232,7 +232,9 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         model_name = 'test_model_name'
 
-        def test_init_partial(model, model_name, model_dir, multi_label, using_proba, list_model_names, list_models_trained):
+        x_train = pd.DataFrame.from_dict({'0':{'1': 1.2, '2':3.2}, '1':{'1': 1.1, '2':-3.2}}, orient='index')
+        y_train = pd.Series(['coucou', 'coucou2'])
+        def test_init_partial(model, model_name, model_dir, multi_label, using_proba, list_model_names, trained):
             self.assertTrue(os.path.isdir(model_dir))
             self.assertEqual(model.model_name, model_name)
             if multi_label:
@@ -247,8 +249,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
             self.assertEqual([sub_model['name'] for sub_model in model.sub_models], list_model_names)
             self.assertTrue(isinstance(model.sub_models[0]['model'], ModelGBTClassifier))
             self.assertTrue(isinstance(model.sub_models[1]['model'], ModelSGDClassifier))
-            self.assertEqual([sub_model['init_trained'] for sub_model in model.sub_models], list_models_trained)
-            self.assertEqual(model.trained, sorted([sub_model['init_trained'] for sub_model in model.sub_models])[0])
+            self.assertEqual(model.trained, trained)
 
             # We test display_if_gpu_activated and _is_gpu_activated just by calling them
             model.display_if_gpu_activated()
@@ -263,11 +264,12 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         # using_proba
         # not multi_label
         gbt, sgd, gbt_name, sgd_name = self.create_models()
+        gbt.fit(x_train, y_train)
         list_models = [gbt, sgd]
         list_model_names = [gbt_name, sgd_name]
         model = ModelAggregationClassifier(model_dir=model_dir, model_name=model_name, list_models=list_models, using_proba=True, multi_label=False, aggregation_function='proba_argmax')
-        test_init_partial(model, model_name, model_dir, False, True, list_model_names, [False, False])
-        self.assertEqual(model.proba_argmax.__code__.co_code, model.aggregation_function.__code__.co_code)
+        test_init_partial(model, model_name, model_dir, False, True, list_model_names, trained=False)
+        self.assertEqual(proba_argmax.__code__.co_code, model.aggregation_function.__code__.co_code)
         remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model_name]
@@ -278,8 +280,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         list_models = [gbt_name, sgd_name]
         list_model_names = [gbt_name, sgd_name]
         model = ModelAggregationClassifier(model_dir=model_dir, model_name=model_name, list_models=list_models, aggregation_function='majority_vote')
-        test_init_partial(model, model_name, model_dir, False, False, list_model_names, [False, False])
-        self.assertEqual(model.majority_vote.__code__.co_code, model.aggregation_function.__code__.co_code)
+        test_init_partial(model, model_name, model_dir, False, False, list_model_names, trained=False)
+        self.assertEqual(majority_vote.__code__.co_code, model.aggregation_function.__code__.co_code)
         remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model]
@@ -290,8 +292,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         list_models = [gbt_name, sgd]
         list_model_names = [gbt_name, sgd_name]
         model = ModelAggregationClassifier(model_dir=model_dir, model_name=model_name, list_models=list_models, using_proba=False, multi_label=True, aggregation_function='all_predictions')
-        test_init_partial(model, model_name, model_dir, True, False, list_model_names, [False, False])
-        self.assertEqual(model.all_predictions.__code__.co_code, model.aggregation_function.__code__.co_code)
+        test_init_partial(model, model_name, model_dir, True, False, list_model_names, trained=False)
+        self.assertEqual(all_predictions.__code__.co_code, model.aggregation_function.__code__.co_code)
         remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model]
@@ -302,8 +304,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         list_models = [gbt_name, sgd]
         list_model_names = [gbt_name, sgd_name]
         model = ModelAggregationClassifier(model_dir=model_dir, model_name=model_name, list_models=list_models, aggregation_function='vote_labels', multi_label=True)
-        test_init_partial(model, model_name, model_dir, True, False, list_model_names, [False, False])
-        self.assertEqual(model.vote_labels.__code__.co_code, model.aggregation_function.__code__.co_code)
+        test_init_partial(model, model_name, model_dir, True, False, list_model_names, trained=False)
+        self.assertEqual(vote_labels.__code__.co_code, model.aggregation_function.__code__.co_code)
         remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model]
@@ -312,7 +314,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         # not multi_label
 
         # This function is a copy of majority_vote function
-        def function_test(predictions):
+        def function_test(predictions, **kwargs):
             '''Gives the class corresponding to the most present prediction in the given predictions. 
             In case of a tie, gives the prediction of the first model involved in the tie
             Args:
@@ -327,10 +329,13 @@ class ModelAggregationClassifierTests(unittest.TestCase):
             return [prediction for prediction in predictions if prediction in possible_classes][0]
 
         gbt, sgd, gbt_name, sgd_name = self.create_models()
+        gbt.fit(x_train, y_train)
+        gbt.save()
+        sgd.fit(x_train, y_train)
         list_models = [gbt_name, sgd]
         list_model_names = [gbt_name, sgd_name]
         model = ModelAggregationClassifier(model_dir=model_dir, model_name=model_name, list_models=list_models, using_proba=False, multi_label=False, aggregation_function=function_test)
-        test_init_partial(model, model_name, model_dir, False, False, list_model_names, [False, False])
+        test_init_partial(model, model_name, model_dir, False, False, list_model_names, trained=True)
         self.assertEqual(function_test.__code__.co_code, model.aggregation_function.__code__.co_code)
         remove_dir_model(model, model_dir)
 
@@ -397,13 +402,67 @@ class ModelAggregationClassifierTests(unittest.TestCase):
             model = ModelAggregationClassifier(model_dir=model_dir, list_models=list_models, multi_label=True, aggregation_function='proba_argmax')
         remove_dir_model(model, model_dir)
 
-    def test02_model_aggregation_classifier_manage_sub_models(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._manage_sub_models'''
+    def test02_model_aggregation_setter_aggregation_function(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.aggregation_function'''
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        def test_setter_aggregation_function(model, aggregation_function, using_proba, multi_label):
+            self.assertEqual(model.aggregation_function.__code__.co_code, aggregation_function.__code__.co_code)
+            self.assertEqual(model.using_proba, using_proba)
+            self.assertEqual(model.multi_label, multi_label)
+
+        # Mono label aggregation functions
+        model = ModelAggregationClassifier(model_dir=model_dir, multi_label=False)
+        model.aggregation_function = 'proba_argmax'
+        test_setter_aggregation_function(model, proba_argmax, using_proba=True, multi_label=False)
+        model.aggregation_function = 'majority_vote'
+        test_setter_aggregation_function(model, majority_vote, using_proba=False, multi_label=False)
+        with self.assertRaises(ValueError):
+            model.aggregation_function = 'all_predictions'
+        remove_dir(model_dir)
+
+        # Multi labels aggregation functions
+        model = ModelAggregationClassifier(model_dir=model_dir, aggregation_function='all_predictions', multi_label=True)
+        model.aggregation_function = 'vote_labels'
+        test_setter_aggregation_function(model, vote_labels, using_proba=False, multi_label=True)
+        model.aggregation_function = 'all_predictions'
+        test_setter_aggregation_function(model, all_predictions, using_proba=False, multi_label=True)
+        with self.assertRaises(ValueError):
+            model.aggregation_function = 'majority_vote'
+        remove_dir(model_dir)
+
+        # local aggregation function
+        # This function is a copy of all_predictions function
+        def function_test(predictions: np.ndarray, **kwargs) -> np.ndarray:
+            '''Calculates the sum of the arrays along axis 0 casts it to bool and then to int.
+            Expects a numpy array containing only zeroes and ones.
+            When used as an aggregation function, keeps all the prediction of each model (multi-labels)
+
+            Args:
+                predictions (np.ndarray) : Array of shape : (n_models, n_classes)
+            Return:
+                np.ndarray: The prediction
+            '''
+            return np.sum(predictions, axis=0, dtype=bool).astype(int)
+
+        model = ModelAggregationClassifier(model_dir=model_dir, aggregation_function='vote_labels', multi_label=True)
+        model.aggregation_function = function_test
+        test_setter_aggregation_function(model, function_test, using_proba=False, multi_label=True)
+        remove_dir(model_dir)
+
+        # error
+        with self.assertRaises(ValueError):
+            model = ModelAggregationClassifier(model_dir=model_dir, aggregation_function='toto', multi_label=True)
+        remove_dir(model_dir)
+
+    def test03_model_aggregation_classifier_sub_models(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.sub_models'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
-        def check_manage_sub_models(sub_models, list_models_name):
+        def check_sub_models(sub_models, list_models_name):
             self.assertTrue(isinstance(sub_models[0]['model'], ModelGBTClassifier))
             self.assertTrue(isinstance(sub_models[1]['model'], ModelSGDClassifier))
             self.assertEqual(len(sub_models), len(list_models))
@@ -414,8 +473,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         list_models = [gbt, sgd]
         list_models_name = [gbt_name, sgd_name]
         model = ModelAggregationClassifier(model_dir=model_dir)
-        sub_models = model._manage_sub_models(list_models)
-        check_manage_sub_models(sub_models, list_models_name)
+        model.sub_models = list_models
+        check_sub_models(model.sub_models, list_models_name)
         remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model_name]
@@ -423,8 +482,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         list_models = [gbt_name, sgd_name]
         list_models_name = [gbt_name, sgd_name]
         model = ModelAggregationClassifier(model_dir=model_dir)
-        sub_models = model._manage_sub_models(list_models)
-        check_manage_sub_models(sub_models, list_models_name)
+        model.sub_models = list_models
+        check_sub_models(model.sub_models, list_models_name)
         remove_dir_model(model, model_dir)
 
         # list_models = [model_name, model]
@@ -432,11 +491,11 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         list_models = [gbt_name, sgd]
         list_models_name = [gbt_name, sgd_name]
         model = ModelAggregationClassifier(model_dir=model_dir)
-        sub_models = model._manage_sub_models(list_models)
-        check_manage_sub_models(sub_models, list_models_name)
+        model.sub_models = list_models
+        check_sub_models(model.sub_models, list_models_name)
         remove_dir_model(model, model_dir)
 
-    def test03_model_aggregation_classifier_check_trained(self):
+    def test04_model_aggregation_classifier_check_trained(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._check_trained'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -471,7 +530,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         check_empty(model)
         gbt.fit(x_train, y_train_str)
         sgd.fit(x_train, y_train_str)
-        model.sub_models = model._manage_sub_models([gbt, sgd])
+        model.sub_models = [gbt, sgd]
         trained, list_classes, dict_classes = model._check_trained()
         check_not_empty(trained, list_classes, dict_classes, n_classes_str, list_classes_str, dict_classes_str)
         remove_dir_model(model, model_dir)
@@ -480,7 +539,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         gbt, sgd, _, _ = self.create_models()
         model = ModelAggregationClassifier(model_dir=model_dir)
         check_empty(model)
-        model.sub_models = model._manage_sub_models([gbt, sgd])
+        model.sub_models =[gbt, sgd]
         trained, list_classes, dict_classes = model._check_trained()
         check_explicit_empty(trained, list_classes, dict_classes)
         remove_dir_model(model, model_dir)
@@ -489,12 +548,12 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         model = ModelAggregationClassifier(model_dir=model_dir)
         check_empty(model)
         sgd.fit(x_train, y_train_str)
-        model.sub_models = model._manage_sub_models([gbt, sgd])
+        model.sub_models = [gbt, sgd]
         trained, list_classes, dict_classes = model._check_trained()
         check_explicit_empty(trained, list_classes, dict_classes)
         remove_dir_model(model, model_dir)
 
-    def test04_model_aggregation_classifier_fit(self):
+    def test05_model_aggregation_classifier_fit(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.fit'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -549,14 +608,14 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         check_trained(model)
         remove_dir_model(model, model_dir)
 
-    def test05_model_aggregation_classifier_predict(self):
+    def test06_model_aggregation_classifier_predict(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.predict'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
         # This function is a copy of majority_vote function
-        def function_test(predictions):
+        def function_test(predictions, **kwargs):
             '''Gives the class corresponding to the most present prediction in the given predictions. 
             In case of a tie, gives the prediction of the first model involved in the tie
             Args:
@@ -625,14 +684,14 @@ class ModelAggregationClassifierTests(unittest.TestCase):
             model.predict('test')
         remove_dir_model(model, model_dir)
 
-    def test06_model_aggregation_classifier_get_probas_sub_models(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._get_probas_sub_models'''
+    def test07_model_aggregation_classifier_predict_probas_sub_models(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._predict_probas_sub_models'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
         model = ModelAggregationClassifier(model_dir=model_dir, list_models=list_models_mono)
-        probas = model._get_probas_sub_models(x_test)
+        probas = model._predict_probas_sub_models(x_test)
         self.assertTrue(isinstance(probas, np.ndarray))
         self.assertEqual(target_get_proba_mono.shape, probas.shape)
         for i in range(len(x_test)):
@@ -644,18 +703,18 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         # Model needs to be fitted
         model = ModelAggregationClassifier(model_dir=model_dir)
         with self.assertRaises(AttributeError):
-            model._get_probas_sub_models('test')
+            model._predict_probas_sub_models('test')
         remove_dir(model_dir)
 
-    def test07_model_aggregation_classifier_get_predictions_sub_models(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._get_predictions_sub_models'''
+    def test08_model_aggregation_classifier__predict_sub_models(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._predict_sub_models'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
         # mono_label
         model = ModelAggregationClassifier(model_dir=model_dir, list_models=list_models_mono)
-        preds = model._get_predictions_sub_models(x_test)
+        preds = model._predict_sub_models(x_test)
         self.assertTrue(isinstance(preds, np.ndarray))
         self.assertEqual(target_get_predictions_mono.shape, preds.shape)
         for i in range(len(x_test)):
@@ -665,7 +724,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         # multi_label
         model = ModelAggregationClassifier(model_dir=model_dir, list_models=list_models_multi, aggregation_function='all_predictions', multi_label=True)
-        preds = model._get_predictions_sub_models(x_test)
+        preds = model._predict_sub_models(x_test)
         self.assertTrue(isinstance(preds, np.ndarray))
         self.assertEqual(target_get_predictions_multi.shape, preds.shape)
         for i in range(len(x_test)):
@@ -677,10 +736,10 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         # Model needs to be fitted
         model = ModelAggregationClassifier(model_dir=model_dir)
         with self.assertRaises(AttributeError):
-            model._get_predictions_sub_models('test')
+            model._predict_sub_models('test')
         remove_dir(model_dir)
 
-    def test08_model_aggregation_classifier_predict_proba(self):
+    def test09_model_aggregation_classifier_predict_proba(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.predict_proba'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -700,8 +759,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
             model.predict_proba('test')
         remove_dir(model_dir)
 
-    def test09_model_aggregation_classifier_predict_model_with_full_list_classes(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._predict_model_with_full_list_classes'''
+    def test10_model_aggregation_classifier_predict_full_list_classes(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier._predict_full_list_classes'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -720,14 +779,14 @@ class ModelAggregationClassifierTests(unittest.TestCase):
                                     ['1', '2', '4'])
 
         # mono_label, no return_proba
-        preds = model._predict_model_with_full_list_classes(mock_model_mono, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=False)
+        preds = model._predict_full_list_classes(mock_model_mono, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=False)
         target_mono = np.array(['2', '1', '4'])
         self.assertEqual(target_mono.shape, preds.shape)
         for truth, pred in zip(target_mono, preds):
             self.assertEqual(truth, pred)
 
         # mono_label, return_proba
-        preds = model._predict_model_with_full_list_classes(mock_model_mono, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=True)
+        preds = model._predict_full_list_classes(mock_model_mono, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=True)
         target_mono_return_proba = np.array([[0.0, 0.2, 0.8, 0.0, 0.0, 0.0], [0.0, 0.9, 0.0, 0.0, 0.1, 0.0], [0.0, 0.2, 0.1, 0.0, 0.7, 0.0]])
         self.assertEqual(target_mono_return_proba.shape, preds.shape)
         for truth, pred in zip(target_mono_return_proba, preds):
@@ -751,7 +810,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
                                     ['1', '2', '4'])
 
         # multi_label, no return_proba
-        preds = model._predict_model_with_full_list_classes(mock_model_multi, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=False)
+        preds = model._predict_full_list_classes(mock_model_multi, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=False)
         target_multi = np.array([[0, 1, 1, 0, 0, 0], [0, 1, 0, 0, 1, 0], [0, 0, 0, 0, 0, 0]])
         self.assertEqual(target_multi.shape, preds.shape)
         for truth, pred in zip(target_multi, preds):
@@ -759,7 +818,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
                 self.assertEqual(truth_value, pred_value)
 
         # multi_label, return_proba
-        preds = model._predict_model_with_full_list_classes(mock_model_multi, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=True)
+        preds = model._predict_full_list_classes(mock_model_multi, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=True)
         target_mono_return_proba = np.array([[0.0, 0.2, 0.8, 0.0, 0.0, 0.0], [0.0, 0.9, 0.0, 0.0, 0.1, 0.0], [0.0, 0.2, 0.1, 0.0, 0.7, 0.0]])
         self.assertEqual(target_mono_return_proba.shape, preds.shape)
         for truth, pred in zip(target_mono_return_proba, preds):
@@ -768,64 +827,45 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         remove_dir(model_dir)
 
-    def test10_model_aggregation_classifier_proba_argmax(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.proba_argmax'''
+    def test11_proba_argmax(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_classifier.proba_argmax'''
 
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        model = ModelAggregationClassifier(model_dir=model_dir)
-        model.list_classes = ['0', '1', '2', '3']
-        model.dict_classes = {i: col for i, col in enumerate(model.list_classes)}
+        list_classes = ['0', '1', '2', '3']
 
         # shape (3 models, 4 classes)
         probas = np.array([[0.1, 0.2, 0.3, 0.4], [0.2, 0.1, 0.3, 0.4], [0.5, 0.1, 0.3, 0.1]])
-        self.assertEqual(model.proba_argmax(probas), '2')
+        self.assertEqual(proba_argmax(probas, list_classes), '2')
 
         probas = np.array([[0.1, 0.2, 0.3, 0.4], [0.2, 0.1, 0.3, 0.4], [0.5, 0.05, 0.3, 0.15]])
-        self.assertEqual(model.proba_argmax(probas), '3')
+        self.assertEqual(proba_argmax(probas, list_classes), '3')
 
         probas = np.array([[0.1, 0.2, 0.3, 0.4], [0.7, 0.0, 0.3, 0.0], [0.5, 0.05, 0.3, 0.15]])
-        self.assertEqual(model.proba_argmax(probas), '0')
+        self.assertEqual(proba_argmax(probas, list_classes), '0')
 
         probas = np.array([[0.1, 0.2, 0.3, 0.4], [0.0, 0.7, 0.3, 0.0], [0.5, 0.3, 0.05, 0.15]])
-        self.assertEqual(model.proba_argmax(probas), '1')
-        
-        remove_dir(model_dir)
+        self.assertEqual(proba_argmax(probas, list_classes), '1')
 
-    def test11_model_aggregation_classifier_majority_vote(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.majority_vote'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        model = ModelAggregationClassifier(model_dir=model_dir)
+    def test12_majority_vote(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_classifier.majority_vote'''
 
         # normal case (4 models)
         preds = np.array(['a', 'b', 'b', 'c'])
-        self.assertEqual(model.majority_vote(preds), 'b')
+        self.assertEqual(majority_vote(preds), 'b')
         # normal case (1 model)
         preds = np.array(['5'])
-        self.assertEqual(model.majority_vote(preds), '5')
+        self.assertEqual(majority_vote(preds), '5')
         # same predict (5 models)
         preds = np.array(['a', 'b', 'c', 'b', 'c'])
-        self.assertEqual(model.majority_vote(preds), 'b')
+        self.assertEqual(majority_vote(preds), 'b')
         # same predict (5 models)
         preds = np.array(['b', 'a', 'c', 'b', 'c'])
-        self.assertEqual(model.majority_vote(preds), 'b')
+        self.assertEqual(majority_vote(preds), 'b')
 
-        remove_dir(model_dir)
+    def test13_all_predictions(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_classifier.all_predictions'''
 
-    def test12_model_aggregation_classifier_all_predictions(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.all_predictions'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        model = ModelAggregationClassifier(model_dir=model_dir)
-
-        def test_all_predictions(model, preds, target_pred):
-            actual_pred = model.all_predictions(preds)
+        def test_all_predictions(preds, target_pred):
+            actual_pred = all_predictions(preds)
             for truth, pred in zip(target_pred, actual_pred):
                 self.assertEqual(truth, pred)
 
@@ -833,40 +873,33 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         # shape (3 models, 4 classes)
         preds = np.array([[1, 0, 0, 1], [0, 0, 0, 0], [0, 1, 0, 1]])
         target_pred = np.array([1, 1, 0, 1])
-        test_all_predictions(model, preds, target_pred)
+        test_all_predictions(preds, target_pred)
 
         # shape (3 models, 2 classes)
         preds = np.array([[0, 1], [1, 0], [0, 1]])
         target_pred = np.array([1, 1])
-        test_all_predictions(model, preds, target_pred)
+        test_all_predictions(preds, target_pred)
 
         # shape (1 model, 3 classes)
         preds = np.array([[1, 1, 0]])
         target_pred = np.array([1, 1, 0])
-        test_all_predictions(model, preds, target_pred)
+        test_all_predictions(preds, target_pred)
 
         # shape (3 models, 1 class)
         preds = np.array([[0], [0], [1]])
         target_pred = np.array([1])
-        test_all_predictions(model, preds, target_pred)
+        test_all_predictions(preds, target_pred)
         
         # shape (3 models, 1 class)
         preds = np.array([[0], [0], [0]])
         target_pred = np.array([0])
-        test_all_predictions(model, preds, target_pred)
+        test_all_predictions(preds, target_pred)
 
-        remove_dir(model_dir)
+    def test14_vote_labels(self):
+        '''Test of {{package_name}}.models_training.model_aggregation_classifier.vote_labels'''
 
-    def test13_model_aggregation_classifier_vote_labels(self):
-        '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.vote_labels'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        model = ModelAggregationClassifier(model_dir=model_dir)
-
-        def test_vote_labels(model, preds, target_pred):
-            actual_pred = model.vote_labels(preds)
+        def test_vote_labels(preds, target_pred):
+            actual_pred = vote_labels(preds)
             for truth, pred in zip(target_pred, actual_pred):
                 self.assertEqual(truth, pred)
 
@@ -874,36 +907,34 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         # shape (3 models, 4 labels)
         preds = np.array([[1, 0, 0, 1], [1, 1, 0, 0], [1, 0, 0, 1]])
         target_pred = np.array([1, 0, 0, 1])
-        test_vote_labels(model, preds, target_pred)
+        test_vote_labels(preds, target_pred)
 
         # shape (3 models, 2 labels)
         preds = np.array([[0, 1], [1, 0], [0, 1]])
         target_pred = np.array([0, 1])
-        test_vote_labels(model, preds, target_pred)
+        test_vote_labels(preds, target_pred)
 
         # shape (1 model, 3 labels)
         preds = np.array([[1, 1, 0]])
         target_pred = np.array([1, 1, 0])
-        test_vote_labels(model, preds, target_pred)
+        test_vote_labels(preds, target_pred)
 
         # shape (3 models, 1 label)
         preds = np.array([[0], [1], [1]])
         target_pred = np.array([1])
-        test_vote_labels(model, preds, target_pred)
+        test_vote_labels(preds, target_pred)
 
         # shape (3 models, 1 label)
         preds = np.array([[0], [1], [0]])
         target_pred = np.array([0])
-        test_vote_labels(model, preds, target_pred)
+        test_vote_labels(preds, target_pred)
 
         # same predict
         preds = np.array([[0, 1], [1, 0], [0, 0], [1, 1]])
         target_pred = np.array([0, 1])
-        test_vote_labels(model, preds, target_pred)
+        test_vote_labels(preds, target_pred)
 
-        remove_dir(model_dir)
-
-    def test14_model_aggregation_classifier_save(self):
+    def test15_model_aggregation_classifier_save(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.save'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -935,6 +966,46 @@ class ModelAggregationClassifierTests(unittest.TestCase):
             with open(os.path.join(sub_model['model'].model_dir, 'configurations.json'), 'r', encoding='utf-8') as f:
                 configs = json.load(f)
             self.assertTrue(set_attributes_in_config.issubset(set(configs.keys())))
+            self.assertTrue(configs['trained'])
+            self.assertEqual(configs['package_version'], utils.get_package_version())
+            remove_dir(os.path.join(models_path, os.path.split(sub_model['model'].model_dir)[-1]))
+
+        self.assertTrue(os.path.exists(os.path.join(model_dir, "model_upload_instructions.md")))
+        with open(os.path.join(model_dir, "model_upload_instructions.md"), 'r') as read_obj:
+            text = read_obj.read()
+            self.assertEqual(text[0:20], "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that"[0:20])
+        remove_dir(model_dir)
+
+        # Same thing with a fitted model which is not saved before
+
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        y_train = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
+
+        gbt, sgd, gbt_name, sgd_name = self.create_models()
+        gbt.fit(x_train, y_train)
+        model = ModelAggregationClassifier(model_dir=model_dir, list_models=[gbt, sgd])
+        model.fit(x_train, y_train)
+        model.save(json_data={'test': 10})
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"aggregation_function.pkl")))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"{model.model_name}.pkl")))
+        with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='utf-8') as f:
+            configs = json.load(f)
+        self.assertEqual(configs['test'], 10)
+        set_attributes_in_config = {'package_version', 'model_name', 'model_dir', 'trained', 'nb_fit', 
+                                    'list_classes', 'dict_classes', 'x_col', 'y_col', 'multi_label', 
+                                    'level_save', 'librairie'}
+        set_attributes_in_config_tot = set_attributes_in_config.union({'list_models_name', 'using_proba'})
+        self.assertTrue(set_attributes_in_config_tot.issubset(set(configs.keys())))
+        self.assertEqual(configs['package_version'], utils.get_package_version())
+        self.assertEqual(configs['librairie'], None)
+        for sub_model in model.sub_models:
+            self.assertTrue(os.path.exists(os.path.join(sub_model['model'].model_dir, 'configurations.json')))
+            self.assertTrue(os.path.exists(os.path.join(sub_model['model'].model_dir, f"{sub_model['model'].model_name}.pkl")))
+            with open(os.path.join(sub_model['model'].model_dir, 'configurations.json'), 'r', encoding='utf-8') as f:
+                configs = json.load(f)
+            self.assertTrue(set_attributes_in_config.issubset(set(configs.keys())))
+            self.assertTrue(configs['trained'])
             self.assertEqual(configs['package_version'], utils.get_package_version())
             remove_dir(os.path.join(models_path, os.path.split(sub_model['model'].model_dir)[-1]))
 
@@ -947,7 +1018,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         # Same thing with a local function
         # This function is a copy of majority_vote function
-        def function_test(predictions):
+        def function_test(predictions, **kwargs):
             '''Gives the class corresponding to the most present prediction in the given predictions. 
             In case of a tie, gives the prediction of the first model involved in the tie
             Args:
@@ -977,6 +1048,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         set_attributes_in_config = {'package_version', 'model_name', 'model_dir', 'trained', 'nb_fit', 
                                     'list_classes', 'dict_classes', 'x_col', 'y_col', 'multi_label', 
                                     'level_save', 'librairie'}
+        set_attributes_in_config_sub_models = set_attributes_in_config.union({'aggregator_dir'})
         set_attributes_in_config_tot = set_attributes_in_config.union({'list_models_name', 'using_proba'})
         self.assertTrue(set_attributes_in_config_tot.issubset(set(configs.keys())))
         self.assertEqual(configs['package_version'], utils.get_package_version())
@@ -986,7 +1058,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
             self.assertTrue(os.path.exists(os.path.join(sub_model['model'].model_dir, f"{sub_model['model'].model_name}.pkl")))
             with open(os.path.join(sub_model['model'].model_dir, 'configurations.json'), 'r', encoding='utf-8') as f:
                 configs = json.load(f)
-            self.assertTrue(set_attributes_in_config.issubset(set(configs.keys())))
+            self.assertTrue(set_attributes_in_config_sub_models.issubset(set(configs.keys())))
+            self.assertTrue(configs['trained'])
             self.assertEqual(configs['package_version'], utils.get_package_version())
             remove_dir(os.path.join(models_path, os.path.split(sub_model['model'].model_dir)[-1]))
 
@@ -996,7 +1069,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
             self.assertEqual(text[0:20], "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that"[0:20])
         remove_dir(model_dir)
 
-    def test15_model_aggregation_classifier_prepend_line(self):
+    def test16_model_aggregation_classifier_prepend_line(self):
         '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregationClassifier.prepend_line'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -1013,7 +1086,7 @@ class ModelAggregationClassifierTests(unittest.TestCase):
             self.assertTrue(f.read() == 'titi\ntoto')
         remove_dir(model_dir)
 
-    def test16_model_aggregation_classifier_reload_from_standalone(self):
+    def test17_model_aggregation_classifier_reload_from_standalone(self):
         '''Test of {{package_name}}.models_training.model_aggregation_classifier.ModelAggregationClassifier.reload_from_standalone'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')

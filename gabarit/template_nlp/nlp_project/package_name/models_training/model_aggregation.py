@@ -124,7 +124,7 @@ class ModelAggregation(ModelClass):
         self.aggregation_function = aggregation_function
 
         # Manage submodels
-        self.sub_models = list_models  # Transform the list into a list of dictionnaries [{'name': xxx, 'model': xxx, 'init_trained': xxx}, ...]
+        self.sub_models = list_models  # Transform the list into a list of dictionnaries [{'name': xxx, 'model': xxx}, ...]
 
         # Check for multi-labels inconsistencies
         set_multi_label = {sub_model['model'].multi_label for sub_model in self.sub_models}
@@ -167,11 +167,6 @@ class ModelAggregation(ModelClass):
                 self.using_proba = using_proba  # type: ignore
             if self.multi_label != multi_label:
                 raise ValueError(f"multi_label {self.multi_label} is incompatible with the selected aggregation function '{agg_function}'.")
-        # Set aggregation function
-        # If agg function has list_classes argument
-        # Then ...
-        # Else
-        # ...
         self._aggregation_function = agg_function
 
     @aggregation_function.deleter
@@ -197,9 +192,9 @@ class ModelAggregation(ModelClass):
             # If a string (a model name), reload it
             if isinstance(model, str):
                 real_model, _ = utils_models.load_model(model)
-                dict_model = {'name': model, 'model': real_model, 'init_trained': real_model.trained}
+                dict_model = {'name': model, 'model': real_model}
             else:
-                dict_model = {'name': os.path.split(model.model_dir)[-1], 'model': model, 'init_trained': model.trained}
+                dict_model = {'name': os.path.split(model.model_dir)[-1], 'model': model}
             sub_models.append(dict_model.copy())
         self._sub_models = sub_models.copy()
 
@@ -364,7 +359,14 @@ class ModelAggregation(ModelClass):
         default_json_data['aggregator_dir'] = self.model_dir
         # Save each trained and unsaved model
         for sub_model in self.sub_models:
-            if not sub_model['init_trained'] and sub_model['model'].trained:
+            path_config = os.path.join(sub_model['model'].model_dir, 'configurations.json')
+            if os.path.exists(path_config):
+                with open(path_config, 'r', encoding='utf-8') as f:
+                    configs = json.load(f)
+                    trained = configs.get('trained', False)
+                    if not trained:
+                        sub_model['model'].save(default_json_data)
+            else:
                 sub_model['model'].save(default_json_data)
 
         # Add some specific informations
@@ -452,7 +454,7 @@ class ModelAggregation(ModelClass):
         # self.model_dir = # Keep the created folder
         self.nb_fit = configs.get('nb_fit', 1)  # Consider one unique fit by default
         self.trained = configs.get('trained', True)  # Consider trained by default
-        self.sub_models = configs.get('list_models_name', [])  # Transform the list into a list of dictionnaries [{'name': xxx, 'model': xxx, 'init_trained': xxx}, ...]
+        self.sub_models = configs.get('list_models_name', [])  # Transform the list into a list of dictionnaries [{'name': xxx, 'model': xxx,}, ...]
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label',
                           'level_save', 'using_proba']:
