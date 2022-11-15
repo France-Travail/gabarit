@@ -1305,19 +1305,13 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             # This function is a copy of majority_vote function
-            def function_test(predictions):
-                '''Gives the class corresponding to the most present prediction in the given predictions. 
-                In case of a tie, gives the prediction of the first model involved in the tie
-                Args:
-                    predictions (np.ndarray) : The array containing the predictions of each model (shape (n_models)) 
-                Returns:
-                    The prediction
-                '''
+            def function_test(predictions, **kwargs):
                 labels, counts = np.unique(predictions, return_counts=True)
                 votes = [(label, count) for label, count in zip(labels, counts)]
                 votes = sorted(votes, key=lambda x: x[1], reverse=True)
                 possible_classes = {vote[0] for vote in votes if vote[1]==votes[0][1]}
                 return [prediction for prediction in predictions if prediction in possible_classes][0]
+                
             test_model_5 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=False, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
@@ -1867,7 +1861,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             # This function is a copy of all_predictions function
-            def function_test(predictions: pd.Series) -> list:
+            def function_test(predictions: pd.Series, **kwargs) -> list:
                 return np.sum(predictions, axis=0, dtype=bool).astype(int)
 
             test_model_5 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
@@ -2702,14 +2696,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             # This function is a copy of majority_vote function
-            def function_test(predictions):
-                '''Gives the class corresponding to the most present prediction in the given predictions. 
-                In case of a tie, gives the prediction of the first model involved in the tie
-                Args:
-                    predictions (np.ndarray) : The array containing the predictions of each model (shape (n_models)) 
-                Returns:
-                    The prediction
-                '''
+            def function_test(predictions, **kwargs):
                 labels, counts = np.unique(predictions, return_counts=True)
                 votes = [(label, count) for label, count in zip(labels, counts)]
                 votes = sorted(votes, key=lambda x: x[1], reverse=True)
@@ -3183,14 +3170,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             # This function is a copy of majority_vote function
-            def function_test(predictions):
-                '''Gives the class corresponding to the most present prediction in the given predictions. 
-                In case of a tie, gives the prediction of the first model involved in the tie
-                Args:
-                    predictions (np.ndarray) : The array containing the predictions of each model (shape (n_models)) 
-                Returns:
-                    The prediction
-                '''
+            def function_test(predictions, **kwargs):
                 labels, counts = np.unique(predictions, return_counts=True)
                 votes = [(label, count) for label, count in zip(labels, counts)]
                 votes = sorted(votes, key=lambda x: x[1], reverse=True)

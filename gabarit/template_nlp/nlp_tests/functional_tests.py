@@ -877,14 +877,13 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             # This function is a copy of majority_vote function
-            def function_test(predictions: pd.Series) -> list:
+            def function_test(predictions: pd.Series, **kwargs) -> list:
                 labels, counts = np.unique(predictions, return_counts=True)
                 votes = [(label, count) for label, count in zip(labels, counts)]
                 votes = sorted(votes, key=lambda x: x[1], reverse=True)
-                if len(votes) > 1 and votes[0][1] == votes[1][1]:
-                    return predictions[0]
-                else:
-                    return votes[0][0]
+                possible_classes = {vote[0] for vote in votes if vote[1]==votes[0][1]}
+                return [prediction for prediction in predictions if prediction in possible_classes][0]
+                
             test_model_5 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
@@ -1513,7 +1512,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             # This function is a copy of all_predictions function
-            def function_test(predictions: pd.Series) -> list:
+            def function_test(predictions: pd.Series, **kwargs) -> list:
                 return np.sum(predictions, axis=0, dtype=bool).astype(int)
 
             test_model_5 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
@@ -2184,14 +2183,12 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
 
             # This function is a copy of majority_vote function
-            def function_test(predictions: pd.Series) -> list:
+            def function_test(predictions: pd.Series, **kwargs) -> list:
                 labels, counts = np.unique(predictions, return_counts=True)
                 votes = [(label, count) for label, count in zip(labels, counts)]
                 votes = sorted(votes, key=lambda x: x[1], reverse=True)
-                if len(votes) > 1 and votes[0][1] == votes[1][1]:
-                    return predictions[0]
-                else:
-                    return votes[0][0]
+                possible_classes = {vote[0] for vote in votes if vote[1]==votes[0][1]}
+                return [prediction for prediction in predictions if prediction in possible_classes][0]
 
             test_model_5 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
