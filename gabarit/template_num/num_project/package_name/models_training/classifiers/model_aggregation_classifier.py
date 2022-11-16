@@ -371,7 +371,7 @@ class ModelAggregationClassifier(ModelClassifierMixin, ModelClass):
             else:
                 sub_model['model'].save(default_json_data)
 
-        # Add some specific informations
+        # Add some specific information
         json_data['list_models_name'] = [sub_model['name'] for sub_model in self.sub_models]
         json_data['using_proba'] = self.using_proba
 
