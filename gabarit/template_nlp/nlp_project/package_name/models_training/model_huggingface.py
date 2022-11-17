@@ -246,6 +246,7 @@ class ModelHuggingFace(ModelClass):
 
         # Fit
         try:
+            # Prepare trainer
             trainer = Trainer(
                 model=self.model,
                 args=TrainingArguments(**self.trainer_params),
@@ -254,6 +255,7 @@ class ModelHuggingFace(ModelClass):
                 tokenizer=self.tokenizer,
                 data_collator=DataCollatorWithPadding(tokenizer=self.tokenizer)
             )
+            # Fit
             fit_history = trainer.train()
             # Save model & tokenizer
             trainer.model.save_pretrained(save_directory=self.model_dir)
@@ -309,11 +311,14 @@ class ModelHuggingFace(ModelClass):
         # Does not work with np array
         if type(x_test) is np.ndarray:
             x_test = x_test.tolist()
-        # Predict
+        # Prepare predict
         if self.model.training:
             self.model.eval()
         if self.pipe is None:
             self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True)
+            # Set pipe on gpu if available
+            self.pipe = self.pipe.to('cuda') if self._is_gpu_activated() else self.pipe.to('cpu')
+        # Predict
         # As we are using the pipeline, we do not need to prepare x_test (done inside the pipeline)
         results = np.array(self.pipe(x_test))
         predicted_proba = np.array([[x['score'] for x in x] for x in results])
@@ -374,6 +379,8 @@ class ModelHuggingFace(ModelClass):
                 num_labels=len(self.list_classes) if num_labels is None else num_labels,
                 problem_type="multi_label_classification",
                 cache_dir=HF_CACHE_DIR)
+        # Set model on gpu if available
+        model = model.to('cuda') if self._is_gpu_activated() else model.to('cpu')
         return model
 
     def _get_tokenizer(self, model_path: str = None) -> PreTrainedTokenizer:
