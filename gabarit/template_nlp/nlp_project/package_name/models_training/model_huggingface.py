@@ -89,17 +89,18 @@ class ModelHuggingFace(ModelClass):
 
         # Trainer params
         if trainer_params is None:
-            trainer_params = TrainingArguments(
-                output_dir=self.model_dir,
-                learning_rate=2e-5,
-                per_device_train_batch_size=self.batch_size,
-                per_device_eval_batch_size=self.batch_size,
-                num_train_epochs=self.epochs,
-                weight_decay=0.01,
-                evaluation_strategy='epoch',
-                save_strategy='epoch',
-                save_total_limit=1,
-                load_best_model_at_end=True)
+            trainer_params = {
+                'output_dir': self.model_dir,
+                'learning_rate': 2e-5,
+                'per_device_train_batch_size': self.batch_size,
+                'per_device_eval_batch_size': self.batch_size,
+                'num_train_epochs': self.epochs,
+                'weight_decay': 0.01,
+                'evaluation_strategy': 'epoch',
+                'save_strategy': 'epoch',
+                'save_total_limit': 1,
+                'load_best_model_at_end': True
+            }
         self.trainer_params = trainer_params
 
         # Model set on fit or on reload
