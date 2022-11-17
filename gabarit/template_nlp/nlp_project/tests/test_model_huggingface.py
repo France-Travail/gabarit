@@ -321,7 +321,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         with self.assertRaises(AssertionError):
             model.fit(x_train[:50], y_train_multi_fake[:50], x_valid=None, y_valid=None, with_shuffle=True)
         remove_dir(model_dir)
-
+    
+    @unittest.skip("TEMP")
     def test03_model_huggingface_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -347,24 +348,11 @@ class ModelHuggingFaceTests(unittest.TestCase):
         proba = model.predict(x_train, return_proba=True)
         self.assertEqual(proba.shape, (len(x_train), 3))
         proba = model.predict('test', return_proba=True)
-        print(proba)
-        proba = model.predict('test', return_proba=True)
-        print(proba)
-        proba = model.predict('test', return_proba=True)
-        print(proba)
-        proba = model.predict('test', return_proba=True)
-        print(proba)
-        proba = model.predict('test', return_proba=True)
-        print(proba)
-        proba = model.predict('test', return_proba=True)
-        print(proba)
-        proba = model.predict('test', return_proba=True)
-        print(proba)
         self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
         remove_dir(model_dir)
 
         # Multi-labels
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         model.fit(x_train, y_train_multi)
         preds = model.predict(x_train, return_proba=False)
         self.assertEqual(preds.shape, (len(x_train), len(cols)))
@@ -382,8 +370,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
             model.predict('test')
         remove_dir(model_dir)
 
-        
-    @unittest.skip("TEMP")
+    @unittest.skip("TEMP")    
     def test04_model_huggingface_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -453,7 +440,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    @unittest.skip("TEMP")
+    
     def test05_model_huggingface_reload_model(self):
         '''Test of the method reload_model of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -469,21 +456,15 @@ class ModelHuggingFaceTests(unittest.TestCase):
         y_valid_multi = y_train_multi.copy()
         cols = ['test1', 'test2', 'test3']
 
-        # We test with a model embedding LSTM
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono)
+        probs = model.predict_proba(['test', 'toto', 'titi'])
         model.save()
 
         # Reload keras
-        model_path = os.path.join(model.model_dir, 'pytorch_model.bin')
-        reloaded_model = model.reload_model(model_path)
-        self.assertEqual([list(_) for _ in reloaded_model.predict(['test', 'toto', 'titi'])], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
-
-        # Test without custom_objects
-        model.custom_objects = None
-        reloaded_model = model.reload_model(model_path)
-        self.assertEqual([list(_) for _ in reloaded_model.predict(['test', 'toto', 'titi'])], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
-
+        model.reload_model(model.model_dir)
+        self.assertEqual([list(_) for _ in probs], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
+       
         remove_dir(model_dir)
 
 

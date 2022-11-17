@@ -101,7 +101,11 @@ class ModelHuggingFace(ModelClass):
                 per_device_train_batch_size=self.batch_size,
                 per_device_eval_batch_size=self.batch_size,
                 num_train_epochs=self.epochs,
-                weight_decay=0.01)
+                weight_decay=0.01,
+                evaluation_strategy='epoch',
+                save_strategy='epoch',
+                save_total_limit=1,
+                load_best_model_at_end=True)
         self.trainer_params = trainer_params
 
         # Model set on fit or on reload
@@ -283,6 +287,8 @@ class ModelHuggingFace(ModelClass):
         if type(x_test) is np.ndarray:
             x_test = x_test.tolist()
         # Predict
+        if self.model.training:
+            self.model.eval()
         if self.pipe is None:
             self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True)
         results = np.array(self.pipe(x_test))
@@ -309,7 +315,9 @@ class ModelHuggingFace(ModelClass):
         '''
         if type(x_test) is np.ndarray:
             x_test = x_test.tolist()
-        # Process
+        # Predict
+        if self.model.training:
+            self.model.eval()
         if self.pipe is None:
             self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True)
         results = np.array(self.pipe(x_test))
