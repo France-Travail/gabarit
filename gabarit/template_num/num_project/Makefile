@@ -26,6 +26,13 @@ else
 python_exec=python
 endif
 
+.PHONY: help
+
+
+help: ## This help.
+	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
+ 
+.DEFAULT_GOAL := help
 
 create-virtualenv: ## Creation of a virtual environment
 	@echo "Using $(python_exec)"

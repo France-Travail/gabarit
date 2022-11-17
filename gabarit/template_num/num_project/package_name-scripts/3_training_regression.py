@@ -52,7 +52,9 @@ from {{package_name}}.models_training.regressors import (model_rf_regressor,
                                                          model_pls_regressor,
                                                          model_gbt_regressor,
                                                          model_xgboost_regressor,
-                                                         model_lgbm_regressor)
+                                                         model_lgbm_regressor,
+                                                         model_aggregation_regressor
+                                                         )
 
 # Disable some warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
@@ -230,6 +232,9 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
         # model = model_dense_regressor.ModelDenseRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                   preprocess_pipeline=preprocess_pipeline,
         #                                                   batch_size=64, epochs=99, patience=5)
+        # modle = model_aggregation_regressor.ModelAggregationRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
+        #                                                               list_models=[model_sgd_regressor.ModelSGDRegressor(), model_sgd_regressor.ModelSGDRegressor()],
+        #                                                               multi_label=multi_label, preprocess_pipeline=preprocess_pipeline,)
 
     # Display if GPU is being used
     model.display_if_gpu_activated()

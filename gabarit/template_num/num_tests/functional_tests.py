@@ -27,6 +27,7 @@ import json
 import shutil
 import tempfile
 import subprocess
+import numpy as np
 import pandas as pd
 import importlib.util
 from pathlib import Path
@@ -36,13 +37,17 @@ from test_template_num import utils
 from test_template_num.models_training import utils_models
 from test_template_num.models_training.classifiers import (model_rf_classifier, model_dense_classifier,
                                                            model_ridge_classifier, model_logistic_regression_classifier,
-                                                           model_sgd_classifier, model_svm_classifier, model_knn_classifier,
-                                                           model_gbt_classifier, model_lgbm_classifier, model_xgboost_classifier)
+                                                           model_sgd_classifier, model_svm_classifier,
+                                                           model_knn_classifier, model_gbt_classifier,
+                                                           model_lgbm_classifier, model_xgboost_classifier,
+                                                            model_aggregation_classifier)
 from test_template_num.models_training.regressors import (model_rf_regressor, model_dense_regressor,
                                                           model_elasticnet_regressor, model_bayesian_ridge_regressor,
                                                           model_kernel_ridge_regressor, model_svr_regressor,
-                                                          model_sgd_regressor, model_knn_regressor, model_pls_regressor,
-                                                          model_gbt_regressor, model_xgboost_regressor, model_lgbm_regressor)
+                                                          model_sgd_regressor,
+                                                          model_knn_regressor, model_pls_regressor,
+                                                          model_gbt_regressor, model_xgboost_regressor, model_lgbm_regressor,
+                                                          model_aggregation_regressor)
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
@@ -1190,6 +1195,142 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_DenseClassifier failed')
 
+    def test12_Model_AggregationClassifier(self):
+        '''Test of the model AggregationClassifier'''
+        print('            ------------------ >     Test of the model AggregationClassifiers    /   Mono-class & Mono-label')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_num-scripts/3_training_classification.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+
+            # Get pipeline
+            pipelines_dirpath = os.path.join(full_path_lib, 'test_template_num-pipelines')
+            pipeline_name = os.listdir(pipelines_dirpath)[0]
+            preprocess_pipeline, _ = utils_models.load_pipeline(pipeline_name)
+
+            # Set model with function majority_vote and list_models=[model, model, model]
+            model_name = 'aggregation_mono_class_mono_label'
+            model_name_svm1 = 'aggregation_mono_class_mono_label_svm1'
+            model_name_svm2 = 'aggregation_mono_class_mono_label_svm2'
+            model_name_gbt = 'aggregation_mono_class_mono_label_gbt'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name_svm1, datetime.now().strftime(f"{model_name_svm1}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_svm2 = os.path.join(utils.get_models_path(), model_name_svm2, datetime.now().strftime(f"{model_name_svm2}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_gbt = os.path.join(utils.get_models_path(), model_name_gbt, datetime.now().strftime(f"{model_name_gbt}_%Y_%m_%d-%H_%M_%S"))
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
+
+            test_model = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='majority_vote',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function majority_vote and list_models=[model_name, model_name, model_name]
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col')
+            svm1.save()
+            svm2 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col')
+            svm2.save()
+            gbt = model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')
+            gbt.save()
+
+            list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
+            model_name = 'aggregation_mono_class_mono_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            test_model_2 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function='majority_vote',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_2)
+            test_model_mono_class_mono_label(self, test_model_2)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function proba_argmax and list_models=[model_name, model, model]
+            model_name = 'aggregation_mono_class_mono_label'
+            model_name_svm1 = 'aggregation_mono_class_mono_label_svm1'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name_svm1, datetime.now().strftime(f"{model_name_svm1}_%Y_%m_%d-%H_%M_%S"))
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col')
+            svm1.save()
+            list_models = [os.path.split(model_dir_svm1)[-1],
+                           model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            test_model_3 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=True, aggregation_function='proba_argmax',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_3)
+            test_model_mono_class_mono_label(self, test_model_3)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function proba_argmax
+            model_name = 'aggregation_mono_class_mono_label'
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            test_model_4 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=True, aggregation_function='proba_argmax',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_4)
+            test_model_mono_class_mono_label(self, test_model_4)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function given
+            model_name = 'aggregation_mono_class_mono_label'
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            # This function is a copy of majority_vote function
+            def function_test(predictions, **kwargs):
+                labels, counts = np.unique(predictions, return_counts=True)
+                votes = [(label, count) for label, count in zip(labels, counts)]
+                votes = sorted(votes, key=lambda x: x[1], reverse=True)
+                possible_classes = {vote[0] for vote in votes if vote[1]==votes[0][1]}
+                return [prediction for prediction in predictions if prediction in possible_classes][0]
+                
+            test_model_5 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save="HIGH",
+                                                            list_models=list_models, using_proba=False, aggregation_function=function_test,
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model_5)
+            test_model_mono_class_mono_label(self, test_model_5)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+        except Exception:
+            self.fail('testModel_AggregationClassifiers failed')
+
 
 def test_model_mono_class_multi_label(test_class, test_model):
     '''Generic fonction to test a given model for mono-class/multi-labels'''
@@ -1614,6 +1755,136 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             test_model_mono_class_multi_label(self, test_model)
         except Exception:
             self.fail('testModel_DenseClassifier failed')
+
+    def test12_Model_AggregationClassifier(self):
+        '''Test of the model AggregationClassifier'''
+        print('            ------------------ >     Test of the model AggregationClassifier     /   Mono-class & Multi-labels')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_num-scripts/3_training_classification.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+
+            # Get pipeline
+            pipelines_dirpath = os.path.join(full_path_lib, 'test_template_num-pipelines')
+            pipeline_name = os.listdir(pipelines_dirpath)[0]
+            preprocess_pipeline, _ = utils_models.load_pipeline(pipeline_name)
+
+            # Set model function all_predictions and list_models=[model, model, model]
+            model_name = 'aggregation_mono_class_multi_label'
+            model_name_svm1 = 'aggregation_mono_class_multi_label_svm1'
+            model_name_svm2 = 'aggregation_mono_class_multi_label_svm2'
+            model_name_gbt = 'aggregation_mono_class_multi_label_gbt'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name_svm1, datetime.now().strftime(f"{model_name_svm1}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_svm2 = os.path.join(utils.get_models_path(), model_name_svm2, datetime.now().strftime(f"{model_name_svm2}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_gbt = os.path.join(utils.get_models_path(), model_name_gbt, datetime.now().strftime(f"{model_name_gbt}_%Y_%m_%d-%H_%M_%S"))
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            list_models = [model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2']),
+                           model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2']),
+                           model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'])]
+
+            test_model = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
+                                                            list_models=list_models, using_proba=False, aggregation_function='all_predictions',
+                                                            multi_label=True, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', y_col=['y_col_1', 'y_col_2'],
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_multi_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function all_predictions and list_models=[model_name, model_name, model_name]
+            model_name = 'aggregation_mono_class_multi_label'
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, multi_label=True, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'])
+            svm1.save()
+            svm2 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, multi_label=True, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'])
+            svm2.save()
+            gbt = model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, multi_label=True, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'])
+            gbt.save()
+
+            list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            test_model_2 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
+                                                            list_models=list_models, using_proba=False, aggregation_function='all_predictions',
+                                                            multi_label=True, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', y_col=['y_col_1', 'y_col_2'],
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model_2)
+            test_model_mono_class_multi_label(self, test_model_2)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function all_predictions and list_models=[model_name, model, model]
+            model_name = 'aggregation_mono_class_multi_label'
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, multi_label=True, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'])
+            svm1.save()
+            list_models = [os.path.split(model_dir_svm1)[-1],
+                           model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2']),
+                           model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'])]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            test_model_3 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
+                                                            list_models=list_models, using_proba=False, aggregation_function='all_predictions',
+                                                            multi_label=True, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', y_col=['y_col_1', 'y_col_2'],
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model_3)
+            test_model_mono_class_multi_label(self, test_model_3)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function vote_labels
+            model_name = 'aggregation_mono_class_multi_label'
+            list_models = [model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2']),
+                           model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2']),
+                           model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'])]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            test_model_4 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
+                                                            list_models=list_models, using_proba=False, aggregation_function='vote_labels',
+                                                            multi_label=True, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', y_col=['y_col_1', 'y_col_2'],
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model_4)
+            test_model_mono_class_multi_label(self, test_model_4)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function given
+            model_name = 'aggregation_mono_class_multi_label'
+            list_models = [model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2']),
+                           model_svm_classifier.ModelSVMClassifier(multi_label=True, model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2']),
+                           model_gbt_classifier.ModelGBTClassifier(multi_label=True, model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'])]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            # This function is a copy of all_predictions function
+            def function_test(predictions: pd.Series, **kwargs) -> list:
+                return np.sum(predictions, axis=0, dtype=bool).astype(int)
+
+            test_model_5 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
+                                                            list_models=list_models, using_proba=False, aggregation_function=function_test,
+                                                            multi_label=True, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', y_col=['y_col_1', 'y_col_2'],
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model_5)
+            test_model_mono_class_multi_label(self, test_model_5)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+        except Exception:
+            self.fail('testModel_AggregationClassifier failed')
 
 
 def test_model_multi_class_mono_label(test_class, test_model):
@@ -2322,6 +2593,142 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_DenseClassifier failed')
 
+    def test12_Model_AggregationClassifier(self):
+        '''Test of the model AggregationClassifier'''
+        print('            ------------------ >     Test of the model AggregationClassifier     /   Multi-class & Mono-label')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_num-scripts/3_training_classification.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+
+            # Get pipeline
+            pipelines_dirpath = os.path.join(full_path_lib, 'test_template_num-pipelines')
+            pipeline_name = os.listdir(pipelines_dirpath)[0]
+            preprocess_pipeline, _ = utils_models.load_pipeline(pipeline_name)
+
+            # Set model with function majority_vote and list_models=[model, model, model]
+            model_name = 'aggregation_multi_class_mono_label'
+            model_name_svm1 = 'aggregation_multi_class_mono_label_svm1'
+            model_name_svm2 = 'aggregation_multi_class_mono_label_svm2'
+            model_name_gbt = 'aggregation_multi_class_mono_label_gbt'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name_svm1, datetime.now().strftime(f"{model_name_svm1}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_svm2 = os.path.join(utils.get_models_path(), model_name_svm2, datetime.now().strftime(f"{model_name_svm2}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_gbt = os.path.join(utils.get_models_path(), model_name_gbt, datetime.now().strftime(f"{model_name_gbt}_%Y_%m_%d-%H_%M_%S"))
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
+
+            test_model = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
+                                                            list_models=list_models, using_proba=False, aggregation_function='majority_vote',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function majority_vote and list_models=[model_name, model_name, model_name]
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col')
+            svm1.save()
+            svm2 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col')
+            svm2.save()
+            gbt = model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')
+            gbt.save()
+
+            list_models = [os.path.split(model_dir_svm1)[-1], os.path.split(model_dir_svm2)[-1], os.path.split(model_dir_gbt)[-1]]
+            model_name = 'aggregation_multi_class_mono_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            test_model_2 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
+                                                            list_models=list_models, using_proba=False, aggregation_function='majority_vote',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model_2)
+            test_model_multi_class_mono_label(self, test_model_2)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function proba_argmax and list_models=[model_name, model, model]
+            model_name = 'aggregation_multi_class_mono_label'
+            model_name_svm1 = 'aggregation_multi_class_mono_label_svm1'
+            model_dir_svm1 = os.path.join(utils.get_models_path(), model_name_svm1, datetime.now().strftime(f"{model_name_svm1}_%Y_%m_%d-%H_%M_%S"))
+            svm1 = model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col')
+            svm1.save()
+            list_models = [os.path.split(model_dir_svm1)[-1],
+                           model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            test_model_3 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
+                                                            list_models=list_models, using_proba=True, aggregation_function='proba_argmax',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model_3)
+            test_model_multi_class_mono_label(self, test_model_3)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function proba_argmax
+            model_name = 'aggregation_multi_class_mono_label'
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            test_model_4 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
+                                                            list_models=list_models, using_proba=True, aggregation_function='proba_argmax',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model_4)
+            test_model_multi_class_mono_label(self, test_model_4)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function given
+            model_name = 'aggregation_multi_class_mono_label'
+            list_models = [model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_svm_classifier.ModelSVMClassifier(model_dir=model_dir_svm2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_classifier.ModelGBTClassifier(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            # This function is a copy of majority_vote function
+            def function_test(predictions, **kwargs):
+                labels, counts = np.unique(predictions, return_counts=True)
+                votes = [(label, count) for label, count in zip(labels, counts)]
+                votes = sorted(votes, key=lambda x: x[1], reverse=True)
+                possible_classes = {vote[0] for vote in votes if vote[1]==votes[0][1]}
+                return [prediction for prediction in predictions if prediction in possible_classes][0]
+
+            test_model_5 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
+                                                            list_models=list_models, using_proba=False, aggregation_function=function_test,
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model_5)
+            test_model_multi_class_mono_label(self, test_model_5)
+            remove_dir(model_dir)
+            remove_dir(model_dir_svm1)
+            remove_dir(model_dir_svm2)
+            remove_dir(model_dir_gbt)
+
+        except Exception:
+            self.fail('testModel_AggregationClassifier failed')
+
 
 def test_model_mono_output_regression(test_class, test_model):
     '''Generic fonction to test a given model for mono-output regression'''
@@ -2498,7 +2905,6 @@ class Case5_MonoOutputRegression(unittest.TestCase):
                                                                preprocess_pipeline=None,
                                                                sgd_params={'loss': 'squared_loss', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
                                                                model_name=model_name, model_dir=model_dir)
-
             # Test it (directly on the file with no preprocessing)
             test.main(filename='mono_output_regression_train.csv', y_col='y_col',
                       filename_valid='mono_output_regression_train.csv', model=test_model)
@@ -2691,6 +3097,114 @@ class Case5_MonoOutputRegression(unittest.TestCase):
             test_model_mono_output_regression(self, test_model)
         except Exception:
             self.fail('testModel_DenseRegressor failed')
+
+    def test14_Model_AggregationRegressor(self):
+        '''Test of the model AggregationRegressor'''
+        print('            ------------------ >     Test of the model AggregationRegressor     /   Mono-output Regression')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_num-scripts/3_training_regression.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+
+            # Set model with function mean_predict and list_models=[model, model, model]
+            model_name = 'aggregation_multi_class_mono_label'
+            model_name_sgd1 = 'aggregation_multi_class_mono_label_sgd1'
+            model_name_sgd2 = 'aggregation_multi_class_mono_label_sgd2'
+            model_name_gbt = 'aggregation_multi_class_mono_label_gbt'
+            model_dir_sgd1 = os.path.join(utils.get_models_path(), model_name_sgd1, datetime.now().strftime(f"{model_name_sgd1}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_sgd2 = os.path.join(utils.get_models_path(), model_name_sgd2, datetime.now().strftime(f"{model_name_sgd2}_%Y_%m_%d-%H_%M_%S"))
+            model_dir_gbt = os.path.join(utils.get_models_path(), model_name_gbt, datetime.now().strftime(f"{model_name_gbt}_%Y_%m_%d-%H_%M_%S"))
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            list_models = [model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_sgd2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
+
+            test_model = model_aggregation_regressor.ModelAggregationRegressor(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
+                                                            list_models=list_models, using_proba=False, aggregation_function='mean_predict',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir, preprocess_pipeline=None,)
+            # Test it (directly on the file with no preprocessing)
+            test.main(filename='mono_output_regression_train.csv', y_col='y_col',
+                      filename_valid='mono_output_regression_train.csv', model=test_model)
+            test_model_mono_output_regression(self, test_model)
+            remove_dir(model_dir)
+            remove_dir(model_dir_sgd1)
+            remove_dir(model_dir_sgd2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function mean_predict and list_models=[model_name, model_name, model_name]
+            svm1 = model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1, x_col=['col_1', 'col_2'], y_col='y_col')
+            svm1.save()
+            svm2 = model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2, x_col=['col_1', 'col_2'], y_col='y_col')
+            svm2.save()
+            gbt = model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')
+            gbt.save()
+
+            list_models = [os.path.split(model_dir_sgd1)[-1], os.path.split(model_dir_sgd2)[-1], os.path.split(model_dir_gbt)[-1]]
+            model_name = 'aggregation_multi_class_mono_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            test_model_2 = model_aggregation_regressor.ModelAggregationRegressor(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
+                                                            list_models=list_models, using_proba=False, aggregation_function='mean_predict',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it (directly on the file with no preprocessing)
+            test.main(filename='mono_output_regression_train.csv', y_col='y_col',
+                      filename_valid='mono_output_regression_train.csv', model=test_model_2)
+            test_model_mono_output_regression(self, test_model_2)
+            remove_dir(model_dir)
+            remove_dir(model_dir_sgd1)
+            remove_dir(model_dir_sgd2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function median_predict and list_models=[model_name, model, model]
+            model_name = 'aggregation_multi_class_mono_label'
+            list_models = [model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            test_model_3 = model_aggregation_regressor.ModelAggregationRegressor(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
+                                                            list_models=list_models, using_proba=False, aggregation_function='median_predict',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it (directly on the file with no preprocessing)
+            test.main(filename='mono_output_regression_train.csv', y_col='y_col',
+                      filename_valid='mono_output_regression_train.csv', model=test_model_3)
+            test_model_mono_output_regression(self, test_model_3)
+            remove_dir(model_dir)
+            remove_dir(model_dir_sgd1)
+            remove_dir(model_dir_sgd2)
+            remove_dir(model_dir_gbt)
+
+            # Set model with function given
+            model_name = 'aggregation_multi_class_mono_label'
+            list_models = [model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd1, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_sgd_regressor.ModelSGDRegressor(model_dir=model_dir_sgd2, x_col=['col_1', 'col_2'], y_col='y_col'),
+                           model_gbt_regressor.ModelGBTRegressor(model_dir=model_dir_gbt, x_col=['col_1', 'col_2'], y_col='y_col')]
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+
+            # This function is a copy of majority_vote function
+            def function_test(predictions, **kwargs):
+                labels, counts = np.unique(predictions, return_counts=True)
+                votes = [(label, count) for label, count in zip(labels, counts)]
+                votes = sorted(votes, key=lambda x: x[1], reverse=True)
+                possible_classes = {vote[0] for vote in votes if vote[1]==votes[0][1]}
+                return [prediction for prediction in predictions if prediction in possible_classes][0]
+
+            test_model_4 = model_aggregation_regressor.ModelAggregationRegressor(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
+                                                            list_models=list_models, using_proba=False, aggregation_function=function_test,
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it (directly on the file with no preprocessing)
+            test.main(filename='mono_output_regression_train.csv', y_col='y_col',
+                      filename_valid='mono_output_regression_train.csv', model=test_model_4)
+            test_model_mono_output_regression(self, test_model_4)
+            remove_dir(model_dir)
+            remove_dir(model_dir_sgd1)
+            remove_dir(model_dir_sgd2)
+            remove_dir(model_dir_gbt)
+
+        except Exception:
+            self.fail('testModel_AggregationRegressor failed')
 
 
 if __name__ == '__main__':

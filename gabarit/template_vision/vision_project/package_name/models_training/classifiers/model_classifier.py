@@ -108,8 +108,8 @@ class ModelClassifierMixin:
         predicted_proba = self.predict(df_test, return_proba=True)
         # Get position
         order = predicted_proba.argsort()
-        ranks = len(self.dict_classes.values()) - order.argsort()
-        df_probas = pd.DataFrame(ranks, columns=self.dict_classes.values())
+        ranks = len(self.list_classes) - order.argsort()
+        df_probas = pd.DataFrame(ranks, columns=self.list_classes)
         predict_positions = np.array([df_probas.loc[i, cl] if cl in df_probas.columns else -1 for i, cl in enumerate(y_true)])
         return predict_positions
 
