@@ -43,7 +43,7 @@ def remove_dir(path):
 class ModelHuggingFaceTests(unittest.TestCase):
     '''Main class to test model_huggingface'''
 
-    @unittest.skip("TEMP")
+    
     def test01_model_huggingface_init(self):
         '''Test of the initialization of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -85,7 +85,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertEqual(model.transformer_params, {'toto': 5})
         remove_dir(model_dir)
 
-    @unittest.skip("TEMP")
+    
     def test02_model_huggingface_fit(self):
         '''Test of the method fit of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
         # /!\ We test with model_embedding_lstm /!\
@@ -169,7 +169,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertEqual(sorted(model.list_classes), ['test1', 'test2', 'test3'])
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         remove_dir(model_dir)
-   
+
         #
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         self.assertFalse(model.trained)
@@ -322,7 +322,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
             model.fit(x_train[:50], y_train_multi_fake[:50], x_valid=None, y_valid=None, with_shuffle=True)
         remove_dir(model_dir)
     
-    @unittest.skip("TEMP")
+    
     def test03_model_huggingface_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -370,7 +370,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
             model.predict('test')
         remove_dir(model_dir)
 
-    @unittest.skip("TEMP")    
+        
     def test04_model_huggingface_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
