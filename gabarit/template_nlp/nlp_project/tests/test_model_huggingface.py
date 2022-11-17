@@ -169,7 +169,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertEqual(sorted(model.list_classes), ['test1', 'test2', 'test3'])
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         remove_dir(model_dir)
-   
+
         #
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         self.assertFalse(model.trained)
@@ -382,7 +382,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
             model.predict('test')
         remove_dir(model_dir)
 
-        
+
     @unittest.skip("TEMP")
     def test04_model_huggingface_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''

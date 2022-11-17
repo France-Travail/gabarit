@@ -21,31 +21,28 @@
 
 
 import os
-import time
-import json
-import ntpath
 import shutil
 import logging
-import functools
 import numpy as np
 import pandas as pd
 import dill as pickle
 import seaborn as sns
 import matplotlib.pyplot as plt
-import numpy as np
 from typing import Optional, no_type_check, Union, Tuple, Callable, Any
 
-import torch 
-from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer, DataCollatorWithPadding, AutoTokenizer, TextClassificationPipeline, PreTrainedTokenizer
+import torch
 from datasets import Dataset
+from datasets.arrow_dataset import Batch
+from transformers.tokenization_utils_base import BatchEncoding
+from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer, DataCollatorWithPadding, AutoTokenizer, TextClassificationPipeline, PreTrainedTokenizer
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training import utils_models
 
 sns.set(style="darkgrid")
 
 HF_CACHE_DIR = utils.get_transformers_path()
+
 
 class ModelHuggingFace(ModelClass):
     '''Generic model for Huggingface NN'''
@@ -53,12 +50,10 @@ class ModelHuggingFace(ModelClass):
     _default_name = 'model_huggingface'
 
     # Not implemented :
-    # -> _prepare_x_test
     # -> reload_from_standalone
-    # -> _save_model_png
 
-    # TODO: perhaps it would be smarter to have this class behaving as the abstract class for all the model types 
-    # implemented on the HF hub and to create model specific subclasses. 
+    # TODO: perhaps it would be smarter to have this class behaving as the abstract class for all the model types
+    # implemented on the HF hub and to create model specific subclasses.
     # => might change it as use cases grow
 
     def __init__(self, batch_size: int = 8, epochs: int = 99, validation_split: float = 0.2,
@@ -87,27 +82,27 @@ class ModelHuggingFace(ModelClass):
         self.batch_size = batch_size
         self.epochs = epochs
         self.validation_split = validation_split
-        
+
         # Param embedding (can be None if no embedding)
         self.transformer_name = transformer_name
         self.transformer_params = transformer_params
 
-        
-        # Trainer params 
+        # Trainer params
         if trainer_params is None:
-            trainer_params = TrainingArguments(
-                output_dir=self.model_dir,
-                learning_rate=2e-5,
-                per_device_train_batch_size=self.batch_size,
-                per_device_eval_batch_size=self.batch_size,
-                num_train_epochs=self.epochs,
-                weight_decay=0.01)
+            trainer_params = {
+                'output_dir': self.model_dir,
+                'learning_rate': 2e-5,
+                'per_device_train_batch_size': self.batch_size,
+                'per_device_eval_batch_size': self.batch_size,
+                'num_train_epochs': self.epochs,
+                'weight_decay': 0.01
+            }
         self.trainer_params = trainer_params
 
         # Model set on fit or on reload
         self.model: Any = None
         self.pipe: Any = None
-        self.tokenizer = None
+        self.tokenizer: Any = None
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:
         '''Fits the model
@@ -219,6 +214,7 @@ class ModelHuggingFace(ModelClass):
         # Also get y_valid_dummies as numpy
         y_valid_dummies = np.array(y_valid_dummies)
 
+        # If no valid set, split train set according to validation_split
         if y_valid is None:
             self.logger.warning(f"Warning, no validation set. The training set will be splitted (validation fraction = {self.validation_split})")
             p = np.random.permutation(len(x_train))
@@ -227,9 +223,9 @@ class ModelHuggingFace(ModelClass):
             x_train = x_train[p[cutoff:]]
             y_valid_dummies = y_train_dummies[p[0:cutoff]]
             y_train_dummies = y_train_dummies[p[cutoff:]]
-        
+
         ##############################################
-        # Fit
+        # Get model & prepare datasets
         ##############################################
 
         # Get model (if already fitted we do not load a new one)
@@ -238,21 +234,26 @@ class ModelHuggingFace(ModelClass):
             self.tokenizer = self._get_tokenizer()
 
         train_dataset = self._prepare_x_train(x_train, y_train_dummies)
-        valid_dataset = self._prepare_x_train(x_valid, y_valid_dummies)
+        valid_dataset = self._prepare_x_valid(x_valid, y_valid_dummies)
+
+        ##############################################
+        # Fit
+        ##############################################
+
         # Fit
         try:
             trainer = Trainer(
                 model=self.model,
-                args=self.trainer_params,
+                args=TrainingArguments(**self.trainer_params),
                 train_dataset=train_dataset,
                 eval_dataset=valid_dataset,
                 tokenizer=self.tokenizer,
                 data_collator=DataCollatorWithPadding(tokenizer=self.tokenizer)
             )
             fit_history = trainer.train()
-            trainer.model.save_pretrained(output_dir = self.model_dir, save_directory = self.model_dir)
-            self.tokenizer.save_pretrained(output_dir = self.model_dir, save_directory = self.model_dir)
-
+            # Save model & tokenizer
+            trainer.model.save_pretrained(save_directory=self.model_dir)
+            self.tokenizer.save_pretrained(save_directory=self.model_dir)
         except (RuntimeError, SystemError, SystemExit, EnvironmentError, KeyboardInterrupt, Exception) as e:
             self.logger.error(repr(e))
             raise RuntimeError("Error during model training")
@@ -261,6 +262,7 @@ class ModelHuggingFace(ModelClass):
         if self.level_save in ['MEDIUM', 'HIGH']:
             # Plot accuracy
             self._plot_metrics_and_loss(fit_history)
+            #TODO
             # Reload best model
             #self.model = load_model(os.path.join(self.model_dir, 'best.hdf5'), custom_objects=self.custom_objects)
 
@@ -280,13 +282,8 @@ class ModelHuggingFace(ModelClass):
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        if type(x_test) is np.ndarray:
-            x_test = x_test.tolist()
-        # Predict
-        if self.pipe is None:
-            self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True)
-        results = np.array(self.pipe(x_test))
-        predicted_proba = np.array([[x['score'] for x in x] for x in results])
+        # Predict probas
+        predicted_proba = self.predict_proba(x_test)
 
         # We return the probabilities if wanted
         if return_proba:
@@ -297,49 +294,68 @@ class ModelHuggingFace(ModelClass):
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict_proba(self, x_test, experimental_version: bool = False, **kwargs) -> np.ndarray:
+    def predict_proba(self, x_test, **kwargs) -> np.ndarray:
         '''Predicts probabilities on the test dataset
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
-        Kwargs:
-            experimental_version (bool): If an experimental (but faster) version must be used
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
+        # Does not work with np array
         if type(x_test) is np.ndarray:
             x_test = x_test.tolist()
-        # Process
+        # Predict probas (first call, create pipe)
         if self.pipe is None:
             self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True)
+        # As we are using the pipeline, we do not need to prepare x_test (done inside the pipeline)
         results = np.array(self.pipe(x_test))
         predicted_proba = np.array([[x['score'] for x in x] for x in results])
         return predicted_proba
 
     def _prepare_x_train(self, x_train, y_train_dummies) -> Dataset:
-        '''Prepares the input data for the model
+        '''Prepares the input data for the model - train
 
         Args:
             x_train (?): Array-like, shape = [n_samples, n_features]
         Returns:
             (datasets.Dataset): Prepared dataset
         '''
-        def tokenize_function(examples):
-            return self.tokenizer(examples["text"], truncation=True)
-        return Dataset.from_dict({'text': x_train.tolist(), 'label': y_train_dummies.astype(np.float32).tolist()}).map(tokenize_function, batched=True)
+        # Should not happen if using fit
+        if self.tokenizer is None:
+            self.tokenizer = self._get_tokenizer()
+        return Dataset.from_dict({'text': x_train.tolist(), 'label': y_train_dummies.astype(np.float32).tolist()}).map(self._tokenize_function, batched=True)
 
+    def _prepare_x_valid(self, x_valid, y_valid_dummies) -> Dataset:
+        '''Prepares the input data for the model - valid
 
-    def _prepare_x_test(self, x_test) -> np.ndarray:
-        '''Prepares the input data for the model
+        Args:
+            x_valid (?): Array-like, shape = [n_samples, n_features]
+        Returns:
+            (datasets.Dataset): Prepared dataset
+        '''
+        # Same as train (we don't fit any tokenizer)
+        return self._prepare_x_train(x_valid, y_valid_dummies)
+
+    def _prepare_x_test(self, x_test) -> Dataset:
+        '''Prepares the input data for the model - test
 
         Args:
             x_test (?): Array-like, shape = [n_samples, n_features]
         Returns:
             (datasets.Dataset): Prepared dataset
         '''
-        def tokenize_function(examples):
-            return self.tokenizer(examples["text"], truncation=True)
-        return Dataset.from_dict({'text': x_test.tolist()}).map(tokenize_function, batched=True)
+        return Dataset.from_dict({'text': x_test.tolist()}).map(self._tokenize_function, batched=True)
+
+    def _tokenize_function(self, examples: Batch) -> BatchEncoding:
+        '''Tokenizes input data
+
+        Args:
+            examples (Batch): input data (Dataset Batch)
+        Returns:
+            BatchEncoding: tokenized data
+        '''
+        return self.tokenizer(examples["text"], truncation=True)
 
     def _get_model(self, model_path: str = None, num_labels: int = None) -> Any:
         '''Gets a model structure
@@ -348,24 +364,21 @@ class ModelHuggingFace(ModelClass):
             (Any): a HF model
         '''
         model = AutoModelForSequenceClassification.from_pretrained(
-                self.transformer_name if model_path is None else model_path, 
+                self.transformer_name if model_path is None else model_path,
                 num_labels=len(self.list_classes) if num_labels is None else num_labels,
                 problem_type="multi_label_classification",
-                cache_dir = HF_CACHE_DIR)
+                cache_dir=HF_CACHE_DIR)
         return model
 
     def _get_tokenizer(self, model_path: str = None) -> PreTrainedTokenizer:
         '''Gets a tokenizer
 
         Returns:
-            (Tokenizer): a HF tokenizer
+            (PreTrainedTokenizer): a HF tokenizer
         '''
-        tokenizer = AutoTokenizer.from_pretrained(
-            self.transformer_name if model_path is None else model_path, 
-            cache_dir=HF_CACHE_DIR)
+        tokenizer = AutoTokenizer.from_pretrained(self.transformer_name if model_path is None else model_path, cache_dir=HF_CACHE_DIR)
         return tokenizer
 
-    
     def _plot_metrics_and_loss(self, fit_history) -> None:
         '''Plots TrainOutput, for legacy and compatibility purpose
 
@@ -407,15 +420,6 @@ class ModelHuggingFace(ModelClass):
                 # Close figures
                 plt.close('all')
 
-    def _save_model_png(self, model) -> None:
-        '''Tries to save the structure of the model in png format
-        Graphviz necessary
-
-        Args:
-            model (?): model to plot
-        '''
-        raise NotImplementedError("'_save_model_png' needs to be overridden")
-
     @no_type_check  # We do not check the type, because it is complicated with managing custom_objects_str
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model
@@ -433,8 +437,8 @@ class ModelHuggingFace(ModelClass):
         json_data['validation_split'] = self.validation_split
         json_data['transformer_name'] = self.transformer_name
         json_data['transformer_params'] = self.transformer_params
-        json_data['trainer_params'] = self.trainer_params.to_dict()
-                
+        json_data['trainer_params'] = self.trainer_params
+
         if '_get_model' not in json_data.keys():
             json_data['_get_model'] = pickle.source.getsourcelines(self._get_model)[0]
         # Save strategy :
@@ -453,7 +457,7 @@ class ModelHuggingFace(ModelClass):
         Returns:
             ?: HF model
         '''
-        
+
         # Loading of the model
         self.model = self._get_model(model_path)
         self.tokenizer = self._get_tokenizer(model_path)
