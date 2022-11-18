@@ -454,9 +454,9 @@ class ModelHuggingFace(ModelClass):
         predictions[np.where(probas >= 0.5)] = 1
         # Compute metrics (we can't use HF metrics, it sucks)
         accuracy = accuracy_score(y_true=predictions, y_pred=labels)  # Must be exact match on all labels
-        f1 = f1_score(y_true=predictions, y_pred=labels, average='average')
-        precision = precision_score(y_true=predictions, y_pred=labels, average='average')
-        recall = recall_score(y_true=predictions, y_pred=labels, average='average')
+        f1 = f1_score(y_true=predictions, y_pred=labels, average='weighted')
+        precision = precision_score(y_true=predictions, y_pred=labels, average='weighted')
+        recall = recall_score(y_true=predictions, y_pred=labels, average='weighted')
         # return as dictionary
         return {'accuracy': accuracy, 'precision': precision, 'recall': recall, 'f1': f1}
 
