@@ -444,7 +444,6 @@ class ModelHuggingFace(ModelClass):
         Returns:
             dict: dictionnary with computed metrics
         '''
-        import ipdb; ipdb.set_trace()
         # Sigmoid activation (multi_label)
         sigmoid = torch.nn.Sigmoid()
         # Get probas
