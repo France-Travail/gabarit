@@ -328,9 +328,10 @@ class ModelHuggingFace(ModelClass):
         if self.model.training:
             self.model.eval()
         if self.pipe is None:
-            self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True)
-            # Set pipe on gpu if available
-            self.pipe = self.pipe.to('cuda') if self._is_gpu_activated() else self.pipe.to('cpu')
+            # Set model on gpu if available
+            self.model = self.model.to('cuda') if self._is_gpu_activated() else self.model.to('cpu')
+            device = 0 if self._is_gpu_activated() else -1
+            self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True, device=device)
         # Predict
         # As we are using the pipeline, we do not need to prepare x_test (done inside the pipeline)
         results = np.array(self.pipe(x_test))
