@@ -95,9 +95,10 @@ class ModelHuggingFace(ModelClass):
                 'per_device_train_batch_size': self.batch_size,
                 'per_device_eval_batch_size': self.batch_size,
                 'num_train_epochs': self.epochs,
-                'weight_decay': 0.01,
+                'weight_decay': 0.0,
                 'evaluation_strategy': 'epoch',
                 'save_strategy': 'epoch',
+                'logging_strategy': 'epoch',
                 'save_total_limit': 1,
                 'load_best_model_at_end': True
             }
@@ -256,7 +257,7 @@ class ModelHuggingFace(ModelClass):
                 data_collator=DataCollatorWithPadding(tokenizer=self.tokenizer)
             )
             # Fit
-            fit_history = trainer.train()
+            trainer.train()
             # Save model & tokenizer
             trainer.model.save_pretrained(save_directory=self.model_dir)
             self.tokenizer.save_pretrained(save_directory=self.model_dir)
@@ -267,6 +268,7 @@ class ModelHuggingFace(ModelClass):
         # Print accuracy & loss if level_save > 'LOW'
         if self.level_save in ['MEDIUM', 'HIGH']:
             # Plot accuracy
+            fit_history = trainer.state.log_history
             self._plot_metrics_and_loss(fit_history)
             #TODO
             # Reload best model
@@ -396,12 +398,21 @@ class ModelHuggingFace(ModelClass):
         '''Plots TrainOutput, for legacy and compatibility purpose
 
         Arguments:
-            fit_history (?) : fit history
+            fit_history (list) : fit history - actually list of logs
         '''
         # Manage dir
         plots_path = os.path.join(self.model_dir, 'plots')
         if not os.path.exists(plots_path):
             os.makedirs(plots_path)
+
+        # Rework fit_history to better match Keras fit history
+        fit_history_dict = {}
+        for log in fit_history:
+            for key, value in log.items():
+                if key not in fit_history_dict.keys():
+                    fit_history_dict[key] = [value]
+                else:
+                    fit_history_dict[key] += [value]
 
         # Get a dictionnary of possible metrics/loss plots
         metrics_dir = {
@@ -411,17 +422,16 @@ class ModelHuggingFace(ModelClass):
             'f1': ['F1-score', 'f1_score'],
             'precision': ['Precision', 'precision'],
             'recall': ['Recall', 'recall'],
-            'train_loss': ['Train Loss', 'train_loss']
         }
 
         # Plot each available metric
-        for metric in fit_history.metrics.keys():
+        for metric in fit_history_dict.keys():
             if metric in metrics_dir.keys():
                 title = metrics_dir[metric][0]
                 filename = metrics_dir[metric][1]
                 plt.figure(figsize=(10, 8))
-                plt.plot(fit_history.metrics[metric])
-                #plt.plot(fit_history.metrics[f'val_{metric}'])
+                plt.plot(fit_history_dict[metric])
+                plt.plot(fit_history_dict[f'eval_{metric}'])
                 plt.title(f"Model {title}")
                 plt.ylabel(title)
                 plt.xlabel('Epoch')
