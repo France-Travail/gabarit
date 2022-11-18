@@ -27,19 +27,23 @@ import numpy as np
 import pandas as pd
 import dill as pickle
 import seaborn as sns
+from copy import deepcopy
 import matplotlib.pyplot as plt
 from typing import Optional, no_type_check, Union, Tuple, Callable, Any
 
 import torch
-from datasets import Dataset
+from datasets import Dataset, load_metric
 from datasets.arrow_dataset import Batch
 from transformers.tokenization_utils_base import BatchEncoding
-from transformers import AutoModelForSequenceClassification, TrainingArguments, Trainer, DataCollatorWithPadding, AutoTokenizer, TextClassificationPipeline, PreTrainedTokenizer
+from transformers import (AutoModelForSequenceClassification, TrainingArguments, Trainer, DataCollatorWithPadding,
+                          AutoTokenizer, TextClassificationPipeline, PreTrainedTokenizer, EvalPrediction, TrainerCallback)
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_class import ModelClass
 
 sns.set(style="darkgrid")
+
+os.environ['DISABLE_MLFLOW_INTEGRATION'] = 'true'  # Needs to be disable for our custom callback on train metrics
 
 HF_CACHE_DIR = utils.get_transformers_path()
 
@@ -254,8 +258,11 @@ class ModelHuggingFace(ModelClass):
                 train_dataset=train_dataset,
                 eval_dataset=valid_dataset,
                 tokenizer=self.tokenizer,
-                data_collator=DataCollatorWithPadding(tokenizer=self.tokenizer)
+                data_collator=DataCollatorWithPadding(tokenizer=self.tokenizer),
+                compute_metrics=self._compute_metrics_mono_label if not self.multi_label else None,
             )
+            # Add callbacks
+            trainer.add_callback(MetricsTrainCallback(trainer))
             # Fit
             trainer.train()
             # Save model & tokenizer
@@ -394,6 +401,31 @@ class ModelHuggingFace(ModelClass):
         tokenizer = AutoTokenizer.from_pretrained(self.transformer_name if model_path is None else model_path, cache_dir=HF_CACHE_DIR)
         return tokenizer
 
+    def _compute_metrics_mono_label(self, eval_pred: EvalPrediction) -> dict:
+        '''Computes some metrics for mono label cases
+
+        Args:
+            eval_pred: predicted & ground truth values to be considered
+        Returns:
+            dict: dictionnary with computed metrics
+        '''
+        # Load metrics
+        metric_accuracy = load_metric("accuracy")
+        metric_precision = load_metric("precision")
+        metric_recall = load_metric("recall")
+        metric_f1 = load_metric("f1")
+        # Get predictions
+        logits, labels = eval_pred
+        predictions = np.argmax(logits, axis=-1)
+        labels = np.argmax(labels, axis=-1)
+        # Compute metrics
+        accuracy = metric_accuracy.compute(predictions=predictions, references=labels)["accuracy"]
+        precision = metric_precision.compute(predictions=predictions, references=labels, average='weighted')["precision"]
+        recall = metric_recall.compute(predictions=predictions, references=labels, average='weighted')["recall"]
+        f1 = metric_f1.compute(predictions=predictions, references=labels, average='weighted')["f1"]
+        # Return dict of metrics
+        return {'accuracy': accuracy, 'precision': precision, 'recall': recall, 'f1': f1}
+
     def _plot_metrics_and_loss(self, fit_history) -> None:
         '''Plots TrainOutput, for legacy and compatibility purpose
 
@@ -416,26 +448,29 @@ class ModelHuggingFace(ModelClass):
 
         # Get a dictionnary of possible metrics/loss plots
         metrics_dir = {
-            'acc': ['Accuracy', 'accuracy'],
             'loss': ['Loss', 'loss'],
-            'categorical_accuracy': ['Categorical accuracy', 'categorical_accuracy'],
+            'accuracy': ['Accuracy', 'accuracy'],
             'f1': ['F1-score', 'f1_score'],
             'precision': ['Precision', 'precision'],
             'recall': ['Recall', 'recall'],
+            'categorical_accuracy': ['Categorical accuracy', 'categorical_accuracy'],
         }
 
         # Plot each available metric
-        for metric in fit_history_dict.keys():
-            if metric in metrics_dir.keys():
+        for metric in metrics_dir.keys():
+            if any([f'{set}_{metric}' in fit_history_dict.keys() for set in ['train_metrics', 'eval']]):
                 title = metrics_dir[metric][0]
                 filename = metrics_dir[metric][1]
                 plt.figure(figsize=(10, 8))
-                plt.plot(fit_history_dict[metric])
-                plt.plot(fit_history_dict[f'eval_{metric}'])
+                legend = []
+                for set in ['train_metrics', 'eval']:
+                    if f'{set}_{metric}' in fit_history_dict.keys():
+                        plt.plot(fit_history_dict[f'{set}_{metric}'])
+                        legend += ['Train'] if set == 'train_metrics' else ['Validation']
                 plt.title(f"Model {title}")
                 plt.ylabel(title)
                 plt.xlabel('Epoch')
-                plt.legend(['Train', 'Validation'], loc='upper left')
+                plt.legend(legend, loc='upper left')
                 # Save
                 filename == f"{filename}.jpeg"
                 plt.savefig(os.path.join(plots_path, filename))
@@ -506,6 +541,21 @@ class ModelHuggingFace(ModelClass):
         '''
         # Check for available GPU devices
         return torch.cuda.is_available()
+
+
+# From https://discuss.huggingface.co/t/metrics-for-training-set-in-trainer/2461/5
+class MetricsTrainCallback(TrainerCallback):
+
+    def __init__(self, trainer) -> None:
+        super().__init__()
+        self._trainer = trainer
+
+    # Add metrics on train dataset
+    def on_epoch_end(self, args, state, control, **kwargs):
+        if control.should_evaluate:
+            control_copy = deepcopy(control)
+            self._trainer.evaluate(eval_dataset=self._trainer.train_dataset, metric_key_prefix='train_metrics')
+            return control_copy
 
 
 if __name__ == '__main__':
