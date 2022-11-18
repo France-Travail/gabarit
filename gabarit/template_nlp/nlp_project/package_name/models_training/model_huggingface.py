@@ -450,8 +450,8 @@ class ModelHuggingFace(ModelClass):
         logits, labels = eval_pred
         probas = sigmoid(torch.Tensor(logits))
         # Get predictions (probas >= 0.5)
-        predictions = np.zeros(probs.shape)
-        predictions[np.where(probs >= 0.5)] = 1
+        predictions = np.zeros(probas.shape)
+        predictions[np.where(probas >= 0.5)] = 1
         # Compute metrics (we can't use HF metrics, it sucks)
         accuracy = accuracy_score(y_true=predictions, y_pred=labels)  # Must be exact match on all labels
         f1 = f1_score(y_true=predictions, y_pred=labels, average='average')
