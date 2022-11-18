@@ -36,7 +36,8 @@ from datasets import Dataset, load_metric
 from datasets.arrow_dataset import Batch
 from transformers.tokenization_utils_base import BatchEncoding
 from transformers import (AutoModelForSequenceClassification, TrainingArguments, Trainer, DataCollatorWithPadding,
-                          AutoTokenizer, TextClassificationPipeline, PreTrainedTokenizer, EvalPrediction, TrainerCallback)
+                          AutoTokenizer, TextClassificationPipeline, PreTrainedTokenizer, EvalPrediction,
+                          TrainerCallback, EarlyStoppingCallback)
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_class import ModelClass
@@ -60,7 +61,7 @@ class ModelHuggingFace(ModelClass):
     # implemented on the HF hub and to create model specific subclasses.
     # => might change it as use cases grow
 
-    def __init__(self, batch_size: int = 8, epochs: int = 99, validation_split: float = 0.2,
+    def __init__(self, batch_size: int = 8, epochs: int = 99, validation_split: float = 0.2, patience: int = 5,
                  transformer_name: str = 'Geotrend/distilbert-base-fr-cased', transformer_params: Union[dict, None] = None,
                  trainer_params: Union[dict, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelClass for more arguments)
@@ -70,6 +71,7 @@ class ModelHuggingFace(ModelClass):
             epochs (int): Number of epochs
             validation_split (float): Percentage for the validation set split
                 Only used if no input validation set when fitting
+            patience (int): Early stopping patience
             transformer_name (str) : The name of the transformer backbone to use
             transformer_params (dict): Parameters used by the Transformer model.
                 The purpose of this dictionary is for the user to use it as they wants in the _get_model function
@@ -86,6 +88,7 @@ class ModelHuggingFace(ModelClass):
         self.batch_size = batch_size
         self.epochs = epochs
         self.validation_split = validation_split
+        self.patience = patience
 
         # Param embedding (can be None if no embedding)
         self.transformer_name = transformer_name
@@ -263,6 +266,7 @@ class ModelHuggingFace(ModelClass):
             )
             # Add callbacks
             trainer.add_callback(MetricsTrainCallback(trainer))
+            trainer.add_callback(EarlyStoppingCallback(early_stopping_patience=self.patience))
             # Fit
             trainer.train()
             # Save model & tokenizer

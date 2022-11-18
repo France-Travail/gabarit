@@ -43,7 +43,7 @@ def remove_dir(path):
 class ModelHuggingFaceTests(unittest.TestCase):
     '''Main class to test model_huggingface'''
 
-    
+
     def test01_model_huggingface_init(self):
         '''Test of the initialization of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -76,6 +76,11 @@ class ModelHuggingFaceTests(unittest.TestCase):
         remove_dir(model_dir)
 
         #
+        model = ModelHuggingFace(model_dir=model_dir, patience=10)
+        self.assertEqual(model.patience, 10)
+        remove_dir(model_dir)
+
+        #
         model = ModelHuggingFace(model_dir=model_dir, transformer_name='toto')
         self.assertEqual(model.transformer_name, 'toto')
         remove_dir(model_dir)
@@ -85,7 +90,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertEqual(model.transformer_params, {'toto': 5})
         remove_dir(model_dir)
 
-    
+
     def test02_model_huggingface_fit(self):
         '''Test of the method fit of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
         # /!\ We test with model_embedding_lstm /!\
@@ -321,8 +326,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         with self.assertRaises(AssertionError):
             model.fit(x_train[:50], y_train_multi_fake[:50], x_valid=None, y_valid=None, with_shuffle=True)
         remove_dir(model_dir)
-    
-    
+
+
     def test03_model_huggingface_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -370,7 +375,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
             model.predict('test')
         remove_dir(model_dir)
 
-        
+
     def test04_model_huggingface_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -440,7 +445,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    
+
     def test05_model_huggingface_reload_model(self):
         '''Test of the method reload_model of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -464,7 +469,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Reload keras
         model.reload_model(model.model_dir)
         self.assertEqual([list(_) for _ in probs], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
-       
+
         remove_dir(model_dir)
 
 
