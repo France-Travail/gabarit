@@ -349,7 +349,12 @@ class ModelHuggingFace(ModelClass):
         # Should not happen if using fit
         if self.tokenizer is None:
             self.tokenizer = self._get_tokenizer()
-        return Dataset.from_dict({'text': x_train.tolist(), 'label': y_train_dummies.astype(np.float32).tolist()}).map(self._tokenize_function, batched=True)
+        # It seems that HF does not manage dummies targets for non multilabel
+        if not self.multi_label:
+            labels = np.argmax(y_train_dummies, axis=-1).astype(int).tolist()
+        else:
+            labels = y_train_dummies.astype(np.float32).tolist()
+        return Dataset.from_dict({'text': x_train.tolist(), 'label': labels}).map(self._tokenize_function, batched=True)
 
     def _prepare_x_valid(self, x_valid, y_valid_dummies) -> Dataset:
         '''Prepares the input data for the model - valid
@@ -391,7 +396,7 @@ class ModelHuggingFace(ModelClass):
         model = AutoModelForSequenceClassification.from_pretrained(
                 self.transformer_name if model_path is None else model_path,
                 num_labels=len(self.list_classes) if num_labels is None else num_labels,
-                problem_type="multi_label_classification",
+                problem_type="multi_label_classification" if self.multi_label else "single_label_classification",
                 cache_dir=HF_CACHE_DIR)
         # Set model on gpu if available
         model = model.to('cuda') if self._is_gpu_activated() else model.to('cpu')
@@ -422,7 +427,6 @@ class ModelHuggingFace(ModelClass):
         # Get predictions
         logits, labels = eval_pred
         predictions = np.argmax(logits, axis=-1)
-        labels = np.argmax(labels, axis=-1)
         # Compute metrics
         accuracy = metric_accuracy.compute(predictions=predictions, references=labels)["accuracy"]
         precision = metric_precision.compute(predictions=predictions, references=labels, average='weighted')["precision"]
