@@ -39,6 +39,7 @@ from {{package_name}}.models_training import (model_tfidf_dense,
                                               model_embedding_lstm_attention,
                                               model_embedding_lstm_structured_attention,
                                               model_embedding_lstm_gru_gpu,
+                                              model_huggingface,
                                               utils_models,
                                               utils_deep_keras)
 
@@ -108,6 +109,7 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'model_embedding_lstm_attention': model_embedding_lstm_attention.ModelEmbeddingLstmAttention,
         'model_embedding_lstm_structured_attention': model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention,
         'model_embedding_lstm_gru_gpu': model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu,
+        'model_huggingface': model_huggingface.ModelHuggingFace,
     }
     model_type = configs['model_name']
     if model_type not in model_type_dicts:

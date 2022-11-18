@@ -498,6 +498,7 @@ class ModelHuggingFace(ModelClass):
         json_data['batch_size'] = self.batch_size
         json_data['epochs'] = self.epochs
         json_data['validation_split'] = self.validation_split
+        json_data['patience'] = self.patience
         json_data['transformer_name'] = self.transformer_name
         json_data['transformer_params'] = self.transformer_params
         json_data['trainer_params'] = self.trainer_params

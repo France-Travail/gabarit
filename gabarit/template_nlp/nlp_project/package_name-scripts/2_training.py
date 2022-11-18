@@ -48,6 +48,7 @@ from {{package_name}}.models_training import (model_tfidf_dense,
                                               model_embedding_lstm_attention,
                                               model_embedding_lstm_structured_attention,
                                               model_embedding_lstm_gru_gpu,
+                                              model_huggingface,
                                               utils_models)
 
 # Disable some warnings
@@ -266,6 +267,10 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
         #                                           batch_size=64, epochs=99, patience=5,
         #                                           tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
         #                                           multi_label=multi_label, nb_iter_keras=nb_iter_keras)
+        # model = model_huggingface.ModelHuggingFace(x_col=x_col, y_col=y_col, level_save=level_save,
+        #                                            batch_size=64, epochs=99, patience=5,
+        #                                            transformer_name='Geotrend/distilbert-base-fr-cased',
+        #                                            multi_label=multi_label)
 
     # Display if GPU is being used
     model.display_if_gpu_activated()
