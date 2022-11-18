@@ -29,6 +29,7 @@ import dill as pickle
 import seaborn as sns
 from copy import deepcopy
 import matplotlib.pyplot as plt
+from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 from typing import Optional, no_type_check, Union, Tuple, Callable, Any
 
 import torch
@@ -262,7 +263,7 @@ class ModelHuggingFace(ModelClass):
                 eval_dataset=valid_dataset,
                 tokenizer=self.tokenizer,
                 data_collator=DataCollatorWithPadding(tokenizer=self.tokenizer),
-                compute_metrics=self._compute_metrics_mono_label if not self.multi_label else None,
+                compute_metrics=self._compute_metrics_mono_label if not self.multi_label else self._compute_metrics_multi_label,
             )
             # Add callbacks
             trainer.add_callback(MetricsTrainCallback(trainer))
@@ -435,6 +436,31 @@ class ModelHuggingFace(ModelClass):
         # Return dict of metrics
         return {'accuracy': accuracy, 'precision': precision, 'recall': recall, 'f1': f1}
 
+    def _compute_metrics_multi_label(self, eval_pred: EvalPrediction) -> dict:
+        '''Computes some metrics for mono label cases
+
+        Args:
+            eval_pred: predicted & ground truth values to be considered
+        Returns:
+            dict: dictionnary with computed metrics
+        '''
+        import ipdb; ipdb.set_trace()
+        # Sigmoid activation (multi_label)
+        sigmoid = torch.nn.Sigmoid()
+        # Get probas
+        logits, labels = eval_pred
+        probas = sigmoid(torch.Tensor(logits))
+        # Get predictions (probas >= 0.5)
+        predictions = np.zeros(probs.shape)
+        predictions[np.where(probs >= 0.5)] = 1
+        # Compute metrics (we can't use HF metrics, it sucks)
+        accuracy = accuracy_score(y_true=predictions, y_pred=labels)  # Must be exact match on all labels
+        f1 = f1_score(y_true=predictions, y_pred=labels, average='average')
+        precision = precision_score(y_true=predictions, y_pred=labels, average='average')
+        recall = recall_score(y_true=predictions, y_pred=labels, average='average')
+        # return as dictionary
+        return {'accuracy': accuracy, 'precision': precision, 'recall': recall, 'f1': f1}
+
     def _plot_metrics_and_loss(self, fit_history) -> None:
         '''Plots TrainOutput, for legacy and compatibility purpose
 
@@ -462,7 +488,6 @@ class ModelHuggingFace(ModelClass):
             'f1': ['F1-score', 'f1_score'],
             'precision': ['Precision', 'precision'],
             'recall': ['Recall', 'recall'],
-            'categorical_accuracy': ['Categorical accuracy', 'categorical_accuracy'],
         }
 
         # Plot each available metric
