@@ -43,7 +43,6 @@ def remove_dir(path):
 class ModelHuggingFaceTests(unittest.TestCase):
     '''Main class to test model_huggingface'''
 
-
     def test01_model_huggingface_init(self):
         '''Test of the initialization of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -90,7 +89,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertEqual(model.transformer_params, {'toto': 5})
         remove_dir(model_dir)
 
-
     def test02_model_huggingface_fit(self):
         '''Test of the method fit of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
         # /!\ We test with model_embedding_lstm /!\
@@ -120,7 +118,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         remove_dir(model_dir)
 
-        #
+        # with valid data
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
@@ -131,7 +129,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         remove_dir(model_dir)
 
-        #
+        # no shuffle
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
@@ -165,7 +163,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Multi-labels
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
         model.fit(x_train, y_train_multi, x_valid=None, y_valid=None, with_shuffle=True)
@@ -175,8 +173,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         remove_dir(model_dir)
 
-        #
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        # with valid
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
         model.fit(x_train, y_train_multi, x_valid=x_valid, y_valid=y_valid_multi, with_shuffle=True)
@@ -186,8 +184,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
         remove_dir(model_dir)
 
-        #
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        # No shuffle
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
         model.fit(x_train, y_train_multi, x_valid=x_valid, y_valid=y_valid_multi, with_shuffle=False)
@@ -266,7 +264,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Test multi-labels nominal case
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
         model.fit(x_train, y_train_multi, x_valid=None, y_valid=None, with_shuffle=True)
@@ -312,7 +310,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         remove_dir(model_dir_4)
 
         # Test data errors multi-labels
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         self.assertFalse(model.trained)
         self.assertEqual(model.nb_fit, 0)
         model.fit(x_train, y_train_multi, x_valid=None, y_valid=None, with_shuffle=True)
@@ -326,7 +324,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
         with self.assertRaises(AssertionError):
             model.fit(x_train[:50], y_train_multi_fake[:50], x_valid=None, y_valid=None, with_shuffle=True)
         remove_dir(model_dir)
-
 
     def test03_model_huggingface_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
@@ -374,7 +371,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
             model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
             model.predict('test')
         remove_dir(model_dir)
-
 
     def test04_model_huggingface_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
@@ -444,7 +440,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
-
 
     def test05_model_huggingface_reload_model(self):
         '''Test of the method reload_model of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
