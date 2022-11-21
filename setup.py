@@ -46,8 +46,7 @@ setup(
     python_requires='>=3.7',
     include_package_data=True,
     install_requires=[
-        'Jinja2==3.0.3',
-        'mypy==0.910',
+        'Jinja2==3.0.3'
     ],
     entry_points={
         'console_scripts': [
