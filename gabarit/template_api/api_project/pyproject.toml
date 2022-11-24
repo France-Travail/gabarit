@@ -1,0 +1,44 @@
+[build-system]
+requires = ["setuptools>=41"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "{{package_name}}"
+version = "0.0.1"
+requires-python = ">=3.8,<4.0"
+dependencies = [
+    "fastapi>=0.87,<1.0",
+    "uvicorn[standard]>=0.20,<1.0",
+    "numpy>=1.19,<2.0",
+    {%- if gabarit_package %}
+    "{{gabarit_package}}{% if gabarit_package_version %}=={{gabarit_package_version}}{% endif %}",
+    "dohq-artifactory>=0.8,<1.0",
+    {%- endif %}
+]
+
+[tool.setuptools.packages.find]
+include = ["{{package_name}}*"]
+
+[project.optional-dependencies]
+{%- if not gabarit_package %}
+artifactory = ["dohq-artifactory>=0.8,<1.0"]
+{%- endif %}
+dev = [
+    "black>=19.0",
+    "isort>=4.3",
+    "httpx>=0.23,<1.0",
+    "pytest>=7.0,<8.0",
+    "pytest-cov>=3.0,<4.0",
+]
+test = ["pytest>=7.0,<8.0", "pytest-cov>=3.0,<4.0"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-v --cov={{package_name}}"
+filterwarnings = ["ignore:The hookimpl CovPlugin.pytest_"]
+
+[project.scripts]
+download-model = "{{package_name}}.model.model_gabarit:download_model"
+
+[tool.isort]
+profile = "black"

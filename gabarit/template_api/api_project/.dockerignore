@@ -1,0 +1,7 @@
+.venv
+.vscode
+.local
+.pytest_cache
+
+{{package_name}}-data
+{{package_name}}-models
