@@ -114,8 +114,8 @@ class ModelHuggingFace(ModelClass):
 
         # Model set on fit or on reload
         self.model: Any = None
-        self.pipe: Any = None
         self.tokenizer: Any = None
+        self.pipe: Any = None  # Set on first predict
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:
         '''Fits the model
@@ -264,6 +264,7 @@ class ModelHuggingFace(ModelClass):
                 tokenizer=self.tokenizer,
                 data_collator=DataCollatorWithPadding(tokenizer=self.tokenizer),
                 compute_metrics=self._compute_metrics_mono_label if not self.multi_label else self._compute_metrics_multi_label,
+                optimizers=self._get_optimizers(),
             )
             # Add callbacks
             trainer.add_callback(MetricsTrainCallback(trainer))
@@ -282,9 +283,9 @@ class ModelHuggingFace(ModelClass):
             # Plot accuracy
             fit_history = trainer.state.log_history
             self._plot_metrics_and_loss(fit_history)
-            #TODO
-            # Reload best model
-            #self.model = load_model(os.path.join(self.model_dir, 'best.hdf5'), custom_objects=self.custom_objects)
+            # Reload best model ?
+            # Default trainer has load_best_model_at_end = True
+            # Hence we consider the best model is already reloaded
 
         # Set trained
         self.trained = True
@@ -376,6 +377,8 @@ class ModelHuggingFace(ModelClass):
         Returns:
             (datasets.Dataset): Prepared dataset
         '''
+        # /!\ We don't use it as we are using a TextClassificationPipeline
+        # yet we are leaving this here in case we need it later
         return Dataset.from_dict({'text': x_test.tolist()}).map(self._tokenize_function, batched=True)
 
     def _tokenize_function(self, examples: Batch) -> BatchEncoding:
@@ -411,6 +414,18 @@ class ModelHuggingFace(ModelClass):
         '''
         tokenizer = AutoTokenizer.from_pretrained(self.transformer_name if model_path is None else model_path, cache_dir=HF_CACHE_DIR)
         return tokenizer
+
+    def _get_optimizers(self) -> Tuple[Any, Any]:
+        '''Fonction to define the Trainer optimizers
+           -> per default return (None, None), i.e. default optimizers (cf HF Trainer doc)
+
+        Returns:
+            Tuple (Optimizer, LambdaLR): An optimizer/scheduler couple
+        '''
+        # e.g.
+        # Here, your custom Optimizer / scheduler couple
+        # (check https://huggingface.co/docs/transformers/v4.24.0/en/main_classes/optimizer_schedules)
+        return (None, None)
 
     def _compute_metrics_mono_label(self, eval_pred: EvalPrediction) -> dict:
         '''Computes some metrics for mono label cases
