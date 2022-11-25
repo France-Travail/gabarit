@@ -112,9 +112,11 @@ class ModelHuggingFace(ModelClass):
             }
         self.trainer_params = trainer_params
 
+        # Set tokenizer
+        self.tokenizer: Any = self._get_tokenizer()
+
         # Model set on fit or on reload
         self.model: Any = None
-        self.tokenizer: Any = None
         self.pipe: Any = None  # Set on first predict
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:
@@ -244,7 +246,6 @@ class ModelHuggingFace(ModelClass):
         # Get model (if already fitted we do not load a new one)
         if not self.trained or self.model is None:
             self.model = self._get_model(num_labels=y_train_dummies.shape[1])
-            self.tokenizer = self._get_tokenizer()
 
         train_dataset = self._prepare_x_train(x_train, y_train_dummies)
         valid_dataset = self._prepare_x_valid(x_valid, y_valid_dummies)
@@ -348,9 +349,11 @@ class ModelHuggingFace(ModelClass):
         Returns:
             (datasets.Dataset): Prepared dataset
         '''
-        # Should not happen if using fit
-        if self.tokenizer is None:
-            self.tokenizer = self._get_tokenizer()
+        # Check np format (should be the case if using fit)
+        if not type(x_train) == np.ndarray:
+            x_train = np.array(x_train)
+        if not type(y_train_dummies) == np.ndarray:
+            y_train_dummies = np.array(y_train_dummies)
         # It seems that HF does not manage dummies targets for non multilabel
         if not self.multi_label:
             labels = np.argmax(y_train_dummies, axis=-1).astype(int).tolist()
@@ -377,6 +380,9 @@ class ModelHuggingFace(ModelClass):
         Returns:
             (datasets.Dataset): Prepared dataset
         '''
+        # Check np format
+        if not type(x_test) == np.ndarray:
+            x_test = np.array(x_test)
         # /!\ We don't use it as we are using a TextClassificationPipeline
         # yet we are leaving this here in case we need it later
         return Dataset.from_dict({'text': x_test.tolist()}).map(self._tokenize_function, batched=True)

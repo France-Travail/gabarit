@@ -27,6 +27,9 @@ import shutil
 import pickle
 import numpy as np
 import pandas as pd
+from datasets import Dataset
+from datasets.arrow_dataset import Batch
+from transformers.tokenization_utils_base import BatchEncoding
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_huggingface import ModelHuggingFace
@@ -43,6 +46,7 @@ def remove_dir(path):
 class ModelHuggingFaceTests(unittest.TestCase):
     '''Main class to test model_huggingface'''
 
+    @unittest.skip("WIP - skip to be removed")
     def test01_model_huggingface_init(self):
         '''Test of the initialization of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -89,9 +93,9 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertEqual(model.transformer_params, {'toto': 5})
         remove_dir(model_dir)
 
+    @unittest.skip("WIP - skip to be removed")
     def test02_model_huggingface_fit(self):
         '''Test of the method fit of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
-        # /!\ We test with model_embedding_lstm /!\
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -325,6 +329,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
             model.fit(x_train[:50], y_train_multi_fake[:50], x_valid=None, y_valid=None, with_shuffle=True)
         remove_dir(model_dir)
 
+    @unittest.skip("WIP - skip to be removed")
     def test03_model_huggingface_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -372,6 +377,127 @@ class ModelHuggingFaceTests(unittest.TestCase):
             model.predict('test')
         remove_dir(model_dir)
 
+    @unittest.skip("WIP - skip to be removed")
+    def test04_model_huggingface_predict_proba(self):
+        '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace.predict_proba'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Set vars
+        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
+        x_test = np.array(["cela est un test", "ni cela", "non plus", "ici test", "là, rien de rien!"] * 100)
+        y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
+        y_test_mono = y_train_mono.copy()
+        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
+        y_test_multi = y_train_multi.copy()
+        cols = ['test1', 'test2', 'test3']
+
+        # Mono-label
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        model.fit(x_train, y_train_mono)
+        preds = model.predict_proba(x_train)
+        self.assertEqual(preds.shape, (len(x_train), 3))
+        preds = model.predict_proba('test')
+        self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'])[0]])
+        remove_dir(model_dir)
+
+        # Multi-labels
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
+        model.fit(x_train, y_train_multi[cols])
+        preds = model.predict_proba(x_train)
+        self.assertEqual(preds.shape, (len(x_train), len(cols)))
+        preds = model.predict_proba('test')
+        self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'])[0]])
+        remove_dir(model_dir)
+
+        # Model needs to be fitted
+        with self.assertRaises(AttributeError):
+            model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+            model.predict_proba('test')
+        remove_dir(model_dir)
+
+    @unittest.skip("WIP - skip to be removed")
+    def test05_model_huggingface_prepare_x_train(self):
+        '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace._prepare_x_train'''
+
+        # Create model
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        x_train = ['test titi toto', 'toto', 'titi test test toto']
+        y_train_dummies = [[0, 0, 1], [1, 0, 0], [0, 1, 0]]
+
+        # Nominal case
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        x_train_prepared = model._prepare_x_train(x_train, y_train_dummies)
+        # We can't easily test the results, too many dependences
+        self.assertEqual(x_train_prepared.shape[0], len(x_train))  # Same nb of lines
+        self.assertTrue('text' in x_train_prepared.features)
+        self.assertTrue('label' in x_train_prepared.features)
+        self.assertTrue('input_ids' in x_train_prepared.features)
+        self.assertTrue('attention_mask' in x_train_prepared.features)
+        remove_dir(model_dir)
+
+    @unittest.skip("WIP - skip to be removed")
+    def test06_model_huggingface_prepare_x_valid(self):
+        '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace._prepare_x_valid'''
+
+        # Create model
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        x_valid = ['test titi toto', 'toto', 'titi test test toto']
+        y_valid_dummies = [[0, 0, 1], [1, 0, 0], [0, 1, 0]]
+
+        # Nominal case
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        x_valid_prepared = model._prepare_x_valid(x_valid, y_valid_dummies)
+        # We can't easily test the results, too many dependences
+        self.assertEqual(x_valid_prepared.shape[0], len(x_valid))  # Same nb of lines
+        self.assertTrue('text' in x_valid_prepared.features)
+        self.assertTrue('label' in x_valid_prepared.features)
+        self.assertTrue('input_ids' in x_valid_prepared.features)
+        self.assertTrue('attention_mask' in x_valid_prepared.features)
+        remove_dir(model_dir)
+
+    @unittest.skip("WIP - skip to be removed")
+    def test07_model_huggingface_prepare_x_test(self):
+        '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace._prepare_x_test'''
+
+        # Create model
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        x_test = ['test titi toto', 'toto', 'titi test test toto']
+
+        # Nominal case - tokenizer not set
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        x_test_prepared = model._prepare_x_test(x_test)
+        # We can't easily test the results, too many dependences
+        self.assertEqual(x_test_prepared.shape[0], len(x_test))  # Same nb of lines
+        self.assertTrue('text' in x_test_prepared.features)
+        self.assertTrue('label' not in x_test_prepared.features)
+        self.assertTrue('input_ids' in x_test_prepared.features)
+        self.assertTrue('attention_mask' in x_test_prepared.features)
+        remove_dir(model_dir)
+
+    # @unittest.skip("WIP - skip to be removed")
+    def test08_model_huggingface_tokenize_function(self):
+        '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace._tokenize_function'''
+
+        # Create model
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        batch = Batch(data={'text': 'titi test test toto', 'label': 1})
+
+        # Nominal case - tokenizer not set
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        encoded_batch = model._tokenize_function(batch)
+        # We can't easily test the results, too many dependences
+        self.assertTrue(type(encoded_batch) == BatchEncoding)
+        self.assertTrue('input_ids' in encoded_batch.keys())
+        self.assertTrue('attention_mask' in encoded_batch.keys())
+        remove_dir(model_dir)
+
+    @unittest.skip("WIP - skip to be removed")
     def test04_model_huggingface_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -441,6 +567,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
+    @unittest.skip("WIP - skip to be removed")
     def test05_model_huggingface_reload_model(self):
         '''Test of the method reload_model of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
