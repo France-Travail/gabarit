@@ -1,3 +1,21 @@
+"""This module contains a ModelGabarit class you can use for your gabarit generated
+projects
+
+ModelGabarit overwrite some methods of the base Model class :
+    - download_model method to download a model from a JFrog Artifactory repository ;
+    {%- if gabarit_package %}
+    - _load_model method to use the {{gabarit_package}}.models_training.utils_models.load_model
+    function from a typical gabarit project ;
+    - predict method to use the the {{gabarit_package}}.models_training.utils_models.predict
+    function from a typical gabarit project.
+    {%- else %}
+    - _load_model method to use the gabarit_package.models_training.utils_models.load_model
+    function from a typical gabarit project ;
+    - predict method to use the the gabarit_package.models_training.utils_models.predict
+    function from a typical gabarit project.
+    {%- endif %}
+
+"""
 import logging
 import os
 import shutil
@@ -28,7 +46,16 @@ logger = logging.getLogger(__name__)
 
 
 class ModelSettings(BaseSettings):
-    """Download settings"""
+    """Download settings
+    
+    This class is used for settings management purpose, have a look at the pydantic
+    documentation for more details : https://pydantic-docs.helpmanual.io/usage/settings/
+
+    By default, it looks for environment variables (case insensitive) to set the settings
+    if a variable is not found, it looks for a file name .env in your working directory
+    where you can declare the values of the variables and finally it sets the values
+    to the default ones you can see above.
+    """
 
     data_dir: Path = DEFAULT_DATA_DIR
     models_dir: Path = DEFAULT_MODELS_DIR
@@ -43,12 +70,23 @@ class ModelSettings(BaseSettings):
 
 
 class ModelGabarit(Model):
+    """Model class for a Gabarit generated project
+
+    - download_model has been redefined to download a model from artifactory based on
+    the settings : ARTIFACTORY_MODEL_URL, ARTIFACTORY_USER, ARTIFACTORY_PASSWORD
+    - _load_model has been redefined to use utils_models.load_model
+    - predict has been redefined to use utils_models.predict
+    """
     def __init__(self, *args, **kwargs):
-        """Init object"""
+        """Object initialization
+        By default, it initialize the attributes _model, _model_config and _loaded
+
+        see the parent __init__ method in {{package_name}}.model.model_base.Model
+        """
         super().__init__(*args, **kwargs)
 
     def predict(self, content: Any, **kwargs) -> Any:
-        """Make a prediction thanks to the model"""
+        """Make a prediction by calling utils_models.predict with the loaded model"""
         return utils_models.predict(content, self._model, **kwargs)
 
     def _load_model(self, **kwargs):

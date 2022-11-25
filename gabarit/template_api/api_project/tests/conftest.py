@@ -1,3 +1,26 @@
+"""Test configuration
+
+This conftest.py file is the first loaded by pytest when the tests are executed,
+see the documentation for more infos : 
+https://docs.pytest.org/en/7.2.x/reference/fixtures.html#conftest-py-sharing-fixtures-across-multiple-files
+
+We use it to :
+- create a test model
+- create a TestClient named test_base_client which does not load the test model
+- create a TestClient named test_complete_client which does load the test model
+- set some environment variables to check if they are well set in the app settings
+
+> More details about test_base_client and test_complete_client:
+>
+> By default a TestClient does not fire events so the startup and shutdown events are never fired
+> and the model is never loaded.
+> We can fire thoses events by using TestClient as a context manager so we use two TestClient in
+> our tests : a test_base_client that does not load the model and test_complete_client that does
+> load the model thanks to a context manager. It allows us to test the behavior of our application
+> when a model is not loaded (which should not happend).
+
+"""
+
 import os
 from pathlib import Path
 
@@ -10,7 +33,7 @@ TEST_DIR = Path(__file__).parent.resolve()
 TEST_MODELS_DIR = TEST_DIR / "data" / "models"
 TEST_MODEL_PATH = TEST_MODELS_DIR / "model.pkl"
 
-# Set environement variables for tests
+# Set environment variables for testing
 os.environ["app_name"] = "APP_TESTS"
 os.environ["api_entrypoint"] = "/tests"
 os.environ["model_path"] = str(TEST_MODEL_PATH)

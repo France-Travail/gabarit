@@ -1,3 +1,8 @@
+"""Config global settings
+
+This module handle global app configuration
+"""
+
 import pkg_resources
 from pydantic import BaseSettings
 

@@ -1,4 +1,12 @@
-"""Startup and Stop handlers for FastAPI application """
+"""Startup and Stop handlers for FastAPI application
+
+This module define event handlers and n particular startup and stop handlers that
+are used to instantiate your model when the API first start.
+
+To use your own model instead of the base model, create a module in {{package_name}}.model
+such as model_awesome.py and import it as Model instead of the one used here.
+"""
+
 import logging
 from typing import Callable
 

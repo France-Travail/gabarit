@@ -1,0 +1,1 @@
+"""Core package contains global configurations and utilities"""

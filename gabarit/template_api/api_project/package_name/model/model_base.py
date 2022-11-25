@@ -1,3 +1,13 @@
+"""This module contains the base Model class
+
+Model is the base model class. It contains a loading and downloading methods that are 
+used by default to download your model into your Docker container and load it into your
+application.
+
+To use a custom model class in your application, create a new module such as
+model_awesome.py in this package and write a custom class that overwrite _load_model, 
+download_model or predict depending on your needs.
+"""
 import logging
 import pickle
 from pathlib import Path
@@ -13,7 +23,16 @@ logger = logging.getLogger(__name__)
 
 
 class ModelSettings(BaseSettings):
-    """Download settings"""
+    """Download settings
+        
+    This class is used for settings management purpose, have a look at the pydantic
+    documentation for more details : https://pydantic-docs.helpmanual.io/usage/settings/
+
+    By default, it looks for environment variables (case insensitive) to set the settings
+    if a variable is not found, it looks for a file name .env in your working directory
+    where you can declare the values of the variables and finally it sets the values
+    to the default ones you can see above.
+    """
 
     model_path: Path = DEFAULT_MODEL_PATH
 

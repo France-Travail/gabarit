@@ -7,6 +7,7 @@ from {{package_name}}.routers.schemas.utils import NumpyArrayEncoder
 
 
 def test_numpy_encoder():
+    """Test the NumpyArrayEncoder that is used by default to handle numpy objects"""
     obj = np.array([0.1, 0.2], dtype=np.float128)
     assert json.dumps(obj, cls=NumpyArrayEncoder) == "[0.1, 0.2]"
 
