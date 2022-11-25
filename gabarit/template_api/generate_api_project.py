@@ -21,7 +21,7 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--name", required=True, help="Project name")
     parser.add_argument("-p", "--path", required=True, help="Path (relative or absolute) to project directory")
-    parser.add_argument("--gabarit_package", help="Gabarit package you whish to use")
+    parser.add_argument("--gabarit_package", help="Gabarit package you want to use")
     parser.add_argument("--gabarit_package_version", help="Gabarit package version you whish to use")
     parser.add_argument(
         "-c",
