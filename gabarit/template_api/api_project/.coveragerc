@@ -1,4 +1,6 @@
+{%- if not gabarit_package -%}
 [run]
 omit =
     # Omit model gabarit
     */{{package_name}}/model/model_gabarit.py
+{%- endif %}

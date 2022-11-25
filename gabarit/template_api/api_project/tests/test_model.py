@@ -1,5 +1,5 @@
-from {{package_name}}.model.model_base import download_model
+from {{package_name}}.model.model_base import Model
 
 
 def test_download():
-    assert download_model()
+    assert Model.download_model()

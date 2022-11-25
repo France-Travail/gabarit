@@ -21,6 +21,16 @@ endif
 	pip install -e .[dev]
 
 ####################################################
+# Tests
+####################################################
+
+test: ## Launch python tests
+ifndef VIRTUAL_ENV
+	$(error Please activate your virutalenv : source .venv/bin/activate)
+endif
+	pytest --cov-report term-missing
+
+####################################################
 # Code quality
 ####################################################
 
@@ -57,6 +67,11 @@ endif
 # Build docker image
 ####################################################
 
-build-local:
+build-d:
 	docker build -t {{package_name}}_api -f Dockerfile.svc .
 
+run-d:
+	docker container run --rm -p 5000:5000 {{package_name}}_api
+
+run-d-it:
+	docker container run --rm -p 5000:5000 -i -t {{package_name}}_api

@@ -38,7 +38,7 @@ addopts = "-v --cov={{package_name}}"
 filterwarnings = ["ignore:The hookimpl CovPlugin.pytest_"]
 
 [project.scripts]
-download-model = "{{package_name}}.model.model_gabarit:download_model"
+download-model = "{{package_name}}.core.event_handlers:Model.download_model"
 
 [tool.isort]
 profile = "black"
