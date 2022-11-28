@@ -14,6 +14,7 @@ from typing import List
 
 from jinja2 import Environment, FileSystemLoader
 
+EXCLUDE_EXTS = {".pyc"}
 
 def main():
     """Generates a python template"""
@@ -126,6 +127,11 @@ def generate(
 
             # For each template (a.k.a. files), load and fill it, then save into output dir
             for template_name in env.list_templates():
+
+                if any(template_name.endswith(ext) for ext in EXCLUDE_EXTS):
+                    print(f"SKIP {template_name}")
+                    continue
+
                 print(f"Rendering {template_name}")
 
                 # Get render
