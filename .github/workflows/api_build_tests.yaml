@@ -1,26 +1,15 @@
 name: Build & Tests - API
 on:
   push:
-    branches:
-      - 'main'
-      - 'release/v*'
-    paths-ignore:
-      - 'version.txt'
-      - '.github/workflows/**'
-      - '*.md'
-      - 'LICENSE'
-      - 'Makefile'
+    paths:
+      - 'gabarit/template_api/**'
   pull_request:
     types: [opened, reopened, edit, synchronize]
     branches:
       - 'main'
       - 'release/v*'
-    paths-ignore:
-      - 'version.txt'
-      - '.github/workflows/**'
-      - '*.md'
-      - 'LICENSE'
-      - 'Makefile'
+    paths:
+      - 'gabarit/template_api/**'
   schedule:
     - cron: '0 0 * * 0'
   workflow_dispatch:
@@ -44,6 +33,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install .
         generate_api_project -n test_template_api -p test_template_api
+        ls test_template_api
     - name: Install the project and run tests
       run: |
         cd test_template_api
