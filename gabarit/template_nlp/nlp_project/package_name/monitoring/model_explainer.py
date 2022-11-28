@@ -33,7 +33,7 @@ from {{package_name}}.models_training.model_class import ModelClass
 class Explainer:
     '''Parent class for the explainers'''
 
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         '''Initialization of the parent class'''
         self.logger = logging.getLogger(__name__)
 
@@ -56,6 +56,16 @@ class Explainer:
             str: An HTML code with the explanation
         '''
         raise NotImplementedError("'explain_instance_as_html' needs to be overridden")
+
+    def explain_instance_as_json(self, content: str, **kwargs) -> Union[dict, list]:
+        '''Explains a prediction - returns an JSON serializable object
+
+        Args:
+            content (str): Text to be explained
+        Returns:
+            str: A JSON serializable object with the explanation
+        '''
+        raise NotImplementedError("'explain_instance_as_json' needs to be overridden")
 
     def explain_instance_as_list(self, content: str, **kwargs) -> list:
         '''Explains a prediction - returns a list object
@@ -170,6 +180,19 @@ class LimeExplainer(Explainer):
         # Return as list for selected class or label
         return explanation.as_list(label=self.current_class_or_label_index)
 
+    def explain_instance_as_json(self, content: str, class_or_label_index: Union[int, None] = None,
+                                 max_features: int = 15, **kwargs) -> Union[dict, list]:
+        '''Explains a prediction - returns a JSON serializable object
+
+        Args:
+            content (str): Text to be explained
+        Kwargs:
+            class_or_label_index (int): for classification only. Class or label index to be considered.
+            max_features (int): Maximum number of features (cf. Lime documentation)
+        Returns:
+            Union[list, dict]: JSON serializable object containing a list of tuples with words and corresponding weights
+        '''
+        return self.explain_instance_as_list(content, class_or_label_index=class_or_label_index, max_features=max_features, **kwargs)
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

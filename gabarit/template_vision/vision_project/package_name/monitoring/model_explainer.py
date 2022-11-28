@@ -38,7 +38,7 @@ from {{package_name}}.models_training.classifiers.model_classifier import ModelC
 class Explainer:
     '''Parent class for the explainers'''
 
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         '''Initialization of the parent class'''
         self.logger = logging.getLogger(__name__)
 
@@ -62,6 +62,15 @@ class Explainer:
         '''
         raise NotImplementedError("'explain_instance_as_html' needs to be overridden")
 
+    def explain_instance_as_json(self, content: Image.Image, **kwargs) -> Union[dict, list]:
+        '''Explains a prediction - returns an JSON serializable object
+
+        Args:
+            content (str): Text to be explained
+        Returns:
+            str: A JSON serializable object with the explanation
+        '''
+        raise NotImplementedError("'explain_instance_as_json' needs to be overridden")
 
 class LimeExplainer(Explainer):
     '''Lime Explainer wrapper class'''
@@ -161,6 +170,11 @@ class LimeExplainer(Explainer):
         '''
         raise NotImplementedError("'explain_instance_as_html' is not defined for LimeExplainer")
 
+    def explain_instance_as_json(self, *args, **kwargs):
+        '''Explains a prediction - returns an JSON serializable object
+        ** NOT IMPLEMENTED **
+        '''
+        raise NotImplementedError("'explain_instance_as_json' is not defined for LimeExplainer")
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
