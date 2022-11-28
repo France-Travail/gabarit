@@ -11,7 +11,7 @@ dependencies = [
     "uvicorn[standard]>=0.20,<1.0",
     "numpy>=1.19,<2.0",
     {%- if gabarit_package %}
-    "{{gabarit_package}}{% if gabarit_package_version %}=={{gabarit_package_version}}{% endif %}",
+    "{{gabarit_package}}{{gabarit_package_extras}}{{gabarit_package_version}}",
     "dohq-artifactory>=0.8,<1.0",
     {%- endif %}
 ]

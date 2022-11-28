@@ -67,6 +67,22 @@ def generate(
         TypeError: if gabarit_package is not of type str
         TypeError: if gabarit_package_version is not of type str
     """
+    # Split gabarit_package into package and packages extras
+    if gabarit_package and "[" in gabarit_package:
+        ind_options = gabarit_package.index("[")
+
+        gabarit_package_extras = gabarit_package[ind_options:]
+        gabarit_package = gabarit_package[:ind_options]
+    else:
+        gabarit_package_extras = ""
+
+    # If only a version is specified, add == at the beggining
+    if gabarit_package_version and gabarit_package_version[0] not in ("=", ">", "<", "~"):
+        gabarit_package_version = f"=={gabarit_package_version}"
+
+    elif gabarit_package_version is None:
+        gabarit_package_version = "" 
+
     # Start by creating the output directory:
     output_dir = os.path.abspath(project_path)
     os.makedirs(output_dir, exist_ok=True)
@@ -138,6 +154,7 @@ def generate(
                 render = template.render(
                     package_name=package_name,
                     gabarit_package=gabarit_package,
+                    gabarit_package_extras=gabarit_package_extras,
                     gabarit_package_version=gabarit_package_version,
                 )
 
