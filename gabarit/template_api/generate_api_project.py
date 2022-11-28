@@ -129,7 +129,6 @@ def generate(
             for template_name in env.list_templates():
 
                 if any(template_name.endswith(ext) for ext in EXCLUDE_EXTS):
-                    print(f"SKIP {template_name}")
                     continue
 
                 print(f"Rendering {template_name}")
