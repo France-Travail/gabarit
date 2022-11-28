@@ -27,6 +27,7 @@ def main():
         "-c",
         "--custom",
         nargs="+",
+        default=[],
         help=(
             "Add custom templates such as a custom .env file or a custom Dockerfile. "
             "Example : --custom /path/to/my/.env.custom=.env include/all/from/dir="
@@ -143,7 +144,7 @@ def generate(
                 basedir = os.path.dirname(final_path)
                 if not os.path.exists(basedir):
                     os.makedirs(basedir)
-                with open(final_path, "w", newline="\n", encoding="utf8") as f:
+                with open(final_path, "w") as f:
                     f.write(render)
 
     # Create data and models dir
