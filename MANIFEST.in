@@ -1,3 +1,4 @@
+recursive-include gabarit/template_api/api_project *
 recursive-include gabarit/template_nlp/nlp_project *
 recursive-include gabarit/template_num/num_project *
 recursive-include gabarit/template_vision/vision_project *
