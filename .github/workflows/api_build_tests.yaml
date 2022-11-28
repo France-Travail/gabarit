@@ -1,0 +1,51 @@
+name: Build & Tests - API
+on:
+  push:
+    branches:
+      - 'main'
+      - 'release/v*'
+    paths-ignore:
+      - 'version.txt'
+      - '.github/workflows/**'
+      - '*.md'
+      - 'LICENSE'
+      - 'Makefile'
+  pull_request:
+    types: [opened, reopened, edit, synchronize]
+    branches:
+      - 'main'
+      - 'release/v*'
+    paths-ignore:
+      - 'version.txt'
+      - '.github/workflows/**'
+      - '*.md'
+      - 'LICENSE'
+      - 'Makefile'
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.7", "3.8"]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Setup Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+          python-version: ${{ matrix.python-version }}
+    - name: Install Gabarit and generate a test project
+      run: |
+        python -m pip install --upgrade pip
+        pip install .
+        generate_api_project -n test_template_api -p test_template_api
+    - name: Install the project and run tests
+      run: |
+        cd test_template_api
+        pip install .[test]
+        pytest
