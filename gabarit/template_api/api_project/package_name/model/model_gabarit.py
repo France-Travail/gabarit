@@ -22,14 +22,15 @@ import shutil
 from pathlib import Path
 from typing import Any
 
+import pandas as pd
 from pydantic import BaseSettings
 
 from .model_base import Model
 
 try:
     {%- if gabarit_package %}
-    from {{gabarit_package}} import utils as utils_gabarit
-    from {{gabarit_package}}.models_training import utils_models
+    from {{gabarit_package.replace('-', '_')}} import utils as utils_gabarit
+    from {{gabarit_package.replace('-', '_')}}.models_training import utils_models
     {%- else %}
     from gabarit_package import utils as utils_gabarit
     from gabarit_package.models_training import utils_models
@@ -87,7 +88,7 @@ class ModelGabarit(Model):
 
     def predict(self, content: Any, **kwargs) -> Any:
         """Make a prediction by calling utils_models.predict with the loaded model"""
-        return utils_models.predict(content, self._model, **kwargs)
+        return utils_models.predict(pd.DataFrame(content), self._model, **kwargs)
 
     def _load_model(self, **kwargs):
         """Load a model in a gabarit fashion"""
