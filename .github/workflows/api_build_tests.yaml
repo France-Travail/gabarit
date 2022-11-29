@@ -4,7 +4,7 @@ on:
     paths:
       - 'gabarit/template_api/**'
   pull_request:
-    types: [opened, reopened, edit, synchronize]
+    types: [opened, reopened, synchronize]
     branches:
       - 'main'
       - 'release/v*'

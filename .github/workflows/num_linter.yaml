@@ -1,19 +1,11 @@
 name: Linter - NUM
 on:
   push:
-    paths-ignore:
-      - 'version.txt'
-      - '.github/workflows/**'
-      - '*.md'
-      - 'LICENSE'
-      - 'Makefile'
+    paths:
+      - 'gabarit/template_num/**'
   pull_request:
-    paths-ignore:
-      - 'version.txt'
-      - '.github/workflows/**'
-      - '*.md'
-      - 'LICENSE'
-      - 'Makefile'
+    paths:
+      - 'gabarit/template_num/**'
   workflow_dispatch:
 
 jobs:
