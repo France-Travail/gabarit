@@ -39,8 +39,7 @@ os.environ["api_entrypoint"] = "/tests"
 os.environ["model_path"] = str(TEST_MODEL_PATH)
 
 # Create a test model if needed
-if not TEST_MODEL_PATH.exists():
-    TestModel().to_pickle(TEST_MODEL_PATH)
+TestModel().to_pickle(TEST_MODEL_PATH)
 
 
 @pytest.fixture(scope="session")

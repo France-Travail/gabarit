@@ -20,7 +20,7 @@ import logging
 import os
 import shutil
 from pathlib import Path
-from typing import Any
+from typing import Any, Union
 
 import pandas as pd
 from pydantic import BaseSettings
@@ -31,6 +31,7 @@ try:
     {%- if gabarit_package %}
     from {{gabarit_package.replace('-', '_')}} import utils as utils_gabarit
     from {{gabarit_package.replace('-', '_')}}.models_training import utils_models
+    from {{gabarit_package.replace('-', '_')}}.monitoring.model_explainer import Explainer
     {%- else %}
     from gabarit_package import utils as utils_gabarit
     from gabarit_package.models_training import utils_models
@@ -86,9 +87,17 @@ class ModelGabarit(Model):
         """
         super().__init__(*args, **kwargs)
 
-    def predict(self, content: Any, **kwargs) -> Any:
+    def predict(self, content: Any, *args, **kwargs) -> Any:
         """Make a prediction by calling utils_models.predict with the loaded model"""
-        return utils_models.predict(pd.DataFrame(content), self._model, **kwargs)
+        return utils_models.predict(pd.DataFrame(content), self._model, *args, **kwargs)
+
+    def explain_as_json(self, content: Any, *args, **kwargs) -> Union[dict, list]:
+        """Compute explanations about a prediction and return a JSON serializable object"""
+        return self._model_explainer.explain_instance_as_json(pd.DataFrame(content), *args, **kwargs)
+
+    def explain_as_html(self, content: Any, *args, **kwargs) -> str:
+        """Compute explanations about a prediction and return an HTML report"""
+        return self._model_explainer.explain_instance_as_html(pd.DataFrame(content), *args, **kwargs)
 
     def _load_model(self, **kwargs):
         """Load a model in a gabarit fashion"""
@@ -103,6 +112,13 @@ class ModelGabarit(Model):
         model, model_conf = utils_models.load_model(
             model_dir=settings.model_path, is_path=True
         )
+
+        # Set attributes
+        self._model = model
+        self._model_conf = model_conf
+
+        # Create a model explainer
+        self._model_explainer = Explainer(model=model, model_conf=model_conf)
 
         return model, model_conf
 

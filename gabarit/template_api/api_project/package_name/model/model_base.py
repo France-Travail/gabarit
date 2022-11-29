@@ -11,7 +11,7 @@ download_model or predict depending on your needs.
 import logging
 import pickle
 from pathlib import Path
-from typing import Any, Tuple
+from typing import Any, Tuple, Union
 
 from pydantic import BaseSettings
 
@@ -44,6 +44,7 @@ class Model:
     def __init__(self):
         self._model = None
         self._model_conf = None
+        self._model_explainer = None
         self._loaded = False
 
     def is_model_loaded(self):
@@ -52,13 +53,20 @@ class Model:
 
     def loading(self, **kwargs):
         """load the model"""
-        self._model, self._model_conf = self._load_model(**kwargs)
+        self._load_model(**kwargs)
         self._loaded = True
 
     def predict(self, *args, **kwargs):
         """Make a prediction thanks to the model"""
         return self._model.predict(*args, **kwargs)
 
+    def explain_as_json(self, *args, **kwargs) -> Union[dict, list]:
+        """Compute explanations about a prediction and return a JSON serializable object"""
+        return self._model_explainer.explain_instance_as_json(*args, **kwargs)
+
+    def explain_as_html(self, *args, **kwargs) -> str:
+        """Compute explanations about a prediction and return an HTML report"""
+        return self._model_explainer.explain_instance_as_html(*args, **kwargs)
 
     def _load_model(self, **kwargs) -> Tuple[Any, dict]:
         """Load a model from a file
@@ -70,13 +78,13 @@ class Model:
 
         logger.info(f"Loading the model from {settings.model_path}")
         with settings.model_path.open("rb") as f:
-            model = pickle.load(f)
+            self._model = pickle.load(f)
 
-        logger.info(f"Model loaded")
-        return model, {
+        self._model_conf = {
             "model_path": settings.model_path.name,
             "model_name": settings.model_path.stem,
         }
+        logger.info(f"Model loaded")
 
     @staticmethod
     def download_model(**kwargs) -> bool:

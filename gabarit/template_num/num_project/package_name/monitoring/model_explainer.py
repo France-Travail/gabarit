@@ -33,10 +33,6 @@ from {{package_name}}.models_training import utils_models
 from {{package_name}}.models_training.model_class import ModelClass
 
 
-# Init. shap JS
-shap.initjs()
-
-
 class Explainer:
     '''Parent class for the explainers'''
 

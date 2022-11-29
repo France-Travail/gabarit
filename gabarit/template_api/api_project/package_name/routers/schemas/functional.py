@@ -8,6 +8,6 @@ from starlette.responses import JSONResponse
 from .utils import NumpyArrayEncoder
 
 
-class PredictionResponse(JSONResponse):
+class NumpyJSONResponse(JSONResponse):
     def render(self, content: Any) -> bytes:
         return json.dumps(content, cls=NumpyArrayEncoder).encode()
