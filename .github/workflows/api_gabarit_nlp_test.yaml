@@ -30,7 +30,6 @@ jobs:
           python-version: ${{ matrix.python-version }}
 
     - name: Install Gabarit and generate a nlp and a api project
-      working-directory: ./app
       run: |
         python -m pip install --upgrade pip
         pip install .
@@ -39,7 +38,7 @@ jobs:
         
 
     - name: Install the NLP project and create a model
-      working-directory: ./app/demo_nlp
+      working-directory: demo_nlp
       run: |
         export VERSION=0.0.1
 
@@ -58,7 +57,7 @@ jobs:
         mv "demo_nlp-models/model_tfidf_svm/$MODEL" ../demo_api_nlp/demo_api_nlp-models/model
 
     - name: Install the API project and test it
-      working-directory: ./app/demo_api_nlp
+      working-directory: demo_api_nlp
       run: |
         export VERSION=0.0.1
 
