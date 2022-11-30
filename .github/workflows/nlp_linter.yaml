@@ -4,6 +4,7 @@ on:
     paths:
       - 'gabarit/template_nlp/**'
   pull_request:
+    types: [opened, reopened, synchronize]
     paths:
       - 'gabarit/template_nlp/**'
   workflow_dispatch:

@@ -4,6 +4,7 @@ on:
     paths:
       - 'gabarit/template_vision/**'
   pull_request:
+    types: [opened, reopened, synchronize]
     paths:
       - 'gabarit/template_vision/**'
   workflow_dispatch:
