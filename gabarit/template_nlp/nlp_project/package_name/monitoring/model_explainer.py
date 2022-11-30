@@ -22,7 +22,7 @@
 
 import logging
 import numpy as np
-from typing import Type, Union, Any
+from typing import Type, Union, Any, Iterable
 from lime.explanation import Explanation
 from lime.lime_text import LimeTextExplainer
 
@@ -102,9 +102,7 @@ class LimeExplainer(Explainer):
         self.model = model
         self.model_conf = model_conf
         self.class_names = self.model.list_classes
-        # Our explainers will explain a prediction for a given class / label
-        # These atributes are set on the fly
-        self.current_class_or_label_index = 0
+
         # Create the explainer
         self.explainer = LimeTextExplainer(class_names=self.class_names)
 
@@ -127,8 +125,8 @@ class LimeExplainer(Explainer):
         # Get probabilities
         return self.model.predict_proba(content_prep)
 
-    def explain_instance(self, content: str, class_or_label_index: Union[int, None] = None,
-                         max_features: int = 15, **kwargs):
+    def explain_instance(self, content: str, class_or_label_index: Union[None, int, Iterable] = None,
+                         max_features: int = 15, **kwargs) -> Explanation:
         '''Explains a prediction
 
         This function calls the Lime module. It creates a linear model around the input text to evaluate
@@ -137,18 +135,20 @@ class LimeExplainer(Explainer):
         Args:
             content (str): Text to be explained
         Kwargs:
-            class_or_label_index (int): for classification only. Class or label index to be considered.
+            class_or_label_index (Union[None, int, Iterable]): for classification only. Class or label index to be considered.
             max_features (int): Maximum number of features (cf. Lime documentation)
         Returns:
             (?): An explanation object
         '''
-        # Set index
-        if class_or_label_index is not None:
-            self.current_class_or_label_index = class_or_label_index
-        else:
-            self.current_class_or_label_index = 1  # Def to 1
+        if class_or_label_index is None:
+            probas = self.classifier_fn([content])[0]
+            class_or_label_index = (i for i, p in enumerate(probas) if p >= 0.5)
+
+        elif isinstance(class_or_label_index, int):
+            class_or_label_index = (class_or_label_index, )
+
         # Get explanations
-        return self.explainer.explain_instance(content, self.classifier_fn, labels=(self.current_class_or_label_index,), num_features=max_features)
+        return self.explainer.explain_instance(content, self.classifier_fn, labels=class_or_label_index, num_features=max_features)
 
     def explain_instance_as_html(self, content: str, class_or_label_index: Union[int, None] = None,
                                  max_features: int = 15, **kwargs) -> str:
@@ -162,7 +162,7 @@ class LimeExplainer(Explainer):
         Returns:
             str: An HTML code with the explanation
         '''
-        return self.explain_instance(content, class_or_label_index, max_features).as_html()
+        return self.explain_instance(content, class_or_label_index=class_or_label_index, max_features=max_features, **kwargs).as_html()
 
     def explain_instance_as_list(self, content: str, class_or_label_index: Union[int, None] = None,
                                  max_features: int = 15, **kwargs) -> list:
@@ -176,23 +176,31 @@ class LimeExplainer(Explainer):
         Returns:
             list: List of tuples with words and corresponding weights
         '''
-        explanation = self.explain_instance(content, class_or_label_index, max_features)
-        # Return as list for selected class or label
-        return explanation.as_list(label=self.current_class_or_label_index)
+        explanation = self.explain_instance(content, class_or_label_index=class_or_label_index, max_features=max_features, **kwargs)
+        
+        # as_list can only return lime weight for a single label so in case no class_or_label_index
+        # was specified we return only the weight for the class with the max probabilty
+        if class_or_label_index is None:
+            class_or_label_index = explanation.predict_proba.argmax()
 
-    def explain_instance_as_json(self, content: str, class_or_label_index: Union[int, None] = None,
+        # Return as list for selected class or label
+        return explanation.as_list(label=class_or_label_index)
+
+    def explain_instance_as_json(self, content: str, class_or_label_index: Union[None, int, Iterable] = None,
                                  max_features: int = 15, **kwargs) -> Union[dict, list]:
         '''Explains a prediction - returns a JSON serializable object
 
         Args:
             content (str): Text to be explained
         Kwargs:
-            class_or_label_index (int): for classification only. Class or label index to be considered.
+            class_or_label_index (Union[None, int, Iterable]): for classification only. Class or label index to be considered.
             max_features (int): Maximum number of features (cf. Lime documentation)
         Returns:
             Union[list, dict]: JSON serializable object containing a list of tuples with words and corresponding weights
         '''
-        return self.explain_instance_as_list(content, class_or_label_index=class_or_label_index, max_features=max_features, **kwargs)
+        explanation = self.explain_instance(content, class_or_label_index=class_or_label_index, max_features=max_features, **kwargs)
+
+        return explanation.as_map()
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
