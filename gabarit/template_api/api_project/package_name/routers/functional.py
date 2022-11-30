@@ -3,7 +3,7 @@ from typing import Union
 
 from fastapi import APIRouter
 from starlette.requests import Request
-from starlette.responses import HTMLResponse
+from starlette.responses import Response, HTMLResponse
 
 from ..model.model_base import Model
 from .schemas.functional import NumpyJSONResponse
@@ -57,13 +57,45 @@ async def explain(request: Request) -> Union[HTMLResponse, NumpyJSONResponse]:
     You can use routes from example_api_num.routers.technical as examples of how to create requests and
     responses schemas thanks to pydantic or have a look at the FastAPI documentation :
     https://fastapi.tiangolo.com/tutorial/response-model/
+
+    If there is not explainer or the explainer does not implement explain_as_json or explain_as_html
+    we return a 501 HTTP error : https://developer.mozilla.org/fr/docs/Web/HTTP/Status/501
     """
     model: Model = request.app.state.model
 
     body = await request.body()
     body = json.loads(body) if body else {}
     
+    # JSON repsonse (when Accept: application/json in the request)
     if request.headers.get("Accept") == "application/json":
-        return NumpyJSONResponse(model.explain_as_json(**body))
+        try:
+            explanation = model.explain_as_json(**body)
+
+        except (AttributeError, NotImplementedError):
+            error_msg = {
+                "error": {
+                    "code": 501, 
+                    "message": "No explainer capable of handle explicability"
+                }
+            }
+            return Response(
+                content=json.dumps(error_msg), 
+                status_code=501, 
+                media_type='application/json',
+            )
+        else:
+            return NumpyJSONResponse(explanation)
+
+    # HTML repsonse (otherwise)
     else:
-        return HTMLResponse(model.explain_as_html(**body))
+        try:
+            explanation = model.explain_as_html(**body)
+
+        except (AttributeError, NotImplementedError):
+            return Response(
+                content="No explainer capable of handle explicability", 
+                status_code=501,
+                media_type='text/plain',
+            )
+        else:
+            return HTMLResponse(explanation)

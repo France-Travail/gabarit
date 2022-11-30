@@ -89,15 +89,24 @@ class ModelGabarit(Model):
 
     def predict(self, content: Any, *args, **kwargs) -> Any:
         """Make a prediction by calling utils_models.predict with the loaded model"""
-        return utils_models.predict(pd.DataFrame(content), self._model, *args, **kwargs)
+        if isinstance(content, list) or isinstance(content, dict):
+            content = pd.DataFrame(content)
+
+        return utils_models.predict(content, model=self._model, model_conf=self._model_conf, **kwargs)
 
     def explain_as_json(self, content: Any, *args, **kwargs) -> Union[dict, list]:
         """Compute explanations about a prediction and return a JSON serializable object"""
-        return self._model_explainer.explain_instance_as_json(pd.DataFrame(content), *args, **kwargs)
+        if isinstance(content, list) or isinstance(content, dict):
+            content = pd.DataFrame(content)
+
+        return self._model_explainer.explain_instance_as_json(content, *args, **kwargs)
 
     def explain_as_html(self, content: Any, *args, **kwargs) -> str:
         """Compute explanations about a prediction and return an HTML report"""
-        return self._model_explainer.explain_instance_as_html(pd.DataFrame(content), *args, **kwargs)
+        if isinstance(content, list) or isinstance(content, dict):
+            content = pd.DataFrame(content)
+
+        return self._model_explainer.explain_instance_as_html(content, *args, **kwargs)
 
     def _load_model(self, **kwargs):
         """Load a model in a gabarit fashion"""

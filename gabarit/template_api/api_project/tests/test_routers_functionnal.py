@@ -15,12 +15,28 @@ def test_predict(test_complete_client: TestClient):
 
 def test_explain(test_complete_client: TestClient):
     """Test the route explain"""
+    # 501 HTML error
+    response = test_complete_client.post(
+        "/tests/explain", 
+        json={"content": ["gab", "gabarit"]},
+    )
+    assert response.status_code == 501
+
+    # 501 JSON error
+    response = test_complete_client.post(
+        "/tests/explain", 
+        json={"content": ["gab", "gabarit"]}, 
+        headers={"Accept": "application/json"},
+    )
+    assert response.status_code == 501
     
+    # Now add a TestExplainer to test the explanations
     test_complete_client.app.state.model._model_explainer = TestExplainer()
 
     # HTML response
     response = test_complete_client.post(
-        "/tests/explain", json={"content": ["gab", "gabarit"]}
+        "/tests/explain", 
+        json={"content": ["gab", "gabarit"]},
     )
     assert response.status_code == 200
     assert "<li>gab : GAB____</li>" in response.text
