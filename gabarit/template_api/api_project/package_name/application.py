@@ -1,5 +1,6 @@
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from starlette_prometheus import metrics, PrometheusMiddleware
 
 from .core.config import settings
 from .core.event_handlers import start_app_handler, stop_app_handler
@@ -20,6 +21,10 @@ def declare_application() -> FastAPI:
     # Load the model on startup
     app.add_event_handler("startup", start_app_handler(app))
     app.add_event_handler("shutdown", stop_app_handler(app))
+
+    # Add PrometheusMiddleware
+    app.add_middleware(PrometheusMiddleware)
+    app.add_route("/metrics", metrics)
 
     # CORS middleware that allows all origins to avoid CORS problems
     # see https://fastapi.tiangolo.com/tutorial/cors/#use-corsmiddleware
