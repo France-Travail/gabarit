@@ -64,6 +64,7 @@ setup(
     ],
     extras_require={
         "tensorflow": ["tensorflow==2.10.0"],
+        "explicability": ['shap>=0.41,<1.0'],
     }
     # pip install {{package_name}} || pip install {{package_name}}[tensorflow]
 )

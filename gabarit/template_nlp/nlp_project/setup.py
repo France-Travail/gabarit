@@ -65,6 +65,7 @@ setup(
     extras_require={
         "tensorflow": ["tensorflow==2.10.0"],
         "torch": ["torch==1.8.1+cpu", "transformers==4.3.2", "pytorch_lightning==1.1.8"],  # If GPU with cuda 11.1 : replace +cpu by +cu111
+        "explicability": ['lime>=0.2,<1.0'],
     }
     # pip install {{package_name}} || pip install {{package_name}}[tensorflow] || pip install {{package_name}}[torch]
 )
