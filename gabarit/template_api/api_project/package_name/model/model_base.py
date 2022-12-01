@@ -1,11 +1,28 @@
+#!/usr/bin/env python3
+# Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 """This module contains the base Model class
 
-Model is the base model class. It contains a loading and downloading methods that are 
+Model is the base model class. It contains a loading and downloading methods that are
 used by default to download your model into your Docker container and load it into your
 application.
 
 To use a custom model class in your application, create a new module such as
-model_awesome.py in this package and write a custom class that overwrite _load_model, 
+model_awesome.py in this package and write a custom class that overwrite _load_model,
 download_model or predict depending on your needs.
 """
 import logging
@@ -24,7 +41,7 @@ logger = logging.getLogger(__name__)
 
 class ModelSettings(BaseSettings):
     """Download settings
-        
+
     This class is used for settings management purpose, have a look at the pydantic
     documentation for more details : https://pydantic-docs.helpmanual.io/usage/settings/
 
