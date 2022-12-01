@@ -36,7 +36,7 @@ jobs:
         python -m pip install --upgrade pip
         pip install .
         generate_nlp_project -n demo_nlp -p demo_nlp
-        generate_api_project -n demo_api_nlp -p demo_api_nlp --gabarit_package demo-nlp[explicability]
+        generate_api_project -n demo_api_nlp -p demo_api_nlp --gabarit_package demo-nlp[explicability] --gabarit_no_spec
         
 
     - name: Install the NLP project and create a model
