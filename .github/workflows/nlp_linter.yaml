@@ -7,6 +7,8 @@ on:
     types: [opened, reopened, synchronize]
     paths:
       - 'gabarit/template_nlp/**'
+    paths-ignore:
+      - '*.md'
   workflow_dispatch:
 
 jobs:
