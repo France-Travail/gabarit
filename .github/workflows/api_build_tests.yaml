@@ -3,6 +3,7 @@ on:
   push:
     paths:
       - 'gabarit/template_api/**'
+      - '!*.md'
   pull_request:
     types: [opened, reopened, synchronize]
     branches:
@@ -10,8 +11,7 @@ on:
       - 'release/v*'
     paths:
       - 'gabarit/template_api/**'
-    paths-ignore:
-      - '*.md'
+      - '!*.md'
   schedule:
     - cron: '0 0 * * 0'
   workflow_dispatch:
