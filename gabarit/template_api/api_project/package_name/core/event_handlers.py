@@ -12,7 +12,7 @@ from typing import Callable
 
 from fastapi import FastAPI
 
-{%- if gabarit_package %}
+{%- if gabarit_package_spec %}
 from ..model.model_gabarit import ModelGabarit as Model
 {%- else %}
 from ..model.model_base import Model

@@ -80,7 +80,7 @@ Have a look at your `.env` file to see the default settings :
 APP_NAME="{{package_name}}"
 API_ENTRYPOINT="/{{package_name}}/rs/v1"
 
-{%- if gabarit_package %}
+{%- if gabarit_package_spec %}
 DATA_DIR="{{package_name}}-data"
 MODELS_DIR="{{package_name}}-models"
 MODEL_PATH="{{package_name}}-models/model"
@@ -183,7 +183,7 @@ Your model is loaded into your application at startup thanks to
 from typing import Callable
 
 from fastapi import FastAPI
-{%- if gabarit_package %}
+{%- if gabarit_package_spec %}
 from ..model.model_gabarit import ModelGabarit as Model
 {%- else %}
 from ..model.model_base import Model

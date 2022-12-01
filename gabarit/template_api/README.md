@@ -15,30 +15,22 @@ To generate a new API project, use the command line interface `generate_api_proj
 
 ```bash
 > generate_api_project --help
-usage: generate_api_project [-h] -n NAME -p PATH [--gabarit_package GABARIT_PACKAGE] [--gabarit_package_version GABARIT_PACKAGE_VERSION]
+usage: generate_api_project [-h] -n NAME -p PATH [--gabarit_package GABARIT_PACKAGE] [--gabarit_import_name GABARIT_IMPORT_NAME]
                             [-c CUSTOM [CUSTOM ...]]
 
 optional arguments:
-  -h, --help            
-                        show this help message and exit
-
-  -n NAME, --name NAME  
-                        Project name
-
-  -p PATH, --path PATH  
-                        Path (relative or absolute) to project directory
-
+  -h, --help            show this help message and exit
+  -n NAME, --name NAME  Project name
+  -p PATH, --path PATH  Path (relative or absolute) to project directory
   --gabarit_package GABARIT_PACKAGE
-                        Gabarit package you want to use
-
-  --gabarit_package_version GABARIT_PACKAGE_VERSION
-                        Gabarit package version you want to use
-
+                        Gabarit package you plan to use in your API (let empty otherwise). Example : my-gabarit-
+                        project[explicability]==0.1.2
+  --gabarit_import_name GABARIT_IMPORT_NAME
+                        The import name of your Gabarit package might be different from the package name as with sickit-learn /
+                        sklearn. Use this argument to specify a different import name
   -c CUSTOM [CUSTOM ...], --custom CUSTOM [CUSTOM ...]
-                        Add custom templates such as a custom .env file or a 
-                        custom Dockerfile. 
-                        Example : 
-                        --custom /my/.env.custom=.env /all/from/dir=
+                        Add custom templates such as a custom .env file or a custom Dockerfile. Example : --custom
+                        /path/to/my/.env.custom=.env include/all/from/dir=
 ```
 
 ## Parameters
@@ -49,9 +41,15 @@ Name of your project
 Path to your project
 
 ### `--gabarit_package`
-Gabarit package that you want to use. This package will be added to your `pyproject.toml`
-as a dependency of your project. It thus should be uploaded to pypi or a private repository
-from where it can be installed.
+Gabarit package you plan to use in your API. This package will be added to your 
+[`pyproject.toml`](https://setuptools.pypa.io/en/latest/userguide/pyproject_config.html)
+as a dependency of your project.
+
+Specify the version of the package you need in your project. Otherwise an error will be raised
+except you use the flag `--gabarit_no_spec`
+
+See the [pip documentation about requirement specifiers](https://pip.pypa.io/en/stable/reference/requirement-specifiers/#examples)
+for few requirement specification examples.
 
 ```toml
 [project]
