@@ -17,8 +17,8 @@ ModelGabarit overwrite some methods of the base Model class :
 
 """
 import logging
-import os
 import shutil
+import tempfile
 from pathlib import Path
 from typing import Any, Union
 
@@ -164,18 +164,17 @@ class ModelGabarit(Model):
             auth=(settings.artifactory_user, settings.artifactory_password),
             verify=False,
         )
-        model_archive_path = models_dir / model_artifactory_path.name
 
-        logger.info(f"Downloading the model to : {model_path}")
-        with model_archive_path.open("wb") as out:
-            model_artifactory_path.writeto(out)
+        with tempfile.TemporaryDirectory(dir=models_dir) as tmpdir:
+            model_archive_path = Path(tmpdir) / model_artifactory_path.name
+            
+            logger.info(f"Downloading the model to : {model_path}")
+            with model_archive_path.open("wb") as out:
+                model_artifactory_path.writeto(out)
 
-        # Unzip model
-        shutil.unpack_archive(model_archive_path, model_path)
-        logger.info(f"Model downloaded")
+            # Unzip model
+            shutil.unpack_archive(model_archive_path, model_path)
+            logger.info(f"Model downloaded")
 
-        # Remove model archive
-        os.remove(model_archive_path)
         logger.info(f"Model archive removed")
-
         return True

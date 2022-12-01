@@ -145,7 +145,7 @@ class ShapExplainer(Explainer):
         return self.model.predict(content_prep)  # type: ignore
 
     def explain_instance(self, content: pd.DataFrame, class_or_label_index: Union[int, None] = None, **kwargs) -> shap.Explanation:
-        '''Explains predictions by returning a Explaniatio
+        '''Explains predictions by returning a shap.Explanation object
 
         This function calls the Shap module.
 

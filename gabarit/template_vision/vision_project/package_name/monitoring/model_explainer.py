@@ -164,13 +164,13 @@ class LimeExplainer(Explainer):
                                                num_samples=num_samples, batch_size=batch_size,
                                                hide_color=hide_color, top_labels=None)
 
-    def explain_instance_as_html(self, *args, **kwargs):
+    def explain_instance_as_html(self, content: Image.Image, **kwargs) -> str:
         '''Explains a prediction - returns an HTML object
         ** NOT IMPLEMENTED **
         '''
         raise NotImplementedError("'explain_instance_as_html' is not defined for LimeExplainer")
 
-    def explain_instance_as_json(self, *args, **kwargs):
+    def explain_instance_as_json(self, content: Image.Image, **kwargs) -> Union[dict, list]:
         '''Explains a prediction - returns an JSON serializable object
         ** NOT IMPLEMENTED **
         '''
