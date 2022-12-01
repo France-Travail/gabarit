@@ -1,8 +1,19 @@
-#!/usr/bin/env python3.8
-
-# Génération d'un template python
-# Auteurs : Agence dataservices
-# Date : 20/12/2019
+#!/usr/bin/env python3
+# Generates an API template
+# Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import argparse
 import os
@@ -18,7 +29,7 @@ EXCLUDE_EXTS = {".pyc"}
 
 
 def main():
-    """Generates a python template"""
+    """Generates an API python template"""
     # Parse arguments
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--name", required=True, help="Project name")
@@ -90,18 +101,16 @@ def generate(package_name: str,
     # Reference custom templates files in a dict whose keys are custom template file paths
     # and values resulting file path in the generated project
     custom_templates_destinations = {}
-
     for custom_template in custom_templates:
+        # Read arguments
         try:
             template_file, file_dest = custom_template.rsplit("=", 1)
         except ValueError:
             print(f"WARNING : wrong custom template format for '{custom_template}'. "
                   f"It should be like : path/to/custom/template=path/to/dest/file")
-
         # A custom template can be a file...
         if os.path.isfile(template_file):
             custom_templates_destinations[file_dest] = template_file
-
         # ... or a directory. In this case we recursively add all files in the directory
         # to the custom_templates_destinations dict :
         #
@@ -116,35 +125,34 @@ def generate(package_name: str,
             ):
                 path_dest = os.path.join(file_dest, file_path)
                 path_origin = os.path.join(template_file, file_path)
-
                 custom_templates_destinations[path_dest] = os.path.join(path_origin)
         else:
             print(f"WARNING : custom template or directory '{template_file}' does not exists. Custom template ignored.")
 
+    # Render the new project -> all the process is made using a temporary folder
+    # Idea : we will copy all the files that needs to be rendered, then we will render the whole folder at once
     with tempfile.TemporaryDirectory() as tmpdirname:
 
         # Copy all custom templates to a temporary directory
         for file_dest, template_file in custom_templates_destinations.items():
             tmp_path_dest = os.path.join(tmpdirname, file_dest)
-
             os.makedirs(os.path.dirname(tmp_path_dest), exist_ok=True)
-
             shutil.copy2(template_file, tmp_path_dest)
 
         # For each of main template directory and custom template directory, render templates and
         # put the results in the output directory
-        for dir in [template_dir, tmpdirname]:
+        for current_dir in [template_dir, tmpdirname]:
             # Then create the Jinja env
-            env = Environment(loader=FileSystemLoader(dir))
+            env = Environment(loader=FileSystemLoader(current_dir))
 
             # For each template (a.k.a. files), load and fill it, then save into output dir
             for template_name in env.list_templates():
-
+                # Ignore some extensions
                 if any(template_name.endswith(ext) for ext in EXCLUDE_EXTS):
                     continue
 
+                # Process rendering
                 print(f"Rendering {template_name}")
-
                 # Get render
                 template = env.get_template(template_name)
                 render = template.render(package_name=package_name,
@@ -163,10 +171,10 @@ def generate(package_name: str,
                 with open(final_path, "w") as f:
                     f.write(render)
 
-    # Create data and models dir
+    # Everything is rendered, we just need to create some subdirectories
     for data_dir in (
-            os.path.join(output_dir, f"{package_name}-data"),
-            os.path.join(output_dir, f"{package_name}-models"),
+            os.path.join(output_dir, f"{package_name}-data"),  # data dir
+            os.path.join(output_dir, f"{package_name}-models"),  # models dir
     ):
         for env_dir in [data_dir]:
             if not os.path.exists(env_dir):

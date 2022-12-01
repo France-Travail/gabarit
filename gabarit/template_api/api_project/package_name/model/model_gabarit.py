@@ -1,3 +1,20 @@
+#!/usr/bin/env python3
+# Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 """This module contains a ModelGabarit class you can use for your gabarit generated
 projects
 
@@ -54,7 +71,7 @@ logger = logging.getLogger(__name__)
 
 class ModelSettings(BaseSettings):
     """Download settings
-    
+
     This class is used for settings management purpose, have a look at the pydantic
     documentation for more details : https://pydantic-docs.helpmanual.io/usage/settings/
 
@@ -172,7 +189,7 @@ class ModelGabarit(Model):
 
         with tempfile.TemporaryDirectory(dir=models_dir) as tmpdir:
             model_archive_path = Path(tmpdir) / model_artifactory_path.name
-            
+
             logger.info(f"Downloading the model to : {model_path}")
             with model_archive_path.open("wb") as out:
                 model_artifactory_path.writeto(out)

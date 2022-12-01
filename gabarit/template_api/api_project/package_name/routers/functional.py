@@ -1,3 +1,20 @@
+#!/usr/bin/env python3
+# Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
+#
+# This program is free software: you can redistribute it and/or modify
+# it under the terms of the GNU Affero General Public License as
+# published by the Free Software Foundation, either version 3 of the
+# License, or (at your option) any later version.
+#
+# This program is distributed in the hope that it will be useful,
+# but WITHOUT ANY WARRANTY; without even the implied warranty of
+# MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+# GNU Affero General Public License for more details.
+#
+# You should have received a copy of the GNU Affero General Public License
+# along with this program.  If not, see <https://www.gnu.org/licenses/>.
+
+
 import json
 from typing import Union
 
@@ -65,7 +82,7 @@ async def explain(request: Request) -> Union[HTMLResponse, NumpyJSONResponse]:
 
     body = await request.body()
     body = json.loads(body) if body else {}
-    
+
     # JSON repsonse (when Accept: application/json in the request)
     if request.headers.get("Accept") == "application/json":
         try:
@@ -74,13 +91,13 @@ async def explain(request: Request) -> Union[HTMLResponse, NumpyJSONResponse]:
         except (AttributeError, NotImplementedError):
             error_msg = {
                 "error": {
-                    "code": 501, 
+                    "code": 501,
                     "message": "No explainer capable of handling explicability"
                 }
             }
             return Response(
-                content=json.dumps(error_msg), 
-                status_code=501, 
+                content=json.dumps(error_msg),
+                status_code=501,
                 media_type='application/json',
             )
         else:
@@ -93,7 +110,7 @@ async def explain(request: Request) -> Union[HTMLResponse, NumpyJSONResponse]:
 
         except (AttributeError, NotImplementedError):
             return Response(
-                content="No explainer capable of handling explicability", 
+                content="No explainer capable of handling explicability",
                 status_code=501,
                 media_type='text/plain',
             )
