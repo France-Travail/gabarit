@@ -20,10 +20,10 @@ projects
 
 ModelGabarit overwrite some methods of the base Model class :
     - download_model method to download a model from a JFrog Artifactory repository ;
-    {%- if gabarit_package %}
-    - _load_model method to use the {{gabarit_package}}.models_training.utils_models.load_model
+    {%- if gabarit_package_spec %}
+    - _load_model method to use the {{gabarit_import_name}}.models_training.utils_models.load_model
     function from a typical gabarit project ;
-    - predict method to use the the {{gabarit_package}}.models_training.utils_models.predict
+    - predict method to use the the {{gabarit_import_name}}.models_training.utils_models.predict
     function from a typical gabarit project.
     {%- else %}
     - _load_model method to use the gabarit_package.models_training.utils_models.load_model
@@ -45,17 +45,22 @@ from pydantic import BaseSettings
 
 from .model_base import Model
 
+{%- if gabarit_package_spec %}
 try:
-    {%- if gabarit_package %}
-    from {{gabarit_package.replace('-', '_')}} import utils as utils_gabarit
-    from {{gabarit_package.replace('-', '_')}}.models_training import utils_models
-    from {{gabarit_package.replace('-', '_')}}.monitoring.model_explainer import Explainer
-    {%- else %}
+    from {{gabarit_import_name}} import utils as utils_gabarit
+    from {{gabarit_import_name}}.models_training import utils_models
+    from {{gabarit_import_name}}.monitoring.model_explainer import Explainer
+except ImportError:
+    raise ImportError("Package '{{gabarit_package_name}}' not found. Please install it.")
+{%- else %}
+try:
     from gabarit_package import utils as utils_gabarit
     from gabarit_package.models_training import utils_models
-    {%- endif %}
+    from gabarit_package.monitoring.model_explainer import Explainer
 except ImportError:
-    raise ImportError("Package '{{gabarit_package}}' not found. Please install it.")
+    raise ImportError("Package 'gabarit_package' not found. Please install it.")
+{%- endif %}
+
 
 
 # Manage paths
@@ -136,7 +141,7 @@ class ModelGabarit(Model):
             utils_gabarit.get_data_path = lambda: str(settings.data_dir.resolve())
 
         # Using is_path=True allow to specify a path instead of a folder relative
-        # to {{gabarit_package}}.utils.DIR_PATH
+        # to gabarit_package.utils.DIR_PATH
         model, model_conf = utils_models.load_model(model_dir=settings.model_path, is_path=True)
 
         # Set attributes

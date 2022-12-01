@@ -20,7 +20,7 @@ from typing import Union
 
 from fastapi import APIRouter
 from starlette.requests import Request
-from starlette.responses import Response, HTMLResponse
+from starlette.responses import HTMLResponse, Response
 
 from ..model.model_base import Model
 from .schemas.functional import NumpyJSONResponse
@@ -92,7 +92,7 @@ async def explain(request: Request) -> Union[HTMLResponse, NumpyJSONResponse]:
             error_msg = {
                 "error": {
                     "code": 501,
-                    "message": "No explainer capable of handle explicability"
+                    "message": "No explainer capable of handling explicability"
                 }
             }
             return Response(
@@ -110,7 +110,7 @@ async def explain(request: Request) -> Union[HTMLResponse, NumpyJSONResponse]:
 
         except (AttributeError, NotImplementedError):
             return Response(
-                content="No explainer capable of handle explicability",
+                content="No explainer capable of handling explicability",
                 status_code=501,
                 media_type='text/plain',
             )

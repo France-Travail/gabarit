@@ -11,8 +11,8 @@ dependencies = [
     "uvicorn[standard]>=0.20,<1.0",
     "starlette-prometheus>=0.9,<1.0",
     "numpy>=1.19,<2.0",
-    {%- if gabarit_package %}
-    "{{gabarit_package}}{{gabarit_package_extras}}{{gabarit_package_version}}",
+    {%- if gabarit_package_spec %}
+    "{{gabarit_package_spec}}",
     "dohq-artifactory>=0.8,<1.0",
     {%- endif %}
 ]
@@ -21,7 +21,7 @@ dependencies = [
 include = ["{{package_name}}*"]
 
 [project.optional-dependencies]
-{%- if not gabarit_package %}
+{%- if not gabarit_package_spec %}
 artifactory = ["dohq-artifactory>=0.8,<1.0"]
 {%- endif %}
 dev = [

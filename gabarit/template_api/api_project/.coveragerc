@@ -1,4 +1,4 @@
-{%- if not gabarit_package -%}
+{%- if not gabarit_package_spec -%}
 [run]
 omit =
     # Omit model gabarit
