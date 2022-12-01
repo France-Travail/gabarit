@@ -15,9 +15,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import json
-
-import numpy as np
 import pytest
+import numpy as np
 
 from {{package_name}}.routers.schemas.utils import NumpyArrayEncoder
 

@@ -16,9 +16,8 @@
 
 
 import json
-from typing import Any
-
 import numpy as np
+from typing import Any
 
 
 class NumpyArrayEncoder(json.JSONEncoder):

@@ -20,8 +20,8 @@ from fastapi.middleware.cors import CORSMiddleware
 from starlette_prometheus import metrics, PrometheusMiddleware
 
 from .core.config import settings
-from .core.event_handlers import start_app_handler, stop_app_handler
 from .routers import main_routeur
+from .core.event_handlers import start_app_handler, stop_app_handler
 
 
 def declare_application() -> FastAPI:

@@ -16,8 +16,8 @@
 
 
 import pickle
-from itertools import zip_longest
 from pathlib import Path
+from itertools import zip_longest
 
 
 class TestModel:
@@ -47,6 +47,7 @@ class TestModel:
 
         with open(path, "wb") as f:
             pickle.dump(self, f)
+
 
 class TestExplainer:
     """Simulate an explainer object"""

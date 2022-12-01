@@ -1,10 +1,10 @@
-# FastAPI ⚡ {{package_name}} 
+# FastAPI ⚡ {{package_name}}
 
 > Thanks for using gabarit to kick start your `{{package_name}}` project 😁
 >
-> We are very interested in your feeback so don't hesitate to open an issue to tell us
+> We are very interested in your feedbacks so don't hesitate to open an issue to tell us
 > how you feel about this template.
-> 
+>
 > We also welcome community contributions so feel free to open pull resquest.
 
 **Usefull links :**
@@ -12,16 +12,17 @@
 - [📕 PyDantic documentation](https://pydantic-docs.helpmanual.io/)
 - [📘 Starlette documentation](https://www.starlette.io/)
 
-## Table of content <!-- omit from toc --> 
-- [Project structure](#project-structure)
-- [Quickstart](#quickstart)
-  - [Create a virtualenv and install your package](#create-a-virtualenv-and-install-your-package)
-  - [Start your application](#start-your-application)
-- [How it works](#how-it-works)
-  - [Model class](#model-class)
-  - [Load your model at startup](#load-your-model-at-startup)
-  - [Functional and technical routers](#functional-and-technical-routers)
-  - [Dockerfile](#dockerfile)
+## Table of content <!-- omit from toc -->
+- [FastAPI ⚡ {{package\_name}}](#fastapi--package_name)
+  - [Project structure](#project-structure)
+  - [Quickstart](#quickstart)
+    - [Create a virtualenv and install your package](#create-a-virtualenv-and-install-your-package)
+    - [Start your application](#start-your-application)
+  - [How it works](#how-it-works)
+    - [Model class](#model-class)
+    - [Load your model at startup](#load-your-model-at-startup)
+    - [Functional and technical routers](#functional-and-technical-routers)
+    - [Dockerfile](#dockerfile)
 
 
 ## Project structure
@@ -67,7 +68,7 @@
 
 ## Quickstart
 
-Gabarit as generated a `{{package_name}}` python package that contains all your 
+Gabarit as generated a `{{package_name}}` python package that contains all your
 [FastAPI](https://fastapi.tiangolo.com/) application logic.
 
 It contains three main sub-packages (cf. [project structure](#project-structure)) :
@@ -75,7 +76,7 @@ It contains three main sub-packages (cf. [project structure](#project-structure)
 - `model` package for defining how to download your model, to load it and make predictions
 - `routers` package for defining your API routes and how they work
 
-Have a look at your `.env` file to see the default settings : 
+Have a look at your `.env` file to see the default settings :
 ```bash
 APP_NAME="{{package_name}}"
 API_ENTRYPOINT="/{{package_name}}/rs/v1"
@@ -108,7 +109,7 @@ pip install -e .[dev]
 
 ### Start your application
 
-To start your FastAPI application activate your virtual environment and then use the 
+To start your FastAPI application activate your virtual environment and then use the
 script `launch.sh` or the `run` command of the makefile :
 
 ```bash
@@ -125,7 +126,7 @@ documentation (provided by FastAPI and [Swagger UI](https://github.com/swagger-a
 ### Model class
 
 Your application use a `Model` object to make predictions. You will find a base `Model` class
-in `{{package_name}}.model.model_base` : 
+in `{{package_name}}.model.model_base` :
 
 ```python
 class Model:
@@ -161,7 +162,7 @@ class Model:
         ...
 ```
 
-As you can see, a `Model` object as three main attributes : 
+As you can see, a `Model` object as three main attributes :
 - `_model` containing your gabarit, scikit-learn or whatever model object
 - `_model_conf` which is a python dict with metadata about your model
 - `_loaded` which is set to `True` after `_load_model` has been called
@@ -170,13 +171,13 @@ The `Model` class also define a `download_model` method that will be used to dow
 your model. By default it does nothing and return `True`.
 
 You will also find a `ModelGabarit` class in `{{package_name}}.model.model_gabarit` that
-is suited to a model constructed thanks to a Gabarit template. 
+is suited to a model constructed thanks to a Gabarit template.
 
 Is is a great example of how to adapt the base `Model` class to your usecase.
 
 ### Load your model at startup
 
-Your model is loaded into your application at startup thanks to 
+Your model is loaded into your application at startup thanks to
 `{{package_name}}.core.event_handlers` :
 
 ```python
@@ -216,15 +217,15 @@ Routers are split into two categories by default : technical and functional ones
 - Functional ones are used to implement your business logic such as model predictions
   or model explicability
 
-Since gabarit could not what data your model is expecting, the default `/predict` route 
-from `{{package_name}}.routers.functional` use a starlette Request object 
+Since gabarit could not what data your model is expecting, the default `/predict` route
+from `{{package_name}}.routers.functional` use a starlette Request object
 instead of pydantic.
 
-For a cleaner way to handle requests and reponses you should use pydantic as 
+For a cleaner way to handle requests and reponses you should use pydantic as
 [stated in FastAPI documentation](https://fastapi.tiangolo.com/tutorial/body/#create-your-data-model)
 
 You can use routes from {{package_name}}.routers.technical as examples of how to create
-requests and responses schemas thanks to pydantic or have a look at the 
+requests and responses schemas thanks to pydantic or have a look at the
 [FastAPI documentation](https://fastapi.tiangolo.com/tutorial/response-model/).
 
 ### Dockerfile
@@ -232,9 +233,9 @@ requests and responses schemas thanks to pydantic or have a look at the
 A minimal `Dockerfile.svc` is provided by the template. You should have a look a it, especially
 if you have to download your model in your containers.
 
-<!-- 
+<!--
 The "omit from toc" comments are here for the Markdown All in One VSCode extension :
 it permits to remove a title from the auto table of content
 
 See https://marketplace.visualstudio.com/items?itemName=yzhang.markdown-all-in-one
---> 
+-->

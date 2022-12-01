@@ -33,13 +33,14 @@ ModelGabarit overwrite some methods of the base Model class :
     {%- endif %}
 
 """
+
+
 import logging
 import shutil
 import tempfile
+import pandas as pd
 from pathlib import Path
 from typing import Any, Union
-
-import pandas as pd
 from pydantic import BaseSettings
 
 from .model_base import Model
@@ -56,8 +57,9 @@ try:
 except ImportError:
     raise ImportError("Package '{{gabarit_package}}' not found. Please install it.")
 
-CURRENT_DIR = Path()
 
+# Manage paths
+CURRENT_DIR = Path()
 DEFAULT_DATA_DIR = CURRENT_DIR / "{{package_name}}-data"
 DEFAULT_MODELS_DIR = CURRENT_DIR / "{{package_name}}-models"
 
@@ -135,9 +137,7 @@ class ModelGabarit(Model):
 
         # Using is_path=True allow to specify a path instead of a folder relative
         # to {{gabarit_package}}.utils.DIR_PATH
-        model, model_conf = utils_models.load_model(
-            model_dir=settings.model_path, is_path=True
-        )
+        model, model_conf = utils_models.load_model(model_dir=settings.model_path, is_path=True)
 
         # Set attributes
         self._model = model
@@ -156,11 +156,7 @@ class ModelGabarit(Model):
         model_path = settings.model_path
 
         # If the model already exists there is no need to download it
-        if (
-            not settings.redownload
-            and model_path.is_dir()
-            and next(model_path.iterdir(), False)
-        ):
+        if not settings.redownload and model_path.is_dir() and next(model_path.iterdir(), False):
             logger.info(f"The model is already dowloaded : {model_path} already exists")
             return True
 
@@ -172,9 +168,7 @@ class ModelGabarit(Model):
         try:
             from artifactory import ArtifactoryPath
         except ImportError:
-            raise ImportError(
-                "module artifactory not found. please install it : pip install dohq-artifactory"
-            )
+            raise ImportError("Module artifactory not found. Please install it : `pip install dohq-artifactory`")
 
         model_artifactory_path = ArtifactoryPath(
             settings.artifactory_model_url,
@@ -185,6 +179,7 @@ class ModelGabarit(Model):
         with tempfile.TemporaryDirectory(dir=models_dir) as tmpdir:
             model_archive_path = Path(tmpdir) / model_artifactory_path.name
 
+            # Download model
             logger.info(f"Downloading the model to : {model_path}")
             with model_archive_path.open("wb") as out:
                 model_artifactory_path.writeto(out)

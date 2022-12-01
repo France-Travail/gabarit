@@ -39,13 +39,13 @@ We use it to :
 """
 
 import os
-from pathlib import Path
-
 import pytest
+from pathlib import Path
 from fastapi.testclient import TestClient
 
 from .create_test_model import TestModel
 
+# Set paths
 TEST_DIR = Path(__file__).parent.resolve()
 TEST_MODELS_DIR = TEST_DIR / "data" / "models"
 TEST_MODEL_PATH = TEST_MODELS_DIR / "model.pkl"
@@ -63,7 +63,6 @@ TestModel().to_pickle(TEST_MODEL_PATH)
 def test_base_client() -> TestClient:
     """Basic TestClient that do not run startup and shutdown events"""
     from {{package_name}}.application import app
-
     return TestClient(app)
 
 

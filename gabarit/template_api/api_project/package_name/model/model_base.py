@@ -25,13 +25,16 @@ To use a custom model class in your application, create a new module such as
 model_awesome.py in this package and write a custom class that overwrite _load_model,
 download_model or predict depending on your needs.
 """
-import logging
+
+
 import pickle
+import logging
 from pathlib import Path
+from pydantic import BaseSettings
 from typing import Any, Tuple, Union
 
-from pydantic import BaseSettings
 
+# Manage paths
 CURRENT_DIR = Path()
 DEFAULT_MODELS_DIR = CURRENT_DIR / "{{package_name}}-models"
 DEFAULT_MODEL_PATH = DEFAULT_MODELS_DIR / "model.pkl"
@@ -58,7 +61,14 @@ class ModelSettings(BaseSettings):
 
 
 class Model:
+    """Parent model class.
+
+    This class is given as an exemple, you should probably adapt it to your project.
+    This class loads the model from a .pkl file. The model must have a predict function.
+    """
+
     def __init__(self):
+        '''Init. model class'''
         self._model = None
         self._model_conf = None
         self._model_explainer = None
@@ -105,9 +115,6 @@ class Model:
 
     @staticmethod
     def download_model(**kwargs) -> bool:
-        """You shloud implement a download method to automatically download your model"""
-
-        logger.info(
-            "The function download_model is empty. Implement it to automatically download your model."
-        )
+        """You should implement a download method to automatically download your model"""
+        logger.info("The function download_model is empty. Implement it to automatically download your model.")
         return True

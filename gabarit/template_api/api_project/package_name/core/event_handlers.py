@@ -24,9 +24,9 @@ To use your own model instead of the base model, create a module in {{package_na
 such as model_awesome.py and import it as Model instead of the one used here.
 """
 
+
 import logging
 from typing import Callable
-
 from fastapi import FastAPI
 
 {%- if gabarit_package %}

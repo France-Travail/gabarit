@@ -17,9 +17,9 @@
 
 """Functional schemas"""
 
+
 import json
 from typing import Any
-
 from starlette.responses import JSONResponse
 
 from .utils import NumpyArrayEncoder

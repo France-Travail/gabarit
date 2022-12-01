@@ -16,8 +16,9 @@
 
 
 """Main router of the REST API"""
-from fastapi import APIRouter
 
+
+from fastapi import APIRouter
 from . import functional, technical
 
 # Create the main router
