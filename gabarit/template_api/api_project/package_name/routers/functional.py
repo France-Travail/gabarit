@@ -58,7 +58,7 @@ async def predict(request: Request) -> NumpyJSONResponse:
     return NumpyJSONResponse(prediction)
 
 @router.post("/explain")
-async def explain(request: Request) -> Union[HTMLResponse, NumpyJSONResponse]:
+async def explain(request: Request) -> Union[Response, HTMLResponse, NumpyJSONResponse]:
     """Explain route that expose a model explainer in charge of model explicability
 
     This function is using starlette Request object instead of pydantic since we can not
