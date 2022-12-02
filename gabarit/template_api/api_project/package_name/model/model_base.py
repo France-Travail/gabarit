@@ -95,7 +95,7 @@ class Model:
         """Compute explanations about a prediction and return an HTML report"""
         return self._model_explainer.explain_instance_as_html(*args, **kwargs)
 
-    def _load_model(self, **kwargs) -> Tuple[Any, dict]:
+    def _load_model(self, **kwargs) -> None:
         """Load a model from a file
 
         Returns:

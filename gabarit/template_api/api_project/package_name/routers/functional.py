@@ -86,7 +86,7 @@ async def explain(request: Request) -> Union[HTMLResponse, NumpyJSONResponse]:
     # JSON repsonse (when Accept: application/json in the request)
     if request.headers.get("Accept") == "application/json":
         try:
-            explanation = model.explain_as_json(**body)
+            explanation_json = model.explain_as_json(**body)
 
         except (AttributeError, NotImplementedError):
             error_msg = {
@@ -101,12 +101,12 @@ async def explain(request: Request) -> Union[HTMLResponse, NumpyJSONResponse]:
                 media_type='application/json',
             )
         else:
-            return NumpyJSONResponse(explanation)
+            return NumpyJSONResponse(explanation_json)
 
     # HTML repsonse (otherwise)
     else:
         try:
-            explanation = model.explain_as_html(**body)
+            explanation_html = model.explain_as_html(**body)
 
         except (AttributeError, NotImplementedError):
             return Response(
@@ -115,4 +115,4 @@ async def explain(request: Request) -> Union[HTMLResponse, NumpyJSONResponse]:
                 media_type='text/plain',
             )
         else:
-            return HTMLResponse(explanation)
+            return HTMLResponse(explanation_html)

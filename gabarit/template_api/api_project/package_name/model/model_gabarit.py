@@ -132,7 +132,7 @@ class ModelGabarit(Model):
 
         return self._model_explainer.explain_instance_as_html(content, *args, **kwargs)
 
-    def _load_model(self, **kwargs):
+    def _load_model(self, **kwargs) -> None:
         """Load a model in a gabarit fashion"""
         settings = ModelSettings(**kwargs)
 
@@ -151,8 +151,6 @@ class ModelGabarit(Model):
         # Create a model explainer
         self._model_explainer = Explainer(model=model, model_conf=model_conf)
 
-        return model, model_conf
-
     @staticmethod
     def download_model(**kwargs) -> bool:
         """Download the model from an JFrog Artifactory repository"""
@@ -161,7 +159,7 @@ class ModelGabarit(Model):
         model_path = settings.model_path
 
         # If the model already exists there is no need to download it
-        if not settings.redownload and model_path.is_dir() and next(model_path.iterdir(), False):
+        if not settings.redownload and model_path.is_dir() and not any(model_path.iterdir()):
             logger.info(f"The model is already dowloaded : {model_path} already exists")
             return True
 

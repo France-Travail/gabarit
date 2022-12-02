@@ -21,7 +21,7 @@ This module handle global app configuration
 """
 
 
-import pkg_resources
+import pkg_resources  # type: ignore
 from pydantic import BaseSettings
 
 

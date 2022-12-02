@@ -157,7 +157,8 @@ def generate(package_name: str, project_path: str, gabarit_package_spec: Union[s
                 basedir = os.path.dirname(final_path)
                 if not os.path.exists(basedir):
                     os.makedirs(basedir)
-                with open(final_path, "w") as f:
+                # Encoding scripts in utf-8 !
+                with open(final_path, "w", encoding="utf-8") as f:
                     f.write(render)
 
     # Everything is rendered, we just need to create some subdirectories
