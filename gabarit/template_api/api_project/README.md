@@ -13,7 +13,7 @@
 - [📘 Starlette documentation](https://www.starlette.io/)
 
 ## Table of content <!-- omit from toc -->
-- [FastAPI ⚡ {{package\_name}}](#fastapi--package_name)
+- [FastAPI ⚡ {{package_name}}](#fastapi--package_name)
   - [Project structure](#project-structure)
   - [Quickstart](#quickstart)
     - [Create a virtualenv and install your package](#create-a-virtualenv-and-install-your-package)
