@@ -4,23 +4,17 @@ on:
     branches:
       - 'main'
       - 'release/v*'
-    paths-ignore:
-      - 'version.txt'
-      - '.github/workflows/**'
-      - '*.md'
-      - 'LICENSE'
-      - 'Makefile'
+    paths:
+      - 'gabarit/template_nlp/**'
+      - '!*.md'
   pull_request:
-    types: [opened, reopened, edit, synchronize]
+    types: [opened, reopened, synchronize]
     branches:
       - 'main'
       - 'release/v*'
-    paths-ignore:
-      - 'version.txt'
-      - '.github/workflows/**'
-      - '*.md'
-      - 'LICENSE'
-      - 'Makefile'
+    paths:
+      - 'gabarit/template_nlp/**'
+      - '!*.md'
   schedule:
     - cron: '0 0 * * 0'
   workflow_dispatch:

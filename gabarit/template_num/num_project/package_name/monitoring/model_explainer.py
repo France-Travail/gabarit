@@ -33,14 +33,10 @@ from {{package_name}}.models_training import utils_models
 from {{package_name}}.models_training.model_class import ModelClass
 
 
-# Init. shap JS
-shap.initjs()
-
-
 class Explainer:
     '''Parent class for the explainers'''
 
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         '''Initialization of the parent class'''
         self.logger = logging.getLogger(__name__)
 
@@ -64,6 +60,15 @@ class Explainer:
         '''
         raise NotImplementedError("'explain_instance_as_html' needs to be overridden")
 
+    def explain_instance_as_json(self, content: pd.DataFrame, **kwargs) -> Union[dict, list]:
+        '''Explains a prediction - returns an JSON serializable object
+
+        Args:
+            content (str): Text to be explained
+        Returns:
+            Union[dict, list]: A JSON serializable object containing the explanation
+        '''
+        raise NotImplementedError("'explain_instance_as_json' needs to be overridden")
 
 class ShapExplainer(Explainer):
     '''Shap Explainer wrapper class'''
@@ -139,17 +144,17 @@ class ShapExplainer(Explainer):
         # Mypy raises a false error here, needs to be ignored
         return self.model.predict(content_prep)  # type: ignore
 
-    def explain_instance(self, content: pd.DataFrame, class_or_label_index: Union[int, None] = None, **kwargs) -> Any:
-        '''Explains a prediction
+    def explain_instance(self, content: pd.DataFrame, class_or_label_index: Union[int, None] = None, **kwargs) -> shap.Explanation:
+        '''Explains predictions by returning a shap.Explanation object
 
         This function calls the Shap module.
 
         Args:
-            content (pd.DataFrame): Single entry to be explained
+            content (pd.DataFrame): Entries to be explained
         Kwargs:
             class_or_label_index (int): for classification only. Class or label index to be considered.
         Returns:
-            (?): Shap values
+            shap.Explanation: Shap Explanation object
         '''
         # Apply preprocessing
         if self.model.preprocess_pipeline is not None:
@@ -188,6 +193,28 @@ class ShapExplainer(Explainer):
         # Combine & return
         final_html = f"<head>{shap.getjs()}</head>{html_waterfall}<br><body>{html_force}</body>"
         return final_html
+
+    def explain_instance_as_json(self, content: pd.DataFrame, class_or_label_index: Union[int, None] = None, **kwargs) -> Union[dict, list]:
+        '''Explains predictions by returning a JSON serializable object
+
+        This function calls the Shap module.
+
+        Args:
+            content (pd.DataFrame): entries to be explained
+        Kwargs:
+            class_or_label_index (int): for classification only. Class or label index to be considered.
+        Returns:
+            (Union[dict, list]): Shap values
+        '''
+        return [
+            {
+                "features": explanation.feature_names, 
+                "preprocessed_values": explanation.data, 
+                "shap_values": explanation.values, 
+                "shap_base_values": explanation.base_values,
+            }
+            for explanation in self.explain_instance(content, class_or_label_index=class_or_label_index, **kwargs)
+        ]
 
 
 if __name__ == '__main__':
