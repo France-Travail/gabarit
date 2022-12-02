@@ -262,8 +262,8 @@ class ModelHuggingFace(ModelClass):
                 args=TrainingArguments(**self.trainer_params),
                 train_dataset=train_dataset,
                 eval_dataset=valid_dataset,
-                tokenizer=self.tokenizer,
-                data_collator=DataCollatorWithPadding(tokenizer=self.tokenizer),
+                tokenizer=self.tokenizer,  # Only use for padding, dataset are already preprocessed. Pby not needed as we define a collator.
+                data_collator=DataCollatorWithPadding(tokenizer=self.tokenizer),  # Pad batches
                 compute_metrics=self._compute_metrics_mono_label if not self.multi_label else self._compute_metrics_multi_label,
                 optimizers=self._get_optimizers(),
             )
@@ -337,7 +337,9 @@ class ModelHuggingFace(ModelClass):
             self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True, device=device)
         # Predict
         # As we are using the pipeline, we do not need to prepare x_test (done inside the pipeline)
-        results = np.array(self.pipe(x_test))
+        # But we still need to set the tokenizer params
+        tokenizer_kwargs = {'padding': False, 'truncation': True}
+        results = np.array(self.pipe(x_test, **tokenizer_kwargs))
         predicted_proba = np.array([[x['score'] for x in x] for x in results])
         return predicted_proba
 
@@ -395,7 +397,9 @@ class ModelHuggingFace(ModelClass):
         Returns:
             BatchEncoding: tokenized data
         '''
-        return self.tokenizer(examples["text"], truncation=True)
+        # Padding to False as we will use a Trainer and a DataCollatorWithPadding that will manage padding for us (better limit the memory impact)
+        # We leave max_length to None -> backup on model max length
+        return self.tokenizer(examples["text"], padding=False, truncation=True)
 
     def _get_model(self, model_path: str = None, num_labels: int = None) -> Any:
         '''Gets a model structure
@@ -442,10 +446,10 @@ class ModelHuggingFace(ModelClass):
             dict: dictionnary with computed metrics
         '''
         # Load metrics
-        metric_accuracy = load_metric("accuracy")
-        metric_precision = load_metric("precision")
-        metric_recall = load_metric("recall")
-        metric_f1 = load_metric("f1")
+        metric_accuracy = load_metric(os.path.join(os.path.abspath(__file__), "hf_metrics", "accuracy.py"))
+        metric_precision = load_metric(os.path.join(os.path.abspath(__file__), "hf_metrics", "precision.py"))
+        metric_recall = load_metric(os.path.join(os.path.abspath(__file__), "hf_metrics", "recall.py"))
+        metric_f1 = load_metric(os.path.join(os.path.abspath(__file__), "hf_metrics", "f1.py"))
         # Get predictions
         logits, labels = eval_pred
         predictions = np.argmax(logits, axis=-1)

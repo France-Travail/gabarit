@@ -22,12 +22,9 @@ from unittest.mock import patch
 # Utils libs
 import os
 import json
-import time
 import shutil
-import pickle
 import numpy as np
 import pandas as pd
-from datasets import Dataset
 from datasets.arrow_dataset import Batch
 from transformers.tokenization_utils_base import BatchEncoding
 
@@ -109,7 +106,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         y_valid_mono_missing[y_valid_mono_missing == 2] = 0
         y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
         y_valid_multi = y_train_multi.copy()
-        cols = ['test1', 'test2', 'test3']
+        x_train_long = np.array(["cela est un test " * 1000, "là, rien! " * 1000] * 10)
+        y_train_long = np.array([0, 1] * 10)
 
         # Mono-label
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
@@ -313,6 +311,19 @@ class ModelHuggingFaceTests(unittest.TestCase):
         remove_dir(model_dir_3)
         remove_dir(model_dir_4)
 
+
+        ###########
+        # Misc
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        self.assertFalse(model.trained)
+        self.assertEqual(model.nb_fit, 0)
+        model.fit(x_train_long, y_train_long, x_valid=None, y_valid=None, with_shuffle=True)
+        self.assertTrue(model.trained)
+        self.assertEqual(model.nb_fit, 1)
+        self.assertEqual(sorted(model.list_classes), [0, 1])
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        remove_dir(model_dir)
+
         # Test data errors multi-labels
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         self.assertFalse(model.trained)
@@ -339,36 +350,39 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Set vars
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
         x_valid = np.array(["cela est un test", "ni cela", "non plus", "ici test", "là, rien de rien!"] * 100)
+        x_valid_long = np.array(["cela est un test " * 1000] * 10)
         y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
-        y_valid_mono = y_train_mono.copy()
         y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
-        y_valid_multi = y_train_multi.copy()
         cols = ['test1', 'test2', 'test3']
 
         # Mono-label
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono)
-        preds = model.predict(x_train, return_proba=False)
-        self.assertEqual(preds.shape, (len(x_train),))
+        preds = model.predict(x_valid, return_proba=False)
+        self.assertEqual(preds.shape, (len(x_valid),))
         preds = model.predict('test', return_proba=False)
         self.assertEqual(preds, model.predict(['test'], return_proba=False)[0])
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), 3))
+        proba = model.predict(x_valid, return_proba=True)
+        self.assertEqual(proba.shape, (len(x_valid), 3))
         proba = model.predict('test', return_proba=True)
         self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
+        # Predict long sentence (just check no errors)
+        model.predict(x_valid_long)
         remove_dir(model_dir)
 
         # Multi-labels
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         model.fit(x_train, y_train_multi)
-        preds = model.predict(x_train, return_proba=False)
-        self.assertEqual(preds.shape, (len(x_train), len(cols)))
+        preds = model.predict(x_valid, return_proba=False)
+        self.assertEqual(preds.shape, (len(x_valid), len(cols)))
         preds = model.predict('test', return_proba=False)
         self.assertEqual([elem for elem in preds], [elem for elem in model.predict(['test'], return_proba=False)[0]])
-        proba = model.predict(x_train, return_proba=True)
-        self.assertEqual(proba.shape, (len(x_train), len(cols)))
+        proba = model.predict(x_valid, return_proba=True)
+        self.assertEqual(proba.shape, (len(x_valid), len(cols)))
         proba = model.predict('test', return_proba=True)
         self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
+        # Predict long sentence (just check no errors)
+        model.predict(x_valid_long)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -387,29 +401,34 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Set vars
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
         x_test = np.array(["cela est un test", "ni cela", "non plus", "ici test", "là, rien de rien!"] * 100)
+        x_test_long = np.array(["cela est un test " * 1000] * 10)
         y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
-        y_test_mono = y_train_mono.copy()
         y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
-        y_test_multi = y_train_multi.copy()
         cols = ['test1', 'test2', 'test3']
 
         # Mono-label
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono)
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), 3))
+        preds = model.predict_proba(x_test)
+        self.assertEqual(preds.shape, (len(x_test), 3))
         preds = model.predict_proba('test')
         self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'])[0]])
+        # Predict long sentence (just check no errors)
+        model.predict_proba(x_test_long)
         remove_dir(model_dir)
+
 
         # Multi-labels
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         model.fit(x_train, y_train_multi[cols])
-        preds = model.predict_proba(x_train)
-        self.assertEqual(preds.shape, (len(x_train), len(cols)))
+        preds = model.predict_proba(x_test)
+        self.assertEqual(preds.shape, (len(x_test), len(cols)))
         preds = model.predict_proba('test')
         self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'])[0]])
+        # Predict long sentence (just check no errors)
+        model.predict_proba(x_test_long)
         remove_dir(model_dir)
+
 
         # Model needs to be fitted
         with self.assertRaises(AttributeError):
@@ -479,7 +498,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue('attention_mask' in x_test_prepared.features)
         remove_dir(model_dir)
 
-    # @unittest.skip("WIP - skip to be removed")
+    @unittest.skip("WIP - skip to be removed")
     def test08_model_huggingface_tokenize_function(self):
         '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace._tokenize_function'''
 
@@ -495,6 +514,30 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(type(encoded_batch) == BatchEncoding)
         self.assertTrue('input_ids' in encoded_batch.keys())
         self.assertTrue('attention_mask' in encoded_batch.keys())
+        remove_dir(model_dir)
+
+    def test09_model_huggingface_get_model(self):
+        '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace._get_model'''
+
+        # Create model
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+
+        # Nominal case
+        x_train = ['test titi toto', 'toto', 'titi test test toto']
+        model._prepare_x_train(x_train)  # We force the creation of the tokenizer
+        model.list_classes = ['a', 'b']  # We force the creation of a list of classes
+        model_res = model._get_model()
+        self.assertTrue(isinstance(model_res, keras.Model))
+
+        # With custom Tokenizer
+        tokenizer = Tokenizer()
+        tokenizer.fit_on_texts(['toto', 'test', 'tata'])
+        model_res = model._get_model(custom_tokenizer=tokenizer)
+        self.assertTrue(isinstance(model_res, keras.Model))
+
+        # Clean
         remove_dir(model_dir)
 
     @unittest.skip("WIP - skip to be removed")
