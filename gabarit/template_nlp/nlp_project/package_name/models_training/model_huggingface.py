@@ -446,10 +446,10 @@ class ModelHuggingFace(ModelClass):
             dict: dictionnary with computed metrics
         '''
         # Load metrics
-        metric_accuracy = load_metric(os.path.join(os.path.abspath(__file__), "hf_metrics", "accuracy.py"))
-        metric_precision = load_metric(os.path.join(os.path.abspath(__file__), "hf_metrics", "precision.py"))
-        metric_recall = load_metric(os.path.join(os.path.abspath(__file__), "hf_metrics", "recall.py"))
-        metric_f1 = load_metric(os.path.join(os.path.abspath(__file__), "hf_metrics", "f1.py"))
+        metric_accuracy = load_metric(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hf_metrics", "accuracy.py"))
+        metric_precision = load_metric(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hf_metrics", "precision.py"))
+        metric_recall = load_metric(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hf_metrics", "recall.py"))
+        metric_f1 = load_metric(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hf_metrics", "f1.py"))
         # Get predictions
         logits, labels = eval_pred
         predictions = np.argmax(logits, axis=-1)
