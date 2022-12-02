@@ -15,15 +15,16 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import argparse
+
 import os
 import shutil
 import tempfile
+import argparse
+from typing import List, Union
 from pathlib import Path
-from typing import List
-
-from jinja2 import Environment, FileSystemLoader
 from pkg_resources import Requirement
+from jinja2 import Environment, FileSystemLoader
+
 
 EXCLUDE_EXTS = {".pyc"}
 
@@ -34,58 +35,47 @@ def main():
     parser = argparse.ArgumentParser()
     parser.add_argument("-n", "--name", required=True, help="Project name")
     parser.add_argument("-p", "--path", required=True, help="Path (relative or absolute) to project directory")
-    parser.add_argument("--gabarit_package",
-                        help=("Gabarit package you plan to use in your API (let empty otherwise). "
-                              "Example : my-gabarit-project[explicability]==0.1.2"))
-    parser.add_argument("--gabarit_import_name",
-                        help=("The import name of your Gabarit package might be different from "
-                              "the package name as with sickit-learn / sklearn. Use this argument "
-                              "to specify a different import name"))
-    parser.add_argument("-c",
-                        "--custom",
-                        nargs="+",
-                        default=[],
-                        help=("Add custom templates such as a custom .env file or a custom Dockerfile. "
-                              "Example : --custom /path/to/my/.env.custom=.env include/all/from/dir="))
-    parser.add_argument("--gabarit_no_spec",
-                        action="store_true",
-                        help="Allow to specify a gabarit_package without any specification")
+    parser.add_argument("--gabarit_package", help=("Gabarit package you plan to use in your API (let empty otherwise). "
+                                                   "Example : my-gabarit-project[explicability]==0.1.2"))
+    parser.add_argument("--gabarit_import_name", help=("The import name of your Gabarit package might be different from "
+                                                       "the package name as with sickit-learn / sklearn. Use this argument "
+                                                       "to specify a different import name"))
+    parser.add_argument("-c", "--custom", nargs="+", default=[], help=("Add custom templates such as a custom .env file or a custom Dockerfile. "
+                                                                       "Example : --custom /path/to/my/.env.custom=.env include/all/from/dir="))
+    parser.add_argument("--gabarit_no_spec", action="store_true", help="Allow to specify a gabarit_package without any specification")
     args = parser.parse_args()
 
-    generate(package_name=args.name,
-             project_path=args.path,
-             gabarit_package_spec=args.gabarit_package,
-             gabarit_import_name=args.gabarit_import_name,
-             gabarit_no_spec=args.gabarit_no_spec,
+    generate(package_name=args.name, project_path=args.path, gabarit_package_spec=args.gabarit_package,
+             gabarit_import_name=args.gabarit_import_name, gabarit_no_spec=args.gabarit_no_spec,
              custom_templates=args.custom)
 
 
-def generate(package_name: str,
-             project_path: str,
-             gabarit_package_spec: str,
-             gabarit_import_name: str,
-             custom_templates: List[str],
-             gabarit_no_spec: bool = False):
-    """Generates a API python template from arguments.
+def generate(package_name: str, project_path: str, gabarit_package_spec: Union[str, None] = None,
+             gabarit_import_name: Union[str, None] = None, custom_templates: Union[List[str], None] = None,
+             gabarit_no_spec: bool = False) -> None:
+    """Generates an API python template from arguments.
 
     Args:
         package_name (str): Name of the project to generate
         project_path (str): Path to the folder of the new project (which does not need to exist)
+    Kwargs:
         gabarit_package_spec (str) : Gabarit dependency
         gabarit_import_name (str) : Gabarit import name
         custom_templates (List[str]) : custom templates or directories
     """
-    # Parse Gabary dependency
-    if gabarit_package_spec:
+    # Parse Gabarit dependency
+    if gabarit_package_spec is not None:
+        # Parse Gabarit package specs.
         gabarit_requirement = Requirement.parse(gabarit_package_spec)
         gabarit_package_name = gabarit_requirement.project_name
-
+        # Check for gabarit version
         if not gabarit_requirement.specs and not gabarit_no_spec:
             raise Exception(f"Please specify a gabarit_package version. "
                             f"Example : --gabarit_package '{gabarit_package_name}==0.1'")
-
-        if not gabarit_import_name:
+        # If no import name specified, backup on package_name (with '-' replaces by '_')
+        if gabarit_import_name is None:
             gabarit_import_name = gabarit_package_name.replace("-", "_")
+            print(f"WARNING : no import name specified, backup on {gabarit_import_name}.")
     else:
         gabarit_package_name = None
         gabarit_package_spec = None
@@ -120,8 +110,7 @@ def generate(package_name: str,
         elif os.path.isdir(template_file):
             for file_path in map(
                     lambda p: str(p.relative_to(template_file)),
-                    filter(lambda p: p.is_file(),
-                           Path(template_file).rglob("**/*")),
+                    filter(lambda p: p.is_file(), Path(template_file).rglob("**/*")),
             ):
                 path_dest = os.path.join(file_dest, file_path)
                 path_origin = os.path.join(template_file, file_path)
@@ -131,17 +120,17 @@ def generate(package_name: str,
 
     # Render the new project -> all the process is made using a temporary folder
     # Idea : we will copy all the files that needs to be rendered, then we will render the whole folder at once
-    with tempfile.TemporaryDirectory() as tmpdirname:
+    with tempfile.TemporaryDirectory() as tmp_dirname:
 
         # Copy all custom templates to a temporary directory
         for file_dest, template_file in custom_templates_destinations.items():
-            tmp_path_dest = os.path.join(tmpdirname, file_dest)
+            tmp_path_dest = os.path.join(tmp_dirname, file_dest)
             os.makedirs(os.path.dirname(tmp_path_dest), exist_ok=True)
             shutil.copy2(template_file, tmp_path_dest)
 
         # For each of main template directory and custom template directory, render templates and
         # put the results in the output directory
-        for current_dir in [template_dir, tmpdirname]:
+        for current_dir in [template_dir, tmp_dirname]:
             # Then create the Jinja env
             env = Environment(loader=FileSystemLoader(current_dir))
 
@@ -172,13 +161,11 @@ def generate(package_name: str,
                     f.write(render)
 
     # Everything is rendered, we just need to create some subdirectories
-    for data_dir in (
-            os.path.join(output_dir, f"{package_name}-data"),  # data dir
-            os.path.join(output_dir, f"{package_name}-models"),  # models dir
-    ):
-        for env_dir in [data_dir]:
-            if not os.path.exists(env_dir):
-                os.makedirs(env_dir)
+    data_dir = os.path.join(output_dir, f'{package_name}-data')
+    models_dir = os.path.join(output_dir, f'{package_name}-models')
+    for new_dir in [data_dir, models_dir]:
+        if not os.path.exists(new_dir):
+            os.makedirs(new_dir)
 
 
 if __name__ == "__main__":
