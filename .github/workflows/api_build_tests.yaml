@@ -38,5 +38,8 @@ jobs:
     - name: Install the project and run tests
       run: |
         cd test_template_api
+        python -m venv venv_tests
+        source venv_tests/bin/activate
         pip install .[test]
         pytest
+        python -m mypy --ignore-missing-imports --allow-redefinition --no-strict-optional -p test_template_api
