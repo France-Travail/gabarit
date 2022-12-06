@@ -193,8 +193,10 @@ def find_bias(distribution_score: pd.DataFrame, min_proportion: float, min_dista
     biased_groups = biased_groups[biased_groups['Proportion'] >= min_proportion]
     biased_groups = biased_groups[abs(biased_groups['Distance']) >= min_distance]
     biased_groups = biased_groups[biased_groups['P-Value'] <= max_p_value]
-    biased_groups = biased_groups.sort_values('Distance', ascending=False)
-    biased_groups['number_of_attributes'] = biased_groups['Group'].apply(lambda x: x.count(',') + 1)
+    biased_groups['abs_distance'] = abs(biased_groups['Distance'])
+    biased_groups = biased_groups.sort_values('abs_distance', ascending=False)
+    del biased_groups['abs_distance']
+    biased_groups['number_of_attributes'] = biased_groups['Group'].apply(lambda x: x.count('('))
     return biased_groups
 
 
