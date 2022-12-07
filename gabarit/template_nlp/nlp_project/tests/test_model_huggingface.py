@@ -26,7 +26,9 @@ import shutil
 import numpy as np
 import pandas as pd
 from datasets.arrow_dataset import Batch
-from transformers.tokenization_utils_base import BatchEncoding
+from transformers.trainer_utils import EvalPrediction
+from transformers.models.distilbert.modeling_distilbert import PreTrainedModel
+from transformers.tokenization_utils_base import BatchEncoding, PreTrainedTokenizerBase
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_huggingface import ModelHuggingFace
@@ -80,10 +82,11 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertEqual(model.patience, 10)
         remove_dir(model_dir)
 
-        #
-        model = ModelHuggingFace(model_dir=model_dir, transformer_name='toto')
-        self.assertEqual(model.transformer_name, 'toto')
-        remove_dir(model_dir)
+        # Can't be tested as this would try to load a transformer called 'toto'
+        # We could patch it, but w/e
+        # model = ModelHuggingFace(model_dir=model_dir, transformer_name='toto')
+        # self.assertEqual(model.transformer_name, 'toto')
+        # remove_dir(model_dir)
 
         # transformer_params must accept anything !
         model = ModelHuggingFace(model_dir=model_dir, transformer_params={'toto': 5})
@@ -525,17 +528,108 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
 
         # Nominal case
-        x_train = ['test titi toto', 'toto', 'titi test test toto']
-        model._prepare_x_train(x_train)  # We force the creation of the tokenizer
         model.list_classes = ['a', 'b']  # We force the creation of a list of classes
         model_res = model._get_model()
-        self.assertTrue(isinstance(model_res, keras.Model))
+        self.assertTrue(isinstance(model_res, PreTrainedModel))
 
-        # With custom Tokenizer
-        tokenizer = Tokenizer()
-        tokenizer.fit_on_texts(['toto', 'test', 'tata'])
-        model_res = model._get_model(custom_tokenizer=tokenizer)
-        self.assertTrue(isinstance(model_res, keras.Model))
+        # Clean
+        remove_dir(model_dir)
+
+    def test10_model_huggingface_get_tokenizer(self):
+        '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace._get_tokenizer'''
+
+        # Create model
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+
+        # Nominal case
+        tokenizer = model._get_tokenizer()
+        self.assertTrue(isinstance(tokenizer, PreTrainedTokenizerBase))
+
+        # With model_path
+        # TODO
+
+        # Clean
+        remove_dir(model_dir)
+
+    def test11_model_huggingface_compute_metrics_mono_label(self):
+        '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace._compute_metrics_mono_label'''
+
+        # Create model
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+
+        # Data to compute
+        logits = np.array([[0.2, 0.8], [0.51, 0.49], [0.3, 0.7], [0.1, 0.9], [0.8, 0.2]])
+        label_ids = np.array([1, 0, 0, 1, 0])
+        weight_0 = 3 / 5
+        weight_1 = 2 / 5
+        eval_pred = EvalPrediction(logits, label_ids)
+
+        # Nominal case
+        metrics = model._compute_metrics_mono_label(eval_pred)
+        self.assertTrue('accuracy' in metrics.keys())
+        self.assertAlmostEqual(metrics['accuracy'], 4/5)
+        self.assertTrue('weighted_precision' in metrics.keys())
+        precision_0 = 2 / 2
+        precision_1 = 2 / 3
+        precision = (precision_0 * weight_0) + (precision_1 * weight_1)  # weighted precision
+        self.assertAlmostEqual(metrics['weighted_precision'], precision)
+        self.assertTrue('weighted_recall' in metrics.keys())
+        recall_0 = 2 / 3
+        recall_1 = 2 / 2
+        recall = (recall_0 * weight_0) + (recall_1 * weight_1)  # weighted recall
+        self.assertAlmostEqual(metrics['weighted_recall'], recall)
+        self.assertTrue('weighted_f1' in metrics.keys())
+        f1_0 =  2 * precision_0 * recall_0 / (precision_0 + recall_0)
+        f1_1 =  2 * precision_1 * recall_1 / (precision_1 + recall_1)
+        f1 = (f1_0 * weight_0) + (f1_1 * weight_1)  # weighted f1
+        self.assertAlmostEqual(metrics['weighted_f1'], f1)
+
+        # Clean
+        remove_dir(model_dir)
+
+    def test12_model_huggingface_compute_metrics_multi_label(self):
+        '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace._compute_metrics_multi_label'''
+
+        # Create model
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+
+        # Data to compute
+        # proba > 0.5 if logit > 0
+        logits = np.array([[-1, 1], [0.1, -0.1], [-1, 1], [-1, -1], [1, 1]])
+        # predictions = np.array([[0, 1], [1, 0], [0, 1], [0, 0], [1, 1]])
+        label_ids = np.array([[0, 1], [1, 1], [1, 1], [0, 0], [0, 1]])
+        weight_0 = 2 / 5
+        weight_1 = 4 / 5
+        total = weight_0 + weight_1
+        weight_0 = weight_0 / total
+        weight_1 = weight_1 / total
+        eval_pred = EvalPrediction(logits, label_ids)
+
+        # Nominal case
+        metrics = model._compute_metrics_multi_label(eval_pred)
+        self.assertTrue('accuracy' in metrics.keys())
+        self.assertAlmostEqual(metrics['accuracy'], 2/5)
+        self.assertTrue('weighted_precision' in metrics.keys())
+        precision_0 = 1 / 2
+        precision_1 = 3 / 3
+        precision = (precision_0 * weight_0) + (precision_1 * weight_1)  # weighted precision
+        self.assertAlmostEqual(metrics['weighted_precision'], precision)
+        self.assertTrue('weighted_recall' in metrics.keys())
+        recall_0 = 1 / 2
+        recall_1 = 3 / 4
+        recall = (recall_0 * weight_0) + (recall_1 * weight_1)  # weighted recall
+        self.assertAlmostEqual(metrics['weighted_recall'], recall)
+        self.assertTrue('weighted_f1' in metrics.keys())
+        f1_0 =  2 * precision_0 * recall_0 / (precision_0 + recall_0)
+        f1_1 =  2 * precision_1 * recall_1 / (precision_1 + recall_1)
+        f1 = (f1_0 * weight_0) + (f1_1 * weight_1)  # weighted f1
+        self.assertAlmostEqual(metrics['weighted_f1'], f1)
 
         # Clean
         remove_dir(model_dir)

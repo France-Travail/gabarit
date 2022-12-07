@@ -337,7 +337,7 @@ class ModelHuggingFace(ModelClass):
             self.pipe = TextClassificationPipeline(model=self.model, tokenizer=self.tokenizer, return_all_scores=True, device=device)
         # Predict
         # As we are using the pipeline, we do not need to prepare x_test (done inside the pipeline)
-        # But we still need to set the tokenizer params
+        # However, we still need to set the tokenizer params (truncate & padding)
         tokenizer_kwargs = {'padding': False, 'truncation': True}
         results = np.array(self.pipe(x_test, **tokenizer_kwargs))
         predicted_proba = np.array([[x['score'] for x in x] for x in results])
@@ -399,6 +399,7 @@ class ModelHuggingFace(ModelClass):
         '''
         # Padding to False as we will use a Trainer and a DataCollatorWithPadding that will manage padding for us (better limit the memory impact)
         # We leave max_length to None -> backup on model max length
+        # https://stackoverflow.com/questions/74657367/how-do-i-know-which-parameters-to-use-with-a-pretrained-tokenizer
         return self.tokenizer(examples["text"], padding=False, truncation=True)
 
     def _get_model(self, model_path: str = None, num_labels: int = None) -> Any:
@@ -453,13 +454,14 @@ class ModelHuggingFace(ModelClass):
         # Get predictions
         logits, labels = eval_pred
         predictions = np.argmax(logits, axis=-1)
+
         # Compute metrics
         accuracy = metric_accuracy.compute(predictions=predictions, references=labels)["accuracy"]
         precision = metric_precision.compute(predictions=predictions, references=labels, average='weighted')["precision"]
         recall = metric_recall.compute(predictions=predictions, references=labels, average='weighted')["recall"]
         f1 = metric_f1.compute(predictions=predictions, references=labels, average='weighted')["f1"]
         # Return dict of metrics
-        return {'accuracy': accuracy, 'precision': precision, 'recall': recall, 'f1': f1}
+        return {'accuracy': accuracy, 'weighted_precision': precision, 'weighted_recall': recall, 'weighted_f1': f1}
 
     def _compute_metrics_multi_label(self, eval_pred: EvalPrediction) -> dict:
         '''Computes some metrics for mono label cases
@@ -478,12 +480,12 @@ class ModelHuggingFace(ModelClass):
         predictions = np.zeros(probas.shape)
         predictions[np.where(probas >= 0.5)] = 1
         # Compute metrics (we can't use HF metrics, it sucks)
-        accuracy = accuracy_score(y_true=predictions, y_pred=labels)  # Must be exact match on all labels
-        f1 = f1_score(y_true=predictions, y_pred=labels, average='weighted')
-        precision = precision_score(y_true=predictions, y_pred=labels, average='weighted')
-        recall = recall_score(y_true=predictions, y_pred=labels, average='weighted')
+        accuracy = accuracy_score(y_true=labels, y_pred=predictions)  # Must be exact match on all labels
+        f1 = f1_score(y_true=labels, y_pred=predictions, average='weighted')
+        precision = precision_score(y_true=labels, y_pred=predictions, average='weighted')
+        recall = recall_score(y_true=labels, y_pred=predictions, average='weighted')
         # return as dictionary
-        return {'accuracy': accuracy, 'precision': precision, 'recall': recall, 'f1': f1}
+        return {'accuracy': accuracy, 'weighted_precision': precision, 'weighted_recall': recall, 'weighted_f1': f1}
 
     def _plot_metrics_and_loss(self, fit_history) -> None:
         '''Plots TrainOutput, for legacy and compatibility purpose
@@ -509,22 +511,22 @@ class ModelHuggingFace(ModelClass):
         metrics_dir = {
             'loss': ['Loss', 'loss'],
             'accuracy': ['Accuracy', 'accuracy'],
-            'f1': ['F1-score', 'f1_score'],
-            'precision': ['Precision', 'precision'],
-            'recall': ['Recall', 'recall'],
+            'weighted_f1': ['Weighted F1-score', 'weighted_f1_score'],
+            'weighted_precision': ['Weighted Precision', 'weighted_precision'],
+            'weighted_recall': ['Weighted Recall', 'weighted_recall'],
         }
 
         # Plot each available metric
         for metric in metrics_dir.keys():
-            if any([f'{set}_{metric}' in fit_history_dict.keys() for set in ['train_metrics', 'eval']]):
+            if any([f'{dataset}_{metric}' in fit_history_dict.keys() for dataset in ['train_metrics', 'eval']]):
                 title = metrics_dir[metric][0]
                 filename = metrics_dir[metric][1]
                 plt.figure(figsize=(10, 8))
                 legend = []
-                for set in ['train_metrics', 'eval']:
-                    if f'{set}_{metric}' in fit_history_dict.keys():
-                        plt.plot(fit_history_dict[f'{set}_{metric}'])
-                        legend += ['Train'] if set == 'train_metrics' else ['Validation']
+                for dataset in ['train_metrics', 'eval']:
+                    if f'{dataset}_{metric}' in fit_history_dict.keys():
+                        plt.plot(fit_history_dict[f'{dataset}_{metric}'])
+                        legend += ['Train'] if dataset == 'train_metrics' else ['Validation']
                 plt.title(f"Model {title}")
                 plt.ylabel(title)
                 plt.xlabel('Epoch')
