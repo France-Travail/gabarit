@@ -29,6 +29,7 @@ _Please describe the project or issue background here_
   - [ ] This is a change for the NLP template
   - [ ] This is a change for the NUM template
   - [ ] This is a change for the VISION template
+  - [ ] This is a change for the API template
   - [ ] This changes how templates are generated (i.e. a Jinja change)
 
 ## 🩺 Testing

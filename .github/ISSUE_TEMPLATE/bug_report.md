@@ -16,6 +16,7 @@ A clear and concise description of what the bug is.
   - [ ] NLP template
   - [ ] NUM template
   - [ ] VISION template
+  - [ ] API template
   - [ ] How templates are generated - Jinja
 
 ### To Reproduce
