@@ -137,7 +137,7 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
         '''
         # Return model if already set
         if self.model is not None:
-            return model
+            return self.model
 
         # Get parameters
         lstm_units = self.keras_params['lstm_units'] if 'lstm_units' in self.keras_params.keys() else 50  # u = 50 in the GIT implementation, 300 in the paper (YELP)

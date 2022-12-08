@@ -58,7 +58,7 @@ class ModelDenseClassifier(ModelClassifierMixin, ModelKeras):
         '''
         # Return model if already set
         if self.model is not None:
-            return model
+            return self.model
 
         # Get input/output dimensions
         input_dim = len(self.x_col)

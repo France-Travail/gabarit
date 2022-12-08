@@ -584,7 +584,7 @@ class ModelMockCnnClassifier(ModelCnnClassifier):
         '''Gets a model structure - returns the instance model instead if already defined'''
         # Return model if already set
         if self.model is not None:
-            return model
+            return self.model
         # Get input/output dimensions
         input_shape = (self.width, self.height, self.depth)
         num_classes = len(self.list_classes)

@@ -117,7 +117,7 @@ class ModelEmbeddingCnn(ModelKeras):
         '''
         # Return model if already set
         if self.model is not None:
-            return model
+            return self.model
 
         # Start by getting embedding matrix
         if custom_tokenizer is not None:

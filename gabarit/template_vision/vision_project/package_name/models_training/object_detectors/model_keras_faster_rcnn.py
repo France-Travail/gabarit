@@ -296,9 +296,9 @@ class ModelKerasFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelKeras):
             (?): Classifier model
             (?): Global model (for load/save only)
         '''
-        # Return model if already set
-        if self.model is not None:
-            return model
+        # Return models if already set
+        if (self.shared_model is not None) and (self.model_rpn is not None) and (self.model_classifier is not None) and (self.model is not None):
+            return self.shared_model, self.model_rpn, self.model_classifier, self.model
 
         # First, we define the inputs
         input_img = Input(shape=(None, None, 3), name='input_img')
@@ -769,10 +769,8 @@ class ModelKerasFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelKeras):
         #   - Train classifier - sharable model NOT trainable
         ##############################################
 
-        # Get models (we do not load a new model if this one has already been trained)
-        # self.model corresponds to model_all
-        if not self.trained:
-            self.shared_model, self.model_rpn, self.model_classifier, self.model = self._get_model()
+        # Get model (if already fitted, _get_model returns instance models)
+        self.shared_model, self.model_rpn, self.model_classifier, self.model = self._get_model()
 
         ### Train RPN - sharable model trainable
         self.logger.info("RPN training - trainable set to True")

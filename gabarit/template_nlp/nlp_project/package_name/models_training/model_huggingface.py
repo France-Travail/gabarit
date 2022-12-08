@@ -112,12 +112,12 @@ class ModelHuggingFace(ModelClass):
             }
         self.trainer_params = trainer_params
 
-        # Set tokenizer
-        self.tokenizer: Any = self._get_tokenizer()
-
         # Model set on fit or on reload
         self.model: Any = None
         self.pipe: Any = None  # Set on first predict
+
+        # Tokenizer set on fit or on reload
+        self.tokenizer: Any = None
 
     def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:
         '''Fits the model
@@ -243,10 +243,13 @@ class ModelHuggingFace(ModelClass):
         # Get model & prepare datasets
         ##############################################
 
-        # Get model (if already fitted we do not load a new one)
-        if not self.trained or self.model is None:
-            self.model = self._get_model(num_labels=y_train_dummies.shape[1])
+        # Get model (if already fitted, _get_model returns instance model)
+        self.model = self._get_model(num_labels=y_train_dummies.shape[1])
 
+        # Get tokenizer (if already fitted, _get_tokenizer returns instance model)
+        self.tokenizer = self._get_tokenizer()
+
+        # Preprocess datasets
         train_dataset = self._prepare_x_train(x_train, y_train_dummies)
         valid_dataset = self._prepare_x_valid(x_valid, y_valid_dummies)
 
@@ -410,7 +413,7 @@ class ModelHuggingFace(ModelClass):
         '''
         # Return model if already set
         if self.model is not None:
-            return model
+            return self.model
 
         model = AutoModelForSequenceClassification.from_pretrained(
                 self.transformer_name if model_path is None else model_path,
@@ -427,6 +430,10 @@ class ModelHuggingFace(ModelClass):
         Returns:
             (PreTrainedTokenizer): a HF tokenizer
         '''
+        # Return tokenizer if already set
+        if self.tokenizer is not None:
+            return tokenizer
+
         tokenizer = AutoTokenizer.from_pretrained(self.transformer_name if model_path is None else model_path, cache_dir=HF_CACHE_DIR)
         return tokenizer
 

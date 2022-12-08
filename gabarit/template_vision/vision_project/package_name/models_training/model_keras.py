@@ -351,9 +351,8 @@ class ModelKeras(ModelClass):
             validation_steps_arg = None
             validation_split_arg = self.validation_split if validation_data is None else None
 
-        # Get model (if already fitted we do not load a new one)
-        if not self.trained:
-            self.model = self._get_model()
+        # Get model (if already fitted, _get_model returns instance model)
+        self.model = self._get_model()
 
         # Get callbacks (early stopping & checkpoint)
         callbacks = self._get_callbacks()

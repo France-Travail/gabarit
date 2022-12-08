@@ -59,7 +59,7 @@ class ModelCnnClassifier(ModelClassifierMixin, ModelKeras):
         '''
         # Return model if already set
         if self.model is not None:
-            return model
+            return self.model
 
         # Get input/output dimensions
         input_shape = (self.width, self.height, self.depth)

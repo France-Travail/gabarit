@@ -234,9 +234,8 @@ class ModelKeras(ModelClass):
         # Fit
         ##############################################
 
-        # Get model (if already fitted we do not load a new one)
-        if not self.trained:
-            self.model = self._get_model()
+        # Get model (if already fitted, _get_model returns instance model)
+        self.model = self._get_model()
 
         # Get callbacks (early stopping & checkpoint)
         callbacks = self._get_callbacks()

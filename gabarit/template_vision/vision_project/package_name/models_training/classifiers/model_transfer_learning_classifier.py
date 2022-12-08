@@ -141,7 +141,7 @@ class ModelTransferLearningClassifier(ModelClassifierMixin, ModelKeras):
         '''
         # Return model if already set
         if self.model is not None:
-            return model
+            return self.model
 
         # The base model will be loaded by keras's internal functions
         # Keras uses the `get_file` function to load all files from a cache directory (or from the internet)
