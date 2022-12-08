@@ -569,8 +569,15 @@ class ModelHuggingFace(ModelClass):
         json_data['transformer_params'] = self.transformer_params
         json_data['trainer_params'] = self.trainer_params
 
+        # Add model structure if not none
+        if self.model is not None:
+            json_data['hf_model'] = self.model.__repr__()
+
         if '_get_model' not in json_data.keys():
             json_data['_get_model'] = pickle.source.getsourcelines(self._get_model)[0]
+        if '_get_tokenizer' not in json_data.keys():
+            json_data['_get_tokenizer'] = pickle.source.getsourcelines(self._get_tokenizer)[0]
+
         # Save strategy :
         # - best.hdf5 already saved in fit()
         # - can't pickle keras model, so we drop it, save, and reload it

@@ -635,7 +635,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         remove_dir(model_dir)
 
     @unittest.skip("WIP - skip to be removed")
-    def test04_model_huggingface_save(self):
+    def test13_model_huggingface_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -670,36 +670,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue('transformer_name' in configs.keys())
         self.assertTrue('trainer_params' in configs.keys())
         self.assertTrue('_get_model' in configs.keys())
-
-        # Use custom_objects containing a "partial" function
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
-        model.save(json_data={'test': 8})
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
-        # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin'))) -> no model trained
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'model_huggingface.pkl')))
-        with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='{{default_encoding}}') as f:
-            configs = json.load(f)
-        self.assertEqual(configs['test'], 8)
-        self.assertTrue('package_version' in configs.keys())
-        self.assertEqual(configs['package_version'], utils.get_package_version())
-        self.assertTrue('model_name' in configs.keys())
-        self.assertTrue('model_dir' in configs.keys())
-        self.assertTrue('trained' in configs.keys())
-        self.assertTrue('nb_fit' in configs.keys())
-        self.assertTrue('list_classes' in configs.keys())
-        self.assertTrue('dict_classes' in configs.keys())
-        self.assertTrue('x_col' in configs.keys())
-        self.assertTrue('y_col' in configs.keys())
-        self.assertTrue('multi_label' in configs.keys())
-        self.assertTrue('level_save' in configs.keys())
-        self.assertTrue('librairie' in configs.keys())
-        self.assertEqual(configs['librairie'], 'huggingface')
-        self.assertTrue('batch_size' in configs.keys())
-        self.assertTrue('epochs' in configs.keys())
-        self.assertTrue('validation_split' in configs.keys())
-        self.assertTrue('transformer_name' in configs.keys())
-        self.assertTrue('trainer_params' in configs.keys())
-        self.assertTrue('_get_model' in configs.keys())
+        self.assertTrue('_get_tokenizer' in configs.keys())
 
         # Clean
         remove_dir(model_dir)
