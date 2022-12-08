@@ -112,13 +112,17 @@ class ModelEmbeddingLstmGruGpu(ModelKeras):
         return self._get_sequence(x_test, self.tokenizer, self.max_sequence_length, padding=self.padding, truncating=self.truncating)
 
     def _get_model(self, custom_tokenizer=None) -> Any:
-        '''Gets a model structure
+        '''Gets a model structure - returns the instance model instead if already defined
 
         Kwargs:
             custom_tokenizer (?): Tokenizer (if different from the one of the class). Permits to manage "new embeddings"
         Returns:
             (Model): a Keras model
         '''
+        # Return model if already set
+        if self.model is not None:
+            return model
+
         # Start by getting embedding matrix
         if custom_tokenizer is not None:
             embedding_matrix, embedding_size = self._get_embedding_matrix(custom_tokenizer)

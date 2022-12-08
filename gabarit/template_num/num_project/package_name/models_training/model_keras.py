@@ -431,7 +431,7 @@ class ModelKeras(ModelClass):
         return serve(x_test).numpy()
 
     def _get_model(self) -> Model:
-        '''Gets a model structure
+        '''Gets a model structure - returns the instance model instead if already defined
 
         Returns:
             (Model): a Keras model

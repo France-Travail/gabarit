@@ -288,7 +288,7 @@ class ModelKerasFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelKeras):
     #####################
 
     def _get_model(self) -> Any:
-        '''Gets a model structure
+        '''Gets a model structure - returns the instance model instead if already defined
 
         Returns:
             (?): Shared layers of the VGG 16 (not compiled)
@@ -296,6 +296,10 @@ class ModelKerasFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelKeras):
             (?): Classifier model
             (?): Global model (for load/save only)
         '''
+        # Return model if already set
+        if self.model is not None:
+            return model
+
         # First, we define the inputs
         input_img = Input(shape=(None, None, 3), name='input_img')
         input_rois = Input(shape=(None, 4), name='input_rois')

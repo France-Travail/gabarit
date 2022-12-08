@@ -448,7 +448,7 @@ class ModelKeras(ModelClass):
         return pad_sequences(sequences, maxlen=maxlen, padding=padding, truncating=truncating)
 
     def _get_model(self) -> Model:
-        '''Gets a model structure
+        '''Gets a model structure - returns the instance model instead if already defined
 
         Returns:
             (Model): a Keras model

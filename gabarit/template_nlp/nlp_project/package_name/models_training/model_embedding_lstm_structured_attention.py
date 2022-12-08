@@ -128,13 +128,17 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
         return self._get_sequence(x_test, self.tokenizer, max_sequence_length, padding=self.padding, truncating=self.truncating)
 
     def _get_model(self, custom_tokenizer=None) -> Any:
-        '''Gets a model structure
+        '''Gets a model structure - returns the instance model instead if already defined
 
         Kwargs:
             custom_tokenizer (?): Tokenizer (if different from the one of the class). Permits to manage "new embeddings"
         Returns:
             (Model): a Keras model
         '''
+        # Return model if already set
+        if self.model is not None:
+            return model
+
         # Get parameters
         lstm_units = self.keras_params['lstm_units'] if 'lstm_units' in self.keras_params.keys() else 50  # u = 50 in the GIT implementation, 300 in the paper (YELP)
         dense_size = self.keras_params['dense_size'] if 'dense_size' in self.keras_params.keys() else 300  # d_a = 100 in the GIT implementation, 350 in the paper (YELP)

@@ -620,7 +620,7 @@ class ModelKeras(ModelClass):
         return None
 
     def _get_model(self) -> Any:
-        '''Gets a model structure
+        '''Gets a model structure - returns the instance model instead if already defined
 
         Returns:
             (Model): a Keras model

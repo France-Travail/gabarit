@@ -403,11 +403,15 @@ class ModelHuggingFace(ModelClass):
         return self.tokenizer(examples["text"], padding=False, truncation=True)
 
     def _get_model(self, model_path: str = None, num_labels: int = None) -> Any:
-        '''Gets a model structure
+        '''Gets a model structure - returns the instance model instead if already defined
 
         Returns:
             (Any): a HF model
         '''
+        # Return model if already set
+        if self.model is not None:
+            return model
+
         model = AutoModelForSequenceClassification.from_pretrained(
                 self.transformer_name if model_path is None else model_path,
                 num_labels=len(self.list_classes) if num_labels is None else num_labels,

@@ -581,7 +581,10 @@ class ModelMockCnnClassifier(ModelCnnClassifier):
     def __init__(self, **kwargs):
         super().__init__(**kwargs)
     def _get_model(self) -> Any:
-        '''Gets a model structure'''
+        '''Gets a model structure - returns the instance model instead if already defined'''
+        # Return model if already set
+        if self.model is not None:
+            return model
         # Get input/output dimensions
         input_shape = (self.width, self.height, self.depth)
         num_classes = len(self.list_classes)
