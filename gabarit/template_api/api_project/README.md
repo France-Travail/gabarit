@@ -171,7 +171,7 @@ class Model:
         ...
 ```
 
-As you can see, a `Model` object as three main attributes :
+As you can see, a `Model` object as four main attributes :
 - `_model` containing your gabarit, scikit-learn or whatever model object
 - `_model_conf` which is a python dict with metadata about your model
 - `_model_explainer` containing your model explainer
