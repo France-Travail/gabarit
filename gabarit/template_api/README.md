@@ -26,7 +26,7 @@ optional arguments:
                         Gabarit package you plan to use in your API (let empty otherwise). Example : my-gabarit-
                         project[explicability]==0.1.2
   --gabarit_import_name GABARIT_IMPORT_NAME
-                        The import name of your Gabarit package might be different from the package name as with sickit-learn /
+                        The import name of your Gabarit package might be different from the package name as with scikit-learn /
                         sklearn. Use this argument to specify a different import name
   -c CUSTOM [CUSTOM ...], --custom CUSTOM [CUSTOM ...]
                         Add custom templates such as a custom .env file or a custom Dockerfile. Example : --custom

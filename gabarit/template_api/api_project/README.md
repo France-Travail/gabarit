@@ -1,11 +1,11 @@
 # FastAPI ⚡ {{package_name}}
 
-> Thanks for using gabarit to kick start your `{{package_name}}` project 😁
+> Thanks for using gabarit to kickstart your `{{package_name}}` project 😁
 >
 > We are very interested in your feedbacks so don't hesitate to open an issue to tell us
 > how you feel about this template.
 >
-> We also welcome community contributions so feel free to open pull resquest.
+> We also welcome community contributions so feel free to open pull resquests.
 
 **Usefull links :**
 - [📗 FastAPI documentation](https://fastapi.tiangolo.com/)
@@ -68,11 +68,11 @@
 
 ## Quickstart
 
-Gabarit as generated a `{{package_name}}` python package that contains all your
+Gabarit has generated a `{{package_name}}` python package that contains all your
 [FastAPI](https://fastapi.tiangolo.com/) application logic.
 
 It contains three main sub-packages (cf. [project structure](#project-structure)) :
-- `core` package for configuration and load your model into your application
+- `core` package for configuration and loading your model into your application
 - `model` package for defining how to download your model, to load it and make predictions
 - `routers` package for defining your API routes and how they work
 
@@ -133,6 +133,7 @@ class Model:
     def __init__(self):
         self._model: Any = None
         self._model_conf: dict = None
+        self._model_explainer = None
         self._loaded: bool = False
 
     def is_model_loaded(self) -> bool:
@@ -147,6 +148,14 @@ class Model:
     def predict(self, *args, **kwargs) -> Any:
         """Make a prediction thanks to the model"""
         return self._model.predict(*args, **kwargs)
+    
+    def explain_as_json(self, *args, **kwargs) -> Union[dict, list]:
+        """Compute explanations about a prediction and return a JSON serializable object"""
+        return self._model_explainer.explain_instance_as_json(*args, **kwargs)
+
+    def explain_as_html(self, *args, **kwargs) -> str:
+        """Compute explanations about a prediction and return an HTML report"""
+        return self._model_explainer.explain_instance_as_html(*args, **kwargs)
 
     def _load_model(self, **kwargs) -> Tuple[Any, dict]:
         """Load a model from a file
@@ -158,22 +167,23 @@ class Model:
 
     @staticmethod
     def download_model(**kwargs) -> bool:
-        """You shloud implement a download method to automatically download your model"""
+        """You should implement a download method to automatically download your model"""
         ...
 ```
 
 As you can see, a `Model` object as three main attributes :
 - `_model` containing your gabarit, scikit-learn or whatever model object
 - `_model_conf` which is a python dict with metadata about your model
+- `_model_explainer` containing your model explainer
 - `_loaded` which is set to `True` after `_load_model` has been called
 
 The `Model` class also define a `download_model` method that will be used to download
-your model. By default it does nothing and return `True`.
+your model. By default it does nothing and returns `True`.
 
 You will also find a `ModelGabarit` class in `{{package_name}}.model.model_gabarit` that
 is suited to a model constructed thanks to a Gabarit template.
 
-Is is a great example of how to adapt the base `Model` class to your usecase.
+It is a great example of how to adapt the base `Model` class to your use case.
 
 ### Load your model at startup
 
@@ -217,7 +227,7 @@ Routers are split into two categories by default : technical and functional ones
 - Functional ones are used to implement your business logic such as model predictions
   or model explicability
 
-Since gabarit could not what data your model is expecting, the default `/predict` route
+Since gabarit could not know what data your model is expecting, the default `/predict` route
 from `{{package_name}}.routers.functional` use a starlette Request object
 instead of pydantic.
 
