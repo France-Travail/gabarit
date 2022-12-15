@@ -399,6 +399,8 @@ class ModelCnnClassifierTests(unittest.TestCase):
         fit_params = model.fit(df_train_mono, df_valid=None)
         x_batch = fit_params['x'].next()
         model.save()
+        # Drop model
+        model.model = None
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
@@ -415,6 +417,8 @@ class ModelCnnClassifierTests(unittest.TestCase):
         fit_params = model.fit(df_train_multi, df_valid=None)
         x_batch = fit_params['x'].next()
         model.save()
+        # Drop model
+        model.model = None
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)

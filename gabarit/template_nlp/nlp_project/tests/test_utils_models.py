@@ -242,6 +242,8 @@ class UtilsModelsTests(unittest.TestCase):
         model.fit(x_train, y_train)
         model.save()
 
+        # TODO: do the same for an HuggingFace model !
+
         # Reload
         new_model, new_config = utils_models.load_model(model_dir='test_model_dl')
         # We perform some tests

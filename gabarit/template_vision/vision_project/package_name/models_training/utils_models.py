@@ -204,6 +204,7 @@ def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
     # Load specifics
     hdf5_path = os.path.join(model_path, 'best.hdf5')
 
+    # TODO : we should probably have a single function `load_self` and let the model manage it's reload
     # Check for keras model
     if os.path.exists(hdf5_path):
         # If a specific reload function has been defined (e.g. faster RCNN), we use it

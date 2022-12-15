@@ -253,11 +253,15 @@ class ModelTfidfDenseTests(unittest.TestCase):
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
         y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
+
+        # Fit a model
         model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono)
         model.save()
+
+        # Drop model
+        model.model = None
 
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')

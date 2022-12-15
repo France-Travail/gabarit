@@ -693,12 +693,8 @@ class ModelKerasTests(unittest.TestCase):
 
         # Set vars
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
-        x_valid = np.array(["cela est un test", "ni cela", "non plus", "ici test", "là, rien de rien!"] * 100)
         y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
-        y_valid_mono = y_train_mono.copy()
         y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
-        y_valid_multi = y_train_multi.copy()
-        cols = ['test1', 'test2', 'test3']
 
         # We test with a model embedding LSTM
         model = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
@@ -706,6 +702,9 @@ class ModelKerasTests(unittest.TestCase):
                                    embedding_name='fake_embedding.pkl')
         model.fit(x_train, y_train_mono)
         model.save()
+
+        # Drop model
+        model.model = None
 
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')

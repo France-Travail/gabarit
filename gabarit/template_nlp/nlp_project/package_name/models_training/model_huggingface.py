@@ -90,9 +90,9 @@ class ModelHuggingFace(ModelClass):
         self.epochs = epochs
         self.validation_split = validation_split
         self.patience = patience
-
-        # Param embedding (can be None if no embedding)
         self.transformer_name = transformer_name
+        # transformer_params has no use as of 14/12/2022
+        # we still leave it for compatibility with keras models and future usage
         self.transformer_params = transformer_params
 
         # Trainer params
@@ -276,8 +276,9 @@ class ModelHuggingFace(ModelClass):
             # Fit
             trainer.train()
             # Save model & tokenizer
-            trainer.model.save_pretrained(save_directory=self.model_dir)
-            self.tokenizer.save_pretrained(save_directory=self.model_dir)
+            hf_model_dir = os.path.join(self.model_dir, 'hf_model')
+            trainer.model.save_pretrained(save_directory=hf_model_dir)
+            self.tokenizer.save_pretrained(save_directory=hf_model_dir)
         except (RuntimeError, SystemError, SystemExit, EnvironmentError, KeyboardInterrupt, Exception) as e:
             self.logger.error(repr(e))
             raise RuntimeError("Error during model training")
@@ -432,7 +433,7 @@ class ModelHuggingFace(ModelClass):
         '''
         # Return tokenizer if already set
         if self.tokenizer is not None:
-            return tokenizer
+            return self.tokenizer
 
         tokenizer = AutoTokenizer.from_pretrained(self.transformer_name if model_path is None else model_path, cache_dir=HF_CACHE_DIR)
         return tokenizer
@@ -579,12 +580,19 @@ class ModelHuggingFace(ModelClass):
             json_data['_get_tokenizer'] = pickle.source.getsourcelines(self._get_tokenizer)[0]
 
         # Save strategy :
-        # - best.hdf5 already saved in fit()
-        # - can't pickle keras model, so we drop it, save, and reload it
-        keras_model = self.model
+        # - HuggingFace model & tokenizer are already saved in the fit() function
+        # - We don't want them in the .pkl as they are heavy & already saved
+        # - Also get rid of the pipe (takes too much disk space for nothing),
+        #   will be reloaded automatically at first call to predict functions
+        hf_model = self.model
+        hf_tokenizer = self.tokenizer
         self.model = None
+        self.tokenizer = None
+        if self.pipe is not None:
+            self.pipe = None
         super().save(json_data=json_data)
-        self.model = keras_model
+        self.model = hf_model
+        self.tokenizer = hf_tokenizer
 
     def reload_model(self, model_path: str) -> Any:
         '''Loads a HF model from a directory
@@ -594,17 +602,31 @@ class ModelHuggingFace(ModelClass):
         Returns:
             ?: HF model
         '''
+        # Loading the model
+        hf_model = self._get_model(model_path)
 
-        # Loading of the model
-        self.model = self._get_model(model_path)
-        self.tokenizer = self._get_tokenizer(model_path)
         # Set trained to true if not already true
+        # TODO: check if we really need this
         if not self.trained:
             self.trained = True
             self.nb_fit = 1
 
         # Return
-        return self.model
+        return hf_model
+
+    def reload_tokenizer(self, tokenizer_path: str) -> Any:
+        '''Loads a HF model from a directory
+
+        Args:
+            tokenizer_path (str): Path to the directory containing the tokenizer files
+        Returns:
+            ?: HF tokenizer
+        '''
+        # Loading the tokenizer
+        hf_tokenizer = self._get_tokenizer(tokenizer_path)
+
+        # Return
+        return hf_tokenizer
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files

@@ -303,10 +303,16 @@ def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
 
     # Load specifics
     hdf5_path = os.path.join(model_path, 'best.hdf5')
+    hf_model_dir = os.path.join(model_path, 'hf_model')
 
+    # TODO : we should probably have a single function `load_self` and let the model manage it's reload
     # Check for keras model
     if os.path.exists(hdf5_path):
         model.model = model.reload_model(hdf5_path)
+    # Check for huggingface model
+    if os.path.exists(hf_model_dir):
+        model.model = model.reload_model(hf_model_dir)
+        model.tokenizer = model.reload_tokenizer(hf_model_dir)
 
     # Display if GPU is being used
     model.display_if_gpu_activated()

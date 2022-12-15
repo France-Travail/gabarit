@@ -668,6 +668,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue('epochs' in configs.keys())
         self.assertTrue('validation_split' in configs.keys())
         self.assertTrue('transformer_name' in configs.keys())
+        self.assertTrue('transformer_params' in configs.keys())
         self.assertTrue('trainer_params' in configs.keys())
         self.assertTrue('_get_model' in configs.keys())
         self.assertTrue('_get_tokenizer' in configs.keys())
@@ -675,8 +676,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    @unittest.skip("WIP - skip to be removed")
-    def test05_model_huggingface_reload_model(self):
+    # @unittest.skip("WIP - skip to be removed")
+    def test014_model_huggingface_reload_model(self):
         '''Test of the method reload_model of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -684,22 +685,51 @@ class ModelHuggingFaceTests(unittest.TestCase):
 
         # Set vars
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
-        x_valid = np.array(["cela est un test", "ni cela", "non plus", "ici test", "là, rien de rien!"] * 100)
         y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
-        y_valid_mono = y_train_mono.copy()
-        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
-        y_valid_multi = y_train_multi.copy()
-        cols = ['test1', 'test2', 'test3']
 
+        # Create model & fit it & save
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono)
         probs = model.predict_proba(['test', 'toto', 'titi'])
         model.save()
 
-        # Reload keras
-        model.reload_model(model.model_dir)
+        # Drop model
+        model.model = None
+
+        # Reload model
+        hf_model_dir = os.path.join(model.model_dir, 'hf_model')
+        model.model = model.reload_model(hf_model_dir)
         self.assertEqual([list(_) for _ in probs], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
 
+        # Clean
+        remove_dir(model_dir)
+
+    # @unittest.skip("WIP - skip to be removed")
+    def test015_model_huggingface_reload_tokenizer(self):
+        '''Test of the method reload_tokenizer of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Set vars
+        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
+        y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
+
+        # Create model & fit it & save
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        model.fit(x_train, y_train_mono)
+        probs = model.predict_proba(['test', 'toto', 'titi'])
+        model.save()
+
+        # Drop model
+        model.tokenizer = None
+
+        # Reload model
+        hf_model_dir = os.path.join(model.model_dir, 'hf_model')
+        model.tokenizer = model.reload_tokenizer(hf_model_dir)
+        self.assertEqual([list(_) for _ in probs], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
+
+        # Clean
         remove_dir(model_dir)
 
 

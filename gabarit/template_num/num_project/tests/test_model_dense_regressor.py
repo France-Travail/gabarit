@@ -241,13 +241,13 @@ class ModelDenseRegressorTests(unittest.TestCase):
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
         y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
-        x_col = ['col_1', 'col_2']
-        y_col_mono = ['toto']
 
         # Regression
         model = ModelDenseRegressor(model_dir=model_dir, batch_size=8, epochs=2)
         model.fit(x_train, y_train_regressor)
         model.save()
+        # Drop model
+        model.model = None
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
