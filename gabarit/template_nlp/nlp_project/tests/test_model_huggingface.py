@@ -776,6 +776,10 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertEqual(model.transformer_params, new_model.transformer_params)
         self.assertEqual(model.trainer_params, new_model.trainer_params)
         self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
+        self.assertTrue(os.path.exists(os.path.join(new_model.model_dir, 'hf_model')))
+        self.assertTrue(os.path.exists(os.path.join(new_model.model_dir, 'hf_tokenizer')))
+        self.assertTrue(len(os.listdir(os.path.join(new_model.model_dir, 'hf_model'))) > 0)
+        self.assertTrue(len(os.listdir(os.path.join(new_model.model_dir, 'hf_tokenizer'))) > 0)
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
@@ -785,7 +789,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
             new_model.reload_from_standalone(configuration_path='toto.json', hf_model_dir=hf_model_dir, hf_tokenizer_dir=hf_tokenizer_dir)
         with self.assertRaises(FileNotFoundError):
             new_model = ModelHuggingFace()
-            new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path='toto_dir', hf_tokenizer_dir=hf_tokenizer_dir)
+            new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir='toto_dir', hf_tokenizer_dir=hf_tokenizer_dir)
         with self.assertRaises(FileNotFoundError):
             new_model = ModelHuggingFace()
             new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir=hf_model_dir, tokenizer_path='toto_dir')

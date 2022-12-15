@@ -21,6 +21,7 @@
 
 
 import os
+import json
 import shutil
 import logging
 import numpy as np
@@ -29,8 +30,8 @@ import dill as pickle
 import seaborn as sns
 from copy import deepcopy
 import matplotlib.pyplot as plt
+from typing import no_type_check, Union, Tuple, Any
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
-from typing import Optional, no_type_check, Union, Tuple, Callable, Any
 
 import torch
 from datasets import Dataset, load_metric
@@ -260,6 +261,7 @@ class ModelHuggingFace(ModelClass):
 
         # Fit
         try:
+            # TODO: remove the checkpoints !
             # Prepare trainer
             trainer = Trainer(
                 model=self.model,
@@ -632,9 +634,69 @@ class ModelHuggingFace(ModelClass):
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files
-        - /!\\ Needs to be overridden /!\\ -
+        - /!\\ Experimental /!\\ -
+
+        Kwargs:
+            configuration_path (str): Path to configuration file
+            hf_model_dir (str): Path to HuggingFace model directory
+            hf_tokenizer_dir (str): Path to HuggingFace tokenizer directory
+        Raises:
+            ValueError: If configuration_path is None
+            ValueError: If hdf5_path is None
+            ValueError: If tokenizer_path is None
+            FileNotFoundError: If the object configuration_path is not an existing file
+            FileNotFoundError: If the object hdf5_path is not an existing file
+            FileNotFoundError: If the object tokenizer_path is not an existing file
         '''
-        raise NotImplementedError("'reload_from_standalone' needs to be overridden")
+        # Retrieve args
+        configuration_path = kwargs.get('configuration_path', None)
+        hf_model_dir = kwargs.get('hf_model_dir', None)
+        hf_tokenizer_dir = kwargs.get('hf_tokenizer_dir', None)
+
+        # Checks
+        if configuration_path is None:
+            raise ValueError("The argument configuration_path can't be None")
+        if hf_model_dir is None:
+            raise ValueError("The argument hf_model_dir can't be None")
+        if hf_tokenizer_dir is None:
+            raise ValueError("The argument hf_tokenizer_dir can't be None")
+        if not os.path.exists(configuration_path):
+            raise FileNotFoundError(f"The file {configuration_path} does not exist")
+        if not os.path.exists(hf_model_dir):
+            raise FileNotFoundError(f"The file {hf_model_dir} does not exist")
+        if not os.path.exists(hf_tokenizer_dir):
+            raise FileNotFoundError(f"The file {hf_tokenizer_dir} does not exist")
+
+        # Load confs
+        with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
+            configs = json.load(f)
+        # Can't set int as keys in json, so need to cast it after reloading
+        # dict_classes keys are always ints
+        if 'dict_classes' in configs.keys():
+            configs['dict_classes'] = {int(k): v for k, v in configs['dict_classes'].items()}
+        elif 'list_classes' in configs.keys():
+            configs['dict_classes'] = {i: col for i, col in enumerate(configs['list_classes'])}
+
+        # Set class vars
+        # self.model_name = # Keep the created name
+        # self.model_dir = # Keep the created folder
+        self.nb_fit = configs.get('nb_fit', 1)  # Consider one unique fit by default
+        self.trained = configs.get('trained', True)  # Consider trained by default
+        # Try to read the following attributes from configs and, if absent, keep the current one
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label',
+                          'level_save', 'batch_size', 'epochs', 'validation_split', 'patience',
+                          'transformer_name', 'transformer_params', 'trainer_params']:
+            setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
+
+        # Reload model & tokenizer
+        self.model = self._get_model(hf_model_dir)
+        self.tokenizer = self._get_tokenizer(hf_tokenizer_dir)
+
+        # Save hf folders in new folder
+        new_hf_model_dir = os.path.join(self.model_dir, 'hf_model')
+        new_hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
+        shutil.copyfile(hf_model_dir, new_hf_model_dir)
+        shutil.copyfile(hf_tokenizer_dir, new_hf_tokenizer_dir)
 
     def _is_gpu_activated(self) -> bool:
         '''Checks if a GPU is used
