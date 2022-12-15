@@ -93,6 +93,11 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertEqual(model.transformer_params, {'toto': 5})
         remove_dir(model_dir)
 
+        # trainer_params
+        model = ModelHuggingFace(model_dir=model_dir, trainer_params={'toto': 5})
+        self.assertEqual(model.trainer_params, {'toto': 5})
+        remove_dir(model_dir)
+
     @unittest.skip("WIP - skip to be removed")
     def test02_model_huggingface_fit(self):
         '''Test of the method fit of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
@@ -725,12 +730,65 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.tokenizer = None
 
         # Reload model
-        hf_model_dir = os.path.join(model.model_dir, 'hf_model')
+        hf_model_dir = os.path.join(model.model_dir, 'hf_tokenizer')
         model.tokenizer = model.reload_tokenizer(hf_model_dir)
         self.assertEqual([list(_) for _ in probs], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
 
         # Clean
         remove_dir(model_dir)
+
+    # @unittest.skip("WIP - skip to be removed")
+    def test016_test_model_huggingface_reload_from_standalone(self):
+        '''Test of the method {{package_name}}.models_training.model_huggingface.ModelHuggingFace.reload_from_standalone'''
+
+        # Create model
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
+        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
+        y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                 validation_split=0.3, patience=6, transformer_params={'toto': 5})
+        model.fit(x_train, y_train_mono)
+        model.save()
+
+        # Reload
+        conf_path = os.path.join(model.model_dir, "configurations.json")
+        hf_model_dir = os.path.join(model.model_dir, 'hf_model')
+        hf_tokenizer_dir = os.path.join(model.model_dir, 'hf_tokenizer')
+        new_model = ModelHuggingFace()
+        new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir=hf_model_dir, hf_tokenizer_dir=hf_tokenizer_dir)
+
+        # Test
+        self.assertEqual(model.model_name, new_model.model_name)
+        self.assertEqual(model.x_col, new_model.x_col)
+        self.assertEqual(model.y_col, new_model.y_col)
+        self.assertEqual(model.list_classes, new_model.list_classes)
+        self.assertEqual(model.dict_classes, new_model.dict_classes)
+        self.assertEqual(model.multi_label, new_model.multi_label)
+        self.assertEqual(model.level_save, new_model.level_save)
+        self.assertEqual(model.nb_fit, new_model.nb_fit)
+        self.assertEqual(model.trained, new_model.trained)
+        self.assertEqual(model.batch_size, new_model.batch_size)
+        self.assertEqual(model.epochs, new_model.epochs)
+        self.assertEqual(model.validation_split, new_model.validation_split)
+        self.assertEqual(model.patience, new_model.patience)
+        self.assertEqual(model.transformer_name, new_model.transformer_name)
+        self.assertEqual(model.transformer_params, new_model.transformer_params)
+        self.assertEqual(model.trainer_params, new_model.trainer_params)
+        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        # Check errors
+        with self.assertRaises(FileNotFoundError):
+            new_model = ModelHuggingFace()
+            new_model.reload_from_standalone(configuration_path='toto.json', hf_model_dir=hf_model_dir, hf_tokenizer_dir=hf_tokenizer_dir)
+        with self.assertRaises(FileNotFoundError):
+            new_model = ModelHuggingFace()
+            new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path='toto_dir', hf_tokenizer_dir=hf_tokenizer_dir)
+        with self.assertRaises(FileNotFoundError):
+            new_model = ModelHuggingFace()
+            new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir=hf_model_dir, tokenizer_path='toto_dir')
 
 
 # Perform tests

@@ -439,7 +439,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test07_model_tfidf_svm_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.model_tfidf_svm.ModelTfidfSvm.reload'''
+        '''Test of the method {{package_name}}.models_training.model_tfidf_svm.ModelTfidfSvm.reload_from_standalone'''
 
         ############################################
         # mono_label & without multi-classes strategy

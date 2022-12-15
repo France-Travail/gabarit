@@ -389,7 +389,7 @@ class ModelEmbeddingLstmTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test08_test_model_embedding_lstm_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.model_embedding_lstm.ModelEmbeddingLstm.reload'''
+        '''Test of the method {{package_name}}.models_training.model_embedding_lstm.ModelEmbeddingLstm.reload_from_standalone'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')

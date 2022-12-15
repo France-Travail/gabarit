@@ -276,7 +276,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test09_test_model_tfidf_dense_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense.reload'''
+        '''Test of the method {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense.reload_from_standalone'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')

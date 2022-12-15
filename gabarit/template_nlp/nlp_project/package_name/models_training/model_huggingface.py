@@ -110,6 +110,7 @@ class ModelHuggingFace(ModelClass):
                 'save_total_limit': 1,
                 'load_best_model_at_end': True
             }
+        # TODO: maybe we should keep the default dict & only add/replace keys in provided dict ?
         self.trainer_params = trainer_params
 
         # Model set on fit or on reload
@@ -277,8 +278,9 @@ class ModelHuggingFace(ModelClass):
             trainer.train()
             # Save model & tokenizer
             hf_model_dir = os.path.join(self.model_dir, 'hf_model')
+            hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
             trainer.model.save_pretrained(save_directory=hf_model_dir)
-            self.tokenizer.save_pretrained(save_directory=hf_model_dir)
+            self.tokenizer.save_pretrained(save_directory=hf_tokenizer_dir)
         except (RuntimeError, SystemError, SystemExit, EnvironmentError, KeyboardInterrupt, Exception) as e:
             self.logger.error(repr(e))
             raise RuntimeError("Error during model training")
