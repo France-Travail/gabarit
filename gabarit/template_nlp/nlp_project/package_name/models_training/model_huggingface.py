@@ -283,6 +283,14 @@ class ModelHuggingFace(ModelClass):
             hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
             trainer.model.save_pretrained(save_directory=hf_model_dir)
             self.tokenizer.save_pretrained(save_directory=hf_tokenizer_dir)
+            # Remove checkpoint dir if save total limit is set to 1 (no need to keep this as we resave the model)
+            if self.trainer_params.get('save_total_limit', None) == 1:
+                checkpoint_dirs = [_ for _ in os.listdir(self.model_dir) if _.startswith('checkpoint-')]
+                if len(checkpoint_dirs) == 0:
+                    self.logger.warning("Can't find a checkpoint dir to be removed.")
+                else:
+                    for checkpoint_dir in checkpoint_dirs:
+                        shutil.rmtree(os.path.join(self.model_dir, checkpoint_dir))
         except (RuntimeError, SystemError, SystemExit, EnvironmentError, KeyboardInterrupt, Exception) as e:
             self.logger.error(repr(e))
             raise RuntimeError("Error during model training")
