@@ -248,7 +248,7 @@ class ModelHuggingFace(ModelClass):
         # Get model (if already fitted, _get_model returns instance model)
         self.model = self._get_model(num_labels=y_train_dummies.shape[1])
 
-        # Get tokenizer (if already fitted, _get_tokenizer returns instance model)
+        # Get tokenizer (if already fitted, _get_tokenizer returns instance tokenizer)
         self.tokenizer = self._get_tokenizer()
 
         # Preprocess datasets
@@ -359,6 +359,11 @@ class ModelHuggingFace(ModelClass):
         Returns:
             (datasets.Dataset): Prepared dataset
         '''
+        # TMP FIX : https://github.com/OSS-Pole-Emploi/gabarit/issues/98
+        # We can't call this function if the tokenizer is not set. We will pby change this object to a property.
+        # This isn't really a problem as this function should not be called outside the class & tokenizer is set in the fit function.
+        if self.tokenizer is None:
+            self.tokenizer = self._get_tokenizer()
         # Check np format (should be the case if using fit)
         if not type(x_train) == np.ndarray:
             x_train = np.array(x_train)

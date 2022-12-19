@@ -26,6 +26,7 @@ import shutil
 import numpy as np
 import pandas as pd
 from datasets.arrow_dataset import Batch
+from transformers import TextClassificationPipeline
 from transformers.trainer_utils import EvalPrediction
 from transformers.models.distilbert.modeling_distilbert import PreTrainedModel
 from transformers.tokenization_utils_base import BatchEncoding, PreTrainedTokenizerBase
@@ -516,6 +517,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
 
         # Nominal case - tokenizer not set
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        # TMP FIX: init. tokenizer
+        model.tokenizer = model._get_tokenizer()
         x_test_prepared = model._prepare_x_test(x_test)
         # We can't easily test the results, too many dependences
         self.assertEqual(x_test_prepared.shape[0], len(x_test))  # Same nb of lines
@@ -535,6 +538,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
 
         # Nominal case - tokenizer not set
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+        # TMP FIX: init. tokenizer
+        model.tokenizer = model._get_tokenizer()
         encoded_batch = model._tokenize_function(batch)
         # We can't easily test the results, too many dependences
         self.assertTrue(type(encoded_batch) == BatchEncoding)
@@ -712,16 +717,21 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Create model & fit it & save
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono)
-        probs = model.predict_proba(['test', 'toto', 'titi'])
+        probas = model.predict_proba(['test', 'toto', 'titi'])
         model.save()
-
-        # Drop model
-        model.model = None
 
         # Reload model
         hf_model_dir = os.path.join(model.model_dir, 'hf_model')
-        model.model = model.reload_model(hf_model_dir)
-        self.assertEqual([list(_) for _ in probs], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
+        reloaded_model = model.reload_model(hf_model_dir)
+        # Prepare predictions
+        reloaded_model.eval()
+        device = 0 if model._is_gpu_activated() else -1
+        reloaded_pipe = TextClassificationPipeline(model=reloaded_model, tokenizer=model.tokenizer, return_all_scores=True, device=device)
+        tokenizer_kwargs = {'padding': False, 'truncation': True}
+        reloaded_results = np.array(reloaded_pipe(['test', 'toto', 'titi'], **tokenizer_kwargs))
+        reloaded_probas = np.array([[x['score'] for x in x] for x in reloaded_results])
+        # Assert equals
+        self.assertEqual([list(_) for _ in reloaded_probas], [list(_) for _ in probas])
 
         # Clean
         remove_dir(model_dir)
@@ -739,16 +749,21 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Create model & fit it & save
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono)
-        probs = model.predict_proba(['test', 'toto', 'titi'])
+        probas = model.predict_proba(['test', 'toto', 'titi'])
         model.save()
 
-        # Drop model
-        model.tokenizer = None
-
-        # Reload model
-        hf_model_dir = os.path.join(model.model_dir, 'hf_tokenizer')
-        model.tokenizer = model.reload_tokenizer(hf_model_dir)
-        self.assertEqual([list(_) for _ in probs], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
+        # Reload tokenizer
+        hf_tokenizer_dir = os.path.join(model.model_dir, 'hf_tokenizer')
+        reloaded_tokenizer = model.reload_tokenizer(hf_tokenizer_dir)
+        # Prepare predictions
+        model.model.eval()
+        device = 0 if model._is_gpu_activated() else -1
+        reloaded_pipe = TextClassificationPipeline(model=model.model, tokenizer=reloaded_tokenizer, return_all_scores=True, device=device)
+        tokenizer_kwargs = {'padding': False, 'truncation': True}
+        reloaded_results = np.array(reloaded_pipe(['test', 'toto', 'titi'], **tokenizer_kwargs))
+        reloaded_probas = np.array([[x['score'] for x in x] for x in reloaded_results])
+        # Assert equals
+        self.assertEqual([list(_) for _ in reloaded_probas], [list(_) for _ in probas])
 
         # Clean
         remove_dir(model_dir)
