@@ -50,7 +50,8 @@ logger = logging.getLogger('{{package_name}}.0_reload_model')
 def main(model_dir: str, config_file: str = 'configurations.json',
          sklearn_pipeline_file: str = 'sklearn_pipeline_standalone.pkl',
          weights_file: str = 'best.hdf5', tokenizer_file: str = 'embedding_tokenizer.pkl',
-         tfidf_file: str = 'tfidf_standalone.pkl') -> None:
+         tfidf_file: str = 'tfidf_standalone.pkl', hf_model_dir: str = 'hf_model',
+         hf_tokenizer_dir: str = 'hf_tokenizer') -> None:
     '''Reloads a model
 
     The idea here is to reload a model that was trained on another package version.
@@ -64,6 +65,8 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         weights_file (str): Neural Network weights file name (keras models)
         tokenizer_file (str): Tokenizer file name (models with embeddings)
         tfidf_file (str): TFIDF file name (models with tfidf)
+        hf_model_dir (str): HuggingFace model folder
+        hf_tokenizer_dir (str): HuggingFace tokenizer folder
     Raises:
         FileNotFoundError: If model can't be found
         FileNotFoundError: If model's configuration does not exist
@@ -130,6 +133,8 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'hdf5_path': os.path.join(model_path, weights_file) if weights_file is not None else None,
         'tokenizer_path': os.path.join(model_path, tokenizer_file) if tokenizer_file is not None else None,
         'tfidf_path': os.path.join(model_path, tfidf_file) if tfidf_file is not None else None,
+        'hf_model_dir_path': os.path.join(model_path, hf_model_dir) if hf_model_dir is not None else None,
+        'hf_tokenizer_dir_path': os.path.join(model_path, hf_tokenizer_dir) if hf_tokenizer_dir is not None else None,
     }
     model.reload_from_standalone(**files_dict)
 
@@ -149,7 +154,8 @@ def main(model_dir: str, config_file: str = 'configurations.json',
     # Reminder: the model's save function prioritize the json_data arg over it's default values
     # hence, it helps with some parameters such as `_get_model`
     list_keys_json_data = ['filename', 'filename_valid', 'min_rows', 'preprocess_str',
-                           'fit_time', 'date', '_get_model', '_get_learning_rate_scheduler', 'custom_objects']
+                           'fit_time', 'date', '_get_model', '_get_learning_rate_scheduler',
+                           '_get_tokenizer', 'custom_objects']
     json_data = {key: configs.get(key, None) for key in list_keys_json_data}
 
     # Add training version
@@ -176,7 +182,9 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--weights_file', default='best.hdf5', help="Neural Network weights file name (keras models)")
     parser.add_argument('--tokenizer_file', default='embedding_tokenizer.pkl', help="Tokenizer file name (models with embeddings)")
     parser.add_argument('--tfidf_file', default='tfidf_standalone.pkl', help="TFIDF file name (models with tfidf)")
+    parser.add_argument('--hf_model_dir', default='hf_model', help="HuggingFace model folder name")
+    parser.add_argument('--hf_tokenizer_dir', default='hf_tokenizer', help="HuggingFace tokenizer folder name")
     args = parser.parse_args()
     main(model_dir=args.model_dir, config_file=args.config_file, weights_file=args.weights_file,
          sklearn_pipeline_file=args.sklearn_pipeline_file, tokenizer_file=args.tokenizer_file,
-         tfidf_file=args.tfidf_file)
+         tfidf_file=args.tfidf_file, hf_model_dir=args.hf_model_dir, hf_tokenizer_dir=args.hf_tokenizer_dir)

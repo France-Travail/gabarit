@@ -721,8 +721,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
 
         # Reload model
-        hf_model_dir = os.path.join(model.model_dir, 'hf_model')
-        reloaded_model = model.reload_model(hf_model_dir)
+        hf_model_dir_path = os.path.join(model.model_dir, 'hf_model')
+        reloaded_model = model.reload_model(hf_model_dir_path)
         # Prepare predictions
         reloaded_model.eval()
         device = 0 if model._is_gpu_activated() else -1
@@ -753,8 +753,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
 
         # Reload tokenizer
-        hf_tokenizer_dir = os.path.join(model.model_dir, 'hf_tokenizer')
-        reloaded_tokenizer = model.reload_tokenizer(hf_tokenizer_dir)
+        hf_tokenizer_dir_path = os.path.join(model.model_dir, 'hf_tokenizer')
+        reloaded_tokenizer = model.reload_tokenizer(hf_tokenizer_dir_path)
         # Prepare predictions
         model.model.eval()
         device = 0 if model._is_gpu_activated() else -1
@@ -783,10 +783,10 @@ class ModelHuggingFaceTests(unittest.TestCase):
 
         # Reload
         conf_path = os.path.join(model.model_dir, "configurations.json")
-        hf_model_dir = os.path.join(model.model_dir, 'hf_model')
-        hf_tokenizer_dir = os.path.join(model.model_dir, 'hf_tokenizer')
+        hf_model_dir_path = os.path.join(model.model_dir, 'hf_model')
+        hf_tokenizer_dir_path = os.path.join(model.model_dir, 'hf_tokenizer')
         new_model = ModelHuggingFace()
-        new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir=hf_model_dir, hf_tokenizer_dir=hf_tokenizer_dir)
+        new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir_path=hf_model_dir_path, hf_tokenizer_dir_path=hf_tokenizer_dir_path)
 
         # Test
         self.assertEqual(model.model_name, new_model.model_name)
@@ -816,13 +816,13 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Check errors
         with self.assertRaises(FileNotFoundError):
             new_model = ModelHuggingFace()
-            new_model.reload_from_standalone(configuration_path='toto.json', hf_model_dir=hf_model_dir, hf_tokenizer_dir=hf_tokenizer_dir)
+            new_model.reload_from_standalone(configuration_path='toto.json', hf_model_dir_path=hf_model_dir_path, hf_tokenizer_dir_path=hf_tokenizer_dir_path)
         with self.assertRaises(FileNotFoundError):
             new_model = ModelHuggingFace()
-            new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir='toto_dir', hf_tokenizer_dir=hf_tokenizer_dir)
+            new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir_path='toto_dir', hf_tokenizer_dir_path=hf_tokenizer_dir_path)
         with self.assertRaises(FileNotFoundError):
             new_model = ModelHuggingFace()
-            new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir=hf_model_dir, hf_tokenizer_dir='toto_dir')
+            new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir_path=hf_model_dir_path, hf_tokenizer_dir_path='toto_dir')
 
 
 # Perform tests

@@ -655,22 +655,22 @@ class ModelHuggingFace(ModelClass):
         '''
         # Retrieve args
         configuration_path = kwargs.get('configuration_path', None)
-        hf_model_dir = kwargs.get('hf_model_dir', None)
-        hf_tokenizer_dir = kwargs.get('hf_tokenizer_dir', None)
+        hf_model_dir_path = kwargs.get('hf_model_dir_path', None)
+        hf_tokenizer_dir_path = kwargs.get('hf_tokenizer_dir_path', None)
 
         # Checks
         if configuration_path is None:
             raise ValueError("The argument configuration_path can't be None")
-        if hf_model_dir is None:
-            raise ValueError("The argument hf_model_dir can't be None")
-        if hf_tokenizer_dir is None:
-            raise ValueError("The argument hf_tokenizer_dir can't be None")
+        if hf_model_dir_path is None:
+            raise ValueError("The argument hf_model_dir_path can't be None")
+        if hf_tokenizer_dir_path is None:
+            raise ValueError("The argument hf_tokenizer_dir_path can't be None")
         if not os.path.exists(configuration_path):
             raise FileNotFoundError(f"The file {configuration_path} does not exist")
-        if not os.path.exists(hf_model_dir):
-            raise FileNotFoundError(f"The file {hf_model_dir} does not exist")
-        if not os.path.exists(hf_tokenizer_dir):
-            raise FileNotFoundError(f"The file {hf_tokenizer_dir} does not exist")
+        if not os.path.exists(hf_model_dir_path):
+            raise FileNotFoundError(f"The file {hf_model_dir_path} does not exist")
+        if not os.path.exists(hf_tokenizer_dir_path):
+            raise FileNotFoundError(f"The file {hf_tokenizer_dir_path} does not exist")
 
         # Load confs
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
@@ -694,14 +694,14 @@ class ModelHuggingFace(ModelClass):
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload model & tokenizer
-        self.model = self._get_model(hf_model_dir)
-        self.tokenizer = self._get_tokenizer(hf_tokenizer_dir)
+        self.model = self._get_model(hf_model_dir_path)
+        self.tokenizer = self._get_tokenizer(hf_tokenizer_dir_path)
 
         # Save hf folders in new folder
-        new_hf_model_dir = os.path.join(self.model_dir, 'hf_model')
-        new_hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
-        shutil.copytree(hf_model_dir, new_hf_model_dir)
-        shutil.copytree(hf_tokenizer_dir, new_hf_tokenizer_dir)
+        new_hf_model_dir_path = os.path.join(self.model_dir, 'hf_model')
+        new_hf_tokenizer_dir_path = os.path.join(self.model_dir, 'hf_tokenizer')
+        shutil.copytree(hf_model_dir_path, new_hf_model_dir_path)
+        shutil.copytree(hf_tokenizer_dir_path, new_hf_tokenizer_dir_path)
 
     def _is_gpu_activated(self) -> bool:
         '''Checks if a GPU is used
