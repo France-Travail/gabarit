@@ -246,8 +246,6 @@ class ModelDenseRegressorTests(unittest.TestCase):
         model = ModelDenseRegressor(model_dir=model_dir, batch_size=8, epochs=2)
         model.fit(x_train, y_train_regressor)
         model.save()
-        # Drop model
-        model.model = None
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)

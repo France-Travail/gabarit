@@ -45,7 +45,13 @@ def remove_dir(path):
 class ModelHuggingFaceTests(unittest.TestCase):
     '''Main class to test model_huggingface'''
 
-    @unittest.skip("WIP - skip to be removed")
+    def setUp(self):
+        '''Setup fonction -> we create a mock embedding'''
+        # Change directory to script directory
+        abspath = os.path.abspath(__file__)
+        dname = os.path.dirname(abspath)
+        os.chdir(dname)
+
     def test01_model_huggingface_init(self):
         '''Test of the initialization of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -98,7 +104,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertEqual(model.trainer_params, {'toto': 5})
         remove_dir(model_dir)
 
-    @unittest.skip("WIP - skip to be removed")
     def test02_model_huggingface_fit(self):
         '''Test of the method fit of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -125,7 +130,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         remove_dir(model_dir)
 
         # with valid data
@@ -136,7 +142,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         remove_dir(model_dir)
 
         # no shuffle
@@ -147,7 +154,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         remove_dir(model_dir)
 
         # Validation with y_train & y_valid of shape 2
@@ -158,7 +166,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         remove_dir(model_dir)
 
         # Missing targets in y_valid
@@ -169,7 +178,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), [0, 1, 2])
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         remove_dir(model_dir)
 
         # Multi-labels
@@ -180,7 +190,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), ['test1', 'test2', 'test3'])
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         remove_dir(model_dir)
 
         # with valid
@@ -191,7 +202,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), ['test1', 'test2', 'test3'])
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         remove_dir(model_dir)
 
         # No shuffle
@@ -202,7 +214,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), ['test1', 'test2', 'test3'])
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         remove_dir(model_dir)
 
 
@@ -217,7 +230,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # Second fit
         y_train_different_order = np.array([1, 0, 0, 1, 2] * 100)
@@ -225,7 +239,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # We do not save on purpose
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 2)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_1.json')))
         model_dir_2 = model.model_dir
         self.assertNotEqual(model_dir, model_dir_2)
@@ -234,7 +249,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 3)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_1.json')))
         self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_2.json')))
@@ -245,7 +261,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 4)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_1.json')))
         self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_2.json')))
@@ -265,7 +282,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # Second fit
         y_train_mono_fake = np.array([3, 1, 0, 1, 2] * 100)
@@ -281,14 +299,16 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # Second fit
         model.fit(x_train[:50], y_train_multi[:50], x_valid=None, y_valid=None, with_shuffle=True)
         # We do not save on purpose
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 2)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_1.json')))
         model_dir_2 = model.model_dir
         self.assertNotEqual(model_dir, model_dir_2)
@@ -297,7 +317,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 3)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_1.json')))
         model_dir_3 = model.model_dir
@@ -307,7 +328,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 4)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_1.json')))
         self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'configurations_fit_2.json')))
@@ -329,7 +351,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(sorted(model.list_classes), [0, 1])
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         remove_dir(model_dir)
 
         # Test data errors multi-labels
@@ -340,7 +363,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model.save()
         self.assertTrue(model.trained)
         self.assertEqual(model.nb_fit, 1)
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # Second fit
         y_train_multi_fake = pd.DataFrame({'test3': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test1': [0, 0, 0, 1, 0] * 100})
@@ -348,7 +372,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
             model.fit(x_train[:50], y_train_multi_fake[:50], x_valid=None, y_valid=None, with_shuffle=True)
         remove_dir(model_dir)
 
-    @unittest.skip("WIP - skip to be removed")
     def test03_model_huggingface_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -399,7 +422,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
             model.predict('test')
         remove_dir(model_dir)
 
-    @unittest.skip("WIP - skip to be removed")
     def test04_model_huggingface_predict_proba(self):
         '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace.predict_proba'''
 
@@ -444,7 +466,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
             model.predict_proba('test')
         remove_dir(model_dir)
 
-    @unittest.skip("WIP - skip to be removed")
     def test05_model_huggingface_prepare_x_train(self):
         '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace._prepare_x_train'''
 
@@ -465,7 +486,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue('attention_mask' in x_train_prepared.features)
         remove_dir(model_dir)
 
-    @unittest.skip("WIP - skip to be removed")
     def test06_model_huggingface_prepare_x_valid(self):
         '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace._prepare_x_valid'''
 
@@ -486,7 +506,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue('attention_mask' in x_valid_prepared.features)
         remove_dir(model_dir)
 
-    @unittest.skip("WIP - skip to be removed")
     def test07_model_huggingface_prepare_x_test(self):
         '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace._prepare_x_test'''
 
@@ -506,7 +525,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue('attention_mask' in x_test_prepared.features)
         remove_dir(model_dir)
 
-    @unittest.skip("WIP - skip to be removed")
     def test08_model_huggingface_tokenize_function(self):
         '''Test of {{package_name}}.models_training.model_huggingface.ModelHuggingFace._tokenize_function'''
 
@@ -639,7 +657,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    @unittest.skip("WIP - skip to be removed")
     def test13_model_huggingface_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -650,7 +667,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
-        # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'pytorch_model.bin'))) -> no model trained
+        # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_model', 'pytorch_model.bin')))
+        # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'hf_tokenizer', 'tokenizer.json'))) -> no model trained
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'model_huggingface.pkl')))
         with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='{{default_encoding}}') as f:
             configs = json.load(f)
@@ -681,7 +699,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    # @unittest.skip("WIP - skip to be removed")
     def test014_model_huggingface_reload_model(self):
         '''Test of the method reload_model of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -709,7 +726,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    # @unittest.skip("WIP - skip to be removed")
     def test015_model_huggingface_reload_tokenizer(self):
         '''Test of the method reload_tokenizer of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
@@ -737,7 +753,6 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    # @unittest.skip("WIP - skip to be removed")
     def test016_test_model_huggingface_reload_from_standalone(self):
         '''Test of the method {{package_name}}.models_training.model_huggingface.ModelHuggingFace.reload_from_standalone'''
 

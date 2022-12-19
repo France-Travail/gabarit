@@ -1356,8 +1356,6 @@ class ModelKerasFasterRcnnObjectDetectorTests(unittest.TestCase):
         model = ModelKerasFasterRcnnObjectDetector(model_dir=model_dir, img_min_side_size=100, epochs=1, batch_size=2, nms_max_boxes=10)
         model.fit(df_data)
         model.save()
-        # Drop model
-        model.model = None
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)

@@ -389,8 +389,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono_2)
         model.save()
-        # Drop model
-        model.model = None
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
@@ -406,8 +404,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono_3)
         model.save()
-        # Drop model
-        model.model = None
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
@@ -423,8 +419,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         model.fit(x_train, y_train_multi)
         model.save()
-        # Drop model
-        model.model = None
         # Reload keras
         hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
         reloaded_model = model.reload_model(hdf5_path)
