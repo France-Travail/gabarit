@@ -1,19 +1,14 @@
 name: Linter - NLP
 on:
   push:
-    paths-ignore:
-      - 'version.txt'
-      - '.github/workflows/**'
-      - '*.md'
-      - 'LICENSE'
-      - 'Makefile'
+    paths:
+      - 'gabarit/template_nlp/**'
+      - '!*.md'
   pull_request:
-    paths-ignore:
-      - 'version.txt'
-      - '.github/workflows/**'
-      - '*.md'
-      - 'LICENSE'
-      - 'Makefile'
+    types: [opened, reopened, synchronize]
+    paths:
+      - 'gabarit/template_nlp/**'
+      - '!*.md'
   workflow_dispatch:
 
 jobs:

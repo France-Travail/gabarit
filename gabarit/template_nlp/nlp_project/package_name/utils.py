@@ -28,6 +28,7 @@
 # - get_models_path -> Returns the path of the models folder
 # - get_ressources_path -> Returns the path of the ressources folder
 # - get_package_version -> Returns the current package version
+# - find_folder_path -> Find a folder in a base folder and its subfolders.
 # Classes :
 # - NpEncoder -> JSON encoder to manage numpy objects
 
@@ -271,6 +272,46 @@ def get_package_version() -> str:
     '''
     version = pkg_resources.get_distribution('{{package_name}}').version
     return version
+
+
+def find_folder_path(folder_name: str, base_folder: Union[str, None] = None) -> str:
+    '''Find a folder in a base folder and its subfolders.
+    If base_folder is None, considers folder_name as a path and check it exists
+
+    i.e., with the following structure :
+    - C:/
+        - base_folder/
+            - folderA/
+                - folderB/
+            - folderC/
+    find_folder_path(folderA, C:/base_folder) == C:/base_folder/folderA
+    find_folder_path(folderB, C:/base_folder) == C:/base_folder/folderA/folderB
+    find_folder_path(C:/base_folder/folderC, None) == C:/base_folder/folderC
+    find_folder_path(folderB, None) raises an error
+
+    Args:
+        folder_name (str): name of the folder to find. If base_folder is None, consider a path instead.
+    Kwargs:
+        base_folder (str): path of the base folder. If None, consider folder_name as a path.
+    Raises:
+        FileNotFoundError: if we can't find folder_name in base_folder
+        FileNotFoundError: if folder_name is not a valid path (case where base_folder is None)
+    Returns:
+        str: path to the wanted folder
+    '''
+    if base_folder is not None:
+        folder_path = None
+        for path, subdirs, files in os.walk(base_folder):
+            for name in subdirs:
+                if name == folder_name:
+                    folder_path = os.path.join(path, name)
+        if folder_path is None:
+            raise FileNotFoundError(f"Can't find folder {folder_name} inside {base_folder} and its subfolders")
+    else:
+        folder_path = folder_name
+        if not os.path.exists(folder_path):
+            raise FileNotFoundError(f"Can't find folder {folder_path} (considered as a path)")
+    return folder_path
 
 
 # JSON encoder to manage numpy objects

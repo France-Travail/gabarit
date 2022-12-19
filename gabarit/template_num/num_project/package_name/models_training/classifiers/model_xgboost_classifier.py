@@ -89,9 +89,9 @@ class ModelXgboostClassifier(ModelClassifierMixin, ModelClass):
         Args:
             x_train (?): Array-like, shape = [n_samples, n_features]
             y_train (?): Array-like, shape = [n_samples, n_targets]
+        Kwargs:
             x_valid (?): Array-like, shape = [n_samples, n_features]
             y_valid (?): Array-like, shape = [n_samples, n_targets]
-        Kwargs:
             with_shuffle (bool): If x, y must be shuffled before fitting
         Raises:
             RuntimeError: If the model is already fitted

@@ -34,7 +34,7 @@ with open(readme_path, 'r') as readme_file:
 setup(
     name='gabarit',
     version=version,
-    packages=['gabarit', 'gabarit.template_nlp', 'gabarit.template_num', 'gabarit.template_vision'],
+    packages=['gabarit', 'gabarit.template_nlp', 'gabarit.template_num', 'gabarit.template_vision', 'gabarit.template_api'],
     license='AGPL-3.0',
     long_description=long_description,
     long_description_content_type='text/markdown',
@@ -46,14 +46,14 @@ setup(
     python_requires='>=3.7',
     include_package_data=True,
     install_requires=[
-        'Jinja2==3.0.3',
-        'mypy==0.910',
+        'Jinja2==3.0.3'
     ],
     entry_points={
         'console_scripts': [
             'generate_nlp_project = gabarit.template_nlp.generate_nlp_project:main',
             'generate_num_project = gabarit.template_num.generate_num_project:main',
-            'generate_vision_project = gabarit.template_vision.generate_vision_project:main'
+            'generate_vision_project = gabarit.template_vision.generate_vision_project:main',
+            'generate_api_project = gabarit.template_api.generate_api_project:main',
         ],
     }
 )

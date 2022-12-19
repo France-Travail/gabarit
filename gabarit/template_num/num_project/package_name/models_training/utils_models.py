@@ -204,8 +204,6 @@ def load_pipeline(pipeline_dir: Union[str, None], is_path: bool = False) -> Tupl
             backups on "no_preprocess"
     Kwargs:
         is_path (bool): If path to the folder instead of the name (permits the loading from elsewhere)
-    Raises:
-        FileNotFoundError: If the folder pipeline_dir does not exist
     Returns:
         Pipeline: Reloaded pipeline
         str: Name of the preprocessing used
@@ -219,19 +217,8 @@ def load_pipeline(pipeline_dir: Union[str, None], is_path: bool = False) -> Tupl
 
     # Otherwise, nominal case
     # Find pipeline path
-    if not is_path:
-        pipelines_dir = utils.get_pipelines_path()
-        pipeline_path = None
-        for path, subdirs, files in os.walk(pipelines_dir):
-            for name in subdirs:
-                if name == pipeline_dir:
-                    pipeline_path = os.path.join(path, name)
-        if pipeline_path is None:
-            raise FileNotFoundError(f"Can't find pipeline {pipeline_dir}")
-    else:
-        pipeline_path = pipeline_dir
-        if not os.path.exists(pipeline_path):
-            raise FileNotFoundError(f"Can't find pipeline {pipeline_path} (considered as a path)")
+    base_folder = None if is_path else utils.get_pipelines_path()
+    pipeline_path = utils.find_folder_path(pipeline_dir, base_folder)
 
     # Get pipeline
     pipeline_path = os.path.join(pipeline_path, 'pipeline.pkl')
@@ -249,27 +236,13 @@ def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
         model_dir (str): Name of the folder containing the model (e.g. model_autres_2019_11_07-13_43_19)
     Kwargs:
         is_path (bool): If folder path instead of name (permits to load model from elsewhere)
-    Raises:
-        FileNotFoundError: If the folder model_dir does not exist
     Returns:
         ?: Model
         dict: Model configurations
     '''
-
     # Find model path
-    if not is_path:
-        models_dir = utils.get_models_path()
-        model_path = None
-        for path, subdirs, files in os.walk(models_dir):
-            for name in subdirs:
-                if name == model_dir:
-                    model_path = os.path.join(path, name)
-        if model_path is None:
-            raise FileNotFoundError(f"Can't find model {model_dir}")
-    else:
-        model_path = model_dir
-        if not os.path.exists(model_path):
-            raise FileNotFoundError(f"Can't find model {model_path} (considered as a path)")
+    base_folder = None if is_path else utils.get_models_path()
+    model_path = utils.find_folder_path(model_dir, base_folder)
 
     # Get configs
     configuration_path = os.path.join(model_path, 'configurations.json')

@@ -23,6 +23,7 @@ Please describe the problem here. Ex. I'm always frustrated when [...]
   - [ ] NLP template
   - [ ] NUM template
   - [ ] VISION template
+  - [ ] API template
   - [ ] How templates are generated - Jinja
 
 ### Solution

@@ -178,8 +178,8 @@ class ModelClass:
         predicted_proba = self.predict(x_test, return_proba=True)
         # Get position
         order = predicted_proba.argsort()
-        ranks = len(self.dict_classes.values()) - order.argsort()  # type: ignore
-        df_probas = pd.DataFrame(ranks, columns=self.dict_classes.values())  # type: ignore
+        ranks = len(self.list_classes) - order.argsort()  # type: ignore
+        df_probas = pd.DataFrame(ranks, columns=self.list_classes)  # type: ignore
         predict_positions = np.array([df_probas.loc[i, cl] if cl in df_probas.columns else -1 for i, cl in enumerate(y_true)])
         return predict_positions
 
@@ -806,9 +806,8 @@ class ModelClass:
 *    (~~~)           (~~~)                                                                                                  (~~~)           (~~~)    *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
             '''
-        else:
-            ascii_art = ''
-        print(ascii_art)
+            print(ascii_art)
+        
 
     def _is_gpu_activated(self) -> bool:
         '''Checks if we use a GPU

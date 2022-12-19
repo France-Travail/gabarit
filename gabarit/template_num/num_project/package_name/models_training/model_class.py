@@ -296,11 +296,16 @@ class ModelClass:
     def _check_input_format(self, x_input: Union[pd.DataFrame, np.ndarray], y_input: Union[pd.DataFrame, pd.Series, np.ndarray, None] = None,
                             fit_function: bool = False) -> Tuple[Union[pd.DataFrame, np.ndarray], Union[pd.DataFrame, pd.Series, np.ndarray, None]]:
         '''Checks the inputs of a function. We check the number of columns and the ordering.
-        Warnings if :
-            - Not the right columns
-            - Columns not in the right order
-        If fit and x_col and/or y_col is not defined -> warning + use the input columns
-        We also set the pipeline, columns_in and mandatory_columns if equal to None
+
+        Strategy :
+            - If fit function, set preprocessing pipeline, columns_in, mandatory_columns, x_col (if not set), y_col (if not set) with input data
+            - Then, for both x & y
+                - If input data has a column attribute
+                    - If we can find all needed columns, reorder the dataset using only the needed columns (so it works if we have more columns)
+                    - Else, raise an error if length do not match (otherwise log a warning)
+                - Else, raise an error if length do not match (otherwise log a warning)
+
+        We also set the pipeline to a passthrough pipeline if None
 
         Args:
             x_input (pd.DataFrame, np.ndarray): Array-like, shape = [n_samples, n_features]
@@ -326,6 +331,7 @@ class ModelClass:
         if fit_function:
             if y_input is None:
                 raise AttributeError("The argument y_input is mandatory if fit_function == True")
+            # Set x_col if not set yet
             if self.x_col is None:
                 self.logger.warning("Warning, the attribute x_col was not given when creating the model")
                 self.logger.warning("We set it now with the input data of the fit function")
@@ -351,6 +357,7 @@ class ModelClass:
                 preprocess_str = "no_preprocess"
                 preprocess_pipeline = preprocess.get_pipeline(preprocess_str)  # Warning, the pipeline must be fitted
                 preprocess_pipeline.fit(x_input)  # We fit the pipeline to set the necessary columns for the pipeline
+                # Set attributes
                 self.preprocess_pipeline = preprocess_pipeline
                 self.columns_in, self.mandatory_columns = utils_models.get_columns_pipeline(self.preprocess_pipeline)
 
@@ -358,10 +365,7 @@ class ModelClass:
         if self.x_col is None:
             self.logger.warning("Can't check the input format (x) because x_col is not set...")
         else:
-            # Checking x_input format
             x_col_len = len(self.x_col)
-            if x_input_shape != x_col_len:
-                raise ValueError(f"Input data (x) is not in the right format ({x_input_shape} != {x_col_len})")
             # We check the presence of the columns
             if hasattr(x_input, 'columns'):
                 can_reorder = True
@@ -370,15 +374,29 @@ class ModelClass:
                     if col not in x_input.columns:  # type: ignore
                         can_reorder = False
                         self.logger.warning(f"The column {col} is missing from the input (x)")
-                # If we can't reorder, we write a warning message, otherwise we check if it is needed
+                # If we can't reorder :
+                # 1. Exact number of columns : we write a warning message and continue with columns renamed
+                # 2. Not the correct number of column : raise an error
                 if not can_reorder:
-                    self.logger.warning("The names of the columns do not match. The process continues since there is the right number of columns")
+                    if x_input_shape != x_col_len:
+                        raise ValueError(f"Input data (x) is not in the right format ({x_input_shape} != {x_col_len})")
+                    self.logger.warning("The names of the columns (x) do not match. The process continues since there is the right number of columns")
+                    x_input = x_input.copy()  # needs a copy as we wil change columns names
+                    x_input.columns = self.x_col  # type: ignore
+                # If we can reorder :
+                # 1. Same number of inputs but not the same order -> we just reorder
+                # 2. More columns ? -> we just take the needed subset + log a warning message
                 else:
                     # TODO : tmp mypy fix https://github.com/python/mypy/pull/13544
                     if list(x_input.columns) != self.x_col:  # type: ignore
-                        self.logger.warning("The input columns (x) are not in the right order -> automatic reordering !")
+                        if x_input_shape == x_col_len:
+                            self.logger.warning("The input columns (x) are not in the right order -> automatic reordering !")
+                        else:
+                            self.logger.warning("More columns in input (x) than needed, but we can find the needed columns -> only considering the needed columns")
                         x_input = x_input[self.x_col]
             else:
+                if x_input_shape != len(self.x_col):
+                    raise ValueError(f"Input data (x) is not in the right format ({x_input_shape} != {x_col_len})")
                 self.logger.warning("The input (x) does not have the 'columns' attribute -> can't check the ordering of the columns")
 
         # Checking y_input
@@ -388,8 +406,6 @@ class ModelClass:
             else:
                 # Checking y_input format
                 y_col_len = len(self.y_col) if type(self.y_col) == list else 1
-                if y_input_shape != y_col_len:
-                    raise ValueError(f"Input data (y) is not in the right format ({y_input_shape} != {y_col_len})")
                 # We check the presence of the columns
                 if hasattr(y_input, 'columns'):
                     can_reorder = True
@@ -399,15 +415,29 @@ class ModelClass:
                         if col not in y_input.columns:  # type: ignore
                             can_reorder = False
                             self.logger.warning(f"The column {col} is missing from the input (y)")
-                    # If can't reorder we write a warning message, otherwise we check if it is needed
+                    # If we can't reorder :
+                    # 1. Exact number of columns : we write a warning message and continue with columns renamed
+                    # 2. Not the correct number of column : raise an error
                     if not can_reorder:
-                        self.logger.warning("The names of the columns do not match. The process continues since there is the right number of columns")
+                        if y_input_shape != y_col_len:
+                            raise ValueError(f"Input data (y) is not in the right format ({y_input_shape} != {y_col_len})")
+                        self.logger.warning("The names of the columns (y) do not match. The process continues since there is the right number of columns")
+                        y_input = y_input.copy()  # needs a copy as we wil change columns names
+                        y_input.columns = self.y_col  # type: ignore
+                    # If we can reorder :
+                    # 1. Same number of inputs but not the same order -> we just reorder
+                    # 2. More columns ? -> we just take the needed subset + log a warning message
                     else:
                         # TODO : tmp mypy fix https://github.com/python/mypy/pull/13544
                         if list(y_input.columns) != target_cols:  # type: ignore
-                            self.logger.warning("The input columns (y) are not in the right order -> automatic reordering !")
+                            if y_input_shape == y_col_len:
+                                self.logger.warning("The input columns (y) are not in the right order -> automatic reordering !")
+                            else:
+                                self.logger.warning("More columns in input (y) than needed, but we can find the needed columns -> only considering the needed columns")
                             y_input = y_input[target_cols]
                 else:
+                    if y_input_shape != y_col_len:
+                        raise ValueError(f"Input data (y) is not in the right format ({y_input_shape} != {y_col_len})")
                     self.logger.warning("The input (y) does not have the 'columns' attribute -> can't check the ordering of the columns")
 
         # Return
@@ -442,9 +472,7 @@ class ModelClass:
 *    (~~~)           (~~~)                                                                                                  (~~~)           (~~~)    *
 * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * * *
             '''
-        else:
-            ascii_art = ''
-        print(ascii_art)
+            print(ascii_art)
 
     def _is_gpu_activated(self) -> bool:
         '''Checks if we use a GPU

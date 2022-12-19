@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # Copyright (C) <2018-2021>  <Agence Data Services, DSI Pôle Emploi>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -41,14 +41,12 @@ def remove_dir(path):
 class ModelXgboostRegressorTests(unittest.TestCase):
     '''Main class to test model_xgboost_regressor'''
 
-
     def setUp(self):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-
 
     def test01_model_xgboost_regressor_init(self):
         '''Test of the initialization of {{package_name}}.models_training.model_xgboost_regressor.ModelXgboostRegressor'''
@@ -155,6 +153,7 @@ class ModelXgboostRegressorTests(unittest.TestCase):
 
         # Set vars
         x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        x_train_inv = pd.DataFrame({'col_2': [2, -1, -8, 2, 3, 12, 2] * 10, 'fake_col': [0.5, -3, 5, 5, 2, 0, 8] * 10, 'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10})
         y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
         x_col = ['col_1', 'col_2']
         y_col_mono = ['toto']
@@ -164,6 +163,11 @@ class ModelXgboostRegressorTests(unittest.TestCase):
         model.fit(x_train, y_train_regressor)
         preds = model.predict(x_train)
         self.assertEqual(preds.shape, (len(x_train),))
+        with self.assertRaises(ValueError):
+            probas = model.predict(x_train, return_proba=True)
+        # Test inversed columns order
+        preds_inv = model.predict(x_train_inv, return_proba=False)
+        np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted

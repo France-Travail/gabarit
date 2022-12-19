@@ -169,7 +169,7 @@ class UtilsModelsTests(unittest.TestCase):
         os.makedirs(pipeline_dir)
         fake_pipeline = ColumnTransformer([('fake_pipeline', FunctionTransformer(lambda x: x * 2), ['toto', 'titi'])])
         df = pd.DataFrame({'toto': [1, 2, 3], 'tata': [4, 5, 6], 'titi': [7, 8, 9]})
-        fake_pipeline.fit(df) # We fit even if it is not really necessary
+        fake_pipeline.fit(df)  # We fit even if it is not really necessary
 
         # Save pipeline
         pipeline_dict = {'preprocess_pipeline': fake_pipeline, 'preprocess_str': preprocess_str}

@@ -19,52 +19,59 @@
 # Classes :
 # - Explainer -> Parent class for the explainers
 # - LimeExplainer -> Lime Explainer wrapper class
-# ** EXPERIMENTAL ** - AttentionExplainer -> Attention Explainer wrapper class
 
 import logging
 import numpy as np
-from typing import Type, Union, Any
+from typing import Type, Union, Any, Iterable
 from lime.explanation import Explanation
-from words_n_fun.preprocessing import api
-from lime.lime_text import IndexedString, TextDomainMapper, LimeTextExplainer
+from lime.lime_text import LimeTextExplainer
 
 from {{package_name}}.preprocessing import preprocess
 from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training.model_embedding_lstm_structured_attention import ModelEmbeddingLstmStructuredAttention
 
 
 class Explainer:
     '''Parent class for the explainers'''
 
-    def __init__(self) -> None:
+    def __init__(self, *args, **kwargs) -> None:
         '''Initialization of the parent class'''
         self.logger = logging.getLogger(__name__)
 
-    def explain_instance(self, text: str, **kwargs) -> Any:
+    def explain_instance(self, content: str, **kwargs) -> Any:
         '''Explains a prediction
 
         Args:
-            text (str): Text to be explained
+            content (str): Text to be explained
         Returns:
             (?): An explanation object
         '''
         raise NotImplementedError("'explain_instance' needs to be overridden")
 
-    def explain_instance_as_html(self, text: str, **kwargs) -> str:
+    def explain_instance_as_html(self, content: str, **kwargs) -> str:
         '''Explains a prediction - returns an HTML object
 
         Args:
-            text (str): Text to be explained
+            content (str): Text to be explained
         Returns:
             str: An HTML code with the explanation
         '''
         raise NotImplementedError("'explain_instance_as_html' needs to be overridden")
 
-    def explain_instance_as_list(self, text: str, **kwargs) -> list:
+    def explain_instance_as_json(self, content: str, **kwargs) -> Union[dict, list]:
+        '''Explains a prediction - returns an JSON serializable object
+
+        Args:
+            content (str): Text to be explained
+        Returns:
+            str: A JSON serializable object with the explanation
+        '''
+        raise NotImplementedError("'explain_instance_as_json' needs to be overridden")
+
+    def explain_instance_as_list(self, content: str, **kwargs) -> list:
         '''Explains a prediction - returns a list object
 
         Args:
-            text (str): Text to be explained
+            content (str): Text to be explained
         Returns:
             list: List of tuples with words and corresponding weights
         '''
@@ -81,16 +88,12 @@ class LimeExplainer(Explainer):
             model: A model instance with predict & predict_proba functions, and list_classes attribute
             model_conf (dict): The model's configuration
         Raises:
-            TypeError: If the provided model does not implement a `predict` function
             TypeError: If the provided model does not implement a `predict_proba` function
             TypeError: If the provided model does not have a `list_classes` attribute
         '''
         super().__init__()
-        pred_op = getattr(model, "predict", None)
         pred_proba_op = getattr(model, "predict_proba", None)
 
-        if pred_op is None or not callable(pred_op):
-            raise TypeError("The supplied model must implement a predict() function")
         if pred_proba_op is None or not callable(pred_proba_op):
             raise TypeError("The supplied model must implement a predict_proba() function")
         if getattr(model, "list_classes", None) is None:
@@ -99,192 +102,105 @@ class LimeExplainer(Explainer):
         self.model = model
         self.model_conf = model_conf
         self.class_names = self.model.list_classes
-        self.explainer = LimeTextExplainer(class_names=self.class_names)
-        self.current_labels: Union[list, None] = None
 
-    def explain_instance(self, text: str, classes: Union[list, None] = None, max_features: int = 15, **kwargs):
+        # Create the explainer
+        self.explainer = LimeTextExplainer(class_names=self.class_names)
+
+    def classifier_fn(self, content_list: list) -> np.ndarray:
+        '''Function to get probabilities from a list of (not preprocessed) texts
+
+        Args:
+            content_list (list): texts to be considered
+        Returns:
+            np.array: probabilities
+        '''
+        # Get preprocessor
+        if 'preprocess_str' in self.model_conf.keys():
+            preprocess_str = self.model_conf['preprocess_str']
+        else:
+            preprocess_str = 'no_preprocess'
+        preprocessor = preprocess.get_preprocessor(preprocess_str)
+        # Preprocess
+        content_prep = preprocessor(content_list)
+        # Get probabilities
+        return self.model.predict_proba(content_prep)
+
+    def explain_instance(self, content: str, class_or_label_index: Union[None, int, Iterable] = None,
+                         max_features: int = 15, **kwargs) -> Explanation:
         '''Explains a prediction
 
         This function calls the Lime module. It creates a linear model around the input text to evaluate
         the weight of each word in the final prediction.
 
         Args:
-            text (str): Text to be explained
+            content (str): Text to be explained
         Kwargs:
-            classes (list): Classes to be compared - names
+            class_or_label_index (Union[None, int, Iterable]): for classification only. Class or label index to be considered.
             max_features (int): Maximum number of features (cf. Lime documentation)
         Returns:
             (?): An explanation object
         '''
-        # If no class provided, we only consider the predicted one against all others
-        if classes is None:
-            if self.model.multi_label:
-                # Get proba
-                probas = self.model.predict(text, return_proba=True)
-                # Consider max proba
-                labels = [probas.argmax(axis=-1)]
-            else:
-                # Prediction is directly the class name
-                prediction = self.model.predict(text)
-                labels = [self.class_names.index(prediction)]
-        # Ohterwise we consider the provided ones
-        else:
-            labels = [self.class_names.index(x) for x in classes]
+        if class_or_label_index is None:
+            probas = self.classifier_fn([content])[0]
+            class_or_label_index = (i for i, p in enumerate(probas) if p >= 0.5)
 
-        # Set current labels (used for as_list)
-        self.current_labels = labels
-
-        # Define classifier_fn
-        def classifier_fn(list_text: list) -> np.ndarray:
-            '''Classifier function - retrieves proba'''
-            # Get preprocessor
-            if 'preprocess_str' in self.model_conf.keys():
-                preprocess_str = self.model_conf['preprocess_str']
-            else:
-                preprocess_str = 'no_preprocess'
-            preprocessor = preprocess.get_preprocessor(preprocess_str)
-            # Preprocess
-            list_text_preprocessed = preprocessor(list_text)
-            # Get probas & return
-            return self.model.predict_proba(list_text_preprocessed)
+        elif isinstance(class_or_label_index, int):
+            class_or_label_index = (class_or_label_index, )
 
         # Get explanations
-        return self.explainer.explain_instance(text, classifier_fn, labels=self.current_labels, num_features=max_features)
+        return self.explainer.explain_instance(content, self.classifier_fn, labels=class_or_label_index, num_features=max_features)
 
-    def explain_instance_as_html(self, text: str, classes: Union[list, None] = None, max_features: int = 15, **kwargs) -> str:
+    def explain_instance_as_html(self, content: str, class_or_label_index: Union[int, None] = None,
+                                 max_features: int = 15, **kwargs) -> str:
         '''Explains a prediction - returns an HTML object
 
         Args:
-            text (str): Text to be explained
+            content (str): Text to be explained
         Kwargs:
-            classes (list): Classes to be compared
+            class_or_label_index (int): for classification only. Class or label index to be considered.
             max_features (int): Maximum number of features (cf. Lime documentation)
         Returns:
             str: An HTML code with the explanation
         '''
-        return self.explain_instance(text, classes, max_features).as_html()
+        return self.explain_instance(content, class_or_label_index=class_or_label_index, max_features=max_features, **kwargs).as_html()
 
-    def explain_instance_as_list(self, text: str, classes: Union[list, None] = None, max_features: int = 15, **kwargs) -> list:
+    def explain_instance_as_list(self, content: str, class_or_label_index: Union[int, None] = None,
+                                 max_features: int = 15, **kwargs) -> list:
         '''Explains a prediction - returns a list object
 
         Args:
-            text (str): Text to be explained
+            content (str): Text to be explained
         Kwargs:
-            classes (list): Classes to be compared
+            class_or_label_index (int): for classification only. Class or label index to be considered.
             max_features (int): Maximum number of features (cf. Lime documentation)
         Returns:
             list: List of tuples with words and corresponding weights
         '''
-        explanation = self.explain_instance(text, classes, max_features)
-        # Return as list for first label (either first element in classes or highest pred if classes is None)
-        return explanation.as_list(label=self.current_labels[0])
+        explanation = self.explain_instance(content, class_or_label_index=class_or_label_index, max_features=max_features, **kwargs)
+        
+        # as_list can only return lime weight for a single label so in case no class_or_label_index
+        # was specified we return only the weight for the class with the max probabilty
+        if class_or_label_index is None:
+            class_or_label_index = explanation.predict_proba.argmax()
 
+        # Return as list for selected class or label
+        return explanation.as_list(label=class_or_label_index)
 
-# ** EXPERIMENTAL **
-# ** EXPERIMENTAL **
-# ** EXPERIMENTAL **
-
-
-class AttentionExplainer(Explainer):
-    '''Attention Explainer wrapper class
-
-    From Gaëlle JOUIS Thesis
-    '''
-
-    def __init__(self, model: Type[ModelClass]) -> None:
-        ''' Initialization
+    def explain_instance_as_json(self, content: str, class_or_label_index: Union[None, int, Iterable] = None,
+                                 max_features: int = 15, **kwargs) -> Union[dict, list]:
+        '''Explains a prediction - returns a JSON serializable object
 
         Args:
-            model: A model instance with predict & predict_proba functions, and list_classes attribute
-        Raises:
-            TypeError: If the provided model is not a ModelEmbeddingLstmStructuredAttention model
-            TypeError: If the provided model does not have a `list_classes` attribute
-        '''
-        super().__init__()
-        if not isinstance(model, ModelEmbeddingLstmStructuredAttention):
-            raise TypeError("At the moment AttentionExplainer is only available for ModelEmbeddingLstmStructuredAttention models")
-        if getattr(model, "list_classes", None) is None:
-            raise TypeError("The supplied model must have a list_classes attribute")
-
-        self.model: Any = model
-        self.class_names: list = self.model.list_classes
-
-    def explain_instance(self, text: str, classes: Union[list, None] = None, max_features: int = 15, pipeline: list = None, **kwargs):
-        '''Explains a prediction
-
-        This function is based one Gaëlle JOUIS works.
-
-        Args:
-            text (str): Text to be explained
+            content (str): Text to be explained
         Kwargs:
-            classes (list): Classes to be compared
-            max_features (int): Maximum number of features (cf. Lime documentation)
-            pipeline (list):  ???? To be confirmed with gaëlle JOUIS
-        Returns:
-            (?): An explanation object
-        '''
-        # If no class provided, we only consider the predicted one against all others
-        if classes is None:
-            classes = [self.class_names.index(self.model.predict(text))]
-        # Ohterwise we consider the provided ones
-        else:
-            classes = [self.class_names.index(x) for x in classes]
-
-        # ???
-        # TODO: shouldn't it be the model preprocess pipeline ?
-        if pipeline is None:
-            pipeline = ['to_lower', 'remove_accents']  # ???
-            text = api.preprocess_pipeline(text, pipeline)
-
-        # Prepare explanations
-        indexed_string = IndexedString(text, split_expression=self.model.tokenizer.split, **kwargs)
-        domain_mapper = TextDomainMapper(indexed_string)
-        exp = Explanation(domain_mapper=domain_mapper, class_names=self.class_names + ["Important"])
-        exp.predict_proba = self.model.predict_proba(text)
-        exp_from_model = self.model.explain(text, attention_threshold=0, fix_index=True)
-
-        # Format results
-        word_list = []
-        for word in exp_from_model.keys():
-            word_list.append((word, float(exp_from_model[word][1])))
-        exp.local_exp = {len(self.class_names): word_list}  # exp.local_exp = sorted list of tuples where each tuple (x,y) corresponds to the feature id (x) and the local weight (y).
-        exp.intercept = '0.42'  # exp.intercept = can be ignored
-        exp.score = '0.42'  # exp.score = the R^2 value of the returned explanation. ???
-        exp.local_pred = '0.42'  # exp.local_pred = the prediction of the explanation model on the original instance. Can be ignored.
-
-        return exp
-
-    def explain_instance_as_html(self, text: str, classes: Union[list, None] = None, max_features: int = 15, **kwargs) -> str:
-        '''Explains a prediction - returns an HTML object
-
-        Args:
-            text (str): Text to be explained
-        Kwargs:
-            classes (list): Classes to be compared
+            class_or_label_index (Union[None, int, Iterable]): for classification only. Class or label index to be considered.
             max_features (int): Maximum number of features (cf. Lime documentation)
         Returns:
-            str: An HTML code with the explanation
+            Union[list, dict]: JSON serializable object containing a list of tuples with words and corresponding weights
         '''
-        return self.explain_instance(text, classes, max_features).as_html()
+        explanation = self.explain_instance(content, class_or_label_index=class_or_label_index, max_features=max_features, **kwargs)
 
-    def explain_instance_as_list(self, text: str, classes: Union[list, None] = None, max_features: int = 15, **kwargs) -> list:
-        '''Explains a prediction - returns a list object
-
-        Args:
-            text (str): Text to be explained
-        Kwargs:
-            classes (list): Classes to be compared
-            max_features (int): Maximum number of features (cf. Lime documentation)
-        Returns:
-            list: List of tuples with words and corresponding weights
-        '''
-        return self.explain_instance(text, classes, max_features).as_list(label=len(self.class_names))
-
-
-# ** EXPERIMENTAL **
-# ** EXPERIMENTAL **
-# ** EXPERIMENTAL **
-
+        return explanation.as_map()
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
