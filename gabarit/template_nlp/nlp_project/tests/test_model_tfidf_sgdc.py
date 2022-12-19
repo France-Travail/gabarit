@@ -443,6 +443,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
         x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
         y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
@@ -455,7 +456,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         # Reload
         pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
         conf_path = os.path.join(model.model_dir, "configurations.json")
-        new_model = ModelTfidfSgdc()
+        new_model = ModelTfidfSgdc(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
 
         # Test
@@ -494,7 +495,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         # Reload
         pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
         conf_path = os.path.join(model.model_dir, "configurations.json")
-        new_model = ModelTfidfSgdc()
+        new_model = ModelTfidfSgdc(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
 
         # Test
@@ -534,7 +535,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         # Reload
         pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
         conf_path = os.path.join(model.model_dir, "configurations.json")
-        new_model = ModelTfidfSgdc()
+        new_model = ModelTfidfSgdc(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
 
         # Test
@@ -574,7 +575,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         # Reload
         pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
         conf_path = os.path.join(model.model_dir, "configurations.json")
-        new_model = ModelTfidfSgdc()
+        new_model = ModelTfidfSgdc(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
 
         # Test
@@ -602,10 +603,10 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         ############################################
 
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfSgdc()
+            new_model = ModelTfidfSgdc(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path='toto.json', sklearn_pipeline_path=pkl_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfSgdc()
+            new_model = ModelTfidfSgdc(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path='toto.pkl')
 
 

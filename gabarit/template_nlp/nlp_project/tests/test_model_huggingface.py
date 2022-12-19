@@ -773,6 +773,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
         x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
         y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
@@ -785,7 +786,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         conf_path = os.path.join(model.model_dir, "configurations.json")
         hf_model_dir_path = os.path.join(model.model_dir, 'hf_model')
         hf_tokenizer_dir_path = os.path.join(model.model_dir, 'hf_tokenizer')
-        new_model = ModelHuggingFace()
+        new_model = ModelHuggingFace(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir_path=hf_model_dir_path, hf_tokenizer_dir_path=hf_tokenizer_dir_path)
 
         # Test
@@ -815,13 +816,13 @@ class ModelHuggingFaceTests(unittest.TestCase):
 
         # Check errors
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelHuggingFace()
+            new_model = ModelHuggingFace(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path='toto.json', hf_model_dir_path=hf_model_dir_path, hf_tokenizer_dir_path=hf_tokenizer_dir_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelHuggingFace()
+            new_model = ModelHuggingFace(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir_path='toto_dir', hf_tokenizer_dir_path=hf_tokenizer_dir_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelHuggingFace()
+            new_model = ModelHuggingFace(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir_path=hf_model_dir_path, hf_tokenizer_dir_path='toto_dir')
 
 

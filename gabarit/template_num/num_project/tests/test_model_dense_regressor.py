@@ -263,6 +263,7 @@ class ModelDenseRegressorTests(unittest.TestCase):
         '''Test of the method {{package_name}}.models_training.regressors.model_dense_regressor.ModelDenseRegressor.reload_from_standalone'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
         remove_dir(model_dir)
 
         # Set vars
@@ -283,7 +284,7 @@ class ModelDenseRegressorTests(unittest.TestCase):
         conf_path = os.path.join(model.model_dir, "configurations.json")
         hdf5_path = os.path.join(model.model_dir, "best.hdf5")
         preprocess_pipeline_path = os.path.join(model.model_dir, "preprocess_pipeline.pkl")
-        new_model = ModelDenseRegressor()
+        new_model = ModelDenseRegressor(model_dir=model_dir_2)
         self.assertTrue(new_model.preprocess_pipeline is None)
         new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path,
                                          preprocess_pipeline_path=preprocess_pipeline_path)
@@ -314,15 +315,15 @@ class ModelDenseRegressorTests(unittest.TestCase):
         ############################################
 
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelDenseRegressor()
+            new_model = ModelDenseRegressor(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path='toto.json', hdf5_path=hdf5_path,
                                              preprocess_pipeline_path=preprocess_pipeline_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelDenseRegressor()
+            new_model = ModelDenseRegressor(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path='toto.pkl',
                                              preprocess_pipeline_path=preprocess_pipeline_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelDenseRegressor()
+            new_model = ModelDenseRegressor(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path,
                                              preprocess_pipeline_path='toto.pkl')
 

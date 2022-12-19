@@ -277,6 +277,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
         x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
         y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
@@ -288,7 +289,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         conf_path = os.path.join(model.model_dir, "configurations.json")
         hdf5_path = os.path.join(model.model_dir, "best.hdf5")
         tfidf_path = os.path.join(model.model_dir, f"tfidf_standalone.pkl")
-        new_model = ModelTfidfDense()
+        new_model = ModelTfidfDense(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tfidf_path=tfidf_path)
 
         # Test
@@ -312,13 +313,13 @@ class ModelTfidfDenseTests(unittest.TestCase):
 
         # Check errors
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfDense()
+            new_model = ModelTfidfDense(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path='toto.json', hdf5_path=hdf5_path, tfidf_path=tfidf_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfDense()
+            new_model = ModelTfidfDense(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path='toto.hdf5', tfidf_path=tfidf_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfDense()
+            new_model = ModelTfidfDense(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tfidf_path='toto.pkl')
 
 
