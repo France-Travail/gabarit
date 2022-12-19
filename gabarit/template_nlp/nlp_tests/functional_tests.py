@@ -36,7 +36,7 @@ from test_template_nlp import utils
 from test_template_nlp.models_training import (model_tfidf_svm, model_tfidf_gbt, model_tfidf_lgbm, model_tfidf_sgdc,
                                                model_tfidf_dense, model_embedding_lstm, model_embedding_lstm_attention,
                                                model_embedding_lstm_structured_attention, model_embedding_lstm_gru_gpu,
-                                               model_embedding_cnn, utils_models)
+                                               model_embedding_cnn, model_huggingface, utils_models)
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
@@ -509,7 +509,6 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_TfidfLgbm failed')
 
-
     def test05_Model_TfidfDense(self):
         '''Test of the model TF-IDF/Dense'''
         print('            ------------------ >     Test of the model TF-IDF/Dense     /   Mono-class & Mono-label')
@@ -746,6 +745,30 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             test_model_mono_class_mono_label(self, test_model)
         except Exception:
             self.fail('ModelEmbeddingLstmStructuredAttention failed')
+
+    def test13_Model_HuggingFace(self):
+        '''Test of the model HuggingFace'''
+        print('            ------------------ >     Test of the model HuggingFace     /   Mono-class & Mono-label')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+            # Set model
+            model_name = 'huggingface_mono_class_mono_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_huggingface.ModelHuggingFace(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            batch_size=16, epochs=2, patience=5,
+                                                            transformer_name='Geotrend/distilbert-base-fr-cased',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_mono_label(self, test_model)
+        except Exception:
+            self.fail('testModel_HuggingFace failed')
 
 
 def test_model_mono_class_multi_label(test_class, test_model):
@@ -1232,6 +1255,30 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             test_model_mono_class_multi_label(self, test_model)
         except Exception:
             self.fail('testModel_EmbeddingLstmStructuredAttention failed')
+
+    def test13_Model_HuggingFace(self):
+        '''Test of the model HuggingFace'''
+        print('            ------------------ >     Test of the model HuggingFace     /   Mono-class & Multi-labels')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+            # Set model
+            model_name = 'huggingface_mono_class_multi_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_huggingface.ModelHuggingFace(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            batch_size=16, epochs=2, patience=5,
+                                                            transformer_name='Geotrend/distilbert-base-fr-cased',
+                                                            multi_label=True, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_multi_label(self, test_model)
+        except Exception:
+            self.fail('testModel_HuggingFace failed')
 
 
 def test_model_multi_class_mono_label(test_class, test_model):
@@ -1757,6 +1804,30 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             test_model_multi_class_mono_label(self, test_model)
         except Exception:
             self.fail('testModel_EmbeddingLstmStructuredAttention failed')
+
+    def test13_Model_HuggingFace(self):
+        '''Test of the model HuggingFace'''
+        print('            ------------------ >     Test of the model HuggingFace     /   Multi-classes & Mono-label')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+            # Set model
+            model_name = 'huggingface_multi_class_mono_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_huggingface.ModelHuggingFace(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            batch_size=16, epochs=2, patience=5,
+                                                            transformer_name='Geotrend/distilbert-base-fr-cased',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+        except Exception:
+            self.fail('testModel_HuggingFace failed')
 
 
 if __name__ == '__main__':
