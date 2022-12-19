@@ -695,8 +695,8 @@ class ModelHuggingFace(ModelClass):
         # Save hf folders in new folder
         new_hf_model_dir = os.path.join(self.model_dir, 'hf_model')
         new_hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
-        shutil.copyfile(hf_model_dir, new_hf_model_dir)
-        shutil.copyfile(hf_tokenizer_dir, new_hf_tokenizer_dir)
+        shutil.copytree(hf_model_dir, new_hf_model_dir)
+        shutil.copytree(hf_tokenizer_dir, new_hf_tokenizer_dir)
 
     def _is_gpu_activated(self) -> bool:
         '''Checks if a GPU is used

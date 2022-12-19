@@ -792,7 +792,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
             new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir='toto_dir', hf_tokenizer_dir=hf_tokenizer_dir)
         with self.assertRaises(FileNotFoundError):
             new_model = ModelHuggingFace()
-            new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir=hf_model_dir, tokenizer_path='toto_dir')
+            new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir=hf_model_dir, hf_tokenizer_dir='toto_dir')
 
 
 # Perform tests
