@@ -30,7 +30,7 @@ import dill as pickle
 import seaborn as sns
 from copy import deepcopy
 import matplotlib.pyplot as plt
-from typing import no_type_check, Union, Tuple, Any
+from typing import no_type_check, Union, Tuple, Any, Dict
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 import torch
@@ -340,8 +340,8 @@ class ModelHuggingFace(ModelClass):
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        # Does not work with np array
-        if type(x_test) is np.ndarray:
+        # Does not work with np array nor pandas Series
+        if type(x_test) in [np.ndarray, pd.Series]:
             x_test = x_test.tolist()
         # Prepare predict
         if self.model.training:
@@ -528,7 +528,7 @@ class ModelHuggingFace(ModelClass):
             os.makedirs(plots_path)
 
         # Rework fit_history to better match Keras fit history
-        fit_history_dict = {}
+        fit_history_dict: Dict[str, list] = {}
         for log in fit_history:
             for key, value in log.items():
                 if key not in fit_history_dict.keys():

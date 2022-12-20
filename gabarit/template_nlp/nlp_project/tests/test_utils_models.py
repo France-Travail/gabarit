@@ -260,6 +260,8 @@ class UtilsModelsTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # We do the same thing on a hugging face model
+        model_dir = os.path.join(utils.get_models_path(), 'test_model_hf')
+        remove_dir(model_dir)
         model_name = 'test_model_hf_name'
         epochs = 2
         batch_size = 8
@@ -271,7 +273,7 @@ class UtilsModelsTests(unittest.TestCase):
         model.save()
 
         # Reload
-        new_model, new_config = utils_models.load_model(model_dir='test_model_hf_name')
+        new_model, new_config = utils_models.load_model(model_dir='test_model_hf')
         # We perform some tests
         self.assertEqual(new_config['model_name'], model_name)
         self.assertEqual(new_config['epochs'], epochs)
