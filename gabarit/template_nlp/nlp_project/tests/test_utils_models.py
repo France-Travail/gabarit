@@ -265,10 +265,11 @@ class UtilsModelsTests(unittest.TestCase):
         model_name = 'test_model_hf_name'
         epochs = 2
         batch_size = 8
+        transformer_name = 'Geotrend/distilbert-base-fr-cased'
         # TODO: won't work if transformer not loaded & no internet access
         model = model_huggingface.ModelHuggingFace(model_dir=model_dir, model_name=model_name,
                                                    epochs=epochs, batch_size=batch_size,
-                                                   transformer_name='Geotrend/distilbert-base-fr-cased')
+                                                   transformer_name=transformer_name)
         model.fit(x_train, y_train)
         model.save()
 
