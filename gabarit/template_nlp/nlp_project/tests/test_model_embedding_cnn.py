@@ -365,7 +365,6 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
         y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
         model = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                   max_sequence_length=10, max_words=100,
@@ -387,10 +386,11 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test08_test_model_embedding_cnn_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.model_embedding_cnn.ModelEmbeddingCnn.reload'''
+        '''Test of the method {{package_name}}.models_training.model_embedding_cnn.ModelEmbeddingCnn.reload_from_standalone'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
         x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
         y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
@@ -405,7 +405,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         conf_path = os.path.join(model.model_dir, "configurations.json")
         hdf5_path = os.path.join(model.model_dir, "best.hdf5")
         tokenizer_path = os.path.join(model.model_dir, 'embedding_tokenizer.pkl')
-        new_model = ModelEmbeddingCnn()
+        new_model = ModelEmbeddingCnn(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tokenizer_path=tokenizer_path)
 
         # Test
@@ -434,13 +434,13 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
 
         # Check errors
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelEmbeddingCnn()
+            new_model = ModelEmbeddingCnn(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path='toto.json', hdf5_path=hdf5_path, tokenizer_path=tokenizer_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelEmbeddingCnn()
+            new_model = ModelEmbeddingCnn(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path='toto.hdf5', tokenizer_path=tokenizer_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelEmbeddingCnn()
+            new_model = ModelEmbeddingCnn(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tokenizer_path='toto.pkl')
 
 

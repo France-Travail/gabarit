@@ -751,9 +751,6 @@ class ModelKerasTests(unittest.TestCase):
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
-        x_col = ['col_1', 'col_2']
-        y_col_mono = ['toto']
-        y_col_multi = ['y1', 'y2', 'y3']
 
         # Classification - Mono-label - Mono-Class
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)

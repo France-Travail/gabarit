@@ -134,11 +134,15 @@ class ModelTransferLearningClassifier(ModelClassifierMixin, ModelKeras):
         return fit_arguments
 
     def _get_model(self) -> Model:
-        '''Gets a model structure
+        '''Gets a model structure - returns the instance model instead if already defined
 
         Returns:
             (Model): a Keras model
         '''
+        # Return model if already set
+        if self.model is not None:
+            return self.model
+
         # The base model will be loaded by keras's internal functions
         # Keras uses the `get_file` function to load all files from a cache directory (or from the internet)
         # Per default, all keras's application try to load models files from the keras's cache directory (.keras)

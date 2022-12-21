@@ -1,16 +1,16 @@
 #!/usr/bin/env python3
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
-# 
+#
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU Affero General Public License as
 # published by the Free Software Foundation, either version 3 of the
 # License, or (at your option) any later version.
-# 
+#
 # This program is distributed in the hope that it will be useful,
 # but WITHOUT ANY WARRANTY; without even the implied warranty of
 # MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
 # GNU Affero General Public License for more details.
-# 
+#
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
@@ -435,7 +435,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test06_model_tfidf_sgdc_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.model_tfidf_sgdc.ModelTfidfSgdc.reload'''
+        '''Test of the method {{package_name}}.models_training.model_tfidf_sgdc.ModelTfidfSgdc.reload_from_standalone'''
 
         ############################################
         # mono_label & without multi-classes strategy
@@ -443,6 +443,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
         x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
         y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
@@ -455,7 +456,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         # Reload
         pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
         conf_path = os.path.join(model.model_dir, "configurations.json")
-        new_model = ModelTfidfSgdc()
+        new_model = ModelTfidfSgdc(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
 
         # Test
@@ -494,7 +495,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         # Reload
         pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
         conf_path = os.path.join(model.model_dir, "configurations.json")
-        new_model = ModelTfidfSgdc()
+        new_model = ModelTfidfSgdc(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
 
         # Test
@@ -534,7 +535,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         # Reload
         pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
         conf_path = os.path.join(model.model_dir, "configurations.json")
-        new_model = ModelTfidfSgdc()
+        new_model = ModelTfidfSgdc(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
 
         # Test
@@ -574,7 +575,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         # Reload
         pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
         conf_path = os.path.join(model.model_dir, "configurations.json")
-        new_model = ModelTfidfSgdc()
+        new_model = ModelTfidfSgdc(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
 
         # Test
@@ -602,10 +603,10 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         ############################################
 
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfSgdc()
+            new_model = ModelTfidfSgdc(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path='toto.json', sklearn_pipeline_path=pkl_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfSgdc()
+            new_model = ModelTfidfSgdc(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path='toto.pkl')
 
 

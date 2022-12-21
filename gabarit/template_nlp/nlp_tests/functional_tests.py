@@ -37,8 +37,8 @@ from test_template_nlp import utils
 from test_template_nlp.models_training import (model_tfidf_svm, model_tfidf_gbt, model_tfidf_lgbm, model_tfidf_sgdc,
                                                model_tfidf_dense, model_embedding_lstm, model_embedding_lstm_attention,
                                                model_embedding_lstm_structured_attention, model_embedding_lstm_gru_gpu,
-                                               model_embedding_cnn, model_pytorch_transformers,
-                                               utils_models, model_aggregation)
+                                               model_embedding_cnn, model_huggingface, model_aggregation, utils_models)
+
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
@@ -723,42 +723,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_TfidfSgdc failed')
 
-    def test12_Model_PytorchTransformer(self):
-        '''Test of the model Pytorch Transformer'''
-        transformers_path = utils.get_transformers_path()
-        transformer_path = os.path.join(transformers_path, 'flaubert', 'flaubert_small_cased')
-        if not os.path.exists(transformer_path):
-            print("WARNING : Can't test the Pytorch Transformer model -> can't find transformer")
-            print("How to use : download flaubert_small_cased in the folder of the module to test")
-            print("We ignore this test.")
-            return None
-        print('            ------------------ >     Test of the model Pytorch Transformer     /   Mono-class & Mono-label')
-
-        try:
-            # Load training file
-            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
-            test = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(test)
-            # Set model
-            model_name = 'pytorch_transformer_mono_class_mono_label'
-            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
-            test_model = model_pytorch_transformers.ModelPyTorchTransformers(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
-                                                                             batch_size=16, epochs=20, patience=20,
-                                                                             max_sequence_length=60,
-                                                                             transformer_name='flaubert/flaubert_small_cased',
-                                                                             tokenizer_special_tokens=tuple(),
-                                                                             padding="max_length", truncation=True,
-                                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
-
-            # Test it
-            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
-            filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_mono_class_mono_label(self, test_model)
-        except Exception:
-            self.fail('testModel_PytorchTransformer failed')
-
-    def test013_Model_EmbeddingLstmStructuredAttention(self):
+    def test012_Model_EmbeddingLstmStructuredAttention(self):
         '''Test of the model Embedding/LSTM/Attention + explainable'''
         print('            ------------------ >     Test of the model Embedding/LSTM/Attention + explainable     /   Mono-class & Mono-label')
 
@@ -782,6 +747,30 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             test_model_mono_class_mono_label(self, test_model)
         except Exception:
             self.fail('ModelEmbeddingLstmStructuredAttention failed')
+
+    def test13_Model_HuggingFace(self):
+        '''Test of the model HuggingFace'''
+        print('            ------------------ >     Test of the model HuggingFace     /   Mono-class & Mono-label')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+            # Set model
+            model_name = 'huggingface_mono_class_mono_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_huggingface.ModelHuggingFace(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            batch_size=16, epochs=2, patience=5,
+                                                            transformer_name='Geotrend/distilbert-base-fr-cased',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_mono_label(self, test_model)
+        except Exception:
+            self.fail('testModel_HuggingFace failed')
 
     def test14_Model_Aggregation(self):
         '''Test of the model Aggregation'''
@@ -887,7 +876,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
                 votes = sorted(votes, key=lambda x: x[1], reverse=True)
                 possible_classes = {vote[0] for vote in votes if vote[1]==votes[0][1]}
                 return [prediction for prediction in predictions if prediction in possible_classes][0]
-                
+
             test_model_5 = model_aggregation.ModelAggregation(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
@@ -1364,42 +1353,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_TfidfSgdc failed')
 
-    def test12_Model_PytorchTransformer(self):
-        '''Test of the model Pytorch Transformer'''
-        transformers_path = utils.get_transformers_path()
-        transformer_path = os.path.join(transformers_path, 'flaubert', 'flaubert_small_cased')
-        if not os.path.exists(transformer_path):
-            print("WARNING : Can't test the Pytorch Transformer model -> can't find transformer")
-            print("How to use : download flaubert_small_cased in the folder of the module to test")
-            print("We ignore this test.")
-            return None
-        print('            ------------------ >     Test of the model Pytorch Transformer     /   Mono-class & Multi-labels')
-
-        try:
-            # Load training file
-            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
-            test = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(test)
-            # Set model
-            model_name = 'pytorch_transformer_mono_class_multi_label'
-            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
-            test_model = model_pytorch_transformers.ModelPyTorchTransformers(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
-                                                                             batch_size=16, epochs=20, patience=20,
-                                                                             max_sequence_length=60,
-                                                                             transformer_name='flaubert/flaubert_small_cased',
-                                                                             tokenizer_special_tokens=tuple(),
-                                                                             padding="max_length", truncation=True,
-                                                                             multi_label=True, model_name=model_name, model_dir=model_dir)
-
-            # Test it
-            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
-            filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
-            test_model_mono_class_multi_label(self, test_model)
-        except Exception:
-            self.fail('testModel_PytorchTransformer failed')
-
-    def test13_Model_EmbeddingLstmStructuredAttention(self):
+    def test12_Model_EmbeddingLstmStructuredAttention(self):
         '''Test of the model Embedding/LSTM/Attention + explainable'''
         print('            ------------------ >     Test of the model Embedding/LSTM/Attention + explainable     /   Mono-class & Multi-labels')
 
@@ -1423,6 +1377,30 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             test_model_mono_class_multi_label(self, test_model)
         except Exception:
             self.fail('testModel_EmbeddingLstmStructuredAttention failed')
+
+    def test13_Model_HuggingFace(self):
+        '''Test of the model HuggingFace'''
+        print('            ------------------ >     Test of the model HuggingFace     /   Mono-class & Multi-labels')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+            # Set model
+            model_name = 'huggingface_mono_class_multi_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_huggingface.ModelHuggingFace(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            batch_size=16, epochs=2, patience=5,
+                                                            transformer_name='Geotrend/distilbert-base-fr-cased',
+                                                            multi_label=True, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
+                      filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
+            test_model_mono_class_multi_label(self, test_model)
+        except Exception:
+            self.fail('testModel_HuggingFace failed')
 
     def test14_Model_Aggregation(self):
         '''Test of the model Aggregation'''
@@ -2037,42 +2015,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_TfidfSgdc failed')
 
-    def test12_Model_PytorchTransformer(self):
-        '''Test of the model Pytorch Transformer'''
-        transformers_path = utils.get_transformers_path()
-        transformer_path = os.path.join(transformers_path, 'flaubert', 'flaubert_small_cased')
-        if not os.path.exists(transformer_path):
-            print("WARNING : Can't test the Pytorch Transformer model -> can't find transformer")
-            print("How to use : download flaubert_small_cased in the folder of the module to test")
-            print("We ignore this test.")
-            return None
-        print('            ------------------ >     Test of the model Pytorch Transformer     /   Multi-classes & Mono-label')
-
-        try:
-            # Load training file
-            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
-            test = importlib.util.module_from_spec(spec)
-            spec.loader.exec_module(test)
-            # Set model
-            model_name = 'pytorch_transformer_multi_class_mono_label'
-            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
-            os.makedirs(model_dir)
-            test_model = model_pytorch_transformers.ModelPyTorchTransformers(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
-                                                                             batch_size=16, epochs=20, patience=20,
-                                                                             max_sequence_length=60,
-                                                                             transformer_name='flaubert/flaubert_small_cased',
-                                                                             tokenizer_special_tokens=tuple(),
-                                                                             padding="max_length", truncation=True,
-                                                                             multi_label=False, model_name=model_name, model_dir=model_dir)
-
-            # Test it
-            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
-            filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
-            test_model_multi_class_mono_label(self, test_model)
-        except Exception:
-            self.fail('testModel_PytorchTransformer failed')
-
-    def test13_Model_EmbeddingLstmStructuredAttention(self):
+    def test12_Model_EmbeddingLstmStructuredAttention(self):
         '''Test of the model Embedding/LSTM/Attention + explainable'''
         print('            ------------------ >     Test of the model Embedding/LSTM/Attention + explainable     /   Multi-classes & Mono-label')
 
@@ -2096,6 +2039,30 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             test_model_multi_class_mono_label(self, test_model)
         except Exception:
             self.fail('testModel_EmbeddingLstmStructuredAttention failed')
+
+    def test13_Model_HuggingFace(self):
+        '''Test of the model HuggingFace'''
+        print('            ------------------ >     Test of the model HuggingFace     /   Multi-classes & Mono-label')
+
+        try:
+            # Load training file
+            spec = importlib.util.spec_from_file_location("test", f'{full_path_lib}/test_template_nlp-scripts/2_training.py')
+            test = importlib.util.module_from_spec(spec)
+            spec.loader.exec_module(test)
+            # Set model
+            model_name = 'huggingface_multi_class_mono_label'
+            model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
+            os.makedirs(model_dir)
+            test_model = model_huggingface.ModelHuggingFace(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+                                                            batch_size=16, epochs=2, patience=5,
+                                                            transformer_name='Geotrend/distilbert-base-fr-cased',
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+            # Test it
+            test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
+                      filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
+            test_model_multi_class_mono_label(self, test_model)
+        except Exception:
+            self.fail('testModel_HuggingFace failed')
 
     def test14_Model_Aggregation(self):
         '''Test of the model Aggregation'''

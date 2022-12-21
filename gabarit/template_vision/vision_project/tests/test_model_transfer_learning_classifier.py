@@ -55,7 +55,10 @@ class ModelMockTransferLearningClassifier(ModelTransferLearningClassifier):
     def __init__(self, **kwargs) -> None:
         super().__init__(**kwargs)
     def _get_model(self) -> Any:
-        '''Gets a model structure'''
+        '''Gets a model structure - returns the instance model instead if already defined'''
+        # Return model if already set
+        if self.model is not None:
+            return self.model
         input_shape = (self.width, self.height, self.depth)
         num_classes = len(self.list_classes)
         input_layer = tf.keras.layers.Input(shape=input_shape)
@@ -1822,6 +1825,7 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
         # First test with the real model, we mock the rest in order to speed up the process
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
         remove_dir(model_dir)
 
         # Set vars
@@ -1850,7 +1854,7 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
         conf_path = os.path.join(model.model_dir, "configurations.json")
         hdf5_path = os.path.join(model.model_dir, "best.hdf5")
         preprocess_input_path = os.path.join(model.model_dir, "preprocess_input.pkl")
-        new_model = ModelTransferLearningClassifier()
+        new_model = ModelTransferLearningClassifier(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path,
                                          preprocess_input_path=preprocess_input_path)
         # Tests
@@ -1895,7 +1899,7 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
         conf_path = os.path.join(model.model_dir, "configurations.json")
         hdf5_path = os.path.join(model.model_dir, "best.hdf5")
         preprocess_input_path = os.path.join(model.model_dir, "preprocess_input.pkl")
-        new_model = ModelMockTransferLearningClassifier()
+        new_model = ModelMockTransferLearningClassifier(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path,
                                          preprocess_input_path=preprocess_input_path)
         # Tests
@@ -1941,7 +1945,7 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
         conf_path = os.path.join(model.model_dir, "configurations.json")
         hdf5_path = os.path.join(model.model_dir, "best.hdf5")
         preprocess_input_path = os.path.join(model.model_dir, "preprocess_input.pkl")
-        new_model = ModelMockTransferLearningClassifier()
+        new_model = ModelMockTransferLearningClassifier(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path,
                                          preprocess_input_path=preprocess_input_path)
         # Tests
@@ -1987,7 +1991,7 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
         conf_path = os.path.join(model.model_dir, "configurations.json")
         hdf5_path = os.path.join(model.model_dir, "best.hdf5")
         preprocess_input_path = os.path.join(model.model_dir, "preprocess_input.pkl")
-        new_model = ModelMockTransferLearningClassifier()
+        new_model = ModelMockTransferLearningClassifier(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path,
                                          preprocess_input_path=preprocess_input_path)
         # Tests
@@ -2027,15 +2031,15 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
         ############################################
 
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTransferLearningClassifier()
+            new_model = ModelTransferLearningClassifier(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path='toto.json', hdf5_path=hdf5_path,
                                              preprocess_input_path=preprocess_input_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTransferLearningClassifier()
+            new_model = ModelTransferLearningClassifier(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path='toto.pkl',
                                              preprocess_input_path=preprocess_input_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTransferLearningClassifier()
+            new_model = ModelTransferLearningClassifier(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path,
                                              preprocess_input_path='toto.pkl')
 

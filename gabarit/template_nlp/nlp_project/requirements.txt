@@ -6,16 +6,12 @@ pandas==1.4.4; python_version >= "3.8"
 
 # Models
 tensorflow==2.10.0
+torch==1.12.1  # IF you want to use torch with GPU : pip install torch==1.12.1 --extra-index-url https://download.pytorch.org/whl/cu116
+transformers==4.23.0  # Neeed >= 4.23.0 to support local cache on windows
+datasets==2.6.1
 scikit_learn==1.0.2; python_version < "3.8"
 scikit_learn==1.1.2; python_version >= "3.8"
 lightgbm==3.3.2
-
-# Torch
-# If GPU with cuda 11.1 : replace +cpu by +cu111
---find-links https://download.pytorch.org/whl/torch_stable.html
-torch==1.8.1+cpu
-transformers==4.3.2
-pytorch_lightning==1.1.8
 
 # NLP
 words-n-fun==1.5.2

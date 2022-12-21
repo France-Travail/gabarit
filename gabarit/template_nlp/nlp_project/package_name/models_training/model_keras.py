@@ -234,9 +234,8 @@ class ModelKeras(ModelClass):
         # Fit
         ##############################################
 
-        # Get model (if already fitted we do not load a new one)
-        if not self.trained:
-            self.model = self._get_model()
+        # Get model (if already fitted, _get_model returns instance model)
+        self.model = self._get_model()
 
         # Get callbacks (early stopping & checkpoint)
         callbacks = self._get_callbacks()
@@ -448,7 +447,7 @@ class ModelKeras(ModelClass):
         return pad_sequences(sequences, maxlen=maxlen, padding=padding, truncating=truncating)
 
     def _get_model(self) -> Model:
-        '''Gets a model structure
+        '''Gets a model structure - returns the instance model instead if already defined
 
         Returns:
             (Model): a Keras model
@@ -640,7 +639,7 @@ class ModelKeras(ModelClass):
 
         # Save strategy :
         # - best.hdf5 already saved in fit()
-        # - can't pickle keras model, so we drop it, save, and reload it
+        # - We don't want it in the .pkl as it is heavy & already saved
         keras_model = self.model
         self.model = None
         super().save(json_data=json_data)

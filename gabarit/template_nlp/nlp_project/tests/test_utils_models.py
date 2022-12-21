@@ -29,7 +29,7 @@ import pandas as pd
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
 from {{package_name}}.models_training import utils_models
-from {{package_name}}.models_training import model_tfidf_svm, model_embedding_lstm
+from {{package_name}}.models_training import model_tfidf_svm, model_embedding_lstm, model_huggingface
 
 # Disable logging
 import logging
@@ -242,6 +242,8 @@ class UtilsModelsTests(unittest.TestCase):
         model.fit(x_train, y_train)
         model.save()
 
+        # TODO: do the same for an HuggingFace model !
+
         # Reload
         new_model, new_config = utils_models.load_model(model_dir='test_model_dl')
         # We perform some tests
@@ -257,7 +259,34 @@ class UtilsModelsTests(unittest.TestCase):
         self.assertEqual([list(_) for _ in new_model.predict_proba(['test', 'toto', 'a'])], [list(_) for _ in model.predict_proba(['test', 'toto', 'a'])])
         remove_dir(model_dir)
 
-        # TODO: test pytorch models ?
+        # We do the same thing on a hugging face model
+        model_dir = os.path.join(utils.get_models_path(), 'test_model_hf')
+        remove_dir(model_dir)
+        model_name = 'test_model_hf_name'
+        epochs = 2
+        batch_size = 8
+        transformer_name = 'Geotrend/distilbert-base-fr-cased'
+        # TODO: won't work if transformer not loaded & no internet access
+        model = model_huggingface.ModelHuggingFace(model_dir=model_dir, model_name=model_name,
+                                                   epochs=epochs, batch_size=batch_size,
+                                                   transformer_name=transformer_name)
+        model.fit(x_train, y_train)
+        model.save()
+
+        # Reload
+        new_model, new_config = utils_models.load_model(model_dir='test_model_hf')
+        # We perform some tests
+        self.assertEqual(new_config['model_name'], model_name)
+        self.assertEqual(new_config['epochs'], epochs)
+        self.assertEqual(new_config['batch_size'], batch_size)
+        self.assertEqual(new_config['transformer_name'], transformer_name)
+        self.assertEqual(new_model.model_name, model_name)
+        self.assertEqual(new_model.epochs, epochs)
+        self.assertEqual(new_model.batch_size, batch_size)
+        self.assertEqual(new_model.transformer_name, transformer_name)
+        self.assertEqual(list(new_model.predict(['test', 'toto', 'a'])), list(model.predict(['test', 'toto', 'a'])))
+        self.assertEqual([list(_) for _ in new_model.predict_proba(['test', 'toto', 'a'])], [list(_) for _ in model.predict_proba(['test', 'toto', 'a'])])
+        remove_dir(model_dir)
 
         # Check errors
         with self.assertRaises(FileNotFoundError):

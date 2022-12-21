@@ -430,6 +430,7 @@ class ModelCnnClassifierTests(unittest.TestCase):
         '''Test of the method {{package_name}}.models_training.classifiers.model_cnn_classifier.ModelCnnClassifier.reload_from_standalone'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
         remove_dir(model_dir)
 
         # Set vars
@@ -458,7 +459,7 @@ class ModelCnnClassifierTests(unittest.TestCase):
         conf_path = os.path.join(model.model_dir, "configurations.json")
         hdf5_path = os.path.join(model.model_dir, "best.hdf5")
         preprocess_input_path = os.path.join(model.model_dir, "preprocess_input.pkl")
-        new_model = ModelCnnClassifier()
+        new_model = ModelCnnClassifier(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path,
                                          preprocess_input_path=preprocess_input_path)
         # Tests
@@ -499,7 +500,7 @@ class ModelCnnClassifierTests(unittest.TestCase):
         conf_path = os.path.join(model.model_dir, "configurations.json")
         hdf5_path = os.path.join(model.model_dir, "best.hdf5")
         preprocess_input_path = os.path.join(model.model_dir, "preprocess_input.pkl")
-        new_model = ModelCnnClassifier()
+        new_model = ModelCnnClassifier(model_dir=model_dir_2)
         new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path,
                                          preprocess_input_path=preprocess_input_path)
         # Tests
@@ -534,15 +535,15 @@ class ModelCnnClassifierTests(unittest.TestCase):
         ############################################
 
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelCnnClassifier()
+            new_model = ModelCnnClassifier(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path='toto.json', hdf5_path=hdf5_path,
                                              preprocess_input_path=preprocess_input_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelCnnClassifier()
+            new_model = ModelCnnClassifier(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path='toto.pkl',
                                              preprocess_input_path=preprocess_input_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelCnnClassifier()
+            new_model = ModelCnnClassifier(model_dir=model_dir_2)
             new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path,
                                              preprocess_input_path='toto.pkl')
 

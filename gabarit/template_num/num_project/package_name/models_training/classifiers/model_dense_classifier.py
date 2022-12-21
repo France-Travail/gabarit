@@ -51,11 +51,15 @@ class ModelDenseClassifier(ModelClassifierMixin, ModelKeras):
         self.logger = logging.getLogger(__name__)
 
     def _get_model(self) -> Model:
-        '''Gets a model structure
+        '''Gets a model structure - returns the instance model instead if already defined
 
         Returns:
             (Model): a Keras model
         '''
+        # Return model if already set
+        if self.model is not None:
+            return self.model
+
         # Get input/output dimensions
         input_dim = len(self.x_col)
         num_classes = len(self.list_classes)

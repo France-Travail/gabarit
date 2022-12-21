@@ -26,7 +26,6 @@
 # - trained_needed -> Decorator to ensure a model has already been trained
 # - get_data_path -> Returns the path of the data folder
 # - get_models_path -> Returns the path of the models folder
-# - get_transformers_path -> Returns the path to the transformers folder
 # - get_ressources_path -> Returns the path of the ressources folder
 # - get_package_version -> Returns the current package version
 # - find_folder_path -> Find a folder in a base folder and its subfolders.
@@ -239,12 +238,11 @@ def get_models_path() -> str:
         os.mkdir(dir_path)
     return os.path.abspath(dir_path)
 
-
 def get_transformers_path() -> str:
     '''Returns the path to the transformers folder
 
     Returns:
-        str: Path of the models folder
+        str: Path of the transformers folder
     '''
     if DIR_PATH is None:
         dir_path = os.path.join(os.path.dirname(os.path.dirname(os.path.realpath(__file__))), '{{package_name}}-transformers')
@@ -253,7 +251,6 @@ def get_transformers_path() -> str:
     if not os.path.isdir(dir_path):
         os.mkdir(dir_path)
     return os.path.abspath(dir_path)
-
 
 def get_ressources_path() -> str:
     '''Returns the path to the ressources folder

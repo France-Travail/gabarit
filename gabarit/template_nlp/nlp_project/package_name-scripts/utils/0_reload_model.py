@@ -39,12 +39,10 @@ from {{package_name}}.models_training import (model_tfidf_dense,
                                               model_embedding_lstm_attention,
                                               model_embedding_lstm_structured_attention,
                                               model_embedding_lstm_gru_gpu,
-                                              model_pytorch_light,
-                                              model_pytorch_transformers,
+                                              model_huggingface,
                                               model_aggregation,
                                               utils_models,
-                                              utils_deep_keras,
-                                              utils_deep_torch)
+                                              utils_deep_keras)
 
 # Get logger
 logger = logging.getLogger('{{package_name}}.0_reload_model')
@@ -53,8 +51,8 @@ logger = logging.getLogger('{{package_name}}.0_reload_model')
 def main(model_dir: str, config_file: str = 'configurations.json',
          sklearn_pipeline_file: str = 'sklearn_pipeline_standalone.pkl',
          weights_file: str = 'best.hdf5', tokenizer_file: str = 'embedding_tokenizer.pkl',
-         tfidf_file: str = 'tfidf_standalone.pkl', checkpoint_path: str = 'best_model.ckpt',
-         torch_dir: Union[str, None] = None, aggregation_function_file: str = 'aggregation_function.pkl') -> None:
+         tfidf_file: str = 'tfidf_standalone.pkl', hf_model_dir: str = 'hf_model',
+         hf_tokenizer_dir: str = 'hf_tokenizer', aggregation_function_file: str = 'aggregation_function.pkl') -> None:
     '''Reloads a model
 
     The idea here is to reload a model that was trained on another package version.
@@ -68,8 +66,8 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         weights_file (str): Neural Network weights file name (keras models)
         tokenizer_file (str): Tokenizer file name (models with embeddings)
         tfidf_file (str): TFIDF file name (models with tfidf)
-        checkpoint_path (str): Pytorch lightning checkpoint name (models pytorch)
-        torch_dir (str): Pytorch lightning directory name (models pytorch)
+        hf_model_dir (str): HuggingFace model folder
+        hf_tokenizer_dir (str): HuggingFace tokenizer folder
         aggregation_function_path (str): aggregation_function file name (model aggregation)
     Raises:
         FileNotFoundError: If model can't be found
@@ -109,8 +107,7 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'model_embedding_lstm_attention': model_embedding_lstm_attention.ModelEmbeddingLstmAttention,
         'model_embedding_lstm_structured_attention': model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention,
         'model_embedding_lstm_gru_gpu': model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu,
-        'model_pytorch_light': model_pytorch_light.ModelPyTorchTransformersLight,
-        'model_pytorch_transformers': model_pytorch_transformers.ModelPyTorchTransformers,
+        'model_huggingface': model_huggingface.ModelHuggingFace,
         'model_aggregation': model_aggregation.ModelAggregation,
     }
     model_type = configs['model_name']
@@ -132,8 +129,8 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'hdf5_path': os.path.join(model_path, weights_file) if weights_file is not None else None,
         'tokenizer_path': os.path.join(model_path, tokenizer_file) if tokenizer_file is not None else None,
         'tfidf_path': os.path.join(model_path, tfidf_file) if tfidf_file is not None else None,
-        'checkpoint_path': os.path.join(model_path, checkpoint_path) if checkpoint_path is not None else None,
-        'torch_dir': os.path.join(model_path, torch_dir) if torch_dir is not None else None,
+        'hf_model_dir_path': os.path.join(model_path, hf_model_dir) if hf_model_dir is not None else None,
+        'hf_tokenizer_dir_path': os.path.join(model_path, hf_tokenizer_dir) if hf_tokenizer_dir is not None else None,
         'aggregation_function_path': os.path.join(model_path, aggregation_function_file) if aggregation_function_file is not None else None,
     }
     model.reload_from_standalone(**files_dict)
@@ -154,7 +151,8 @@ def main(model_dir: str, config_file: str = 'configurations.json',
     # Reminder: the model's save function prioritize the json_data arg over it's default values
     # hence, it helps with some parameters such as `_get_model`
     list_keys_json_data = ['filename', 'filename_valid', 'min_rows', 'preprocess_str',
-                           'fit_time', 'date', '_get_model', '_get_learning_rate_scheduler', 'custom_objects']
+                           'fit_time', 'date', '_get_model', '_get_learning_rate_scheduler',
+                           '_get_tokenizer', 'custom_objects']
     json_data = {key: configs.get(key, None) for key in list_keys_json_data}
 
     # Add training version
@@ -181,11 +179,11 @@ if __name__ == '__main__':
     parser.add_argument('-w', '--weights_file', default='best.hdf5', help="Neural Network weights file name (keras models)")
     parser.add_argument('--tokenizer_file', default='embedding_tokenizer.pkl', help="Tokenizer file name (models with embeddings)")
     parser.add_argument('--tfidf_file', default='tfidf_standalone.pkl', help="TFIDF file name (models with tfidf)")
-    parser.add_argument('--checkpoint_path', default='best_model.ckpt', help="Pytorch lightning checkpoint name (models pytorch)")
-    parser.add_argument('--torch_dir', default=None, help="Pytorch lightning directory name (models pytorch)")
+    parser.add_argument('--hf_model_dir', default='hf_model', help="HuggingFace model folder name")
+    parser.add_argument('--hf_tokenizer_dir', default='hf_tokenizer', help="HuggingFace tokenizer folder name")
     parser.add_argument('--aggregation_function_file', default='aggregation_function.pkl', help="aggregation_function_file file name (models aggregation)")
     args = parser.parse_args()
     main(model_dir=args.model_dir, config_file=args.config_file, weights_file=args.weights_file,
          sklearn_pipeline_file=args.sklearn_pipeline_file, tokenizer_file=args.tokenizer_file,
-         tfidf_file=args.tfidf_file, checkpoint_path=args.checkpoint_path, torch_dir=args.torch_dir,
+         tfidf_file=args.tfidf_file, hf_model_dir=args.hf_model_dir, hf_tokenizer_dir=args.hf_tokenizer_dir,
          aggregation_function_file=args.aggregation_function)
