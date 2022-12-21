@@ -9,7 +9,6 @@ __pycache__
 # Unignore .dvc files
 !{{package_name}}-data/**/*.dvc
 {{package_name}}-models/**
-{{package_name}}-transformers/**
 {{package_name}}-pipelines/**
 **/*egg-info*
 nosetests.xml
@@ -18,5 +17,6 @@ nosetests.xml
 local
 venv**
 **/ml_runs/**
+**/mlruns/**
 dist/**
 build/**

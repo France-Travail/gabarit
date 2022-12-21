@@ -16,5 +16,6 @@ nosetests.xml
 local
 venv**
 **/ml_runs/**
+**/mlruns/**
 dist/**
 build/**
