@@ -293,7 +293,7 @@ def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
     hf_model_dir = os.path.join(model_path, 'hf_model')
     hf_tokenizer_dir = os.path.join(model_path, 'hf_tokenizer')
 
-    # TODO : we should probably have a single function `load_self` and let the model manage it's reload
+    # TODO : we should probably have a single function `load_self` and let the model manage its reload
     # Check for keras model
     if os.path.exists(hdf5_path):
         model.model = model.reload_model(hdf5_path)

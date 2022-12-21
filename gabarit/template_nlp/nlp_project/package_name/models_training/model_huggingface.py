@@ -57,8 +57,6 @@ class ModelHuggingFace(ModelClass):
 
     _default_name = 'model_huggingface'
 
-    # Not implemented :
-    # -> reload_from_standalone
 
     # TODO: perhaps it would be smarter to have this class behaving as the abstract class for all the model types
     # implemented on the HF hub and to create model specific subclasses.
@@ -79,6 +77,7 @@ class ModelHuggingFace(ModelClass):
             transformer_params (dict): Parameters used by the Transformer model.
                 The purpose of this dictionary is for the user to use it as they wants in the _get_model function
                 This parameter was initially added in order to do an hyperparameters search
+            trainer_params (dict): A set of parameters to be use by the Trainer. It is recommended to use the default params (leave this empty).
         '''
         # TODO: learning rate should be an attribute !
         # Init.

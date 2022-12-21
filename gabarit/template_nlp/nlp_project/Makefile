@@ -31,7 +31,7 @@ endif
 
 help: ## This help.
 	@awk 'BEGIN {FS = ":.*?## "} /^[a-zA-Z0-9_-]+:.*?## / {printf "\033[36m%-30s\033[0m %s\n", $$1, $$2}' $(MAKEFILE_LIST)
- 
+
 .DEFAULT_GOAL := help
 
 
@@ -47,6 +47,7 @@ ifndef VIRTUAL_ENV
 endif
 	mkdir -p ./{{package_name}}-models
 	mkdir -p ./{{package_name}}-data/sources
+	mkdir -p ./{{package_name}}-transformers
 	python -m pip install{% if pip_trusted_host is not none %} --trusted-host {{pip_trusted_host}}{% endif %}{% if pip_index_url is not none %} --index-url {{pip_index_url}}{% endif %} --upgrade pip
 	pip install{% if pip_trusted_host is not none %} --trusted-host {{pip_trusted_host}}{% endif %}{% if pip_index_url is not none %} --index-url {{pip_index_url}}{% endif %} -r requirements.txt;\
 	python setup.py develop{% if dvc_config_ok is true %}
