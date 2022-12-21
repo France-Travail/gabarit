@@ -42,6 +42,7 @@ from transformers import (AutoModelForSequenceClassification, TrainingArguments,
                           TrainerCallback, EarlyStoppingCallback)
 
 from {{package_name}} import utils
+from {{package_name}}.models_training import hf_metrics
 from {{package_name}}.models_training.model_class import ModelClass
 
 sns.set(style="darkgrid")
@@ -476,10 +477,10 @@ class ModelHuggingFace(ModelClass):
             dict: dictionnary with computed metrics
         '''
         # Load metrics
-        metric_accuracy = load_metric(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hf_metrics", "accuracy.py"))
-        metric_precision = load_metric(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hf_metrics", "precision.py"))
-        metric_recall = load_metric(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hf_metrics", "recall.py"))
-        metric_f1 = load_metric(os.path.join(os.path.dirname(os.path.abspath(__file__)), "hf_metrics", "f1.py"))
+        metric_accuracy = load_metric(hf_metrics.accuracy.__file__)
+        metric_precision = load_metric(hf_metrics.precision.__file__)
+        metric_recall = load_metric(hf_metrics.recall.__file__)
+        metric_f1 = load_metric(hf_metrics.f1.__file__)
         # Get predictions
         logits, labels = eval_pred
         predictions = np.argmax(logits, axis=-1)
