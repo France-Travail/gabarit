@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Model embedding + LSTM + Attention
+## Model embedding + LSTM
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,16 +20,11 @@
 # - ModelEmbeddingLstm -> Model for predictions via embedding + LSTM
 
 
-# ** EXPERIMENTAL **
-# ** EXPERIMENTAL **
-# ** EXPERIMENTAL **
-
-
 import os
 import json
 import pickle
-import logging
 import shutil
+import logging
 import numpy as np
 import seaborn as sns
 from typing import Union, Any, List, Callable
@@ -39,25 +34,26 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.layers import (Dense, Input, Embedding, GlobalMaxPooling1D,
-                                     GlobalAveragePooling1D, BatchNormalization, LSTM,
-                                     GRU, SpatialDropout1D, Bidirectional, concatenate)
+                                     GlobalAveragePooling1D, ELU, BatchNormalization, LSTM,
+                                     SpatialDropout1D, Bidirectional, Concatenate, GRU)
 
-from {{package_name}} import utils
-from {{package_name}}.models_training import utils_deep_keras
-from {{package_name}}.models_training.model_keras import ModelKeras
-from {{package_name}}.models_training.utils_deep_keras import AttentionWithContext
+from . import utils_deep_keras
+from .model_keras import ModelKeras
 
 sns.set(style="darkgrid")
 
 
-class ModelEmbeddingLstmAttention(ModelKeras):
-    '''Model for predictions via embedding + LSTM + Attention'''
+# TODO: No need for the suffix GPU with the version 2.3 of tensorflow ...
 
-    _default_name = 'model_embedding_lstm_attention'
+
+class ModelEmbeddingLstmGruGpu(ModelKeras):
+    '''Model for predictions via embedding + LSTM/GRU with use of a GPU'''
+
+    _default_name = 'model_embedding_lstm_gru_gpu'
 
     def __init__(self, max_sequence_length: int = 200, max_words: int = 100000,
                  padding: str = 'pre', truncating: str = 'post',
-                 tokenizer_filters: str = "’!#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n\r\'\"", **kwargs) -> None:
+                 tokenizer_filters="’!#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n\r\'\"", **kwargs) -> None:
         '''Initialization of the class (see ModelClass & ModelKeras for more arguments)
 
         Kwargs:
@@ -138,13 +134,10 @@ class ModelEmbeddingLstmAttention(ModelKeras):
         # Get model
         num_classes = len(self.list_classes)
         # Process
-        LSTM_UNITS = 100
+        LSTM_UNITS = 60
+        GRU_UNITS = 120
         words = Input(shape=(self.max_sequence_length,))
-        # trainable=True to finetune the model
-        # words = Input(shape=(None,))
-        # x = Embedding(*embedding_matrix.shape, weights=[embedding_matrix], trainable=False)(words)
         x = Embedding(input_dim, embedding_size, weights=[embedding_matrix], trainable=False)(words)
-        x = BatchNormalization(momentum=0.9)(x)
         x = SpatialDropout1D(0.5)(x)
         # LSTM and GRU will default to CuDNNLSTM and CuDNNGRU if all conditions are met:
         # - activation = 'tanh'
@@ -155,28 +148,37 @@ class ModelEmbeddingLstmAttention(ModelKeras):
         # - Inputs, if masked, are strictly right-padded
         # - reset_after = True (GRU only)
         # /!\ https://stackoverflow.com/questions/60468385/is-there-cudnnlstm-or-cudnngru-alternative-in-tensorflow-2-0
-        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True))(x)  # returns a sequence of vectors of dimension 32
-        x = Bidirectional(GRU(LSTM_UNITS, return_sequences=True))(x)  # returns a sequence of vectors of dimension 32
+        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True))(x)
+        x = BatchNormalization(momentum=0.9)(x)
+        x, state_h, state_c = Bidirectional(GRU(GRU_UNITS, return_sequences=True, return_state=True))(x)
+        x = BatchNormalization(momentum=0.9)(x)
+        state_h = BatchNormalization(momentum=0.9)(state_h)
+        state_c = BatchNormalization(momentum=0.9)(state_c)
 
-        att = AttentionWithContext()(x)
-        avg_pool1 = GlobalAveragePooling1D()(x)
-        max_pool1 = GlobalMaxPooling1D()(x)
+        pools = []
+        pools.append(GlobalAveragePooling1D()(x))
+        pools.append(state_h)
+        pools.append(state_c)
+        pools.append(GlobalMaxPooling1D()(x))
+        x = Concatenate()(pools)
 
-        x = concatenate([att, avg_pool1, max_pool1])
+        x = Dense(128, activation=None, kernel_initializer="he_uniform")(x)
+        x = BatchNormalization(momentum=0.9)(x)
+        x = ELU(alpha=1.0)(x)
+
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
         out = Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform')(x)
 
         # Compile model
         model = Model(inputs=words, outputs=[out])
-        lr = self.keras_params['learning_rate'] if 'learning_rate' in self.keras_params.keys() else 0.001
+        lr = self.keras_params['learning_rate'] if 'learning_rate' in self.keras_params.keys() else 0.01
         decay = self.keras_params['decay'] if 'decay' in self.keras_params.keys() else 0.0
         self.logger.info(f"Learning rate: {lr}")
         self.logger.info(f"Decay: {decay}")
         optimizer = Adam(lr=lr, decay=decay)
         loss = utils_deep_keras.f1_loss if self.multi_label else 'categorical_crossentropy'
-        # loss = 'binary_crossentropy' if self.multi_label else 'categorical_crossentropy'  # utils_deep_keras.f1_loss also possible if multi-labels
-        metrics: List[Union[str, Callable]] = ['accuracy'] if not self.multi_label else ['categorical_accuracy', utils_deep_keras.f1, utils_deep_keras.precision, utils_deep_keras.recall]
+        metrics: List[Union[str, Callable]] = ['accuracy'] if not self.multi_label else ['categorical_accuracy', 'categorical_crossentropy', utils_deep_keras.f1, utils_deep_keras.precision, utils_deep_keras.recall, utils_deep_keras.f1_loss]
         model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
         if self.logger.getEffectiveLevel() < logging.ERROR:
             model.summary()
@@ -268,10 +270,11 @@ class ModelEmbeddingLstmAttention(ModelKeras):
         self.nb_fit = configs.get('nb_fit', 1)  # Consider one unique fit by default
         self.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save',
+        for attribute in ['x_col', 'y_col',
+                          'list_classes', 'dict_classes', 'multi_label', 'level_save',
                           'batch_size', 'epochs', 'validation_split', 'patience',
-                          'embedding_name', 'max_sequence_length', 'max_words', 'padding',
-                          'truncating', 'tokenizer_filters', 'keras_params']:
+                          'keras_params', 'embedding_name', 'max_sequence_length',
+                          'max_words', 'padding', 'truncating', 'tokenizer_filters']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload model

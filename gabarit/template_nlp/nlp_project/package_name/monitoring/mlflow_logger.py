@@ -28,7 +28,7 @@ import logging
 import pandas as pd
 from typing import Union
 
-from {{package_name}} import utils
+from .. import utils
 
 # Deactivation of GIT warning for mlflow
 os.environ["GIT_PYTHON_REFRESH"] = "quiet"

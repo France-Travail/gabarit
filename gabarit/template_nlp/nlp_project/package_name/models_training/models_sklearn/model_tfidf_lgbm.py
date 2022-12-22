@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Model TFIDF GBT
+## Model TFIDF LGBM
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,8 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelTfidfGbt -> Model for predictions via TF-IDF + GBT
+# - ModelTfidfLgbm -> Model for predictions via TF-IDF + LGBM
+
 
 import os
 import json
@@ -26,27 +27,28 @@ import logging
 import numpy as np
 from typing import Union
 
+from lightgbm import LGBMClassifier
 from sklearn.pipeline import Pipeline
 from sklearn.multioutput import MultiOutputClassifier
-from sklearn.ensemble import GradientBoostingClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 
-from {{package_name}} import utils
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
+from ... import utils
+from .model_pipeline import ModelPipeline
 
 
-class ModelTfidfGbt(ModelPipeline):
-    '''Model for predictions via TF-IDF + GBT'''
+class ModelTfidfLgbm(ModelPipeline):
+    '''Model for predictions via TF-IDF + LGBM'''
 
-    _default_name = 'model_tfidf_gbt'
+    _default_name = 'model_tfidf_lgbm'
 
-    def __init__(self, tfidf_params: Union[dict, None] = None, gbt_params: Union[dict, None] = None, multiclass_strategy: Union[str, None] = None, **kwargs) -> None:
+    def __init__(self, tfidf_params: Union[dict, None] = None, lgbm_params: Union[dict, None] = None,
+                 multiclass_strategy: Union[str, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelPipeline & ModelClass for more arguments)
 
         Kwargs:
             tfidf_params (dict) : Parameters for the tfidf
-            gbt_params (dict) : parameters for the gbt
+            lgbm_params (dict) : Parameters for the lgbm
             multiclass_strategy (str): Multi-classes strategy, 'ovr' (OneVsRest), or 'ovo' (OneVsOne). If None, use the default of the algorithm.
         Raises:
             ValueError: If multiclass_strategy is not 'ovo', 'ovr' or None
@@ -63,25 +65,25 @@ class ModelTfidfGbt(ModelPipeline):
         if tfidf_params is None:
             tfidf_params = {}
         self.tfidf = TfidfVectorizer(**tfidf_params)
-        if gbt_params is None:
-            gbt_params = {}
-        self.gbt = GradientBoostingClassifier(**gbt_params)
+        if lgbm_params is None:
+            lgbm_params = {}
+        self.lgbm = LGBMClassifier(**lgbm_params)
         self.multiclass_strategy = multiclass_strategy
 
         # Can't do multi-labels / multi-classes
         if not self.multi_label:
             # If not multi-classes : no impact
             if multiclass_strategy == 'ovr':
-                self.pipeline = Pipeline([('tfidf', self.tfidf), ('gbt', OneVsRestClassifier(self.gbt))])
+                self.pipeline = Pipeline([('tfidf', self.tfidf), ('lgbm', OneVsRestClassifier(self.lgbm))])
             elif multiclass_strategy == 'ovo':
-                self.pipeline = Pipeline([('tfidf', self.tfidf), ('gbt', OneVsOneClassifier(self.gbt))])
+                self.pipeline = Pipeline([('tfidf', self.tfidf), ('lgbm', OneVsOneClassifier(self.lgbm))])
             else:
-                self.pipeline = Pipeline([('tfidf', self.tfidf), ('gbt', self.gbt)])
+                self.pipeline = Pipeline([('tfidf', self.tfidf), ('lgbm', self.lgbm)])
 
         # Manage multi-labels -> add a MultiOutputClassifier
-        # The GBT does not natively support multi-labels
+        # The LGBM does not natively support multi-labels
         if self.multi_label:
-            self.pipeline = Pipeline([('tfidf', self.tfidf), ('gbt', MultiOutputClassifier(self.gbt))])
+            self.pipeline = Pipeline([('tfidf', self.tfidf), ('lgbm', MultiOutputClassifier(self.lgbm))])
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
@@ -151,8 +153,7 @@ class ModelTfidfGbt(ModelPipeline):
 
         # Load confs
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
-            configs = json.load(f)
-        # Can't set int as keys in json, so need to cast it after reloading
+            configs = json.load(f)  # Can't set int as keys in json, so need to cast it after reloading
         # dict_classes keys are always ints
         if 'dict_classes' in configs.keys():
             configs['dict_classes'] = {int(k): v for k, v in configs['dict_classes'].items()}
@@ -179,9 +180,9 @@ class ModelTfidfGbt(ModelPipeline):
 
         # Manage multi-labels or multi-classes
         if not self.multi_label and self.multiclass_strategy is None:
-            self.gbt = self.pipeline['gbt']
+            self.lgbm = self.pipeline['lgbm']
         else:
-            self.gbt = self.pipeline['gbt'].estimator
+            self.lgbm = self.pipeline['lgbm'].estimator
 
 
 if __name__ == '__main__':

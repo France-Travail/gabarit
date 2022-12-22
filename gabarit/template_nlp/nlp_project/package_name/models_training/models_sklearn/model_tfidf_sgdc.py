@@ -34,8 +34,8 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 
-from {{package_name}} import utils
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
+from ... import utils
+from .model_pipeline import ModelPipeline
 
 
 class ModelTfidfSgdc(ModelPipeline):

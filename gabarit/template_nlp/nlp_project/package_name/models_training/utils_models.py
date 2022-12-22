@@ -49,8 +49,8 @@ from typing import Union, Tuple, Callable, Any, Dict
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
 
-from {{package_name}} import utils
-from {{package_name}}.preprocessing import preprocess
+from .. import utils
+from ..preprocessing import preprocess
 
 
 # Get logger

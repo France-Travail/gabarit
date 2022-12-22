@@ -38,19 +38,25 @@ from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
 from {{package_name}}.monitoring.mlflow_logger import MLflowLogger
 from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training import (model_tfidf_dense,
-                                              model_tfidf_gbt,
-                                              model_tfidf_lgbm,
-                                              model_tfidf_sgdc,
-                                              model_tfidf_svm,
-                                              model_embedding_cnn,
-                                              model_embedding_lstm,
-                                              model_embedding_lstm_attention,
-                                              model_embedding_lstm_structured_attention,
-                                              model_embedding_lstm_gru_gpu,
-                                              model_huggingface,
-                                              model_aggregation,
-                                              utils_models)
+from {{package_name}}.models_training import (
+    utils_models
+    model_aggregation,
+    model_huggingface,
+)
+from {{package_name}}.models_training.models_tensorflow import (
+    model_tfidf_gbt,
+    model_tfidf_lgbm,
+    model_tfidf_sgdc,
+    model_tfidf_svm,
+)
+from {{package_name}}.models_training.models_sklearn import (
+    model_embedding_cnn,
+    model_embedding_lstm,
+    model_embedding_lstm_attention,
+    model_embedding_lstm_structured_attention,
+    model_embedding_lstm_gru_gpu,
+    model_tfidf_dense,
+)
 
 # Disable some warnings
 warnings.filterwarnings("ignore", category=FutureWarning)

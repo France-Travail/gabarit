@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Model embedding + LSTM
+## Model embedding + LSTM + Attention
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -20,11 +20,16 @@
 # - ModelEmbeddingLstm -> Model for predictions via embedding + LSTM
 
 
+# ** EXPERIMENTAL **
+# ** EXPERIMENTAL **
+# ** EXPERIMENTAL **
+
+
 import os
 import json
 import pickle
-import shutil
 import logging
+import shutil
 import numpy as np
 import seaborn as sns
 from typing import Union, Any, List, Callable
@@ -33,25 +38,25 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
-from tensorflow.keras.layers import (LSTM, BatchNormalization, Bidirectional, Dense, Embedding,
-                                     GlobalAveragePooling1D, GlobalMaxPooling1D, Input,
-                                     SpatialDropout1D, add, concatenate)
+from tensorflow.keras.layers import (Dense, Input, Embedding, GlobalMaxPooling1D,
+                                     GlobalAveragePooling1D, BatchNormalization, LSTM,
+                                     GRU, SpatialDropout1D, Bidirectional, concatenate)
 
-from {{package_name}} import utils
-from {{package_name}}.models_training import utils_deep_keras
-from {{package_name}}.models_training.model_keras import ModelKeras
+from . import utils_deep_keras
+from .model_keras import ModelKeras
+from .utils_deep_keras import AttentionWithContext
 
 sns.set(style="darkgrid")
 
 
-class ModelEmbeddingLstm(ModelKeras):
-    '''Model for prediction via embedding + LSTM'''
+class ModelEmbeddingLstmAttention(ModelKeras):
+    '''Model for predictions via embedding + LSTM + Attention'''
 
-    _default_name = 'model_embedding_lstm'
+    _default_name = 'model_embedding_lstm_attention'
 
     def __init__(self, max_sequence_length: int = 200, max_words: int = 100000,
                  padding: str = 'pre', truncating: str = 'post',
-                 tokenizer_filters="’!#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n\r\'\"", **kwargs) -> None:
+                 tokenizer_filters: str = "’!#$%&()*+,-./:;<=>?@[\\]^_`{|}~\t\n\r\'\"", **kwargs) -> None:
         '''Initialization of the class (see ModelClass & ModelKeras for more arguments)
 
         Kwargs:
@@ -68,7 +73,6 @@ class ModelEmbeddingLstm(ModelKeras):
             raise ValueError(f"The object padding ({padding}) is not a valid choice (['pre', 'post'])")
         if truncating not in ['pre', 'post']:
             raise ValueError(f"The object truncating ({truncating}) is not a valid choice (['pre', 'post'])")
-
         # Init.
         super().__init__(**kwargs)
 
@@ -134,31 +138,43 @@ class ModelEmbeddingLstm(ModelKeras):
         num_classes = len(self.list_classes)
         # Process
         LSTM_UNITS = 100
-        DENSE_HIDDEN_UNITS = 4 * LSTM_UNITS
         words = Input(shape=(self.max_sequence_length,))
+        # trainable=True to finetune the model
+        # words = Input(shape=(None,))
+        # x = Embedding(*embedding_matrix.shape, weights=[embedding_matrix], trainable=False)(words)
         x = Embedding(input_dim, embedding_size, weights=[embedding_matrix], trainable=False)(words)
         x = BatchNormalization(momentum=0.9)(x)
         x = SpatialDropout1D(0.5)(x)
-        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True))(x)
-        x = SpatialDropout1D(0.5)(x)
-        hidden = concatenate([
-            GlobalMaxPooling1D()(x),
-            GlobalAveragePooling1D()(x),
-        ])
-        hidden = add([hidden, Dense(DENSE_HIDDEN_UNITS, activation='relu')(hidden)])
+        # LSTM and GRU will default to CuDNNLSTM and CuDNNGRU if all conditions are met:
+        # - activation = 'tanh'
+        # - recurrent_activation = 'sigmoid'
+        # - recurrent_dropout = 0
+        # - unroll = False
+        # - use_bias = True
+        # - Inputs, if masked, are strictly right-padded
+        # - reset_after = True (GRU only)
+        # /!\ https://stackoverflow.com/questions/60468385/is-there-cudnnlstm-or-cudnngru-alternative-in-tensorflow-2-0
+        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True))(x)  # returns a sequence of vectors of dimension 32
+        x = Bidirectional(GRU(LSTM_UNITS, return_sequences=True))(x)  # returns a sequence of vectors of dimension 32
+
+        att = AttentionWithContext()(x)
+        avg_pool1 = GlobalAveragePooling1D()(x)
+        max_pool1 = GlobalMaxPooling1D()(x)
+
+        x = concatenate([att, avg_pool1, max_pool1])
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        out = Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform')(hidden)
+        out = Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform')(x)
 
         # Compile model
         model = Model(inputs=words, outputs=[out])
-        lr = self.keras_params['learning_rate'] if 'learning_rate' in self.keras_params.keys() else 0.01
-        decay = self.keras_params['decay'] if 'decay' in self.keras_params.keys() else 0.004
+        lr = self.keras_params['learning_rate'] if 'learning_rate' in self.keras_params.keys() else 0.001
+        decay = self.keras_params['decay'] if 'decay' in self.keras_params.keys() else 0.0
         self.logger.info(f"Learning rate: {lr}")
         self.logger.info(f"Decay: {decay}")
         optimizer = Adam(lr=lr, decay=decay)
-        # loss = utils_deep_keras.f1_loss if self.multi_label else 'categorical_crossentropy'
-        loss = 'binary_crossentropy' if self.multi_label else 'categorical_crossentropy'  # utils_deep_keras.f1_loss also possible if multi-labels
+        loss = utils_deep_keras.f1_loss if self.multi_label else 'categorical_crossentropy'
+        # loss = 'binary_crossentropy' if self.multi_label else 'categorical_crossentropy'  # utils_deep_keras.f1_loss also possible if multi-labels
         metrics: List[Union[str, Callable]] = ['accuracy'] if not self.multi_label else ['categorical_accuracy', utils_deep_keras.f1, utils_deep_keras.precision, utils_deep_keras.recall]
         model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
         if self.logger.getEffectiveLevel() < logging.ERROR:
@@ -251,11 +267,10 @@ class ModelEmbeddingLstm(ModelKeras):
         self.nb_fit = configs.get('nb_fit', 1)  # Consider one unique fit by default
         self.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
-        for attribute in ['x_col', 'y_col',
-                          'list_classes', 'dict_classes', 'multi_label', 'level_save',
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save',
                           'batch_size', 'epochs', 'validation_split', 'patience',
-                          'keras_params', 'embedding_name', 'max_sequence_length',
-                          'max_words', 'padding', 'truncating', 'tokenizer_filters']:
+                          'embedding_name', 'max_sequence_length', 'max_words', 'padding',
+                          'truncating', 'tokenizer_filters', 'keras_params']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload model

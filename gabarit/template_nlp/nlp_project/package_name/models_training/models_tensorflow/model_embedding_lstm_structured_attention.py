@@ -42,10 +42,10 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.layers import Lambda, Dense, Input, Embedding, LSTM, Bidirectional
 
-from {{package_name}} import utils
-from {{package_name}}.models_training import utils_deep_keras
-from {{package_name}}.models_training.model_keras import ModelKeras
-from {{package_name}}.models_training.utils_deep_keras import AttentionAverage
+from ... import utils
+from . import utils_deep_keras
+from .model_keras import ModelKeras
+from .utils_deep_keras import AttentionAverage
 
 sns.set(style="darkgrid")
 

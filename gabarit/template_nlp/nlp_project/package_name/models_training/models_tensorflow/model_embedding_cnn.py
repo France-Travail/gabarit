@@ -36,9 +36,8 @@ from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.layers import (ELU, AveragePooling1D, BatchNormalization, Conv1D, Dense,
                                      Dropout, Embedding, GlobalMaxPooling1D)
 
-from {{package_name}} import utils
-from {{package_name}}.models_training import utils_deep_keras
-from {{package_name}}.models_training.model_keras import ModelKeras
+from . import utils_deep_keras
+from .model_keras import ModelKeras
 
 sns.set(style="darkgrid")
 

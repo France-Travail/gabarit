@@ -42,9 +42,10 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.callbacks import (CSVLogger, EarlyStopping, ModelCheckpoint,
                                         TerminateOnNaN, LearningRateScheduler)
 
-from {{package_name}} import utils
-from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training import utils_deep_keras, utils_models
+from ... import utils
+from ..model_class import ModelClass
+from . import utils_deep_keras
+from .. import utils_models
 
 sns.set(style="darkgrid")
 

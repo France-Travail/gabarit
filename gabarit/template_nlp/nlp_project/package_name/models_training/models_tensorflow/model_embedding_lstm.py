@@ -33,24 +33,20 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
-from tensorflow.keras.layers import (Dense, Input, Embedding, GlobalMaxPooling1D,
-                                     GlobalAveragePooling1D, ELU, BatchNormalization, LSTM,
-                                     SpatialDropout1D, Bidirectional, Concatenate, GRU)
+from tensorflow.keras.layers import (LSTM, BatchNormalization, Bidirectional, Dense, Embedding,
+                                     GlobalAveragePooling1D, GlobalMaxPooling1D, Input,
+                                     SpatialDropout1D, add, concatenate)
 
-from {{package_name}} import utils
-from {{package_name}}.models_training import utils_deep_keras
-from {{package_name}}.models_training.model_keras import ModelKeras
+from . import utils_deep_keras
+from .model_keras import ModelKeras
 
 sns.set(style="darkgrid")
 
 
-# TODO: No need for the suffix GPU with the version 2.3 of tensorflow ...
+class ModelEmbeddingLstm(ModelKeras):
+    '''Model for prediction via embedding + LSTM'''
 
-
-class ModelEmbeddingLstmGruGpu(ModelKeras):
-    '''Model for predictions via embedding + LSTM/GRU with use of a GPU'''
-
-    _default_name = 'model_embedding_lstm_gru_gpu'
+    _default_name = 'model_embedding_lstm'
 
     def __init__(self, max_sequence_length: int = 200, max_words: int = 100000,
                  padding: str = 'pre', truncating: str = 'post',
@@ -71,6 +67,7 @@ class ModelEmbeddingLstmGruGpu(ModelKeras):
             raise ValueError(f"The object padding ({padding}) is not a valid choice (['pre', 'post'])")
         if truncating not in ['pre', 'post']:
             raise ValueError(f"The object truncating ({truncating}) is not a valid choice (['pre', 'post'])")
+
         # Init.
         super().__init__(**kwargs)
 
@@ -135,51 +132,33 @@ class ModelEmbeddingLstmGruGpu(ModelKeras):
         # Get model
         num_classes = len(self.list_classes)
         # Process
-        LSTM_UNITS = 60
-        GRU_UNITS = 120
+        LSTM_UNITS = 100
+        DENSE_HIDDEN_UNITS = 4 * LSTM_UNITS
         words = Input(shape=(self.max_sequence_length,))
         x = Embedding(input_dim, embedding_size, weights=[embedding_matrix], trainable=False)(words)
+        x = BatchNormalization(momentum=0.9)(x)
         x = SpatialDropout1D(0.5)(x)
-        # LSTM and GRU will default to CuDNNLSTM and CuDNNGRU if all conditions are met:
-        # - activation = 'tanh'
-        # - recurrent_activation = 'sigmoid'
-        # - recurrent_dropout = 0
-        # - unroll = False
-        # - use_bias = True
-        # - Inputs, if masked, are strictly right-padded
-        # - reset_after = True (GRU only)
-        # /!\ https://stackoverflow.com/questions/60468385/is-there-cudnnlstm-or-cudnngru-alternative-in-tensorflow-2-0
         x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True))(x)
-        x = BatchNormalization(momentum=0.9)(x)
-        x, state_h, state_c = Bidirectional(GRU(GRU_UNITS, return_sequences=True, return_state=True))(x)
-        x = BatchNormalization(momentum=0.9)(x)
-        state_h = BatchNormalization(momentum=0.9)(state_h)
-        state_c = BatchNormalization(momentum=0.9)(state_c)
-
-        pools = []
-        pools.append(GlobalAveragePooling1D()(x))
-        pools.append(state_h)
-        pools.append(state_c)
-        pools.append(GlobalMaxPooling1D()(x))
-        x = Concatenate()(pools)
-
-        x = Dense(128, activation=None, kernel_initializer="he_uniform")(x)
-        x = BatchNormalization(momentum=0.9)(x)
-        x = ELU(alpha=1.0)(x)
-
+        x = SpatialDropout1D(0.5)(x)
+        hidden = concatenate([
+            GlobalMaxPooling1D()(x),
+            GlobalAveragePooling1D()(x),
+        ])
+        hidden = add([hidden, Dense(DENSE_HIDDEN_UNITS, activation='relu')(hidden)])
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        out = Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform')(x)
+        out = Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform')(hidden)
 
         # Compile model
         model = Model(inputs=words, outputs=[out])
         lr = self.keras_params['learning_rate'] if 'learning_rate' in self.keras_params.keys() else 0.01
-        decay = self.keras_params['decay'] if 'decay' in self.keras_params.keys() else 0.0
+        decay = self.keras_params['decay'] if 'decay' in self.keras_params.keys() else 0.004
         self.logger.info(f"Learning rate: {lr}")
         self.logger.info(f"Decay: {decay}")
         optimizer = Adam(lr=lr, decay=decay)
-        loss = utils_deep_keras.f1_loss if self.multi_label else 'categorical_crossentropy'
-        metrics: List[Union[str, Callable]] = ['accuracy'] if not self.multi_label else ['categorical_accuracy', 'categorical_crossentropy', utils_deep_keras.f1, utils_deep_keras.precision, utils_deep_keras.recall, utils_deep_keras.f1_loss]
+        # loss = utils_deep_keras.f1_loss if self.multi_label else 'categorical_crossentropy'
+        loss = 'binary_crossentropy' if self.multi_label else 'categorical_crossentropy'  # utils_deep_keras.f1_loss also possible if multi-labels
+        metrics: List[Union[str, Callable]] = ['accuracy'] if not self.multi_label else ['categorical_accuracy', utils_deep_keras.f1, utils_deep_keras.precision, utils_deep_keras.recall]
         model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
         if self.logger.getEffectiveLevel() < logging.ERROR:
             model.summary()
