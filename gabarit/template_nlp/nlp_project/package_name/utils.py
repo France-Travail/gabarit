@@ -26,6 +26,7 @@
 # - trained_needed -> Decorator to ensure a model has already been trained
 # - get_data_path -> Returns the path of the data folder
 # - get_models_path -> Returns the path of the models folder
+# - get_transformers_path -> Returns the path to the transformers folder
 # - get_ressources_path -> Returns the path of the ressources folder
 # - get_package_version -> Returns the current package version
 # - find_folder_path -> Find a folder in a base folder and its subfolders.

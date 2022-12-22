@@ -437,7 +437,8 @@ class ModelHuggingFace(ModelClass):
                 self.transformer_name if model_path is None else model_path,
                 num_labels=len(self.list_classes) if num_labels is None else num_labels,
                 problem_type="multi_label_classification" if self.multi_label else "single_label_classification",
-                cache_dir=HF_CACHE_DIR)
+                {% if huggingface_proxies is not none %}proxies={{huggingface_proxies}},
+                {% endif %}cache_dir=HF_CACHE_DIR)
         # Set model on gpu if available
         model = model.to('cuda') if self._is_gpu_activated() else model.to('cpu')
         return model
@@ -452,7 +453,9 @@ class ModelHuggingFace(ModelClass):
         if self.tokenizer is not None:
             return self.tokenizer
 
-        tokenizer = AutoTokenizer.from_pretrained(self.transformer_name if model_path is None else model_path, cache_dir=HF_CACHE_DIR)
+        tokenizer = AutoTokenizer.from_pretrained(self.transformer_name if model_path is None else model_path,
+                                                  {% if huggingface_proxies is not none %}proxies={{huggingface_proxies}},
+                                                  {% endif %}cache_dir=HF_CACHE_DIR)
         return tokenizer
 
     def _get_optimizers(self) -> Tuple[Any, Any]:
