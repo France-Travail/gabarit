@@ -39,7 +39,7 @@ from {{package_name}}.preprocessing import preprocess
 from {{package_name}}.monitoring.mlflow_logger import MLflowLogger
 from {{package_name}}.models_training.model_class import ModelClass
 from {{package_name}}.models_training import (
-    utils_models
+    utils_models,
     model_aggregation,
     model_huggingface,
 )
