@@ -93,6 +93,7 @@ def generate(project_name: str, project_path: str, config_path: str,
     pip_trusted_host = get_config(config, 'pip', 'trusted-host')
     pip_index_url = get_config(config, 'pip', 'index-url')
     mlflow_tracking_uri = get_config(config, 'mlflow', 'tracking_uri')
+    huggingface_proxies = get_config(config, 'huggingface', 'huggingface_proxies')
     additional_pip_packages = get_config(config, 'packages', 'additional_pip_packages')
     dvc_config_ok = True if dvc_config_path is not None else False
 
@@ -146,6 +147,7 @@ def generate(project_name: str, project_path: str, config_path: str,
                                          pip_trusted_host=pip_trusted_host,
                                          pip_index_url=pip_index_url,
                                          mlflow_tracking_uri=mlflow_tracking_uri,
+                                         huggingface_proxies=huggingface_proxies,
                                          additional_pip_packages=additional_pip_packages,
                                          dvc_config_ok=dvc_config_ok)
 
