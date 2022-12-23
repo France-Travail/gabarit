@@ -42,7 +42,7 @@ from {{package_name}}.models_training.classifiers.models_sklearn import model_rf
 from {{package_name}}.models_training.classifiers.models_tensorflow import model_dense_classifier
 from {{package_name}}.models_training.regressors import model_xgboost_regressor
 from {{package_name}}.models_training.regressors.models_sklearn import model_rf_regressor
-from {{package_name}}.models_training.regressor.models_tensorflows import model_dense_regressor
+from {{package_name}}.models_training.regressors.models_tensorflows import model_dense_regressor
 
 
 
