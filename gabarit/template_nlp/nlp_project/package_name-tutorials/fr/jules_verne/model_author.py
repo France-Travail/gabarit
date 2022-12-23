@@ -26,7 +26,7 @@ import pandas as pd
 from typing import List, Union
 from collections import Counter
 
-from {{package_name}}.models_training.model_tfidf_svm import ModelTfidfSvm
+from {{package_name}}.models_training.models_sklearn.model_tfidf_svm import ModelTfidfSvm
 
 
 class ModelAuthor(ModelTfidfSvm):

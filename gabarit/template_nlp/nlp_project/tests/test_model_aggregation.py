@@ -25,8 +25,8 @@ import numpy as np
 import pandas as pd
 
 from {{package_name}} import utils
-from {{package_name}}.models_training.model_tfidf_svm import ModelTfidfSvm
-from {{package_name}}.models_training.model_tfidf_gbt import ModelTfidfGbt
+from {{package_name}}.models_training.models_sklearn.model_tfidf_svm import ModelTfidfSvm
+from {{package_name}}.models_training.models_sklearn.model_tfidf_gbt import ModelTfidfGbt
 from {{package_name}}.models_training.model_aggregation import ModelAggregation, proba_argmax, majority_vote, all_predictions, vote_labels
 # Disable logging
 import logging

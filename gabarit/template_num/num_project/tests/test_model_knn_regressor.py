@@ -27,7 +27,7 @@ import numpy as np
 import pandas as pd
 
 from {{package_name}} import utils
-from {{package_name}}.models_training.regressors.model_knn_regressor import ModelKNNRegressor
+from {{package_name}}.models_training.regressors.models_sklearn.model_knn_regressor import ModelKNNRegressor
 
 # Disable logging
 import logging
@@ -139,7 +139,7 @@ class ModelKNNRegressorTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test04_model_knn_regressor_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.regressors.model_knn_regressor.ModelKNNRegressor.reload_from_standalone'''
+        '''Test of the method {{package_name}}.models_training.regressors.models_sklearn.model_knn_regressor.ModelKNNRegressor.reload_from_standalone'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')

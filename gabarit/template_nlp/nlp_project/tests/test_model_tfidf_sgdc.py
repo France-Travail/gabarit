@@ -27,7 +27,7 @@ import numpy as np
 import pandas as pd
 
 from {{package_name}} import utils
-from {{package_name}}.models_training.model_tfidf_sgdc import ModelTfidfSgdc
+from {{package_name}}.models_training.models_sklearn.model_tfidf_sgdc import ModelTfidfSgdc
 
 # Disable logging
 import logging
@@ -49,7 +49,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         os.chdir(dname)
 
     def test01_model_tfidf_sgdc_init(self):
-        '''Test of {{package_name}}.models_training.model_tfidf_sgdc.ModelTfidfSgdc.__init__'''
+        '''Test of {{package_name}}.models_training.models_sklearn.model_tfidf_sgdc.ModelTfidfSgdc.__init__'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -108,7 +108,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test02_model_tfidf_sgdc_predict(self):
-        '''Test of the method predict of {{package_name}}.models_training.model_tfidf_sgdc.ModelTfidfSgdc'''
+        '''Test of the method predict of {{package_name}}.models_training.models_sklearn.model_tfidf_sgdc.ModelTfidfSgdc'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -205,7 +205,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test03_model_tfidf_sgdc_predict_proba(self):
-        '''Test of {{package_name}}.models_training.model_tfidf_sgdc.ModelTfidfSgdc.predict_proba'''
+        '''Test of {{package_name}}.models_training.models_sklearn.model_tfidf_sgdc.ModelTfidfSgdc.predict_proba'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -314,7 +314,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test04_model_tfidf_sgdc_get_predict_position(self):
-        '''Test of the method {{package_name}}.models_training.model_tfidf_sgdc.ModelTfidfSgdc.get_predict_position'''
+        '''Test of the method {{package_name}}.models_training.models_sklearn.model_tfidf_sgdc.ModelTfidfSgdc.get_predict_position'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -371,7 +371,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test05_model_tfidf_sgdc_save(self):
-        '''Test of the method save of {{package_name}}.models_training.model_pipeline.ModelPipeline'''
+        '''Test of the method save of {{package_name}}.models_training.models_sklearn.model_pipeline.ModelPipeline'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -435,7 +435,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test06_model_tfidf_sgdc_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.model_tfidf_sgdc.ModelTfidfSgdc.reload_from_standalone'''
+        '''Test of the method {{package_name}}.models_training.models_sklearn.model_tfidf_sgdc.ModelTfidfSgdc.reload_from_standalone'''
 
         ############################################
         # mono_label & without multi-classes strategy

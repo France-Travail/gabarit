@@ -36,8 +36,8 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
-from {{package_name}}.models_training.model_keras import ModelKeras
-from {{package_name}}.models_training.model_embedding_lstm import ModelEmbeddingLstm
+from {{package_name}}.models_training.models_tensorflow.model_keras import ModelKeras
+from {{package_name}}.models_training.models_tensorflow.model_embedding_lstm import ModelEmbeddingLstm
 
 # Disable logging
 import logging
@@ -79,7 +79,7 @@ class ModelKerasTests(unittest.TestCase):
             os.remove(fake_path)
 
     def test01_model_keras_init(self):
-        '''Test of the initialization of {{package_name}}.models_training.model_keras.ModelKeras'''
+        '''Test of the initialization of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -125,7 +125,7 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test02_model_keras_fit(self):
-        '''Test of the method fit of {{package_name}}.models_training.model_keras.ModelKeras'''
+        '''Test of the method fit of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
         # /!\ We test with model_embedding_lstm /!\
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -425,7 +425,7 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test03_model_keras_predict(self):
-        '''Test of the method predict of {{package_name}}.models_training.model_keras.ModelKeras'''
+        '''Test of the method predict of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -478,7 +478,7 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test04_model_keras_get_embedding_matrix(self):
-        '''Test of the method _get_embedding_matrix of {{package_name}}.models_training.model_keras.ModelKeras'''
+        '''Test of the method _get_embedding_matrix of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -524,7 +524,7 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test05_model_keras_get_sequence(self):
-        '''Test of the method _get_sequence of {{package_name}}.models_training.model_keras.ModelKeras'''
+        '''Test of the method _get_sequence of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -561,7 +561,7 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test06_model_keras_get_callbacks(self):
-        '''Test of the method _get_callbacks of {{package_name}}.models_training.model_keras.ModelKeras'''
+        '''Test of the method _get_callbacks of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -595,7 +595,7 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test07_model_keras_get_learning_rate_scheduler(self):
-        '''Test of the method _get_learning_rate_scheduler of {{package_name}}.models_training.model_keras.ModelKeras'''
+        '''Test of the method _get_learning_rate_scheduler of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -608,7 +608,7 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test08_model_keras_save(self):
-        '''Test of the method save of {{package_name}}.models_training.model_keras.ModelKeras'''
+        '''Test of the method save of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -686,7 +686,7 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test09_model_keras_reload_model(self):
-        '''Test of the method reload_model of {{package_name}}.models_training.model_keras.ModelKeras'''
+        '''Test of the method reload_model of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)

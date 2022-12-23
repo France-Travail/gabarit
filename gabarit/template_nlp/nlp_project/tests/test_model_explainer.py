@@ -28,7 +28,7 @@ import pandas as pd
 
 from {{package_name}} import utils
 from {{package_name}}.monitoring.model_explainer import LimeExplainer
-from {{package_name}}.models_training.model_tfidf_svm import ModelTfidfSvm
+from {{package_name}}.models_training.models_sklearn.model_tfidf_svm import ModelTfidfSvm
 
 
 # Disable logging

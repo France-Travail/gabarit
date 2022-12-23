@@ -34,8 +34,8 @@ import tensorflow.keras as keras
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
 from {{package_name}}.models_training.model_keras import ModelKeras
-from {{package_name}}.models_training.classifiers.model_dense_classifier import ModelDenseClassifier
-from {{package_name}}.models_training.regressors.model_dense_regressor import ModelDenseRegressor
+from {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier import ModelDenseClassifier
+from {{package_name}}.models_training.regressors.models_tensorflow.model_dense_regressor import ModelDenseRegressor
 
 # Disable logging
 import logging

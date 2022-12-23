@@ -27,7 +27,7 @@ import numpy as np
 import pandas as pd
 
 from {{package_name}} import utils
-from {{package_name}}.models_training.classifiers.model_ridge_classifier import ModelRidgeClassifier
+from {{package_name}}.models_training.classifiers.models_sklearn.model_ridge_classifier import ModelRidgeClassifier
 
 # Disable logging
 import logging
@@ -49,7 +49,7 @@ class ModelRidgeClassifierTests(unittest.TestCase):
         os.chdir(dname)
 
     def test01_model_ridge_classifier_init(self):
-        '''Test of {{package_name}}.models_training.classifiers.model_ridge_classifier.ModelRidgeClassifier.__init__'''
+        '''Test of {{package_name}}.models_training.classifiers.models_sklearn.model_ridge_classifier.ModelRidgeClassifier.__init__'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -106,7 +106,7 @@ class ModelRidgeClassifierTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test02_model_ridge_classifier_predict(self):
-        '''Test of the method predict of {{package_name}}.models_training.classifiers.model_ridge_classifier.ModelRidgeClassifier'''
+        '''Test of the method predict of {{package_name}}.models_training.classifiers.models_sklearn.model_ridge_classifier.ModelRidgeClassifier'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -212,7 +212,7 @@ class ModelRidgeClassifierTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test03_model_ridge_classifier_predict_proba(self):
-        '''Test of the method predict_proba of {{package_name}}.models_training.classifiers.model_ridge_classifier.ModelRidgeClassifier'''
+        '''Test of the method predict_proba of {{package_name}}.models_training.classifiers.models_sklearn.model_ridge_classifier.ModelRidgeClassifier'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -303,7 +303,7 @@ class ModelRidgeClassifierTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test04_model_ridge_classifier_get_predict_position(self):
-        '''Test of the method {{package_name}}.models_training.classifiers.model_ridge_classifier.ModelRidgeClassifier.get_predict_position'''
+        '''Test of the method {{package_name}}.models_training.classifiers.models_sklearn.model_ridge_classifier.ModelRidgeClassifier.get_predict_position'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -376,7 +376,7 @@ class ModelRidgeClassifierTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test05_model_ridge_classifier_save(self):
-        '''Test of the method save of {{package_name}}.models_training.classifiers.model_ridge_classifier.ModelRidgeClassifier'''
+        '''Test of the method save of {{package_name}}.models_training.classifiers.models_sklearn.model_ridge_classifier.ModelRidgeClassifier'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -418,7 +418,7 @@ class ModelRidgeClassifierTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test06_model_ridge_classifier_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.classifiers.model_ridge_classifier.ModelRidgeClassifier.reload_from_standalone'''
+        '''Test of the method {{package_name}}.models_training.classifiers.models_sklearn.model_ridge_classifier.ModelRidgeClassifier.reload_from_standalone'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')

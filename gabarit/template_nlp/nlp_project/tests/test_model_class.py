@@ -34,7 +34,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
+from {{package_name}}.models_training.models_sklearn.model_pipeline import ModelPipeline
 
 # Disable logging
 import logging

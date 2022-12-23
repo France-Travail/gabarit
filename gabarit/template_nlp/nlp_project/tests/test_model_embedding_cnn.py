@@ -32,7 +32,7 @@ import tensorflow.keras as keras
 from tensorflow.keras.preprocessing.text import Tokenizer
 
 from {{package_name}} import utils
-from {{package_name}}.models_training.model_embedding_cnn import ModelEmbeddingCnn
+from {{package_name}}.models_training.models_tensorflow.model_embedding_cnn import ModelEmbeddingCnn
 
 # Disable logging
 import logging
@@ -75,7 +75,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
             os.remove(fake_path)
 
     def test01_model_embedding_cnn_init(self):
-        '''Test of {{package_name}}.models_training.model_embedding_cnn.ModelEmbeddingCnn.__init__'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn.__init__'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
         # Init., test all parameters
@@ -140,7 +140,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
             model = ModelEmbeddingCnn(model_dir=model_dir, truncating='toto')
 
     def test02_model_embedding_cnn_predict_proba(self):
-        '''Test of {{package_name}}.models_training.model_embedding_cnn.ModelEmbeddingCnn.predict_proba'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn.predict_proba'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -212,7 +212,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test03_model_embedding_cnn_prepare_x_train(self):
-        '''Test of {{package_name}}.models_training.model_embedding_cnn.ModelEmbeddingCnn._prepare_x_train'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn._prepare_x_train'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -234,7 +234,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test04_model_embedding_cnn_prepare_x_test(self):
-        '''Test of {{package_name}}.models_training.model_embedding_cnn.ModelEmbeddingCnn._prepare_x_test'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn._prepare_x_test'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -257,7 +257,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test05_model_embedding_cnn_get_model(self):
-        '''Test of {{package_name}}.models_training.model_embedding_cnn.ModelEmbeddingCnn._get_model'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn._get_model'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -284,7 +284,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test06_model_embedding_cnn_save(self):
-        '''Test of the method save of {{package_name}}.models_training.model_embedding_cnn.ModelEmbeddingCnn'''
+        '''Test of the method save of {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -360,7 +360,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test07_model_embedding_cnn_reload_model(self):
-        '''Test of the method reload_model of {{package_name}}.models_training.model_embedding_cnn.ModelEmbeddingCnn'''
+        '''Test of the method reload_model of {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -386,7 +386,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test08_test_model_embedding_cnn_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.model_embedding_cnn.ModelEmbeddingCnn.reload_from_standalone'''
+        '''Test of the method {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn.reload_from_standalone'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
