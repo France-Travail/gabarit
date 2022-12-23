@@ -35,7 +35,7 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 
 from {{package_name}} import utils
-from {{package_name}}.models_training import utils_deep_keras
+from {{package_name}}.models_training.models_tensorflow import utils_deep_keras
 from {{package_name}}.models_training.models_tensorflow.model_keras import ModelKeras
 from {{package_name}}.models_training.models_tensorflow.model_embedding_lstm import ModelEmbeddingLstm
 
