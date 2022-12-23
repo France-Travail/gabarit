@@ -165,6 +165,36 @@ def get_chunk_limits(x: Union[pd.DataFrame, pd.Series], chunksize: int = 10000) 
     return chunks_limits  # type: ignore
 
 
+def is_ndarray_convertable(obj: Union[np.ndarray, Any]) -> bool:
+    '''Returns True if the object is covertable to a builtin type in the same way a np.ndarray is
+    
+    Args:
+        obj (Union[np.ndarray, Any]): an object to test
+    Returns:
+        bool: True if the object is covertable to a list as a np.ndarray is
+    '''
+    return hasattr(obj, "dtype") and hasattr(obj, "astype") and hasattr(obj, "tolist")
+
+
+def ndarray_to_builtin_object(obj: np.ndarray) -> Any:
+    '''Transform a numpy.ndarray to a builtin type like int, float or list of ints
+
+    Args:
+        obj (np.ndarray): numpy.ndarray object
+    Returns:
+        Any: list containing builtin types like int or float
+    '''
+    if is_ndarray_convertable(obj):
+        if np.issubdtype(obj.dtype, np.integer):
+            return obj.astype(int).tolist()
+        elif np.issubdtype(obj.dtype, np.number):
+            return obj.astype(float).tolist()
+        else:
+            return obj.tolist()
+    else:
+        return obj
+
+
 def trained_needed(function: Callable) -> Callable:
     '''Decorator to ensure that a model has been trained.
 
@@ -311,12 +341,10 @@ def flatten(my_list: Iterable) -> Generator:
 class NpEncoder(json.JSONEncoder):
     '''JSON encoder to manage numpy objects'''
     def default(self, obj) -> Any:
-        if isinstance(obj, np.integer):
-            return int(obj)
-        elif isinstance(obj, np.floating):
-            return float(obj)
-        elif isinstance(obj, np.ndarray):
-            return obj.tolist()
+        if is_ndarray_convertable(obj):
+            return ndarray_to_builtin_object(obj)
+        elif isinstance(obj, set):
+            return list(obj)
         else:
             return super(NpEncoder, self).default(obj)
 
