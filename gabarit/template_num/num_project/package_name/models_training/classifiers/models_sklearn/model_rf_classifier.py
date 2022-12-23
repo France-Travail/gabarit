@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Light GBM model
+## Random Forest model
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelLGBMClassifier -> Light GBM model for classification
+# - ModelRFClassifier -> Random Forest model for classification
 
 
 import os
@@ -29,25 +29,24 @@ import dill as pickle
 from typing import Union
 
 from sklearn.pipeline import Pipeline
-from lightgbm import LGBMClassifier
-from sklearn.multioutput import MultiOutputClassifier
+from sklearn.ensemble import RandomForestClassifier
 from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 
-from {{package_name}} import utils
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
-from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin  # type: ignore
+from .... import utils
+from ...model_pipeline import ModelPipeline
+from ..model_classifier import ModelClassifierMixin  # type: ignore
 
 
-class ModelLGBMClassifier(ModelClassifierMixin, ModelPipeline):
-    '''Light GBM model for Classification'''
+class ModelRFClassifier(ModelClassifierMixin, ModelPipeline):
+    '''Random Forest model for classification'''
 
-    _default_name = 'model_lgbm_classifier'
+    _default_name = 'model_rf_classifier'
 
-    def __init__(self, lgbm_params: Union[dict, None] = None, multiclass_strategy: Union[str, None] = None, **kwargs) -> None:
+    def __init__(self, rf_params: Union[dict, None] = None, multiclass_strategy: Union[str, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelPipeline, ModelClass & ModelClassifierMixin for more arguments)
 
         Kwargs:
-            lgbm_params (dict) : Parameters for the Light GBM
+            rf_params (dict) : Parameters for the Random Forest
             multiclass_strategy (str):  Multi-classes strategy, 'ovr' (OneVsRest), or 'ovo' (OneVsOne). If None, use the default of the algorithm.
         Raises:
             If multiclass_strategy is not 'ovo', 'ovr' or None
@@ -61,24 +60,24 @@ class ModelLGBMClassifier(ModelClassifierMixin, ModelPipeline):
         self.logger = logging.getLogger(__name__)
 
         # Manage model
-        if lgbm_params is None:
-            lgbm_params = {}
-        self.lgbm = LGBMClassifier(**lgbm_params)
+        if rf_params is None:
+            rf_params = {}
+        self.rf = RandomForestClassifier(**rf_params)
         self.multiclass_strategy = multiclass_strategy
 
         # Can't do multi-labels / multi-classes
         if not self.multi_label:
             # If not multi-classes : no impact
             if multiclass_strategy == 'ovr':
-                self.pipeline = Pipeline([('lgbm', OneVsRestClassifier(self.lgbm))])
+                self.pipeline = Pipeline([('rf', OneVsRestClassifier(self.rf))])
             elif multiclass_strategy == 'ovo':
-                self.pipeline = Pipeline([('lgbm', OneVsOneClassifier(self.lgbm))])
+                self.pipeline = Pipeline([('rf', OneVsOneClassifier(self.rf))])
             else:
-                self.pipeline = Pipeline([('lgbm', self.lgbm)])
+                self.pipeline = Pipeline([('rf', self.rf)])
 
-        # LGBMClassifier does not natively support multi-labels
+        # RandomForest natively supports multi_labels
         if self.multi_label:
-            self.pipeline = Pipeline([('lgbm', MultiOutputClassifier(self.lgbm))])
+            self.pipeline = Pipeline([('rf', self.rf)])
 
     @utils.trained_needed
     def predict_proba(self, x_test: pd.DataFrame, **kwargs) -> np.ndarray:
@@ -180,10 +179,10 @@ class ModelLGBMClassifier(ModelClassifierMixin, ModelPipeline):
             self.pipeline = pickle.load(f)
 
         # Manage multi-labels or multi-classes
-        if not self.multi_label and self.multiclass_strategy is None:
-            self.lgbm = self.pipeline['lgbm']
+        if not self.multi_label and self.multiclass_strategy is not None:
+            self.rf = self.pipeline['rf'].estimator
         else:
-            self.lgbm = self.pipeline['lgbm'].estimator
+            self.rf = self.pipeline['rf']
 
         # Reload pipeline preprocessing
         with open(preprocess_pipeline_path, 'rb') as f:

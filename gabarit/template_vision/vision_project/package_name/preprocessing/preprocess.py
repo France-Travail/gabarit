@@ -24,7 +24,7 @@ from PIL import Image
 from io import BytesIO
 from typing import Callable
 
-from {{package_name}}.preprocessing import manage_white_borders
+from . import manage_white_borders
 
 
 # Get logger

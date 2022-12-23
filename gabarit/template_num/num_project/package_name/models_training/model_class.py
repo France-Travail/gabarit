@@ -34,9 +34,9 @@ from sklearn.compose import ColumnTransformer
 from sklearn.exceptions import NotFittedError
 from sklearn.utils.validation import check_is_fitted
 
-from {{package_name}} import utils
-from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.models_training import utils_models
+from .. import utils
+from ..preprocessing import preprocess
+from . import utils_models
 
 
 class ModelClass:

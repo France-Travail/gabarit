@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Stochastic Gradient Descent model
+## Logistic Regression model
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelSGDClassifier -> Stochastic Gradient Descent model for classification
+# - ModelLogisticRegressionClassifier -> Logistic Regression mode for classification
 
 
 import os
@@ -29,28 +29,28 @@ import dill as pickle
 from typing import Union
 
 from sklearn.pipeline import Pipeline
-from sklearn.linear_model import SGDClassifier
+from sklearn.linear_model import LogisticRegression
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 
-from {{package_name}} import utils
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
-from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin  # type: ignore
+from .... import utils
+from ...model_pipeline import ModelPipeline
+from ..model_classifier import ModelClassifierMixin  # type: ignore
 
 
-class ModelSGDClassifier(ModelClassifierMixin, ModelPipeline):
-    '''Stochastic Gradient Descent model for classification'''
+class ModelLogisticRegressionClassifier(ModelClassifierMixin, ModelPipeline):
+    '''Logistic Regression mode for classification'''
 
-    _default_name = 'model_sgd_classifier'
+    _default_name = 'model_lr_classifier'
 
-    def __init__(self, sgd_params: Union[dict, None] = None, multiclass_strategy: Union[str, None] = None, **kwargs) -> None:
+    def __init__(self, lr_params: Union[dict, None] = None, multiclass_strategy: Union[str, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelPipeline, ModelClass & ModelClassifierMixin for more arguments)
 
         Kwargs:
-            sgd_params (dict) : Parameters for the Stochastic Gradient Descent
-            multiclass_strategy (str):  Multi-classes strategy, 'ovr' (OneVsRest), or 'ovo' (OneVsOne). If None, use the default of the algorithm.
+            lr_params (dict) : Parameters for the Logistic Regression
+            multiclass_strategy (str): Multi-classes strategy, 'ovr' (OneVsRest), or 'ovo' (OneVsOne). If None, use the default of the algorithm.
         Raises:
-            If multiclass_strategy is not 'ovo', 'ovr' or None
+            multiclass_strategy (str):  Multi-classes strategy, 'ovr' (OneVsRest), or 'ovo' (OneVsOne). If None, use the default of the algorithm.
         '''
         if multiclass_strategy is not None and multiclass_strategy not in ['ovo', 'ovr']:
             raise ValueError(f"The value of 'multiclass_strategy' must be 'ovo' or 'ovr' (not {multiclass_strategy})")
@@ -61,24 +61,24 @@ class ModelSGDClassifier(ModelClassifierMixin, ModelPipeline):
         self.logger = logging.getLogger(__name__)
 
         # Manage model
-        if sgd_params is None:
-            sgd_params = {}
-        self.sgd = SGDClassifier(**sgd_params)
+        if lr_params is None:
+            lr_params = {}
+        self.lr = LogisticRegression(**lr_params)
         self.multiclass_strategy = multiclass_strategy
 
         # Can't do multi-labels / multi-classes
         if not self.multi_label:
             # If not multi-classes : no impact
             if multiclass_strategy == 'ovr':
-                self.pipeline = Pipeline([('sgd', OneVsRestClassifier(self.sgd))])
+                self.pipeline = Pipeline([('lr', OneVsRestClassifier(self.lr))])
             elif multiclass_strategy == 'ovo':
-                self.pipeline = Pipeline([('sgd', OneVsOneClassifier(self.sgd))])
+                self.pipeline = Pipeline([('lr', OneVsOneClassifier(self.lr))])
             else:
-                self.pipeline = Pipeline([('sgd', self.sgd)])
+                self.pipeline = Pipeline([('lr', self.lr)])
 
-        # SGDClassifier does not natively support multi-labels
+        # LogisticRegression does not natively support multi-labels
         if self.multi_label:
-            self.pipeline = Pipeline([('sgd', MultiOutputClassifier(self.sgd))])
+            self.pipeline = Pipeline([('lr', MultiOutputClassifier(self.lr))])
 
     @utils.trained_needed
     def predict_proba(self, x_test: pd.DataFrame, **kwargs) -> np.ndarray:
@@ -90,24 +90,18 @@ class ModelSGDClassifier(ModelClassifierMixin, ModelPipeline):
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        # Can't use probabilities if loss not in ['log', 'modified_huber'] or 'ovo' and not multi-labels
-        if self.sgd.loss not in ['log', 'modified_huber'] or (self.multiclass_strategy == 'ovo' and not self.multi_label):
+        # Uses super() of the ModelPipeline class if != 'ovo' or multi-labels
+        if self.multi_label or self.multiclass_strategy != 'ovo':
+            return super().predict_proba(x_test=x_test, **kwargs)
+        else:
             # We check input format
             x_test, _ = self._check_input_format(x_test)
             # Get preds
-            if not self.multi_label:
-                preds = self.pipeline.predict(x_test)
-                # Format ['a', 'b', 'c', 'a', ..., 'b']
-                # Transform to "proba"
-                transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
-                probas = np.array([transform_dict[x] for x in preds])
-            else:
-                preds = self.pipeline.predict(x_test)
-                # Already right format, but in int !
-                probas = np.array([[float(_) for _ in x] for x in preds])
-        # Otherwise, use super() of the pipeline class if != 'ovo' or multi-labels
-        else:
-            return super().predict_proba(x_test=x_test, **kwargs)
+            preds = self.pipeline.predict(x_test)
+            # Format ['a', 'b', 'c', 'a', ..., 'b']
+            # Transform to "proba"
+            transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
+            probas = np.array([transform_dict[x] for x in preds])
         return probas
 
     def save(self, json_data: Union[dict, None] = None) -> None:
@@ -187,9 +181,9 @@ class ModelSGDClassifier(ModelClassifierMixin, ModelPipeline):
 
         # Manage multi-labels or multi-classes
         if not self.multi_label and self.multiclass_strategy is None:
-            self.sgd = self.pipeline['sgd']
+            self.lr = self.pipeline['lr']
         else:
-            self.sgd = self.pipeline['sgd'].estimator
+            self.lr = self.pipeline['lr'].estimator
 
         # Reload pipeline preprocessing
         with open(preprocess_pipeline_path, 'rb') as f:

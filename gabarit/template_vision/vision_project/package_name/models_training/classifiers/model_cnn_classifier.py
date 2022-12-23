@@ -34,8 +34,8 @@ from tensorflow.keras.applications.imagenet_utils import preprocess_input
 from tensorflow.keras.layers import (ELU, BatchNormalization, Dense, Dropout,
                                      Input, Conv2D, Flatten, AveragePooling2D)
 
-from {{package_name}}.models_training.model_keras import ModelKeras
-from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin  # type: ignore
+from ..model_keras import ModelKeras
+from .model_classifier import ModelClassifierMixin  # type: ignore
 
 
 class ModelCnnClassifier(ModelClassifierMixin, ModelKeras):

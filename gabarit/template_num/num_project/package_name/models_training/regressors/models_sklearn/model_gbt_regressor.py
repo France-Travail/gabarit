@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Light GBM model
+## Gradient Boosting Tree model
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelLGBMRegressor -> Light GBM model for regression
+# - ModelGBTRegressor -> Gradient Boosting Tree model for regression
 
 
 import os
@@ -26,23 +26,23 @@ import logging
 import dill as pickle
 from typing import Union
 
-from lightgbm import LGBMRegressor
 from sklearn.pipeline import Pipeline
+from sklearn.ensemble import GradientBoostingRegressor
 
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
-from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
+from ...model_pipeline import ModelPipeline
+from ..model_regressor import ModelRegressorMixin  # type: ignore
 
 
-class ModelLGBMRegressor(ModelRegressorMixin, ModelPipeline):
-    '''Light GBM model for regression'''
+class ModelGBTRegressor(ModelRegressorMixin, ModelPipeline):
+    '''Gradient Boosting Tree model for regression'''
 
-    _default_name = 'model_lgbm_regressor'
+    _default_name = 'model_gbt_regressor'
 
-    def __init__(self, lgbm_params: Union[dict, None] = None, **kwargs) -> None:
+    def __init__(self, gbt_params: Union[dict, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelPipeline, ModelClass & ModelRegressorMixin for more arguments)
 
         Kwargs:
-            lgbm_params (dict) : Parameters for the Light GBM
+            gbt_params (dict) : Parameters for the Gradient Boosting Tree
         '''
         # Init.
         super().__init__(**kwargs)
@@ -51,11 +51,11 @@ class ModelLGBMRegressor(ModelRegressorMixin, ModelPipeline):
         self.logger = logging.getLogger(__name__)
 
         # Manage model
-        if lgbm_params is None:
-            lgbm_params = {}
-        self.lgbm = LGBMRegressor(**lgbm_params)
+        if gbt_params is None:
+            gbt_params = {}
+        self.gbt = GradientBoostingRegressor(**gbt_params)
         # We define a pipeline in order to be compatible with other models
-        self.pipeline = Pipeline([('lgbm', self.lgbm)])
+        self.pipeline = Pipeline([('gbt', self.gbt)])
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files
@@ -111,7 +111,7 @@ class ModelLGBMRegressor(ModelRegressorMixin, ModelPipeline):
             self.pipeline = pickle.load(f)
 
         # Reload pipeline elements
-        self.lgbm = self.pipeline['lgbm']
+        self.gbt = self.pipeline['gbt']
 
         # Reload pipeline preprocessing
         with open(preprocess_pipeline_path, 'rb') as f:

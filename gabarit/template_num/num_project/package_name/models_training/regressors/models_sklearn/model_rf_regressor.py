@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Support Vector Regression model
+## Random Forest model
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelSVRRegressor -> Support Vector Regression model for regression
+# - ModelRFRegressor -> Random Forest model for regression
 
 
 import os
@@ -26,23 +26,23 @@ import logging
 import dill as pickle
 from typing import Union
 
-from sklearn.svm import SVR
 from sklearn.pipeline import Pipeline
+from sklearn.ensemble import RandomForestRegressor
 
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
-from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
+from ...model_pipeline import ModelPipeline
+from ..model_regressor import ModelRegressorMixin  # type: ignore
 
 
-class ModelSVRRegressor(ModelRegressorMixin, ModelPipeline):
-    '''Support Vector Regression model for regression'''
+class ModelRFRegressor(ModelRegressorMixin, ModelPipeline):
+    '''Random Forest model for regression'''
 
-    _default_name = 'model_svr_regressor'
+    _default_name = 'model_rf_regressor'
 
-    def __init__(self, svr_params: Union[dict, None] = None, **kwargs) -> None:
+    def __init__(self, rf_params: Union[dict, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelPipeline, ModelClass & ModelRegressorMixin for more arguments)
 
         Kwargs:
-            svr_params (dict) : Parameters for the Support Vector Regression
+            rf_params (dict) : Parameters for the Random Forest
         '''
         # Init.
         super().__init__(**kwargs)
@@ -51,11 +51,11 @@ class ModelSVRRegressor(ModelRegressorMixin, ModelPipeline):
         self.logger = logging.getLogger(__name__)
 
         # Manage model
-        if svr_params is None:
-            svr_params = {}
-        self.svr = SVR(**svr_params)
+        if rf_params is None:
+            rf_params = {}
+        self.rf = RandomForestRegressor(**rf_params)
         # We define a pipeline in order to be compatible with other models
-        self.pipeline = Pipeline([('svr', self.svr)])
+        self.pipeline = Pipeline([('rf', self.rf)])
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files
@@ -111,7 +111,7 @@ class ModelSVRRegressor(ModelRegressorMixin, ModelPipeline):
             self.pipeline = pickle.load(f)
 
         # Reload pipeline elements
-        self.svr = self.pipeline['svr']
+        self.rf = self.pipeline['rf']
 
         # Reload pipeline preprocessing
         with open(preprocess_pipeline_path, 'rb') as f:

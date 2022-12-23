@@ -35,7 +35,7 @@ import seaborn as sns
 from typing import Union, Tuple
 from sklearn.metrics import accuracy_score, confusion_matrix, f1_score, precision_score, recall_score
 
-from {{package_name}} import utils
+from ... import utils
 
 sns.set(style="darkgrid")
 

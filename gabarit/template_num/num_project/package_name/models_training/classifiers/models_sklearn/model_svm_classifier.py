@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Partial Least Squares model
+## Support Vector Machine model
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelPLSRegressor -> Partial Least Squares model for regression
+# - ModelSVMClassifier -> Support Vector Machine model for classification
 
 
 import os
@@ -28,25 +28,32 @@ import pandas as pd
 import dill as pickle
 from typing import Union
 
+from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline
-from sklearn.cross_decomposition import PLSRegression
+from sklearn.multioutput import MultiOutputClassifier
+from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 
-from {{package_name}} import utils
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
-from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
+from .... import utils
+from ...model_pipeline import ModelPipeline
+from ..model_classifier import ModelClassifierMixin  # type: ignore
 
 
-class ModelPLSRegressor(ModelRegressorMixin, ModelPipeline):
-    '''Partial Least Squares model for regression'''
+class ModelSVMClassifier(ModelClassifierMixin, ModelPipeline):
+    '''Support Vector Machine model for classification'''
 
-    _default_name = 'model_pls_regressor'
+    _default_name = 'model_svm_classifier'
 
-    def __init__(self, pls_params: Union[dict, None] = None, **kwargs) -> None:
-        '''Initialization of the class (see ModelPipeline, ModelClass & ModelRegressorMixin for more arguments)
+    def __init__(self, svm_params: Union[dict, None] = None, multiclass_strategy: Union[str, None] = None, **kwargs) -> None:
+        '''Initialization of the class (see ModelPipeline, ModelClass & ModelClassifierMixin for more arguments)
 
         Kwargs:
-            pls_params (dict) : Parameters for the Partial Least Squares
+            svm_params (dict) : Parameters for the Support Vector Machine
+            multiclass_strategy (str):  Multi-classes strategy, 'ovr' (OneVsRest), or 'ovo' (OneVsOne). If None, use the default of the algorithm.
+        Raises:
+            If multiclass_strategy is not 'ovo', 'ovr' or None
         '''
+        if multiclass_strategy is not None and multiclass_strategy not in ['ovo', 'ovr']:
+            raise ValueError(f"The value of 'multiclass_strategy' must be 'ovo' or 'ovr' (not {multiclass_strategy})")
         # Init.
         super().__init__(**kwargs)
 
@@ -54,25 +61,64 @@ class ModelPLSRegressor(ModelRegressorMixin, ModelPipeline):
         self.logger = logging.getLogger(__name__)
 
         # Manage model
-        if pls_params is None:
-            pls_params = {}
-        self.pls = PLSRegression(**pls_params)
-        # We define a pipeline in order to be compatible with other models
-        self.pipeline = Pipeline([('pls', self.pls)])
+        if svm_params is None:
+            svm_params = {}
+        self.svm = SVC(**svm_params)
+        self.multiclass_strategy = multiclass_strategy
+
+        # Can't do multi-labels / multi-classes
+        if not self.multi_label:
+            # If not multi-classes : no impact
+            if multiclass_strategy == 'ovr':
+                self.pipeline = Pipeline([('svm', OneVsRestClassifier(self.svm))])
+            elif multiclass_strategy == 'ovo':
+                self.pipeline = Pipeline([('svm', OneVsOneClassifier(self.svm))])
+            else:
+                self.pipeline = Pipeline([('svm', self.svm)])
+
+        # SVC does not natively support multi-labels
+        if self.multi_label:
+            self.pipeline = Pipeline([('svm', MultiOutputClassifier(self.svm))])
 
     @utils.trained_needed
-    def predict(self, x_test: pd.DataFrame, return_proba: bool = False, **kwargs) -> np.ndarray:
-        '''Predictions on test set. We override this function because the PLS does not return the same
-        format for the predictions.
+    def predict_proba(self, x_test: pd.DataFrame, **kwargs) -> np.ndarray:
+        '''Predicts the probabilities on the test set
+        - /!\\ SVC CLASSIFIER DOESN'T RETURN PROBABILITIES, THE MODEL WILL GIVES 0 AND 1 AS PROBABILITIES /!\\ -
+            (in truth, you could use probability = True in the definition of the SVC but the probabilities are 'inconsistent' with the predictions)
 
         Args:
             x_test (pd.DataFrame): DataFrame with the test data to be predicted
-        Kwargs:
-            return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
         Returns:
-            (np.ndarray): Array, shape = [n_samples,]
+            (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        return np.array([_[0] for _ in super().predict(x_test, return_proba, **kwargs)])
+        # We check input format
+        x_test, _ = self._check_input_format(x_test)
+        if not self.multi_label:
+            preds = self.pipeline.predict(x_test)
+            # Format ['a', 'b', 'c', 'a', ..., 'b']
+            # Transform to "proba"
+            transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
+            probas = np.array([transform_dict[x] for x in preds])
+        else:
+            preds = self.pipeline.predict(x_test)
+            # Already right format, but in int !
+            probas = np.array([[float(_) for _ in x] for x in preds])
+        return probas
+
+    def save(self, json_data: Union[dict, None] = None) -> None:
+        '''Saves the model
+
+        Kwargs:
+            json_data (dict): Additional configurations to be saved
+        '''
+        # Save model
+        if json_data is None:
+            json_data = {}
+
+        json_data['multiclass_strategy'] = self.multiclass_strategy
+
+        # Save
+        super().save(json_data=json_data)
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files
@@ -112,6 +158,12 @@ class ModelPLSRegressor(ModelRegressorMixin, ModelPipeline):
         # Load confs
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
             configs = json.load(f)
+        # Can't set int as keys in json, so need to cast it after reloading
+        # dict_classes keys are always ints
+        if 'dict_classes' in configs.keys():
+            configs['dict_classes'] = {int(k): v for k, v in configs['dict_classes'].items()}
+        elif 'list_classes' in configs.keys():
+            configs['dict_classes'] = {i: col for i, col in enumerate(configs['list_classes'])}
 
         # Set class vars
         # self.model_name = # Keep the created name
@@ -120,15 +172,19 @@ class ModelPLSRegressor(ModelRegressorMixin, ModelPipeline):
         self.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['model_type', 'x_col', 'y_col', 'columns_in', 'mandatory_columns',
-                          'level_save']:
+                          'list_classes', 'dict_classes', 'multi_label', 'level_save',
+                          'multiclass_strategy']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload pipeline model
         with open(sklearn_pipeline_path, 'rb') as f:
             self.pipeline = pickle.load(f)
 
-        # Reload pipeline elements
-        self.pls = self.pipeline['pls']
+        # Manage multi-labels or multi-classes
+        if not self.multi_label and self.multiclass_strategy is None:
+            self.svm = self.pipeline['svm']
+        else:
+            self.svm = self.pipeline['svm'].estimator
 
         # Reload pipeline preprocessing
         with open(preprocess_pipeline_path, 'rb') as f:

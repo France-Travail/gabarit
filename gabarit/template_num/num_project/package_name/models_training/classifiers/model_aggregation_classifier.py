@@ -28,10 +28,10 @@ import pandas as pd
 import dill as pickle
 from typing import Callable, Union, Tuple, Type
 
-from {{package_name}} import utils
-from {{package_name}}.models_training import utils_models
-from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin  # type: ignore
+from ... import utils
+from .. import utils_models
+from ..model_class import ModelClass
+from .model_classifier import ModelClassifierMixin  # type: ignore
 
 
 def proba_argmax(proba: np.ndarray, list_classes: list, **kwargs):

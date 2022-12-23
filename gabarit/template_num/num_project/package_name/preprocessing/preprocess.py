@@ -27,7 +27,7 @@ from sklearn.compose import ColumnTransformer, make_column_selector
 from sklearn.feature_extraction.text import CountVectorizer, _VectorizerMixin
 from sklearn.preprocessing import FunctionTransformer, StandardScaler, OneHotEncoder
 
-from {{package_name}}.preprocessing import column_preprocessors
+from . import column_preprocessors
 
 # Get logger
 logger = logging.getLogger(__name__)

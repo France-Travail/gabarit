@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Random Forest model
+## K-nearest Neighbors model
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelRFClassifier -> Random Forest model for classification
+# - ModelKNNClassifier -> K-nearest Neighbors model for classification
 
 
 import os
@@ -29,27 +29,27 @@ import dill as pickle
 from typing import Union
 
 from sklearn.pipeline import Pipeline
-from sklearn.ensemble import RandomForestClassifier
+from sklearn.neighbors import KNeighborsClassifier
 from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 
-from {{package_name}} import utils
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
-from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin  # type: ignore
+from .... import utils
+from ...model_pipeline import ModelPipeline
+from ..model_classifier import ModelClassifierMixin  # type: ignore
 
 
-class ModelRFClassifier(ModelClassifierMixin, ModelPipeline):
-    '''Random Forest model for classification'''
+class ModelKNNClassifier(ModelClassifierMixin, ModelPipeline):
+    '''K-nearest Neighbors model for classification'''
 
-    _default_name = 'model_rf_classifier'
+    _default_name = 'model_knn_classifier'
 
-    def __init__(self, rf_params: Union[dict, None] = None, multiclass_strategy: Union[str, None] = None, **kwargs) -> None:
+    def __init__(self, knn_params: Union[dict, None] = None, multiclass_strategy: Union[str, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelPipeline, ModelClass & ModelClassifierMixin for more arguments)
 
         Kwargs:
-            rf_params (dict) : Parameters for the Random Forest
+            knn_params (dict) : Parameters for the K-nearest Neighbors
             multiclass_strategy (str):  Multi-classes strategy, 'ovr' (OneVsRest), or 'ovo' (OneVsOne). If None, use the default of the algorithm.
         Raises:
-            If multiclass_strategy is not 'ovo', 'ovr' or None
+            ValueError: If multiclass_strategy is not 'ovo', 'ovr' or None
         '''
         if multiclass_strategy is not None and multiclass_strategy not in ['ovo', 'ovr']:
             raise ValueError(f"The value of 'multiclass_strategy' must be 'ovo' or 'ovr' (not {multiclass_strategy})")
@@ -60,24 +60,24 @@ class ModelRFClassifier(ModelClassifierMixin, ModelPipeline):
         self.logger = logging.getLogger(__name__)
 
         # Manage model
-        if rf_params is None:
-            rf_params = {}
-        self.rf = RandomForestClassifier(**rf_params)
+        if knn_params is None:
+            knn_params = {}
+        self.knn = KNeighborsClassifier(**knn_params)
         self.multiclass_strategy = multiclass_strategy
 
         # Can't do multi-labels / multi-classes
         if not self.multi_label:
             # If not multi-classes : no impact
             if multiclass_strategy == 'ovr':
-                self.pipeline = Pipeline([('rf', OneVsRestClassifier(self.rf))])
+                self.pipeline = Pipeline([('knn', OneVsRestClassifier(self.knn))])
             elif multiclass_strategy == 'ovo':
-                self.pipeline = Pipeline([('rf', OneVsOneClassifier(self.rf))])
+                self.pipeline = Pipeline([('knn', OneVsOneClassifier(self.knn))])
             else:
-                self.pipeline = Pipeline([('rf', self.rf)])
+                self.pipeline = Pipeline([('knn', self.knn)])
 
-        # RandomForest natively supports multi_labels
+        # LKNeighborsClassifier natively supports multi_labels
         if self.multi_label:
-            self.pipeline = Pipeline([('rf', self.rf)])
+            self.pipeline = Pipeline([('knn', self.knn)])
 
     @utils.trained_needed
     def predict_proba(self, x_test: pd.DataFrame, **kwargs) -> np.ndarray:
@@ -180,9 +180,9 @@ class ModelRFClassifier(ModelClassifierMixin, ModelPipeline):
 
         # Manage multi-labels or multi-classes
         if not self.multi_label and self.multiclass_strategy is not None:
-            self.rf = self.pipeline['rf'].estimator
+            self.knn = self.pipeline['knn'].estimator
         else:
-            self.rf = self.pipeline['rf']
+            self.knn = self.pipeline['knn']
 
         # Reload pipeline preprocessing
         with open(preprocess_pipeline_path, 'rb') as f:

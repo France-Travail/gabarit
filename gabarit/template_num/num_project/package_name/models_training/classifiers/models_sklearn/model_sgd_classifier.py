@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Support Vector Machine model
+## Stochastic Gradient Descent model
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelSVMClassifier -> Support Vector Machine model for classification
+# - ModelSGDClassifier -> Stochastic Gradient Descent model for classification
 
 
 import os
@@ -28,26 +28,26 @@ import pandas as pd
 import dill as pickle
 from typing import Union
 
-from sklearn.svm import SVC
 from sklearn.pipeline import Pipeline
+from sklearn.linear_model import SGDClassifier
 from sklearn.multioutput import MultiOutputClassifier
 from sklearn.multiclass import OneVsRestClassifier, OneVsOneClassifier
 
-from {{package_name}} import utils
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
-from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin  # type: ignore
+from .... import utils
+from ...model_pipeline import ModelPipeline
+from ..model_classifier import ModelClassifierMixin  # type: ignore
 
 
-class ModelSVMClassifier(ModelClassifierMixin, ModelPipeline):
-    '''Support Vector Machine model for classification'''
+class ModelSGDClassifier(ModelClassifierMixin, ModelPipeline):
+    '''Stochastic Gradient Descent model for classification'''
 
-    _default_name = 'model_svm_classifier'
+    _default_name = 'model_sgd_classifier'
 
-    def __init__(self, svm_params: Union[dict, None] = None, multiclass_strategy: Union[str, None] = None, **kwargs) -> None:
+    def __init__(self, sgd_params: Union[dict, None] = None, multiclass_strategy: Union[str, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelPipeline, ModelClass & ModelClassifierMixin for more arguments)
 
         Kwargs:
-            svm_params (dict) : Parameters for the Support Vector Machine
+            sgd_params (dict) : Parameters for the Stochastic Gradient Descent
             multiclass_strategy (str):  Multi-classes strategy, 'ovr' (OneVsRest), or 'ovo' (OneVsOne). If None, use the default of the algorithm.
         Raises:
             If multiclass_strategy is not 'ovo', 'ovr' or None
@@ -61,48 +61,53 @@ class ModelSVMClassifier(ModelClassifierMixin, ModelPipeline):
         self.logger = logging.getLogger(__name__)
 
         # Manage model
-        if svm_params is None:
-            svm_params = {}
-        self.svm = SVC(**svm_params)
+        if sgd_params is None:
+            sgd_params = {}
+        self.sgd = SGDClassifier(**sgd_params)
         self.multiclass_strategy = multiclass_strategy
 
         # Can't do multi-labels / multi-classes
         if not self.multi_label:
             # If not multi-classes : no impact
             if multiclass_strategy == 'ovr':
-                self.pipeline = Pipeline([('svm', OneVsRestClassifier(self.svm))])
+                self.pipeline = Pipeline([('sgd', OneVsRestClassifier(self.sgd))])
             elif multiclass_strategy == 'ovo':
-                self.pipeline = Pipeline([('svm', OneVsOneClassifier(self.svm))])
+                self.pipeline = Pipeline([('sgd', OneVsOneClassifier(self.sgd))])
             else:
-                self.pipeline = Pipeline([('svm', self.svm)])
+                self.pipeline = Pipeline([('sgd', self.sgd)])
 
-        # SVC does not natively support multi-labels
+        # SGDClassifier does not natively support multi-labels
         if self.multi_label:
-            self.pipeline = Pipeline([('svm', MultiOutputClassifier(self.svm))])
+            self.pipeline = Pipeline([('sgd', MultiOutputClassifier(self.sgd))])
 
     @utils.trained_needed
     def predict_proba(self, x_test: pd.DataFrame, **kwargs) -> np.ndarray:
         '''Predicts the probabilities on the test set
-        - /!\\ SVC CLASSIFIER DOESN'T RETURN PROBABILITIES, THE MODEL WILL GIVES 0 AND 1 AS PROBABILITIES /!\\ -
-            (in truth, you could use probability = True in the definition of the SVC but the probabilities are 'inconsistent' with the predictions)
+            'ovo' can't predict probabilities : by default, return 1 for the predicted class, 0 otherwise.
 
         Args:
             x_test (pd.DataFrame): DataFrame with the test data to be predicted
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        # We check input format
-        x_test, _ = self._check_input_format(x_test)
-        if not self.multi_label:
-            preds = self.pipeline.predict(x_test)
-            # Format ['a', 'b', 'c', 'a', ..., 'b']
-            # Transform to "proba"
-            transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
-            probas = np.array([transform_dict[x] for x in preds])
+        # Can't use probabilities if loss not in ['log', 'modified_huber'] or 'ovo' and not multi-labels
+        if self.sgd.loss not in ['log', 'modified_huber'] or (self.multiclass_strategy == 'ovo' and not self.multi_label):
+            # We check input format
+            x_test, _ = self._check_input_format(x_test)
+            # Get preds
+            if not self.multi_label:
+                preds = self.pipeline.predict(x_test)
+                # Format ['a', 'b', 'c', 'a', ..., 'b']
+                # Transform to "proba"
+                transform_dict = {col: [0. if _ != i else 1. for _ in range(len(self.list_classes))] for i, col in enumerate(self.list_classes)}
+                probas = np.array([transform_dict[x] for x in preds])
+            else:
+                preds = self.pipeline.predict(x_test)
+                # Already right format, but in int !
+                probas = np.array([[float(_) for _ in x] for x in preds])
+        # Otherwise, use super() of the pipeline class if != 'ovo' or multi-labels
         else:
-            preds = self.pipeline.predict(x_test)
-            # Already right format, but in int !
-            probas = np.array([[float(_) for _ in x] for x in preds])
+            return super().predict_proba(x_test=x_test, **kwargs)
         return probas
 
     def save(self, json_data: Union[dict, None] = None) -> None:
@@ -182,9 +187,9 @@ class ModelSVMClassifier(ModelClassifierMixin, ModelPipeline):
 
         # Manage multi-labels or multi-classes
         if not self.multi_label and self.multiclass_strategy is None:
-            self.svm = self.pipeline['svm']
+            self.sgd = self.pipeline['sgd']
         else:
-            self.svm = self.pipeline['svm'].estimator
+            self.sgd = self.pipeline['sgd'].estimator
 
         # Reload pipeline preprocessing
         with open(preprocess_pipeline_path, 'rb') as f:

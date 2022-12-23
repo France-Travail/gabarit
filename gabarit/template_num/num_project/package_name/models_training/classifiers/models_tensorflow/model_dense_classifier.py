@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Dense model for regression
+## Dense model - Classification
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelDenseRegressor -> Dense model for regression
+# - ModelDenseClassifier -> Dense model for classifiction
 
 
 import os
@@ -32,18 +32,18 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout, Input
 
-from {{package_name}}.models_training import utils_deep_keras
-from {{package_name}}.models_training.model_keras import ModelKeras
-from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
+from ... import utils_deep_keras
+from ...model_keras import ModelKeras
+from ..model_classifier import ModelClassifierMixin  # type: ignore
 
 
-class ModelDenseRegressor(ModelRegressorMixin, ModelKeras):
-    '''Dense model for regression'''
+class ModelDenseClassifier(ModelClassifierMixin, ModelKeras):
+    '''Dense model for classification'''
 
-    _default_name = 'model_dense_regressor'
+    _default_name = 'model_dense_classifier'
 
     def __init__(self, **kwargs) -> None:
-        '''Initialization of the class (see ModelClass, ModelKeras & ModelRegressor for more arguments)'''
+        '''Initialization of the class (see ModelClass, ModelKeras & ModelClassifierMixin for more arguments)'''
         # Init.
         super().__init__(**kwargs)
 
@@ -54,7 +54,7 @@ class ModelDenseRegressor(ModelRegressorMixin, ModelKeras):
         '''Gets a model structure - returns the instance model instead if already defined
 
         Returns:
-            (Model): A model
+            (Model): a Keras model
         '''
         # Return model if already set
         if self.model is not None:
@@ -62,6 +62,7 @@ class ModelDenseRegressor(ModelRegressorMixin, ModelKeras):
 
         # Get input/output dimensions
         input_dim = len(self.x_col)
+        num_classes = len(self.list_classes)
 
         # Process
         input_layer = Input(shape=(input_dim,))
@@ -77,8 +78,8 @@ class ModelDenseRegressor(ModelRegressorMixin, ModelKeras):
         x = Dropout(0.2)(x)
 
         # Last layer
-        activation = None  # 'relu' if result should be > 0
-        out = Dense(1, activation=activation, kernel_initializer='glorot_uniform')(x)
+        activation = 'sigmoid' if self.multi_label else 'softmax'
+        out = Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform')(x)
 
         # Set model
         model = Model(inputs=input_layer, outputs=[out])
@@ -91,8 +92,8 @@ class ModelDenseRegressor(ModelRegressorMixin, ModelKeras):
         optimizer = Adam(lr=lr, decay=decay)
 
         # Set loss & metrics
-        loss = 'mean_squared_error'  # could be 'mean_absolute_error'
-        metrics: List[Union[str, Callable]] = ['mean_squared_error', 'mean_absolute_error', utils_deep_keras.root_mean_squared_error]
+        loss = utils_deep_keras.f1_loss if self.multi_label else 'categorical_crossentropy'
+        metrics: List[Union[str, Callable]] = ['accuracy'] if not self.multi_label else ['categorical_accuracy', 'categorical_crossentropy', utils_deep_keras.f1, utils_deep_keras.precision, utils_deep_keras.recall, utils_deep_keras.f1_loss]  # type: ignore
 
         # Compile model
         model.compile(optimizer=optimizer, loss=loss, metrics=metrics)
@@ -105,6 +106,19 @@ class ModelDenseRegressor(ModelRegressorMixin, ModelKeras):
 
         # Return
         return model
+
+    def save(self, json_data: Union[dict, None] = None) -> None:
+        '''Saves the model
+
+        Kwargs:
+            json_data (dict): Additional configurations to be saved
+        '''
+        # Save configuration JSON
+        if json_data is None:
+            json_data = {}
+
+        # Save
+        super().save(json_data=json_data)
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files
@@ -144,6 +158,12 @@ class ModelDenseRegressor(ModelRegressorMixin, ModelKeras):
         # Load confs
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
             configs = json.load(f)
+        # Can't set int as keys in json, so need to cast it after reloading
+        # dict_classes keys are always ints
+        if 'dict_classes' in configs.keys():
+            configs['dict_classes'] = {int(k): v for k, v in configs['dict_classes'].items()}
+        elif 'list_classes' in configs.keys():
+            configs['dict_classes'] = {i: col for i, col in enumerate(configs['list_classes'])}
 
         # Set class vars
         # self.model_name = # Keep the created name
@@ -152,8 +172,8 @@ class ModelDenseRegressor(ModelRegressorMixin, ModelKeras):
         self.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['model_type', 'x_col', 'y_col', 'columns_in', 'mandatory_columns',
-                          'level_save', 'batch_size', 'epochs', 'validation_split', 'patience',
-                          'keras_params']:
+                          'list_classes', 'dict_classes', 'multi_label', 'level_save',
+                          'batch_size', 'epochs', 'validation_split', 'patience', 'keras_params']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload model

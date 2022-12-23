@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Kernel Ridge model
+## K-nearest Neighbors model
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelKernelRidgeRegressor -> Kernel Ridge model for regression
+# - ModelKNNRegressor -> K-nearest Neighbors model for regression
 
 
 import os
@@ -27,22 +27,22 @@ import dill as pickle
 from typing import Union
 
 from sklearn.pipeline import Pipeline
-from sklearn.kernel_ridge import KernelRidge
+from sklearn.neighbors import KNeighborsRegressor
 
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
-from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
+from ...model_pipeline import ModelPipeline
+from ..model_regressor import ModelRegressorMixin  # type: ignore
 
 
-class ModelKernelRidgeRegressor(ModelRegressorMixin, ModelPipeline):
-    '''Kernel Ridge model for regression'''
+class ModelKNNRegressor(ModelRegressorMixin, ModelPipeline):
+    '''K-nearest Neighbors model for regression'''
 
-    _default_name = 'model_kernel_ridge_regressor'
+    _default_name = 'model_knn_regressor'
 
-    def __init__(self, kernel_ridge_params: Union[dict, None] = None, **kwargs) -> None:
+    def __init__(self, knn_params: Union[dict, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelPipeline, ModelClass & ModelRegressorMixin for more arguments)
 
         Kwargs:
-            kernel_ridge_params (dict) : Parameters for the Kernel Ridge
+            knn_params (dict) : Parameters for the K-nearest Neighbors
         '''
         # Init.
         super().__init__(**kwargs)
@@ -51,11 +51,11 @@ class ModelKernelRidgeRegressor(ModelRegressorMixin, ModelPipeline):
         self.logger = logging.getLogger(__name__)
 
         # Manage model
-        if kernel_ridge_params is None:
-            kernel_ridge_params = {}
-        self.kernel_ridge = KernelRidge(**kernel_ridge_params)
+        if knn_params is None:
+            knn_params = {}
+        self.knn = KNeighborsRegressor(**knn_params)
         # We define a pipeline in order to be compatible with other models
-        self.pipeline = Pipeline([('kernel_ridge', self.kernel_ridge)])
+        self.pipeline = Pipeline([('knn', self.knn)])
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files
@@ -111,7 +111,7 @@ class ModelKernelRidgeRegressor(ModelRegressorMixin, ModelPipeline):
             self.pipeline = pickle.load(f)
 
         # Reload pipeline elements
-        self.kernel_ridge = self.pipeline['kernel_ridge']
+        self.knn = self.pipeline['knn']
 
         # Reload pipeline preprocessing
         with open(preprocess_pipeline_path, 'rb') as f:

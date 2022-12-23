@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Random Forest model
+## Light GBM model
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelRFRegressor -> Random Forest model for regression
+# - ModelLGBMRegressor -> Light GBM model for regression
 
 
 import os
@@ -26,23 +26,23 @@ import logging
 import dill as pickle
 from typing import Union
 
+from lightgbm import LGBMRegressor
 from sklearn.pipeline import Pipeline
-from sklearn.ensemble import RandomForestRegressor
 
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
-from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
+from ...model_pipeline import ModelPipeline
+from ..model_regressor import ModelRegressorMixin  # type: ignore
 
 
-class ModelRFRegressor(ModelRegressorMixin, ModelPipeline):
-    '''Random Forest model for regression'''
+class ModelLGBMRegressor(ModelRegressorMixin, ModelPipeline):
+    '''Light GBM model for regression'''
 
-    _default_name = 'model_rf_regressor'
+    _default_name = 'model_lgbm_regressor'
 
-    def __init__(self, rf_params: Union[dict, None] = None, **kwargs) -> None:
+    def __init__(self, lgbm_params: Union[dict, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelPipeline, ModelClass & ModelRegressorMixin for more arguments)
 
         Kwargs:
-            rf_params (dict) : Parameters for the Random Forest
+            lgbm_params (dict) : Parameters for the Light GBM
         '''
         # Init.
         super().__init__(**kwargs)
@@ -51,11 +51,11 @@ class ModelRFRegressor(ModelRegressorMixin, ModelPipeline):
         self.logger = logging.getLogger(__name__)
 
         # Manage model
-        if rf_params is None:
-            rf_params = {}
-        self.rf = RandomForestRegressor(**rf_params)
+        if lgbm_params is None:
+            lgbm_params = {}
+        self.lgbm = LGBMRegressor(**lgbm_params)
         # We define a pipeline in order to be compatible with other models
-        self.pipeline = Pipeline([('rf', self.rf)])
+        self.pipeline = Pipeline([('lgbm', self.lgbm)])
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files
@@ -111,7 +111,7 @@ class ModelRFRegressor(ModelRegressorMixin, ModelPipeline):
             self.pipeline = pickle.load(f)
 
         # Reload pipeline elements
-        self.rf = self.pipeline['rf']
+        self.lgbm = self.pipeline['lgbm']
 
         # Reload pipeline preprocessing
         with open(preprocess_pipeline_path, 'rb') as f:

@@ -59,9 +59,9 @@ from detectron2.data import (DatasetCatalog, MetadataCatalog, Metadata, detectio
                              DatasetMapper)
 
 # Import package utils
-from {{package_name}} import utils
-from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training.object_detectors.model_object_detector import ModelObjectDetectorMixin  # type: ignore
+from ... import utils
+from ..model_class import ModelClass
+from .model_object_detector import ModelObjectDetectorMixin  # type: ignore
 
 
 class ModelDetectronFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelClass):

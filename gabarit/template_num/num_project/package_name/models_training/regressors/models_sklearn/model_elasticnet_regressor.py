@@ -29,8 +29,8 @@ from typing import Union
 from sklearn.pipeline import Pipeline
 from sklearn.linear_model import ElasticNet
 
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
-from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
+from ...model_pipeline import ModelPipeline
+from ..model_regressor import ModelRegressorMixin  # type: ignore
 
 
 class ModelElasticNetRegressor(ModelRegressorMixin, ModelPipeline):

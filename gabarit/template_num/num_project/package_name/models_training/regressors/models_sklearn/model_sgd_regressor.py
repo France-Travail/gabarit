@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Gradient Boosting Tree model
+## Stochastic Gradient Descent model
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelGBTRegressor -> Gradient Boosting Tree model for regression
+# - ModelSGDRegressor -> Stochastic Gradient Descent model for regression
 
 
 import os
@@ -27,22 +27,22 @@ import dill as pickle
 from typing import Union
 
 from sklearn.pipeline import Pipeline
-from sklearn.ensemble import GradientBoostingRegressor
+from sklearn.linear_model import SGDRegressor
 
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
-from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
+from ...model_pipeline import ModelPipeline
+from ..model_regressor import ModelRegressorMixin  # type: ignore
 
 
-class ModelGBTRegressor(ModelRegressorMixin, ModelPipeline):
-    '''Gradient Boosting Tree model for regression'''
+class ModelSGDRegressor(ModelRegressorMixin, ModelPipeline):
+    '''Stochastic Gradient Descent model for regression'''
 
-    _default_name = 'model_gbt_regressor'
+    _default_name = 'model_sgd_regressor'
 
-    def __init__(self, gbt_params: Union[dict, None] = None, **kwargs) -> None:
+    def __init__(self, sgd_params: Union[dict, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelPipeline, ModelClass & ModelRegressorMixin for more arguments)
 
         Kwargs:
-            gbt_params (dict) : Parameters for the Gradient Boosting Tree
+            sgd_params (dict) : Parameters for the Stochastic Gradient Descent
         '''
         # Init.
         super().__init__(**kwargs)
@@ -51,11 +51,11 @@ class ModelGBTRegressor(ModelRegressorMixin, ModelPipeline):
         self.logger = logging.getLogger(__name__)
 
         # Manage model
-        if gbt_params is None:
-            gbt_params = {}
-        self.gbt = GradientBoostingRegressor(**gbt_params)
+        if sgd_params is None:
+            sgd_params = {}
+        self.sgd = SGDRegressor(**sgd_params)
         # We define a pipeline in order to be compatible with other models
-        self.pipeline = Pipeline([('gbt', self.gbt)])
+        self.pipeline = Pipeline([('sgd', self.sgd)])
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files
@@ -111,7 +111,7 @@ class ModelGBTRegressor(ModelRegressorMixin, ModelPipeline):
             self.pipeline = pickle.load(f)
 
         # Reload pipeline elements
-        self.gbt = self.pipeline['gbt']
+        self.sgd = self.pipeline['sgd']
 
         # Reload pipeline preprocessing
         with open(preprocess_pipeline_path, 'rb') as f:

@@ -38,7 +38,7 @@ from typing import List, Union
 from pycocotools.coco import COCO
 from pycocotools.cocoeval import COCOeval
 
-from {{package_name}} import utils
+from ... import utils
 
 sns.set(style="darkgrid")
 

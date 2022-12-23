@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## K-nearest Neighbors model
+## Bayesian ridge model
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -17,7 +17,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #
 # Classes :
-# - ModelKNNRegressor -> K-nearest Neighbors model for regression
+# - ModelBayesianRidgeRegressor -> Bayesian ridge model for regression
 
 
 import os
@@ -27,22 +27,22 @@ import dill as pickle
 from typing import Union
 
 from sklearn.pipeline import Pipeline
-from sklearn.neighbors import KNeighborsRegressor
+from sklearn.linear_model import BayesianRidge
 
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
-from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
+from ...model_pipeline import ModelPipeline
+from ..model_regressor import ModelRegressorMixin  # type: ignore
 
 
-class ModelKNNRegressor(ModelRegressorMixin, ModelPipeline):
-    '''K-nearest Neighbors model for regression'''
+class ModelBayesianRidgeRegressor(ModelRegressorMixin, ModelPipeline):
+    '''Bayesian ridge model for regression'''
 
-    _default_name = 'model_knn_regressor'
+    _default_name = 'model_bayesian_ridge_regressor'
 
-    def __init__(self, knn_params: Union[dict, None] = None, **kwargs) -> None:
+    def __init__(self, bayesian_ridge_params: Union[dict, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelPipeline, ModelClass & ModelRegressorMixin for more arguments)
 
         Kwargs:
-            knn_params (dict) : Parameters for the K-nearest Neighbors
+            bayesian_ridge_params (dict) : Parameters for Bayesian Ridge
         '''
         # Init.
         super().__init__(**kwargs)
@@ -51,11 +51,11 @@ class ModelKNNRegressor(ModelRegressorMixin, ModelPipeline):
         self.logger = logging.getLogger(__name__)
 
         # Manage model
-        if knn_params is None:
-            knn_params = {}
-        self.knn = KNeighborsRegressor(**knn_params)
+        if bayesian_ridge_params is None:
+            bayesian_ridge_params = {}
+        self.bayesian_ridge = BayesianRidge(**bayesian_ridge_params)
         # We define a pipeline in order to be compatible with other models
-        self.pipeline = Pipeline([('knn', self.knn)])
+        self.pipeline = Pipeline([('bayesian_ridge', self.bayesian_ridge)])
 
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files
@@ -111,7 +111,7 @@ class ModelKNNRegressor(ModelRegressorMixin, ModelPipeline):
             self.pipeline = pickle.load(f)
 
         # Reload pipeline elements
-        self.knn = self.pipeline['knn']
+        self.bayesian_ridge = self.pipeline['bayesian_ridge']
 
         # Reload pipeline preprocessing
         with open(preprocess_pipeline_path, 'rb') as f:
