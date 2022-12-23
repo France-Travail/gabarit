@@ -27,10 +27,10 @@ import numpy as np
 import dill as pickle
 from typing import Callable, Union, List
 
-from {{package_name}} import utils
-from {{package_name}}.models_training import utils_models
-from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
+from ... import utils
+from .. import utils_models
+from ..model_class import ModelClass
+from ..regressors.model_regressor import ModelRegressorMixin  # type: ignore
 
 
 def median_predict(predictions: np.ndarray) -> np.float64:

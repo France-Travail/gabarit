@@ -42,9 +42,9 @@ from tensorflow.keras.callbacks import (CSVLogger, EarlyStopping,
                                         ModelCheckpoint, TensorBoard,
                                         TerminateOnNaN, LearningRateScheduler)
 
-from {{package_name}} import utils
-from {{package_name}}.models_training.model_keras import ModelKeras
-from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin  # type: ignore
+from ... import utils
+from ..model_keras import ModelKeras
+from .model_classifier import ModelClassifierMixin  # type: ignore
 
 
 class ModelTransferLearningClassifier(ModelClassifierMixin, ModelKeras):

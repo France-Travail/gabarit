@@ -37,9 +37,9 @@ from sklearn.multioutput import MultiOutputClassifier
 from sklearn.utils.multiclass import check_classification_targets
 from sklearn.utils.validation import _check_fit_params, _deprecate_positional_args, has_fit_parameter
 
-from {{package_name}} import utils
-from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin  # type: ignore
+from ... import utils
+from ..model_class import ModelClass
+from ..classifiers.model_classifier import ModelClassifierMixin  # type: ignore
 
 
 class ModelXgboostClassifier(ModelClassifierMixin, ModelClass):

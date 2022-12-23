@@ -41,9 +41,9 @@ from transformers import (AutoModelForSequenceClassification, TrainingArguments,
                           AutoTokenizer, TextClassificationPipeline, PreTrainedTokenizer, EvalPrediction,
                           TrainerCallback, EarlyStoppingCallback)
 
-from {{package_name}} import utils
-from {{package_name}}.models_training import hf_metrics
-from {{package_name}}.models_training.model_class import ModelClass
+from .. import utils
+from . import hf_metrics
+from .model_class import ModelClass
 
 sns.set(style="darkgrid")
 

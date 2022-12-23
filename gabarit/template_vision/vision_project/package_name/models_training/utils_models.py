@@ -39,8 +39,8 @@ from typing import Union, Tuple, Any, List
 
 from sklearn.model_selection import train_test_split
 
-from {{package_name}} import utils
-from {{package_name}}.preprocessing import preprocess
+from .. import utils
+from ..preprocessing import preprocess
 
 
 # Get logger

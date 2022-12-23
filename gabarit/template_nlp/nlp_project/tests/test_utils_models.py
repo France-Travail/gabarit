@@ -29,7 +29,9 @@ import pandas as pd
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
 from {{package_name}}.models_training import utils_models
-from {{package_name}}.models_training import model_tfidf_svm, model_embedding_lstm, model_huggingface
+from {{package_name}}.models_training import model_huggingface
+from {{package_name}}.models_training.models_sklearn import model_tfidf_svm
+from {{package_name}}.models_training.models_tensorflow import model_embedding_lstm
 
 # Disable logging
 import logging

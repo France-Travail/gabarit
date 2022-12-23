@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 import os
-from setuptools import setup
+from setuptools import setup, find_packages
 
 # Get package directory
 package_directory = os.path.dirname(os.path.abspath(__file__))
@@ -34,7 +34,7 @@ with open(readme_path, 'r') as readme_file:
 setup(
     name="{{package_name}}",
     version=version,
-    packages=["{{package_name}}", "{{package_name}}.preprocessing", "{{package_name}}.models_training", "{{package_name}}.monitoring"],
+    packages=find_packages(include=["{{package_name}}*"]),
     license='AGPL-3.0',
     long_description=long_description,
     long_description_content_type='text/markdown',

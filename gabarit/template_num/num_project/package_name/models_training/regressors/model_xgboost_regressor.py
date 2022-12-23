@@ -31,9 +31,9 @@ from xgboost import XGBRegressor
 
 from sklearn.model_selection import train_test_split
 
-from {{package_name}} import utils
-from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin  # type: ignore
+from ... import utils
+from ..model_class import ModelClass
+from ..regressors.model_regressor import ModelRegressorMixin  # type: ignore
 
 
 class ModelXgboostRegressor(ModelRegressorMixin, ModelClass):

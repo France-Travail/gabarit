@@ -51,11 +51,11 @@ from tensorflow.keras.applications.vgg16 import preprocess_input as preprocess_i
 from tensorflow.keras.layers import Dense, Dropout, Input, Conv2D, Flatten, MaxPooling2D, TimeDistributed
 from tensorflow.keras.callbacks import CSVLogger, EarlyStopping, ModelCheckpoint, TensorBoard, TerminateOnNaN
 
-from {{package_name}} import utils
-from {{package_name}}.models_training.model_keras import ModelKeras
-from {{package_name}}.models_training.object_detectors import utils_faster_rcnn
-from {{package_name}}.models_training.object_detectors import utils_object_detectors
-from {{package_name}}.models_training.object_detectors.model_object_detector import ModelObjectDetectorMixin  # type: ignore
+from ... import utils
+from ..model_keras import ModelKeras
+from . import utils_faster_rcnn
+from . import utils_object_detectors
+from .model_object_detector import ModelObjectDetectorMixin  # type: ignore
 
 ###########################
 # The Faster RCNN model is composed of two models

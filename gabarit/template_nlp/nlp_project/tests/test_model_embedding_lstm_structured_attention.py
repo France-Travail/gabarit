@@ -37,7 +37,7 @@ import tensorflow.keras as keras
 from tensorflow.keras.preprocessing.text import Tokenizer
 
 from {{package_name}} import utils
-from {{package_name}}.models_training.model_embedding_lstm_structured_attention import ModelEmbeddingLstmStructuredAttention
+from {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_structured_attention import ModelEmbeddingLstmStructuredAttention
 
 # Disable logging
 import logging
@@ -82,7 +82,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
 
 
     def test01_model_embedding_lstm_structured_attention_init(self):
-        '''Test of {{package_name}}.models_training.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention.__init__'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention.__init__'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
         # Init., test all parameters
@@ -156,7 +156,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
 
 
     def test02_model_embedding_lstm_structured_attention_predict_proba(self):
-        '''Test of {{package_name}}.models_training.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention.predict_proba'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention.predict_proba'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -229,7 +229,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
 
 
     def test03_model_embedding_lstm_structured_attention_prepare_x_train(self):
-        '''Test of {{package_name}}.models_training.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention._prepare_x_train'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention._prepare_x_train'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -252,7 +252,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
 
 
     def test04_model_embedding_lstm_structured_attention_prepare_x_test(self):
-        '''Test of {{package_name}}.models_training.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention._prepare_x_test'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention._prepare_x_test'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -292,7 +292,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
 
 
     def test05_model_embedding_lstm_structured_attention_get_model(self):
-        '''Test of {{package_name}}.models_training.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention._get_model'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention._get_model'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -320,7 +320,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
 
 
     def test06_model_embedding_lstm_structured_attention_explain(self):
-        '''Test of {{package_name}}.models_training.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention.explain
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention.explain
 
             WARNING: We only test the technical implementation, not the result (too unstable as of 13/04/2021)
         '''
@@ -449,7 +449,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
 
 
     def test07_model_embedding_lstm_structured_attention_pad_text(self):
-        '''Test of {{package_name}}.models_training.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention._pad_text'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention._pad_text'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -491,7 +491,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
 
 
     def test08_model_embedding_lstm_structured_attention_save(self):
-        '''Test of the method save of {{package_name}}.models_training.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention'''
+        '''Test of the method save of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -575,7 +575,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
 
 
     def test09_model_embedding_lstm_structured_attention_reload_model(self):
-        '''Test of the method reload_model of {{package_name}}.models_training.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention'''
+        '''Test of the method reload_model of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -603,7 +603,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
 
 
     def test10_test_model_embedding_lstm_structured_attention_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention.reload_from_standalone'''
+        '''Test of the method {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention.reload_from_standalone'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')

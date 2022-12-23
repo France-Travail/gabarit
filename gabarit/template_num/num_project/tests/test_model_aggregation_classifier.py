@@ -25,10 +25,10 @@ import numpy as np
 import pandas as pd
 
 from {{package_name}} import utils
-from {{package_name}}.models_training.regressors.model_sgd_regressor import ModelSGDRegressor
+from {{package_name}}.models_training.regressors.models_sklearn.model_sgd_regressor import ModelSGDRegressor
 from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin
-from {{package_name}}.models_training.classifiers.model_gbt_classifier import ModelGBTClassifier
-from {{package_name}}.models_training.classifiers.model_sgd_classifier import ModelSGDClassifier
+from {{package_name}}.models_training.classifiers.models_sklearn.model_gbt_classifier import ModelGBTClassifier
+from {{package_name}}.models_training.classifiers.models_sklearn.model_sgd_classifier import ModelSGDClassifier
 from {{package_name}}.models_training.classifiers.model_aggregation_classifier import ModelAggregationClassifier, proba_argmax, majority_vote, all_predictions, vote_labels
 
 # Disable logging

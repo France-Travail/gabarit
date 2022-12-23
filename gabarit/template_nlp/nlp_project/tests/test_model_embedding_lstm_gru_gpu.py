@@ -32,7 +32,7 @@ import tensorflow.keras as keras
 from tensorflow.keras.preprocessing.text import Tokenizer
 
 from {{package_name}} import utils
-from {{package_name}}.models_training.model_embedding_lstm_gru_gpu import ModelEmbeddingLstmGruGpu
+from {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu import ModelEmbeddingLstmGruGpu
 
 # Disable logging
 import logging
@@ -74,7 +74,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
             os.remove(fake_path)
 
     def test01_model_embedding_lstm_gru_gpu_init(self):
-        '''Test of {{package_name}}.models_training.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu.__init__'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu.__init__'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
         # Init., test all parameters
@@ -139,7 +139,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
             model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, truncating='toto')
 
     def test02_model_embedding_lstm_gru_gpu_predict_proba(self):
-        '''Test of {{package_name}}.models_training.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu.predict_proba'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu.predict_proba'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -211,7 +211,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test03_model_embedding_lstm_gru_gpu_prepare_x_train(self):
-        '''Test of {{package_name}}.models_training.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu._prepare_x_train'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu._prepare_x_train'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -233,7 +233,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test04_model_embedding_lstm_gru_gpu_prepare_x_test(self):
-        '''Test of {{package_name}}.models_training.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu._prepare_x_test'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu._prepare_x_test'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -256,7 +256,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test05_model_embedding_lstm_gru_gpu_get_model(self):
-        '''Test of {{package_name}}.models_training.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu._get_model'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu._get_model'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -283,7 +283,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test06_model_embedding_lstm_gru_gpu_save(self):
-        '''Test of the method save of {{package_name}}.models_training.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu'''
+        '''Test of the method save of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -359,7 +359,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test07_model_embedding_lstm_gru_gpu_reload_model(self):
-        '''Test of the method reload_model of {{package_name}}.models_training.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu'''
+        '''Test of the method reload_model of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -386,7 +386,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test08_test_model_embedding_lstm_gru_gpu_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu.reload_from_standalone'''
+        '''Test of the method {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu.reload_from_standalone'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')

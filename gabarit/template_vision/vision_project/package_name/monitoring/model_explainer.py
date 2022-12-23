@@ -29,9 +29,9 @@ from PIL import Image
 from typing import Type, Union, Any
 from lime.lime_image import LimeImageExplainer
 
-from {{package_name}} import utils
-from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.models_training.classifiers.model_classifier import ModelClassifierMixin  # type: ignore
+from .. import utils
+from ..preprocessing import preprocess
+from ..models_training.classifiers.model_classifier import ModelClassifierMixin  # type: ignore
 # ModelClassifierMixin import must be ignored for mypy as the Mixin class is itself ignored (too complicated to manage)
 
 

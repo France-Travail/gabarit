@@ -33,7 +33,7 @@ from sklearn.ensemble import RandomForestClassifier
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from {{package_name}} import utils
-from {{package_name}}.models_training.model_pipeline import ModelPipeline
+from {{package_name}}.models_training.models_sklearn.model_pipeline import ModelPipeline
 
 # Disable logging
 import logging
@@ -55,7 +55,7 @@ class ModelPipelineTests(unittest.TestCase):
         os.chdir(dname)
 
     def test01_model_pipeline_init(self):
-        '''Test of the initialization of {{package_name}}.models_training.model_pipeline.ModelPipeline'''
+        '''Test of the initialization of {{package_name}}.models_training.models_sklearn.model_pipeline.ModelPipeline'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -79,7 +79,7 @@ class ModelPipelineTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test02_model_pipeline_fit(self):
-        '''Test of the method fit of {{package_name}}.models_training.model_pipeline.ModelPipeline'''
+        '''Test of the method fit of {{package_name}}.models_training.models_sklearn.model_pipeline.ModelPipeline'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -153,7 +153,7 @@ class ModelPipelineTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test03_model_pipeline_predict(self):
-        '''Test of the method predict of {{package_name}}.models_training.model_pipeline.ModelPipeline'''
+        '''Test of the method predict of {{package_name}}.models_training.models_sklearn.model_pipeline.ModelPipeline'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -203,7 +203,7 @@ class ModelPipelineTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test04_model_pipeline_predict_proba(self):
-        '''Test of the method predict_proba of {{package_name}}.models_training.model_pipeline.ModelPipeline'''
+        '''Test of the method predict_proba of {{package_name}}.models_training.models_sklearn.model_pipeline.ModelPipeline'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -245,7 +245,7 @@ class ModelPipelineTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test05_model_pipeline_save(self):
-        '''Test of the method save of {{package_name}}.models_training.model_pipeline.ModelPipeline'''
+        '''Test of the method save of {{package_name}}.models_training.models_sklearn.model_pipeline.ModelPipeline'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)

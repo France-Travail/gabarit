@@ -29,7 +29,7 @@ import pandas as pd
 import tensorflow.keras as keras
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
-from {{package_name}}.models_training.classifiers.model_dense_classifier import ModelDenseClassifier
+from {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier import ModelDenseClassifier
 
 # Disable logging
 import logging
@@ -51,7 +51,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         os.chdir(dname)
 
     def test01_model_dense_classifier_init(self):
-        '''Test of {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier.__init__'''
+        '''Test of {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier.ModelDenseClassifier.__init__'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -96,7 +96,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
     # We do not test the fit method. It is already done in test_model_keras.py
 
     def test02_model_dense_classifier_predict(self):
-        '''Test of the method predict of {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier'''
+        '''Test of the method predict of {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier.ModelDenseClassifier'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -172,7 +172,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test03_model_dense_classifier_predict_proba(self):
-        '''Test of the method predict_proba of {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier'''
+        '''Test of the method predict_proba of {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier.ModelDenseClassifier'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -227,7 +227,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test04_model_dense_classifier_get_predict_position(self):
-        '''Test of the method {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier.get_predict_position'''
+        '''Test of the method {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier.ModelDenseClassifier.get_predict_position'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -270,7 +270,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test05_model_dense_classifier_get_model(self):
-        '''Test of the method {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier._get_model'''
+        '''Test of the method {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier.ModelDenseClassifier._get_model'''
 
         # Set vars
         x_col = ['col_1', 'col_2']
@@ -307,7 +307,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test06_model_dense_classifier_save(self):
-        '''Test of the method save of {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier'''
+        '''Test of the method save of {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier.ModelDenseClassifier'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -400,7 +400,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test07_model_dense_classifier_reload_model(self):
-        '''Test of the method reload_model of {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier'''
+        '''Test of the method reload_model of {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier.ModelDenseClassifier'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -457,7 +457,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test08_model_dense_classifier_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.classifiers.model_dense_classifier.ModelDenseClassifier.reload_from_standalone'''
+        '''Test of the method {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier.ModelDenseClassifier.reload_from_standalone'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')

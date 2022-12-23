@@ -50,8 +50,8 @@ from sklearn.utils.validation import check_is_fitted
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
 
-from {{package_name}} import utils
-from {{package_name}}.preprocessing import preprocess
+from .. import utils
+from ..preprocessing import preprocess
 # We can't import ModelClass here as this creates a circular dependency
 # As this is only used for type hitting, we rather prefer to give up on it here
 # from {{package_name}}.models_training.model_class import ModelClass

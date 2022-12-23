@@ -35,19 +35,16 @@ from datetime import datetime
 
 from test_template_num import utils
 from test_template_num.models_training import utils_models
-from test_template_num.models_training.classifiers import (model_rf_classifier, model_dense_classifier,
-                                                           model_ridge_classifier, model_logistic_regression_classifier,
-                                                           model_sgd_classifier, model_svm_classifier,
-                                                           model_knn_classifier, model_gbt_classifier,
-                                                           model_lgbm_classifier, model_xgboost_classifier,
-                                                            model_aggregation_classifier)
-from test_template_num.models_training.regressors import (model_rf_regressor, model_dense_regressor,
-                                                          model_elasticnet_regressor, model_bayesian_ridge_regressor,
-                                                          model_kernel_ridge_regressor, model_svr_regressor,
-                                                          model_sgd_regressor,
-                                                          model_knn_regressor, model_pls_regressor,
-                                                          model_gbt_regressor, model_xgboost_regressor, model_lgbm_regressor,
-                                                          model_aggregation_regressor)
+from test_template_num.models_training.classifiers import model_xgboost_classifier, model_aggregation_classifier
+from test_template_num.models_training.classifiers.models_tensorflow import model_dense_classifier
+from test_template_num.models_training.classifiers.models_sklearn import (model_rf_classifier, model_ridge_classifier, model_logistic_regression_classifier,
+                                                                          model_sgd_classifier, model_svm_classifier, model_knn_classifier, model_gbt_classifier, 
+                                                                          model_lgbm_classifier)
+from test_template_num.models_training.regressors import model_xgboost_regressor, model_aggregation_regressor
+from test_template_num.models_training.regressors.models_tensorflow import model_dense_regressor
+from test_template_num.models_training.regressors.models_sklearn import (model_rf_regressor, model_elasticnet_regressor, model_bayesian_ridge_regressor,
+                                                                         model_kernel_ridge_regressor, model_svr_regressor, model_sgd_regressor, 
+                                                                         model_knn_regressor, model_pls_regressor, model_gbt_regressor, model_lgbm_regressor)
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)

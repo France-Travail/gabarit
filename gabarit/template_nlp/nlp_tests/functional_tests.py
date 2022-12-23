@@ -34,10 +34,12 @@ from pathlib import Path
 from datetime import datetime
 
 from test_template_nlp import utils
-from test_template_nlp.models_training import (model_tfidf_svm, model_tfidf_gbt, model_tfidf_lgbm, model_tfidf_sgdc,
-                                               model_tfidf_dense, model_embedding_lstm, model_embedding_lstm_attention,
-                                               model_embedding_lstm_structured_attention, model_embedding_lstm_gru_gpu,
-                                               model_embedding_cnn, model_huggingface, model_aggregation, utils_models)
+from test_template_nlp.models_training import model_huggingface, model_aggregation
+from test_template_nlp.models_training.models_sklearn import (model_tfidf_svm, model_tfidf_gbt, model_tfidf_lgbm, 
+                                                              model_tfidf_sgdc)
+from test_template_nlp.models_training.models_tensorflow import (model_tfidf_dense, model_embedding_lstm, model_embedding_lstm_attention,
+                                                                 model_embedding_lstm_structured_attention, model_embedding_lstm_gru_gpu,
+                                                                 model_embedding_cnn)
 
 
 def remove_dir(path):

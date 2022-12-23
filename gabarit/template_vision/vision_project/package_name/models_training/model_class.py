@@ -30,7 +30,7 @@ import dill as pickle
 from datetime import datetime
 from typing import Union, Dict, Any
 
-from {{package_name}} import utils
+from .. import utils
 
 
 class ModelClass:

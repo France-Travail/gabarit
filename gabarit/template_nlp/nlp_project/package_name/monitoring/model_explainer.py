@@ -26,8 +26,8 @@ from typing import Type, Union, Any, Iterable
 from lime.explanation import Explanation
 from lime.lime_text import LimeTextExplainer
 
-from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.models_training.model_class import ModelClass
+from ..preprocessing import preprocess
+from ..models_training.model_class import ModelClass
 
 
 class Explainer:

@@ -29,8 +29,8 @@ import pandas as pd
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_models
 from {{package_name}}.monitoring.model_explainer import ShapExplainer
-from {{package_name}}.models_training.regressors.model_rf_regressor import ModelRFRegressor
-from {{package_name}}.models_training.classifiers.model_rf_classifier import ModelRFClassifier
+from {{package_name}}.models_training.regressors.models_sklearn.model_rf_regressor import ModelRFRegressor
+from {{package_name}}.models_training.classifiers.models_sklearn.model_rf_classifier import ModelRFClassifier
 
 
 # Disable logging

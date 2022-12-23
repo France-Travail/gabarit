@@ -30,7 +30,7 @@ import tensorflow.keras as keras
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
-from {{package_name}}.models_training.regressors.model_dense_regressor import ModelDenseRegressor
+from {{package_name}}.models_training.regressors.models_tensorflow.model_dense_regressor import ModelDenseRegressor
 
 # Disable logging
 import logging
@@ -129,7 +129,7 @@ class ModelDenseRegressorTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test03_model_dense_regressor_get_model(self):
-        '''Test of the method {{package_name}}.models_training.regressors.model_dense_regressor.ModelDenseRegressor._get_model'''
+        '''Test of the method {{package_name}}.models_training.regressors.models_tensorflow.model_dense_regressor.ModelDenseRegressor._get_model'''
 
         # Set vars
         x_col = ['col_1', 'col_2']
@@ -235,7 +235,7 @@ class ModelDenseRegressorTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test05_model_dense_regressor_reload_model(self):
-        '''Test of the method reload_model of {{package_name}}.models_training.regressors.model_dense_regressor.ModelDenseRegressor'''
+        '''Test of the method reload_model of {{package_name}}.models_training.regressors.models_tensorflow.model_dense_regressor.ModelDenseRegressor'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -260,7 +260,7 @@ class ModelDenseRegressorTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test06_model_dense_regressor_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.regressors.model_dense_regressor.ModelDenseRegressor.reload_from_standalone'''
+        '''Test of the method {{package_name}}.models_training.regressors.models_tensorflow.model_dense_regressor.ModelDenseRegressor.reload_from_standalone'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')

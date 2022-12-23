@@ -26,9 +26,9 @@ import pandas as pd
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.regressors.model_regressor import ModelRegressorMixin 
-from {{package_name}}.models_training.regressors.model_gbt_regressor import ModelGBTRegressor
-from {{package_name}}.models_training.regressors.model_sgd_regressor import ModelSGDRegressor
-from {{package_name}}.models_training.classifiers.model_sgd_classifier import ModelSGDClassifier
+from {{package_name}}.models_training.regressors.models_sklearn.model_gbt_regressor import ModelGBTRegressor
+from {{package_name}}.models_training.regressors.models_sklearn.model_sgd_regressor import ModelSGDRegressor
+from {{package_name}}.models_training.classifiers.models_sklearn.model_sgd_classifier import ModelSGDClassifier
 from {{package_name}}.models_training.regressors.model_aggregation_regressor import ModelAggregationRegressor, median_predict, mean_predict
 
 # Disable logging

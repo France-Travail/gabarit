@@ -31,7 +31,7 @@ import tensorflow
 import tensorflow.keras as keras
 
 from {{package_name}} import utils
-from {{package_name}}.models_training.model_tfidf_dense import ModelTfidfDense
+from {{package_name}}.models_training.models_tensorflow.model_tfidf_dense import ModelTfidfDense
 
 # Disable logging
 import logging
@@ -158,7 +158,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test04_model_tfidf_dense_prepare_x_train(self):
-        '''Test of {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense._prepare_x_train'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_tfidf_dense.ModelTfidfDense._prepare_x_train'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -178,7 +178,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test05_model_tfidf_dense_prepare_x_test(self):
-        '''Test of {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense._prepare_x_test'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_tfidf_dense.ModelTfidfDense._prepare_x_test'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -199,7 +199,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test06_model_tfidf_dense_get_model(self):
-        '''Test of {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense._get_model'''
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_tfidf_dense.ModelTfidfDense._get_model'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -217,7 +217,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test07_model_tfidf_dense_save(self):
-        '''Test of the method save of {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense'''
+        '''Test of the method save of {{package_name}}.models_training.models_tensorflow.model_tfidf_dense.ModelTfidfDense'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -248,7 +248,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
 
 
     def test08_model_tfidf_dense_reload_model(self):
-        '''Test of the method reload_model of {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense'''
+        '''Test of the method reload_model of {{package_name}}.models_training.models_tensorflow.model_tfidf_dense.ModelTfidfDense'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -273,7 +273,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test09_test_model_tfidf_dense_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.model_tfidf_dense.ModelTfidfDense.reload_from_standalone'''
+        '''Test of the method {{package_name}}.models_training.models_tensorflow.model_tfidf_dense.ModelTfidfDense.reload_from_standalone'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')

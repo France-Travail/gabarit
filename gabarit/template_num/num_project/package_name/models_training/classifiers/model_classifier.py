@@ -33,7 +33,7 @@ from typing import List, Union, Tuple
 from sklearn.metrics import (accuracy_score, confusion_matrix, f1_score,
                              multilabel_confusion_matrix, precision_score, recall_score)
 
-from {{package_name}} import utils
+from ... import utils
 
 sns.set(style="darkgrid")
 

@@ -41,9 +41,9 @@ from tensorflow.keras.models import load_model
 from tensorflow.keras.callbacks import (CSVLogger, EarlyStopping, ModelCheckpoint,
                                         TerminateOnNaN, LearningRateScheduler)
 
-from {{package_name}} import utils
-from {{package_name}}.models_training import utils_deep_keras
-from {{package_name}}.models_training.model_class import ModelClass
+from .. import utils
+from . import utils_deep_keras
+from .model_class import ModelClass
 
 sns.set(style="darkgrid")
 

@@ -29,8 +29,8 @@ from typing import Union
 
 from sklearn.pipeline import Pipeline
 
-from {{package_name}} import utils
-from {{package_name}}.models_training.model_class import ModelClass
+from .. import utils
+from .model_class import ModelClass
 
 
 class ModelPipeline(ModelClass):
