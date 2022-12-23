@@ -41,20 +41,25 @@ from {{package_name}}.preprocessing import preprocess
 from {{package_name}}.models_training import utils_models
 from {{package_name}}.monitoring.mlflow_logger import MLflowLogger
 from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training.regressors import (model_rf_regressor,
-                                                         model_dense_regressor,
-                                                         model_elasticnet_regressor,
-                                                         model_bayesian_ridge_regressor,
-                                                         model_kernel_ridge_regressor,
-                                                         model_svr_regressor,
-                                                         model_sgd_regressor,
-                                                         model_knn_regressor,
-                                                         model_pls_regressor,
-                                                         model_gbt_regressor,
-                                                         model_xgboost_regressor,
-                                                         model_lgbm_regressor,
-                                                         model_aggregation_regressor
-                                                         )
+from {{package_name}}.models_training.regressors import (
+    model_xgboost_regressor,
+    model_aggregation_regressor,
+)
+from {{package_name}}.models_training.regressors.models_tensorflow import (
+    model_dense_regressor,
+)
+from {{package_name}}.models_training.regressors.models_sklearn import (
+    model_rf_regressor,
+    model_elasticnet_regressor,
+    model_bayesian_ridge_regressor,
+    model_kernel_ridge_regressor,
+    model_svr_regressor,
+    model_sgd_regressor,
+    model_knn_regressor,
+    model_pls_regressor,
+    model_gbt_regressor,
+    model_lgbm_regressor,
+)
 
 # Disable some warnings
 warnings.filterwarnings("ignore", category=FutureWarning)

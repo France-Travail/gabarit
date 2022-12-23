@@ -43,13 +43,13 @@ from {{package_name}}.models_training import (
     model_aggregation,
     model_huggingface,
 )
-from {{package_name}}.models_training.models_tensorflow import (
+from {{package_name}}.models_training.models_sklearn import (
     model_tfidf_gbt,
     model_tfidf_lgbm,
     model_tfidf_sgdc,
     model_tfidf_svm,
 )
-from {{package_name}}.models_training.models_sklearn import (
+from {{package_name}}.models_training.models_tensorflow import (
     model_embedding_cnn,
     model_embedding_lstm,
     model_embedding_lstm_attention,

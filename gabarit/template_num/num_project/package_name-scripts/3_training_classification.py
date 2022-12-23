@@ -41,18 +41,23 @@ from {{package_name}}.preprocessing import preprocess
 from {{package_name}}.models_training import utils_models
 from {{package_name}}.monitoring.mlflow_logger import MLflowLogger
 from {{package_name}}.models_training.model_class import ModelClass
-from {{package_name}}.models_training.classifiers import (model_rf_classifier,
-                                                          model_dense_classifier,
-                                                          model_ridge_classifier,
-                                                          model_logistic_regression_classifier,
-                                                          model_sgd_classifier,
-                                                          model_svm_classifier,
-                                                          model_knn_classifier,
-                                                          model_gbt_classifier,
-                                                          model_lgbm_classifier,
-                                                          model_xgboost_classifier,
-                                                          model_aggregation_classifier
-                                                          )
+from {{package_name}}.models_training.classifiers import (
+    model_xgboost_classifier,
+    model_aggregation_classifier,
+)
+from {{package_name}}.models_training.classifiers.models_sklearn import (
+    model_rf_classifier,
+    model_ridge_classifier,
+    model_logistic_regression_classifier,
+    model_sgd_classifier,
+    model_svm_classifier,
+    model_knn_classifier,
+    model_gbt_classifier,
+    model_lgbm_classifier,
+)
+from {{package_name}}.models_training.classifiers.models_tensorflow import (
+    model_dense_classifier,
+)
 
 # Disable some warnings
 warnings.filterwarnings("ignore", category=FutureWarning)
