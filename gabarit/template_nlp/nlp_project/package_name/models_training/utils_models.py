@@ -44,7 +44,7 @@ import numpy as np
 import pandas as pd
 import dill as pickle
 from datetime import datetime
-from typing import Union, Tuple, Callable, Any, Dict
+from typing import Union, Tuple, Callable, Any, Dict, List
 
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
@@ -309,8 +309,7 @@ def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
     return model, configs
 
 
-# TODO: Shouldn't content be an iterable & shouldn't we return a list ?
-def predict(content: str, model, model_conf: dict, **kwargs) -> Union[str, tuple]:
+def predict(content: str, model, model_conf: dict, **kwargs) -> list:
     '''Gets predictions of a model on a content
 
     Args:
@@ -318,12 +317,11 @@ def predict(content: str, model, model_conf: dict, **kwargs) -> Union[str, tuple
         model (ModelClass): Model to use
         model_conf (dict): Model configurations
     Returns:
-        MONO-LABEL CLASSIFICATION:
-            str: prediction
-        MULTI-LABELS CLASSIFICATION:
-            tuple: predictions
+        list: a list of strings (resp. tuples) in case of mono-label (resp. multi-labels) classification predictions
     '''
-    # TODO : add multiple inputs ?
+    if isinstance(content, str):
+        content = [content]
+        
     # Get preprocessor
     if 'preprocess_str' in model_conf.keys():
         preprocess_str = model_conf['preprocess_str']
@@ -335,13 +333,13 @@ def predict(content: str, model, model_conf: dict, **kwargs) -> Union[str, tuple
     content = preprocessor(content)
 
     # Get prediction (some models need an iterable)
-    predictions = model.predict([content])
+    predictions = model.predict(content)
 
     # Return predictions with inverse transform when relevant
-    return model.inverse_transform(predictions)[0]
+    return model.inverse_transform(predictions)
 
 
-def predict_with_proba(content: str, model, model_conf: dict) -> Tuple[Union[str, tuple], Union[float, tuple]]:
+def predict_with_proba(content: str, model, model_conf: dict) -> Tuple[Union[List[str], List[tuple]], Union[List[float], List[tuple]]]:
     '''Gets predictions of a model on a content, with probabilities
 
     Args:
@@ -350,13 +348,15 @@ def predict_with_proba(content: str, model, model_conf: dict) -> Tuple[Union[str
         model_conf (dict): Model configurations
     Returns:
         MONO-LABEL CLASSIFICATION:
-            str: prediction
-            float: probability
+            List[str]: predictions
+            List[float]: probabilities
         MULTI-LABELS CLASSIFICATION:
-            tuple: predictions
-            tuple: probabilities
+            List[tuple]: predictions
+            List[tuple]: probabilities
     '''
-    # TODO : add multiple inputs ?
+    if isinstance(content, str):
+        content = [content]
+
     # Get preprocessor
     if 'preprocess_str' in model_conf.keys():
         preprocess_str = model_conf['preprocess_str']
@@ -368,15 +368,15 @@ def predict_with_proba(content: str, model, model_conf: dict) -> Tuple[Union[str
     content = preprocessor(content)
 
     # Get prediction (some models need an iterable)
-    predictions, probas = model.predict_with_proba([content])
+    predictions, probas = model.predict_with_proba(content)
 
     # Rework format
     if not model.multi_label:
-        prediction = model.inverse_transform(predictions)[0]
-        proba = max(probas[0])
+        prediction = model.inverse_transform(predictions)
+        proba = [max(p) for p in probas]
     else:
-        prediction = [tuple(np.array(model.list_classes).compress(indicators)) for indicators in predictions][0]
-        proba = [tuple(np.array(probas[0]).compress(indicators)) for indicators in predictions][0]
+        prediction = [tuple(np.array(model.list_classes).compress(indicators)) for indicators in predictions]
+        proba = [tuple(np.array(probas[0]).compress(indicators)) for indicators in predictions]
 
     # Return prediction & proba
     return prediction, proba
