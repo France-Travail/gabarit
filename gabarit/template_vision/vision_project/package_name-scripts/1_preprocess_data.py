@@ -39,7 +39,7 @@ from {{package_name}}.preprocessing import preprocess
 logger = logging.getLogger('{{package_name}}.1_preprocess_data')
 
 
-def main(directories: List[str], preprocessing: Union[str, None], sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}') -> None:
+def main(directories: List[str], preprocessing: Union[str, None], sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}', overwrite: bool = False) -> None:
     '''Preprocesses some datasets
 
     Args:
@@ -48,6 +48,7 @@ def main(directories: List[str], preprocessing: Union[str, None], sep: str = '{{
     Kwargs:
         sep (str): Separator to use with the metadata file - if exists
         encoding (str): Encoding to use with the metadata file - if exists
+        overwrite (bool): Whether to allow overwriting
     Raises:
         FileNotFoundError: If a given directory does not exist in {{package_name}}-data
         NotADirectoryError: If a given path is not a directory
@@ -126,8 +127,12 @@ def main(directories: List[str], preprocessing: Union[str, None], sep: str = '{{
             # We start by creating a new directory for the preprocessed images
             new_directory = os.path.join(data_path, f"{directory}_{preprocess_str}")
             if os.path.exists(new_directory):
-                shutil.rmtree(new_directory)
-            os.makedirs(new_directory)
+                if overwrite:
+                    shutil.rmtree(new_directory)
+                    os.makedirs(new_directory)
+                else:
+                    logger.info(f"{new_directory} already exists. Pass.")
+                    continue
 
             # Process by chunks of 100s to avoid memory issues
             new_path_list = []
@@ -189,5 +194,6 @@ if __name__ == '__main__':
     parser.add_argument('-p', '--preprocessing', default=None, help='Preprocessing to be applied. All preprocessings are applied if None.')
     parser.add_argument('--sep', default='{{default_sep}}', help='Separator to use with the metadata file - if exists.')
     parser.add_argument('--encoding', default="{{default_encoding}}", help='Encoding to use with the metadata file - if exists.')
+    parser.add_argument('--overwrite', action='store_true', help="Whether to allow overwriting")
     args = parser.parse_args()
-    main(directories=args.directories, preprocessing=args.preprocessing, sep=args.sep, encoding=args.encoding)
+    main(directories=args.directories, preprocessing=args.preprocessing, sep=args.sep, encoding=args.encoding, overwrite=args.overwrite)

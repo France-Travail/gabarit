@@ -60,7 +60,7 @@ def main(filenames: List[str], cols: Union[List[Union[str, int]], None] = None, 
     # Manage new file
     output_path = os.path.join(data_path, output)
     if os.path.isfile(output_path) and not overwrite_dataset:
-        raise FileNotFoundError(f"The file {output_path} already exists.")
+        raise FileExistsError(f"The file {output_path} already exists.")
 
     # Init. dataframe
     df = pd.DataFrame(columns=cols)

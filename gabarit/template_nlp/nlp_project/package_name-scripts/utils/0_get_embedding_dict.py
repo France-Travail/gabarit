@@ -32,7 +32,7 @@ from {{package_name}} import utils
 logger = logging.getLogger('{{package_name}}.0_get_embedding_dict')
 
 
-def main(filename: str, encoding: str = '{{default_encoding}}') -> None:
+def main(filename: str, encoding: str = '{{default_encoding}}', overwrite: bool = False) -> None:
     '''Creates an embedding matrix from .vec files (fasttext format)
 
     Those files can be downloaded here (text files): https://fasttext.cc/docs/en/crawl-vectors.html
@@ -41,6 +41,7 @@ def main(filename: str, encoding: str = '{{default_encoding}}') -> None:
         filename (str): A .vec file name (actually a path relative to {{package_name}}-data)
     Kwargs:
         encoding (str): Encoding to use with the .vec file
+        overwrite (bool): Whether to allow overwriting
     Raises:
         FileNotFoundError: If the file does not exist in {{package_name}}-data
     '''
@@ -59,6 +60,10 @@ def main(filename: str, encoding: str = '{{default_encoding}}') -> None:
 
     # Save
     file_path = os.path.join(data_path, '.'.join(filename.split('.')[:-1]) + '.pkl')
+
+    if os.path.exists(file_path) and not overwrite:
+        raise FileExistsError(f"{file_path} already exists. This error can be bypassed with the argument --overwrite.")
+        
     with open(file_path, 'wb') as f:
         pickle.dump(embedding_indexes, f, pickle.HIGHEST_PROTOCOL)
 
@@ -67,5 +72,6 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filename', required=True, help='A .vec file name (actually a path relative to {{package_name}}-data)')
     parser.add_argument('--encoding', default="utf-8", help="Encoding to use with the .vec file.")
+    parser.add_argument('--overwrite', action='store_true', help="Whether to allow overwriting")
     args = parser.parse_args()
-    main(filename=args.filename, encoding=args.encoding)
+    main(filename=args.filename, encoding=args.encoding, overwrite=args.overwrite)

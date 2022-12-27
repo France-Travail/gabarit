@@ -32,7 +32,7 @@ from {{package_name}} import utils
 logger = logging.getLogger('{{package_name}}.0_create_samples')
 
 
-def main(filenames: List[str], n_samples: int = 100, sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}') -> None:
+def main(filenames: List[str], n_samples: int = 100, sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}', overwrite: bool = False) -> None:
     '''Extracts data subsets from a list of files
 
     Args:
@@ -41,6 +41,7 @@ def main(filenames: List[str], n_samples: int = 100, sep: str = '{{default_sep}}
         n_samples (int): Number of samples to extract
         sep (str): Separator to use with the .csv files
         encoding (str): Encoding to use with the .csv files
+        overwrite (bool): Whether to allow overwriting
     Raises:
         FileNotFoundError: If a given file does not exist in {{package_name}}-data
     '''
@@ -63,7 +64,7 @@ def main(filenames: List[str], n_samples: int = 100, sep: str = '{{default_sep}}
         new_file_name = f"{base_file_name}_{n_samples}_samples.csv"
         new_path = os.path.join(data_path, new_file_name)
         # We do not trigger an error if the file exists
-        if os.path.exists(new_path):
+        if os.path.exists(new_path) and not overwrite:
             logger.info(f"{new_path} already exists. Pass.")
             continue
 
@@ -83,5 +84,6 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--n_samples', type=int, default=100, help="Number of samples to extract")
     parser.add_argument('--sep', default='{{default_sep}}', help="Separator to use with the .csv files")
     parser.add_argument('--encoding', default="{{default_encoding}}", help="Encoding to use with the .csv files")
+    parser.add_argument('--overwrite', action='store_true', help="Whether to allow overwriting")
     args = parser.parse_args()
-    main(filenames=args.filenames, n_samples=args.n_samples, sep=args.sep, encoding=args.encoding)
+    main(filenames=args.filenames, n_samples=args.n_samples, sep=args.sep, encoding=args.encoding, overwrite=args.overwrite)

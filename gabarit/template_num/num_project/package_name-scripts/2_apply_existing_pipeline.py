@@ -35,7 +35,7 @@ logger = logging.getLogger('{{package_name}}.2_apply_existing_pipeline')
 
 
 def main(filenames: List[str], pipeline: str, target_cols: List[Union[str, int]],
-         sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}') -> None:
+         sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}', overwrite: bool = False) -> None:
     '''Applies an already fitted pipeline to some datasets - usually `validation` datasets
 
     Args:
@@ -45,6 +45,7 @@ def main(filenames: List[str], pipeline: str, target_cols: List[Union[str, int]]
     Kwargs:
         sep (str): Separator to use with the .csv files
         encoding (str): Encoding to use with the .csv files
+        overwrite (bool): Whether to allow overwriting
     Raises:
         FileNotFoundError: If a given file does not exist in {{package_name}}-data
     '''
@@ -62,6 +63,13 @@ def main(filenames: List[str], pipeline: str, target_cols: List[Union[str, int]]
         if not os.path.exists(dataset_path):
             raise FileNotFoundError(f"The file {dataset_path} does not exist")
 
+        # Output path
+        dataset_preprocessed_path = os.path.join(data_path, f'{Path(filename).stem}_{preprocess_str}.csv')
+
+        if os.path.exists(dataset_preprocessed_path) and not overwrite:
+            logger.info(f'{dataset_preprocessed_path} already exists. Pass.')
+            continue
+
         # Get dataset
         df = pd.read_csv(dataset_path, sep=sep, encoding=encoding)
         # Split X, y
@@ -77,8 +85,6 @@ def main(filenames: List[str], pipeline: str, target_cols: List[Union[str, int]]
 
         # Save preprocessed dataframe ({{default_encoding}}, '{{default_sep}}')
         # First line is a metadata with the name of the pipeline file
-        basename = Path(filename).stem
-        dataset_preprocessed_path = os.path.join(data_path, f'{basename}_{preprocess_str}.csv')
         utils.to_csv(new_df, dataset_preprocessed_path, first_line=f'#{pipeline}', sep=sep, encoding=encoding)
 
 
@@ -89,5 +95,6 @@ if __name__ == '__main__':
     parser.add_argument('--target_cols', nargs='+', required=True, help='Y columns.')
     parser.add_argument('--sep', default='{{default_sep}}', help="Separator to use with the .csv files.")
     parser.add_argument('--encoding', default="{{default_encoding}}", help="Encoding to use with the .csv files.")
+    parser.add_argument('--overwrite', action='store_true', help="Whether to allow overwriting")
     args = parser.parse_args()
-    main(filenames=args.filenames, pipeline=args.pipeline, target_cols=args.target_cols, sep=args.sep, encoding=args.encoding)
+    main(filenames=args.filenames, pipeline=args.pipeline, target_cols=args.target_cols, sep=args.sep, encoding=args.encoding, overwrite=args.overwrite)
