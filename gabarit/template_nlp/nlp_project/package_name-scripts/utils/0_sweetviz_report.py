@@ -101,14 +101,13 @@ def main(source_paths: List[str], source_names: List[str] = None, compare_paths:
             compare_df = pd.read_csv(compare_path, sep=sep, encoding=encoding)
             compare = [compare_df, compare_name]
             compare_filename = compare_name.replace(" ", "_")
-            output_filename = datetime.datetime.now().strftime(f"report_{source_filename}_{compare_filename}_%Y_%m_%d-%H_%M_%S.html")
+            output_filename = datetime.datetime.now().strftime(f"report_{source_filename}_{compare_filename}_%Y_%m_%d-%H_%M_%S.html"
+            logger.info(f"Generating report between datasets '{source_filename}' and '{compare_filename}'")
 
         output_path = os.path.join(report_folder, output_filename)
         if os.path.exists(output_path) and not overwrite:
             logger.info(f"{output_path} already exists. Pass.")
             continue
-        else:
-            logger.info(f"Generating report between datasets '{source_filename}' and '{compare_filename}'")
 
         # Generate report
         report: sweetviz.DataframeReport = sweetviz.compare(source, compare, target_feat=target,
