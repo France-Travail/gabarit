@@ -339,7 +339,7 @@ def predict(content: str, model, model_conf: dict, **kwargs) -> list:
     return model.inverse_transform(predictions)
 
 
-def predict_with_proba(content: str, model, model_conf: dict) -> Tuple[Union[List[str], List[tuple]], Union[List[float], List[tuple]]]:
+def predict_with_proba(content: str, model, model_conf: dict) -> Union[Tuple[List[str], List[float]], Tuple[List[tuple], List[tuple]]]:
     '''Gets predictions of a model on a content, with probabilities
 
     Args:

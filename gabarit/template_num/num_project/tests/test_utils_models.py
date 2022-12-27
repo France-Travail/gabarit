@@ -494,10 +494,10 @@ class UtilsModelsTests(unittest.TestCase):
         y_train_regression = pd.Series([-10, -10, -10, 10, 10, 10] * 10)
         y_test_classification = [0, 1, 0, 1, 0, 1]
         y_test_classification_multi = [('test',), ('toto',), ('test',), ('toto',), ('test',), ('toto',)]
-        y_test_1_classification_solo = 0
-        y_test_2_classification_solo = 1
-        y_test_1_classification_multi_solo = ('test',)
-        y_test_2_classification_multi_solo = ('toto',)
+        y_test_1_classification_solo = [0]
+        y_test_2_classification_solo = [1]
+        y_test_1_classification_multi_solo = [('test',)]
+        y_test_2_classification_multi_solo = [('toto',)]
         model_dir = os.path.join(utils.get_models_path(), 'test_model')
         model_name = 'test_model_name'
 
@@ -574,7 +574,7 @@ class UtilsModelsTests(unittest.TestCase):
         model, model_conf = utils_models.load_model(model_dir='test_model')
         # Check just the type, regression is complicated...
         self.assertEqual(type(utils_models.predict(x_test_1, model)), list)
-        self.assertTrue(isinstance(utils_models.predict(x_test_1_solo, model), (np.floating, float)))
+        self.assertTrue(isinstance(utils_models.predict(x_test_1_solo, model), list))
         remove_dir(model_dir)
 
         ################
@@ -590,7 +590,7 @@ class UtilsModelsTests(unittest.TestCase):
         model, model_conf = utils_models.load_model(model_dir='test_model')
         # Check just the type, regression is complicated...
         self.assertEqual(type(utils_models.predict(x_test_2, model)), list)
-        self.assertTrue(isinstance(utils_models.predict(x_test_2_solo, model), (np.floating, float)))
+        self.assertTrue(isinstance(utils_models.predict(x_test_2_solo, model), list))
         remove_dir(model_dir)
 
 
@@ -609,10 +609,10 @@ class UtilsModelsTests(unittest.TestCase):
         y_train_regression = pd.Series([-10, -10, -10, 10, 10, 10] * 10)
         y_test_classification = [0, 1, 0, 1, 0, 1]
         y_test_classification_multi = [('test',), ('toto',), ('test',), ('toto',), ('test',), ('toto',)]
-        y_test_1_classification_solo = 0
-        y_test_2_classification_solo = 1
-        y_test_1_classification_multi_solo = ('test',)
-        y_test_2_classification_multi_solo = ('toto',)
+        y_test_1_classification_solo = [0]
+        y_test_2_classification_solo = [1]
+        y_test_1_classification_multi_solo = [('test',)]
+        y_test_2_classification_multi_solo = [('toto',)]
         model_dir = os.path.join(utils.get_models_path(), 'test_model')
         model_name = 'test_model_name'
 
@@ -633,7 +633,7 @@ class UtilsModelsTests(unittest.TestCase):
         self.assertEqual(sum([round(p) for p in proba]), len(y_test_classification))
         pred, proba = utils_models.predict_with_proba(x_test_1_solo, model)
         self.assertEqual(pred, y_test_1_classification_solo)
-        self.assertTrue(proba >= 0.5)
+        self.assertTrue(proba[0] >= 0.5)
         remove_dir(model_dir)
 
         ################
@@ -653,7 +653,7 @@ class UtilsModelsTests(unittest.TestCase):
         self.assertEqual(sum([round(p) for p in proba]), len(y_test_classification))
         pred, proba = utils_models.predict_with_proba(x_test_2_solo, model)
         self.assertEqual(pred, y_test_2_classification_solo)
-        self.assertTrue(proba >= 0.5)
+        self.assertTrue(proba[0] >= 0.5)
         remove_dir(model_dir)
 
         ################
@@ -673,7 +673,7 @@ class UtilsModelsTests(unittest.TestCase):
         self.assertEqual(sum([round(p[0]) for p in proba]), sum([len(_) for _ in y_test_classification_multi]))
         pred, proba = utils_models.predict_with_proba(x_test_1_solo, model)
         self.assertEqual(pred, y_test_1_classification_multi_solo)
-        self.assertTrue(proba[0] >= 0.5)
+        self.assertTrue(proba[0][0] >= 0.5)
         remove_dir(model_dir)
 
         ################
@@ -693,7 +693,7 @@ class UtilsModelsTests(unittest.TestCase):
         self.assertEqual(sum([round(p[0]) for p in proba]), sum([len(_) for _ in y_test_classification_multi]))
         pred, proba = utils_models.predict_with_proba(x_test_2_solo, model)
         self.assertEqual(pred, y_test_2_classification_multi_solo)
-        self.assertTrue(proba[0] >= 0.5)
+        self.assertTrue(proba[0][0] >= 0.5)
         remove_dir(model_dir)
 
         ################

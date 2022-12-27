@@ -230,14 +230,14 @@ class UtilsModelsTests(unittest.TestCase):
         model, model_conf = utils_models.load_model(model_dir=model_name)
         self.assertEqual(utils_models.predict(df_train_mono, model, model_conf), y_classes)  # DataFrame
         self.assertEqual(utils_models.predict(file_paths, model, model_conf), y_classes)  # Liste fichiers
-        self.assertEqual(utils_models.predict(file_paths[0], model, model_conf), y_classes[0])  # Chemin fichier
+        self.assertEqual(utils_models.predict(file_paths[0], model, model_conf)[0], y_classes[0])  # Chemin fichier
         self.assertEqual(utils_models.predict(np_images_rgb, model, model_conf), y_classes[1:]) # np.ndarray 'RGB'
-        self.assertEqual(utils_models.predict(np_images_rgb[0], model, model_conf), y_classes[1]) # np.ndarray 'RGB' - 1 seule image
+        self.assertEqual(utils_models.predict(np_images_rgb[0], model, model_conf)[0], y_classes[1]) # np.ndarray 'RGB' - 1 seule image
         np.testing.assert_almost_equal(utils_models.predict(df_train_mono, model, model_conf, return_proba=True), probas, 3)  # DataFrame
         np.testing.assert_almost_equal(utils_models.predict(file_paths, model, model_conf, return_proba=True), probas, 3)  # Liste fichiers
-        np.testing.assert_almost_equal(utils_models.predict(file_paths[0], model, model_conf, return_proba=True), probas[0], 3)  # Chemin fichier
+        np.testing.assert_almost_equal(utils_models.predict(file_paths[0], model, model_conf, return_proba=True)[0], probas[0], 3)  # Chemin fichier
         np.testing.assert_almost_equal(utils_models.predict(np_images_rgb, model, model_conf, return_proba=True), probas[1:], 3) # np.ndarray 'RGB'
-        np.testing.assert_almost_equal(utils_models.predict(np_images_rgb[0], model, model_conf, return_proba=True), probas[1], 3) # np.ndarray 'RGB' - 1 seule image
+        np.testing.assert_almost_equal(utils_models.predict(np_images_rgb[0], model, model_conf, return_proba=True)[0], probas[1], 3) # np.ndarray 'RGB' - 1 seule image
         remove_dir(model_dir)
 
 
@@ -256,14 +256,14 @@ class UtilsModelsTests(unittest.TestCase):
         model, model_conf = utils_models.load_model(model_dir=model_name)
         self.assertEqual(utils_models.predict(df_train_multi, model, model_conf), y_classes)  # DataFrame
         self.assertEqual(utils_models.predict(file_paths, model, model_conf), y_classes)  # Liste fichiers
-        self.assertEqual(utils_models.predict(file_paths[0], model, model_conf), y_classes[0])  # Chemin fichier
+        self.assertEqual(utils_models.predict(file_paths[0], model, model_conf)[0], y_classes[0])  # Chemin fichier
         self.assertEqual(utils_models.predict(np_images_rgba, model, model_conf), y_classes[1:]) # np.ndarray 'RGBA'
-        self.assertEqual(utils_models.predict(np_images_rgba[0], model, model_conf), y_classes[1]) # np.ndarray 'RGB' - 1 seule image
+        self.assertEqual(utils_models.predict(np_images_rgba[0], model, model_conf)[0], y_classes[1]) # np.ndarray 'RGB' - 1 seule image
         np.testing.assert_almost_equal(utils_models.predict(df_train_multi, model, model_conf, return_proba=True), probas, 3)  # DataFrame
         np.testing.assert_almost_equal(utils_models.predict(file_paths, model, model_conf, return_proba=True), probas, 3)  # Liste fichiers
-        np.testing.assert_almost_equal(utils_models.predict(file_paths[0], model, model_conf, return_proba=True), probas[0], 3)  # Chemin fichier
+        np.testing.assert_almost_equal(utils_models.predict(file_paths[0], model, model_conf, return_proba=True)[0], probas[0], 3)  # Chemin fichier
         np.testing.assert_almost_equal(utils_models.predict(np_images_rgba, model, model_conf, return_proba=True), probas[1:], 3) # np.ndarray 'RGBA'
-        np.testing.assert_almost_equal(utils_models.predict(np_images_rgba[0], model, model_conf, return_proba=True), probas[1], 3) # np.ndarray 'RGB' - 1 seule image
+        np.testing.assert_almost_equal(utils_models.predict(np_images_rgba[0], model, model_conf, return_proba=True)[0], probas[1], 3) # np.ndarray 'RGB' - 1 seule image
         remove_dir(model_dir)
 
 
@@ -333,14 +333,14 @@ class UtilsModelsTests(unittest.TestCase):
         model, model_conf = utils_models.load_model(model_dir=model_name)
         self.assertEqual(utils_models.predict_with_proba(df_train_mono, model, model_conf)[0], y_classes)  # DataFrame
         self.assertEqual(utils_models.predict_with_proba(file_paths, model, model_conf)[0], y_classes)  # Liste fichiers
-        self.assertEqual(utils_models.predict_with_proba(file_paths[0], model, model_conf)[0], y_classes[0])  # Chemin fichier
+        self.assertEqual(utils_models.predict_with_proba(file_paths[0], model, model_conf)[0][0], y_classes[0])  # Chemin fichier
         self.assertEqual(utils_models.predict_with_proba(np_images_rgb, model, model_conf)[0], y_classes[1:]) # np.ndarray 'RGB'
-        self.assertEqual(utils_models.predict_with_proba(np_images_rgb[0], model, model_conf)[0], y_classes[1]) # np.ndarray 'RGB' - 1 seule image
+        self.assertEqual(utils_models.predict_with_proba(np_images_rgb[0], model, model_conf)[0][0], y_classes[1]) # np.ndarray 'RGB' - 1 seule image
         np.testing.assert_almost_equal(utils_models.predict_with_proba(df_train_mono, model, model_conf)[1], max_probas, 3)  # DataFrame
         np.testing.assert_almost_equal(utils_models.predict_with_proba(file_paths, model, model_conf)[1], max_probas, 3)  # Liste fichiers
-        np.testing.assert_almost_equal(utils_models.predict_with_proba(file_paths[0], model, model_conf)[1], max_probas[0], 3)  # Chemin fichier
+        np.testing.assert_almost_equal(utils_models.predict_with_proba(file_paths[0], model, model_conf)[1][0], max_probas[0], 3)  # Chemin fichier
         np.testing.assert_almost_equal(utils_models.predict_with_proba(np_images_rgb, model, model_conf)[1], max_probas[1:], 3) # np.ndarray 'RGB'
-        np.testing.assert_almost_equal(utils_models.predict_with_proba(np_images_rgb[0], model, model_conf)[1], max_probas[1], 3) # np.ndarray 'RGB' - 1 seule image
+        np.testing.assert_almost_equal(utils_models.predict_with_proba(np_images_rgb[0], model, model_conf)[1][0], max_probas[1], 3) # np.ndarray 'RGB' - 1 seule image
         remove_dir(model_dir)
 
 
@@ -360,14 +360,14 @@ class UtilsModelsTests(unittest.TestCase):
         model, model_conf = utils_models.load_model(model_dir=model_name)
         self.assertEqual(utils_models.predict_with_proba(df_train_multi, model, model_conf)[0], y_classes)  # DataFrame
         self.assertEqual(utils_models.predict_with_proba(file_paths, model, model_conf)[0], y_classes)  # Liste fichiers
-        self.assertEqual(utils_models.predict_with_proba(file_paths[0], model, model_conf)[0], y_classes[0])  # Chemin fichier
+        self.assertEqual(utils_models.predict_with_proba(file_paths[0], model, model_conf)[0][0], y_classes[0])  # Chemin fichier
         self.assertEqual(utils_models.predict_with_proba(np_images_rgba, model, model_conf)[0], y_classes[1:]) # np.ndarray 'RGBA'
-        self.assertEqual(utils_models.predict_with_proba(np_images_rgba[0], model, model_conf)[0], y_classes[1]) # np.ndarray 'RGB' - 1 seule image
+        self.assertEqual(utils_models.predict_with_proba(np_images_rgba[0], model, model_conf)[0][0], y_classes[1]) # np.ndarray 'RGB' - 1 seule image
         np.testing.assert_almost_equal(utils_models.predict_with_proba(df_train_multi, model, model_conf)[1], max_probas, 3)  # DataFrame
         np.testing.assert_almost_equal(utils_models.predict_with_proba(file_paths, model, model_conf)[1], max_probas, 3)  # Liste fichiers
-        np.testing.assert_almost_equal(utils_models.predict_with_proba(file_paths[0], model, model_conf)[1], max_probas[0], 3)  # Chemin fichier
+        np.testing.assert_almost_equal(utils_models.predict_with_proba(file_paths[0], model, model_conf)[1][0], max_probas[0], 3)  # Chemin fichier
         np.testing.assert_almost_equal(utils_models.predict_with_proba(np_images_rgba, model, model_conf)[1], max_probas[1:], 3) # np.ndarray 'RGBA'
-        np.testing.assert_almost_equal(utils_models.predict_with_proba(np_images_rgba[0], model, model_conf)[1], max_probas[1], 3) # np.ndarray 'RGB' - 1 seule image
+        np.testing.assert_almost_equal(utils_models.predict_with_proba(np_images_rgba[0], model, model_conf)[1][0], max_probas[1], 3) # np.ndarray 'RGB' - 1 seule image
         remove_dir(model_dir)
 
 
