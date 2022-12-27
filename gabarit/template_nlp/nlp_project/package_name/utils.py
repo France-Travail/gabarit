@@ -203,13 +203,13 @@ def is_ndarray_convertable(obj: Union[np.ndarray, Any]) -> bool:
     return hasattr(obj, "dtype") and hasattr(obj, "astype") and hasattr(obj, "tolist")
 
 
-def ndarray_to_builtin_object(obj: np.ndarray) -> Any:
-    '''Transform a numpy.ndarray to a builtin type like int, float or list of ints
+def ndarray_to_builtin_object(obj: Any) -> Any:
+    '''Transform a numpy.ndarray like object to a builtin type like int, float or list
 
     Args:
-        obj (np.ndarray): numpy.ndarray object
+        obj (Any): An object
     Returns:
-        Any: list containing builtin types like int or float
+        Any: The object converted to a builtin type like int, float or list
     '''
     if is_ndarray_convertable(obj):
         if np.issubdtype(obj.dtype, np.integer):
