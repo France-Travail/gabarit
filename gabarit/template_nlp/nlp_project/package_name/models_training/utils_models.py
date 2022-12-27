@@ -309,11 +309,11 @@ def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
     return model, configs
 
 
-def predict(content: str, model, model_conf: dict, **kwargs) -> list:
+def predict(content: Union[str, list], model, model_conf: dict, **kwargs) -> list:
     '''Gets predictions of a model on a content
 
     Args:
-        content (str): New content to be predicted
+        content (Union[str, list]): New content to be predicted
         model (ModelClass): Model to use
         model_conf (dict): Model configurations
     Returns:
@@ -339,11 +339,11 @@ def predict(content: str, model, model_conf: dict, **kwargs) -> list:
     return model.inverse_transform(predictions)
 
 
-def predict_with_proba(content: str, model, model_conf: dict) -> Union[Tuple[List[str], List[float]], Tuple[List[tuple], List[tuple]]]:
+def predict_with_proba(content: Union[str, list], model, model_conf: dict) -> Union[Tuple[List[str], List[float]], Tuple[List[tuple], List[tuple]]]:
     '''Gets predictions of a model on a content, with probabilities
 
     Args:
-        content (str): New content to be predicted
+        content (Union[str, list]): New content to be predicted
         model (ModelClass): Model to use
         model_conf (dict): Model configurations
     Returns:
