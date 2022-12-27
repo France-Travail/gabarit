@@ -160,7 +160,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         remove_dir(report_path)
 
         # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         list_filenames = list(os.walk(report_path))[0][2]
         self.assertTrue(len([filename for filename in list_filenames if "report_source" in filename and "report_source_w" not in filename]) == 1)
