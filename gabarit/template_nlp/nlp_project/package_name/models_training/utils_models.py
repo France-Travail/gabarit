@@ -50,6 +50,7 @@ from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
 
 from .. import utils
+from .model_class import ModelClass
 from ..preprocessing import preprocess
 
 
@@ -254,7 +255,7 @@ def preprocess_model_multilabel(df: pd.DataFrame, y_col: Union[str, int], classe
     return df, list(mlb.classes_)
 
 
-def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
+def load_model(model_dir: str, *args, **kwargs) -> Tuple[Any, dict]:
     '''Loads a model from a path
 
     Args:
@@ -265,48 +266,10 @@ def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
         ?: Model
         dict: Model configurations
     '''
-    # Find model path
-    base_folder = None if is_path else utils.get_models_path()
-    model_path = utils.find_folder_path(model_dir, base_folder)
-
-    # Get configs
-    configuration_path = os.path.join(model_path, 'configurations.json')
-    with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
-        configs = json.load(f)
-    # Can't set int as keys in json, so need to cast it after reloading
-    # dict_classes keys are always ints
-    if 'dict_classes' in configs.keys() and configs['dict_classes'] is not None:
-        configs['dict_classes'] = {int(k): v for k, v in configs['dict_classes'].items()}
-
-    # Load model
-    pkl_path = os.path.join(model_path, f"{configs['model_name']}.pkl")
-    with open(pkl_path, 'rb') as f:
-        model = pickle.load(f)
-
-    # Change model_dir if diff
-    if model_path != model.model_dir:
-        model.model_dir = model_path
-        configs['model_dir'] = model_path
-
-    # Load specifics
-    hdf5_path = os.path.join(model_path, 'best.hdf5')
-    hf_model_dir = os.path.join(model_path, 'hf_model')
-    hf_tokenizer_dir = os.path.join(model_path, 'hf_tokenizer')
-
-    # TODO : we should probably have a single function `load_self` and let the model manage its reload
-    # Check for keras model
-    if os.path.exists(hdf5_path):
-        model.model = model.reload_model(hdf5_path)
-    # Check for huggingface model
-    if os.path.exists(hf_model_dir):
-        model.model = model.reload_model(hf_model_dir)
-        model.tokenizer = model.reload_tokenizer(hf_tokenizer_dir)
-
-    # Display if GPU is being used
-    model.display_if_gpu_activated()
+    model = ModelClass.load_model(model_dir, *args, **kwargs)
 
     # Return model & configs
-    return model, configs
+    return model, model.json_dict
 
 
 def predict(content: Union[str, list], model, model_conf: dict, **kwargs) -> list:
