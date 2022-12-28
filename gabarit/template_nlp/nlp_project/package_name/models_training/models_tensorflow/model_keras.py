@@ -681,11 +681,26 @@ class ModelKeras(ModelClass):
         # Return
         return keras_model
 
-    def reload_from_standalone(self, **kwargs) -> None:
-        '''Reloads a model from its configuration and "standalones" files
-        - /!\\ Needs to be overridden /!\\ -
-        '''
-        raise NotImplementedError("'reload_from_standalone' needs to be overridden")
+    def load_standalone_files(self,  *args, hdf5_path:str = None, tokenizer_path:str = None, **kwargs) -> None:
+        super().load_standalone_files(*args, **kwargs)
+
+        # Default file paths
+        if not hdf5_path:
+            hdf5_path = os.path.join(self.model_dir, "best.hdf5")
+            
+        if not tokenizer_path:
+            tokenizer_path = os.path.join(self.model_dir, "embedding_tokenizer.pkl")
+
+        # Load model weights
+        if not os.path.exists(hdf5_path):
+            raise FileNotFoundError(f"Impossible to load weights. {hdf5_path} does not exists")
+
+        self.model = self.reload_model(hdf5_path)
+
+        # Load model tokenizer
+        if os.path.exists(tokenizer_path):
+            with open(tokenizer_path, 'rb') as f:
+                self.tokenizer = pickle.load(f)
 
     def _is_gpu_activated(self) -> bool:
         '''Checks if a GPU is used

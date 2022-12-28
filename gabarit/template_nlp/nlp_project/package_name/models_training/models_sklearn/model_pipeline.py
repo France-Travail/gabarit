@@ -179,11 +179,21 @@ class ModelPipeline(ModelClass):
             with open(pkl_path, 'wb') as f:
                 pickle.dump(self.pipeline, f)
 
-    def reload_from_standalone(self, **kwargs) -> None:
-        '''Reloads a model from its configuration and "standalones" files
-        - /!\\ Needs to be overridden /!\\ -
-        '''
-        raise NotImplementedError("'reload_from_standalone' needs to be overridden")
+    def load_standalone_files(self,  *args, sklearn_pipeline_path:str = None, **kwargs) -> None:
+        super().load_standalone_files(*args, **kwargs)
+
+        # Default sklearn pipeline file
+        if not sklearn_pipeline_path:
+            sklearn_pipeline_path = os.path.join(self.model_dir, "sklearn_pipeline_standalone.pkl")
+
+        # Reload pipeline from standalone file if found
+        if os.path.exists(sklearn_pipeline_path):
+            with open(sklearn_pipeline_path, 'rb') as f:
+                self.pipeline = pickle.load(f)
+
+    def hook_post_load_model(model) -> None:
+        if not isinstance(model.pipeline, Pipeline):
+            print(f"WARNING : no Pipeline object loaded : model.pipeline = {model.pipeline}")
 
 
 if __name__ == '__main__':

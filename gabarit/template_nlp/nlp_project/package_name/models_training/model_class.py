@@ -817,6 +817,73 @@ class ModelClass:
         # By default, no GPU
         return False
 
+    def load_standalone_files(self, *args, **kwargs) -> None:
+        '''Overwrite this method to load model stanalones files on load_model'''
+        ...
+
+    @staticmethod
+    def get_model_dir(path: str) -> str:
+        if os.path.isdir(path):
+            return path
+        else:
+            return utils.find_folder_path(path, utils.get_models_path())
+
+    @classmethod
+    def load_configs(cls, model_dir: str) -> dict:
+        model_dir = cls.get_model_dir(model_dir)
+
+        configuration_path = os.path.join(model_dir, 'configurations.json')
+        with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
+            configs = json.load(f)
+
+        configs["model_dir"] = model_dir
+
+        # Call post load config hook. It can be used to check if everything is well loaded
+        cls.hook_post_load_configs(configs)
+
+        return configs
+
+    @staticmethod
+    def hook_post_load_configs(configs: dict) -> None:
+        # Can't set int as keys in json, so need to cast it after reloading
+        # dict_classes keys are always ints
+        if 'dict_classes' in configs.keys():
+            configs['dict_classes'] = {int(i): col for i, col in configs['dict_classes'].items()}
+        elif 'list_classes' in configs.keys():
+            configs['dict_classes'] = {i: col for i, col in enumerate(configs['list_classes'])}
+
+    @classmethod
+    def load_model(cls, model_dir: str, *args, **kwargs) -> Any:
+        # First load config
+        configs = cls.load_configs(model_dir)
+        model_dir = configs["model_dir"]
+        
+        # Then load model object based on config
+        pkl_path = os.path.join(model_dir, f"{configs['model_name']}.pkl")
+        with open(pkl_path, 'rb') as f:
+            model = pickle.load(f)
+        
+        # Add model directory and configuration into the model object
+        model.model_dir = model_dir
+        model.json_dict = configs
+
+        # Load standalone files
+        model.load_standalone_files(*args, **kwargs)
+
+        # Call post load model hook. It can be used to check if everything is well loaded for example
+        cls.hook_post_load_model(model)
+
+        return model
+
+    @staticmethod
+    def hook_post_load_model(model: Any) -> None:
+        ...
+
+    @classmethod
+    def reload_from_standalone(cls, *args, **kwargs) -> Any:
+        '''Deprecated'''
+        print("DEPRECATED : use load_model class method instead")
+        return cls.load_model(*args, **kwargs)
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)
