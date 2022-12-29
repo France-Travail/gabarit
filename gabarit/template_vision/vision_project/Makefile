@@ -64,30 +64,3 @@ ifndef VIRTUAL_ENV
 	$(error Python virtual environment not activated !)
 endif
 	nosetests -c nose_setup_coverage.cfg tests --exe # https://stackoverflow.com/questions/1457104/nose-unable-to-find-tests-in-ubuntu
-
-####################################################
-# Code quality
-####################################################
-
-quality: black isort flake8 ## Launch the code quality tools
-
-black: ## Code formatter
-ifndef VIRTUAL_ENV
-	$(error Python virtual environment not activated !)
-endif
-	pip install black;\
-	black -l 140 -t py38 -S .
-
-isort: ## Utility to automatically sort imports
-ifndef VIRTUAL_ENV
-	$(error Python virtual environment not activated !)
-endif
-	pip install isort;\
-	isort --skip venv_{{package_name}} -rc .
-
-flake8: ## Guide Enforcement tool
-ifndef VIRTUAL_ENV
-	$(error Python virtual environment not activated !)
-endif
-	pip install flake8;\
-	flake8 --exclude=venv_{{package_name}} . # add "|| exit 0" to avoid error
