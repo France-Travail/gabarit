@@ -4,29 +4,24 @@ on:
     branches:
       - 'main'
       - 'release/v*'
-    paths-ignore:
-      - 'version.txt'
-      - '.github/workflows/**'
-      - '*.md'
-      - 'LICENSE'
-      - 'Makefile'
+    paths:
+      - 'gabarit/template_vision/**'
+      - '!*.md'
   pull_request:
     types: [opened, reopened, synchronize]
     branches:
       - 'main'
       - 'release/v*'
-    paths-ignore:
-      - 'version.txt'
-      - '.github/workflows/**'
-      - '*.md'
-      - 'LICENSE'
-      - 'Makefile'
+    paths:
+      - 'gabarit/template_vision/**'
+      - '!*.md'
   schedule:
     - cron: '0 0 * * 0'
   workflow_dispatch:
 
 jobs:
   build:
+    if: ! github.event.pull_request.draft
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -67,6 +62,7 @@ jobs:
           python -c "from tmp_project import utils; print(utils.get_package_version())"
 
   build-extras:
+    if: ! github.event.pull_request.draft
     runs-on: ubuntu-latest
     strategy:
       matrix:
