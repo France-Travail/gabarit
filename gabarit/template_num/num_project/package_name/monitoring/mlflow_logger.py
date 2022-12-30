@@ -39,38 +39,38 @@ class MLflowLogger:
     '''Abstracts how MlFlow works'''
 
 def __init__(self, experiment_name: str, tracking_uri: str = '', artifact_uri: str = '') -> None:
-        '''Class initialization
-        Args:
-            experiment_name (str):  Name of the experiment to activate
-        Kwargs:
-            tracking_uri (str): URI of the tracking server
-            artifact_uri (str): URI where to store artifacts
-        '''
-        # Get logger
-        self.logger = logging.getLogger(__name__)
+    '''Class initialization
+    Args:
+        experiment_name (str):  Name of the experiment to activate
+    Kwargs:
+        tracking_uri (str): URI of the tracking server
+        artifact_uri (str): URI where to store artifacts
+    '''
+    # Get logger
+    self.logger = logging.getLogger(__name__)
 
-        # Backup to local save if no uri (i.e. empty string)
-        if not tracking_uri:
-            tracking_uri = pathlib.Path(os.path.join(utils.get_data_path(), 'experiments', 'mlruns')).as_uri()
-        
-        if not artifact_uri:
-            artifact_uri = pathlib.Path(os.path.join(utils.get_data_path(), 'experiments', 'mlruns_artifacts')).as_uri()
+    # Backup to local save if no uri (i.e. empty string)
+    if not tracking_uri:
+        tracking_uri = pathlib.Path(os.path.join(utils.get_data_path(), 'experiments', 'mlruns')).as_uri()
+    
+    if not artifact_uri:
+        artifact_uri = pathlib.Path(os.path.join(utils.get_data_path(), 'experiments', 'mlruns_artifacts')).as_uri()
 
-        # Set tracking URI & experiment name
-        self.tracking_uri = tracking_uri
-        # No need to set_tracking_uri, this is done through the setter decorator
-        self.experiment_name = experiment_name
-        try:
-            experiment = mlflow.get_experiment_by_name(experiment_name)
-        except Exception as e:
-            self.logger.error(repr(e))
-            raise ConnectionError(f"Can't reach MLflow at {self.tracking_uri}. Please check the URI.")
+    # Set tracking URI & experiment name
+    self.tracking_uri = tracking_uri
+    # No need to set_tracking_uri, this is done through the setter decorator
+    self.experiment_name = experiment_name
+    try:
+        experiment = mlflow.get_experiment_by_name(experiment_name)
+    except Exception as e:
+        self.logger.error(repr(e))
+        raise ConnectionError(f"Can't reach MLflow at {self.tracking_uri}. Please check the URI.")
 
-        if experiment is None:
-            experiment_id = mlflow.create_experiment(experiment_name, artifact_location=artifact_uri)
-            mlflow.set_experiment(experiment_id=experiment_id)
+    if experiment is None:
+        experiment_id = mlflow.create_experiment(experiment_name, artifact_location=artifact_uri)
+        mlflow.set_experiment(experiment_id=experiment_id)
 
-        self.logger.info(f'MLflow running, metrics available @ {self.tracking_uri}')
+    self.logger.info(f'MLflow running, metrics available @ {self.tracking_uri}')
 
     @property
     def tracking_uri(self) -> str:
