@@ -21,7 +21,7 @@ on:
 
 jobs:
   build:
-    if: ! github.event.pull_request.draft
+    if: github.event_name != 'pull_request' || ! github.event.pull_request.draft
     runs-on: ubuntu-latest
     strategy:
       matrix:
@@ -62,7 +62,7 @@ jobs:
           python -c "from tmp_project import utils; print(utils.get_package_version())"
 
   build-extras:
-    if: ! github.event.pull_request.draft
+    if: github.event_name != 'pull_request' || ! github.event.pull_request.draft
     runs-on: ubuntu-latest
     strategy:
       matrix:
