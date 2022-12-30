@@ -118,6 +118,7 @@ def main(source_paths: List[str], source_names: List[str] = None, compare_paths:
             mlflow_logger = MLflowLogger(
                 experiment_name=f"{{package_name}}/{mlflow_experiment}",
                 tracking_uri="{{mlflow_tracking_uri}}",
+                artifact_uri="{{mlflow_artifact_uri}}",
             )
             mlflow_logger.log_text(report._page_html, output_filename)
 
