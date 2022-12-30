@@ -25,10 +25,9 @@ import math
 import mlflow
 import pathlib
 import logging
-import matplotlib
-import matplotlib.pyplot as plt
 import pandas as pd
 from typing import Union
+from matplotlib.figure import Figure
 
 from .. import utils
 
@@ -38,39 +37,49 @@ os.environ["GIT_PYTHON_REFRESH"] = "quiet"
 class MLflowLogger:
     '''Abstracts how MlFlow works'''
 
-def __init__(self, experiment_name: str, tracking_uri: str = '', artifact_uri: str = '') -> None:
-    '''Class initialization
-    Args:
-        experiment_name (str):  Name of the experiment to activate
-    Kwargs:
-        tracking_uri (str): URI of the tracking server
-        artifact_uri (str): URI where to store artifacts
-    '''
-    # Get logger
-    self.logger = logging.getLogger(__name__)
+    def __init__(self, experiment_name: str, tracking_uri: str = '', artifact_uri: str = '') -> None:
+        '''Class initialization
+        Args:
+            experiment_name (str):  Name of the experiment to activate
+        Kwargs:
+            tracking_uri (str): URI of the tracking server
+            artifact_uri (str): URI where to store artifacts
+        '''
+        # Get logger
+        self.logger = logging.getLogger(__name__)
 
-    # Backup to local save if no uri (i.e. empty string)
-    if not tracking_uri:
-        tracking_uri = pathlib.Path(os.path.join(utils.get_data_path(), 'experiments', 'mlruns')).as_uri()
-    
-    if not artifact_uri:
-        artifact_uri = pathlib.Path(os.path.join(utils.get_data_path(), 'experiments', 'mlruns_artifacts')).as_uri()
+        # Backup to local save if no uri (i.e. empty string)
+        if not tracking_uri:
+            tracking_uri = pathlib.Path(os.path.join(utils.get_data_path(), 'experiments', 'mlruns')).as_uri()
+        
+        if not artifact_uri:
+            artifact_uri = pathlib.Path(os.path.join(utils.get_data_path(), 'experiments', 'mlruns_artifacts')).as_uri()
 
-    # Set tracking URI & experiment name
-    self.tracking_uri = tracking_uri
-    # No need to set_tracking_uri, this is done through the setter decorator
-    self.experiment_name = experiment_name
-    try:
-        experiment = mlflow.get_experiment_by_name(experiment_name)
-    except Exception as e:
-        self.logger.error(repr(e))
-        raise ConnectionError(f"Can't reach MLflow at {self.tracking_uri}. Please check the URI.")
+        # Set tracking URI & experiment name
+        self.tracking_uri = tracking_uri
+        
+        # Get the experiment if it exists and check if there is a connection error by doing it
+        try:
+            experiment = mlflow.get_experiment_by_name(experiment_name)
+        except Exception as e:
+            self.logger.error(repr(e))
+            raise ConnectionError(f"Can't reach MLflow at {self.tracking_uri}. Please check the URI.")
 
-    if experiment is None:
-        experiment_id = mlflow.create_experiment(experiment_name, artifact_location=artifact_uri)
+        # If the experiment exists, we recover experiment id and artifact_uri (which is link to the experiment)
+        if experiment:
+            experiment_id = experiment.experiment_id
+            artifact_uri = experiment.artifact_location
+        # Otherwise we create a new experiment with the provided artifact_rui
+        else:
+            experiment_id = mlflow.create_experiment(experiment_name, artifact_location=artifact_uri)
+        
         mlflow.set_experiment(experiment_id=experiment_id)
 
-    self.logger.info(f'MLflow running, metrics available @ {self.tracking_uri}')
+        self._experiment_id = experiment_id
+        self._experiment_name = experiment_name
+        self._artifact_uri = artifact_uri
+
+        self.logger.info(f'MLflow running, metrics available @ {self.tracking_uri}')
 
     @property
     def tracking_uri(self) -> str:
@@ -81,6 +90,21 @@ def __init__(self, experiment_name: str, tracking_uri: str = '', artifact_uri: s
     def tracking_uri(self, uri:str) -> None:
         '''Set tracking uri'''
         mlflow.set_tracking_uri(uri)
+
+    @property
+    def experiment_id(self) -> str:
+        '''Experiment id. It can not be changed.'''
+        return self._experiment_id
+
+    @property
+    def experiment_name(self) -> str:
+        '''Experiment name. It can not be changed.'''
+        return self._experiment_name
+
+    @property
+    def artifact_uri(self) -> str:
+        '''Experiment artifact URI. It can not be changed.'''
+        return self._artifact_uri
 
     def end_run(self) -> None:
         '''Stops an MLflow run'''
@@ -231,11 +255,11 @@ def __init__(self, experiment_name: str, tracking_uri: str = '', artifact_uri: s
 
         Args:
             text (str): A text
-            artifact_file (str): The run-relative artifact file path in posixpath format to which the text is saved
+            artifact_file (str): The run-relative artifact file path in posixpath format to which the dictionary is saved
         '''
         mlflow.log_text(text=text, artifact_file=artifact_file)
 
-    def log_figure(self, figure: matplotlib.figure.Figure, artifact_file: str) -> None:
+    def log_figure(self, figure: Figure, artifact_file: str) -> None:
         '''Logs a text as an artifact in MLflow
 
         Args:
