@@ -192,11 +192,11 @@ def data_agnostic_str_to_list(function: Callable) -> Callable:
     return wrapper
 
 
-def is_ndarray_convertable(obj: Union[np.ndarray, Any]) -> bool:
+def is_ndarray_convertable(obj: Any) -> bool:
     '''Returns True if the object is covertable to a builtin type in the same way a np.ndarray is
     
     Args:
-        obj (Union[np.ndarray, Any]): an object to test
+        obj (Any): an object to test
     Returns:
         bool: True if the object is covertable to a list as a np.ndarray is
     '''
@@ -208,6 +208,8 @@ def ndarray_to_builtin_object(obj: Any) -> Any:
 
     Args:
         obj (Any): An object
+    Raises:
+        ValueError: Raise a ValueError when obj is not ndarray convertable
     Returns:
         Any: The object converted to a builtin type like int, float or list
     '''
@@ -219,7 +221,7 @@ def ndarray_to_builtin_object(obj: Any) -> Any:
         else:
             return obj.tolist()
     else:
-        return obj
+        raise ValueError(f"{obj} is not ndarray convertable")
 
 
 def trained_needed(function: Callable) -> Callable:

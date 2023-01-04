@@ -165,24 +165,26 @@ def get_chunk_limits(x: Union[pd.DataFrame, pd.Series], chunksize: int = 10000) 
     return chunks_limits  # type: ignore
 
 
-def is_ndarray_convertable(obj: Union[np.ndarray, Any]) -> bool:
+def is_ndarray_convertable(obj: Any) -> bool:
     '''Returns True if the object is covertable to a builtin type in the same way a np.ndarray is
     
     Args:
-        obj (Union[np.ndarray, Any]): an object to test
+        obj (Any): an object to test
     Returns:
         bool: True if the object is covertable to a list as a np.ndarray is
     '''
     return hasattr(obj, "dtype") and hasattr(obj, "astype") and hasattr(obj, "tolist")
 
 
-def ndarray_to_builtin_object(obj: np.ndarray) -> Any:
-    '''Transform a numpy.ndarray to a builtin type like int, float or list of ints
+def ndarray_to_builtin_object(obj: Any) -> Any:
+    '''Transform a numpy.ndarray like object to a builtin type like int, float or list
 
     Args:
-        obj (np.ndarray): numpy.ndarray object
+        obj (Any): An object
+    Raises:
+        ValueError: Raise a ValueError when obj is not ndarray convertable
     Returns:
-        Any: list containing builtin types like int or float
+        Any: The object converted to a builtin type like int, float or list
     '''
     if is_ndarray_convertable(obj):
         if np.issubdtype(obj.dtype, np.integer):
@@ -192,7 +194,7 @@ def ndarray_to_builtin_object(obj: np.ndarray) -> Any:
         else:
             return obj.tolist()
     else:
-        return obj
+        raise ValueError(f"{obj} is not ndarray convertable")
 
 
 def trained_needed(function: Callable) -> Callable:

@@ -315,15 +315,19 @@ class UtilsTests(unittest.TestCase):
                 return self.args
         
         for obj, expected_result in (
-            (None, None),
-            ("some text", "some text"),
+            (None, ValueError),
+            ("some text", ValueError),
             (np.array(1), 1),
             (np.array(1.1), 1.1),
             (np.array([1, 2, 3], dtype=np.int64), [1, 2, 3]),
             (np.array([[1], [2], [3]], dtype=np.int64), [[1], [2], [3]]),
             (NumpyLike(1, 2, 3), (1, 2, 3)),
         ):
-            self.assertEqual(expected_result, utils.ndarray_to_builtin_object(obj))
+            if expected_result == ValueError:
+                with self.assertRaises(ValueError):
+                    utils.ndarray_to_builtin_object(obj)
+            else:
+                self.assertEqual(expected_result, utils.ndarray_to_builtin_object(obj))
 
 
 # TODO: test trained_needed
