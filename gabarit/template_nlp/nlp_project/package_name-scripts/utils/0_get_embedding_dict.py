@@ -62,7 +62,8 @@ def main(filename: str, encoding: str = '{{default_encoding}}', overwrite: bool 
     file_path = os.path.join(data_path, '.'.join(filename.split('.')[:-1]) + '.pkl')
 
     if os.path.exists(file_path) and not overwrite:
-        raise FileExistsError(f"{file_path} already exists. This error can be bypassed with the argument --overwrite.")
+        logger.warning(f"{file_path} already exists. Use --overwrite to overwrite it.")
+        return
         
     with open(file_path, 'wb') as f:
         pickle.dump(embedding_indexes, f, pickle.HIGHEST_PROTOCOL)
