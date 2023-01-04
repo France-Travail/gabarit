@@ -124,12 +124,15 @@ def main(directories: List[str], preprocessing: Union[str, None], sep: str = '{{
             # Get preprocessor
             preprocessor = preprocess.get_preprocessor(preprocess_str)
 
-            # We start by creating a new directory for the preprocessed images
+            # We start by defining a new directory for the preprocessed images
             new_directory = os.path.join(data_path, f"{directory}_{preprocess_str}")
+
+            # If it already exists there is two cases : 
+            # - when overwrite is true, we remove the directory and all its content
+            # - otherwise we skip the preprocessing
             if os.path.exists(new_directory):
                 if overwrite:
                     shutil.rmtree(new_directory)
-                    os.makedirs(new_directory)
                 else:
                     logger.info(f"{new_directory} already exists. Pass.")
                     continue
