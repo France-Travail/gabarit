@@ -43,20 +43,31 @@ from sklearn.model_selection import train_test_split
 
 # Imports detectron
 import torch
-from detectron2.utils import comm
-from detectron2.structures import BoxMode
-from detectron2.data import transforms as T
-from detectron2.engine.hooks import HookBase
-from detectron2.config import get_cfg, CfgNode
-from detectron2.utils.file_io import PathManager
-from detectron2.utils.visualizer import Visualizer
-from detectron2.engine import hooks as module_hooks
-from detectron2.engine import DefaultTrainer, DefaultPredictor
-from detectron2.evaluation import COCOEvaluator, verify_results
-from detectron2.utils.events import EventWriter, get_event_storage, EventStorage
-from detectron2.data import (DatasetCatalog, MetadataCatalog, Metadata, detection_utils,
-                             build_detection_train_loader, build_detection_test_loader,
-                             DatasetMapper)
+
+try:
+    from detectron2.utils import comm
+    from detectron2.structures import BoxMode
+    from detectron2.data import transforms as T
+    from detectron2.engine.hooks import HookBase
+    from detectron2.config import get_cfg, CfgNode
+    from detectron2.utils.file_io import PathManager
+    from detectron2.utils.visualizer import Visualizer
+    from detectron2.engine import hooks as module_hooks
+    from detectron2.engine import DefaultTrainer, DefaultPredictor
+    from detectron2.evaluation import COCOEvaluator, verify_results
+    from detectron2.utils.events import EventWriter, get_event_storage, EventStorage
+    from detectron2.data import (DatasetCatalog, MetadataCatalog, Metadata, detection_utils,
+                                build_detection_train_loader, build_detection_test_loader,
+                                DatasetMapper)
+except ImportError:
+    if os.name == "nt":
+        logging.getLogger(__name__).warning(
+            "On windows, there are no pre-built for detectron2. "
+            "You must first install torch and then install detectron2 manually: "
+            "pip install git+https://github.com/facebookresearch/detectron2.git@v0.6+cpu "
+            "(you might need to update Visual Studio C++)"
+        )
+    raise
 
 # Import package utils
 from ... import utils
