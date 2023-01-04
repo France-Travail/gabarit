@@ -23,6 +23,7 @@ from unittest.mock import patch
 
 # Utils libs
 import os
+import random
 import tempfile
 import numpy as np
 import pandas as pd
@@ -568,6 +569,194 @@ class UtilsObjectDetectorTests(unittest.TestCase):
             utils_object_detectors.non_max_suppression_fast(img_boxes_coordinates, img_boxes_probas_6,
                                                             nms_overlap_threshold_6, nms_max_boxes_6,
                                                             np.array(['titi', 'tata']))
+
+    def test15_get_all_viable_anchors_boxes(self):
+        '''Test of the function utils_object_detectors.get_all_viable_anchors_boxes'''
+        base_anchors = [(10, 10), (20, 20)]
+        subsampling_ratio = 10
+        feature_map_height = 2
+        feature_map_width = 2
+        im_resized_height = 100
+        im_resized_width = 100
+
+        viable_anchor_boxes = utils_object_detectors.get_all_viable_anchors_boxes(
+            base_anchors, subsampling_ratio, feature_map_height, feature_map_width, im_resized_height, im_resized_width
+        )
+
+        self.assertEqual(
+            viable_anchor_boxes, 
+            {
+                (0, 0, 0): {'anchor_img_coordinates': (0.0, 0.0, 10.0, 10.0)}, 
+                (1, 0, 0): {'anchor_img_coordinates': (0.0, 10.0, 10.0, 20.0)}, 
+                (0, 1, 0): {'anchor_img_coordinates': (10.0, 0.0, 20.0, 10.0)},
+                (1, 1, 0): {'anchor_img_coordinates': (10.0, 10.0, 20.0, 20.0)}, 
+                (1, 1, 1): {'anchor_img_coordinates': (5.0, 5.0, 25.0, 25.0)}
+            }
+        )
+
+        # Test with no viable anchor
+        with self.assertRaises(RuntimeError):
+            base_anchors = [(100, 100)]
+            utils_object_detectors.get_all_viable_anchors_boxes(
+                base_anchors, subsampling_ratio, feature_map_height, feature_map_width, im_resized_height, im_resized_width
+            )
+        
+    def test16_get_iou_anchors_bboxes(self):
+        '''Test of the function utils_object_detectors.get_iou_anchors_bboxes'''
+        anchors = {
+            (0, 0, 0): {'anchor_img_coordinates': (0.0, 0.0, 10.0, 10.0)}, 
+            (1, 0, 0): {'anchor_img_coordinates': (0.0, 10.0, 10.0, 20.0)}, 
+            (0, 1, 0): {'anchor_img_coordinates': (10.0, 0.0, 20.0, 10.0)},
+            (1, 1, 0): {'anchor_img_coordinates': (10.0, 10.0, 20.0, 20.0)}, 
+            (1, 1, 1): {'anchor_img_coordinates': (5.0, 5.0, 25.0, 25.0)}
+        }
+
+        image_bboxes = [{"x1": 0.0, "y1": 0.0, "x2": 5.0, "y2": 5.0}]
+
+        expected_result = {
+            (0, 0, 0): {'anchor_img_coordinates': (0.0, 0.0, 10.0, 10.0), 'bboxes': {0: {"iou": 0.25, "bbox_img_coordinates": (0.0, 0.0, 5.0, 5.0)}}}, 
+            (1, 0, 0): {'anchor_img_coordinates': (0.0, 10.0, 10.0, 20.0), 'bboxes': {0: {"iou": 0.0, "bbox_img_coordinates": (0.0, 0.0, 5.0, 5.0)}}}, 
+            (0, 1, 0): {'anchor_img_coordinates': (10.0, 0.0, 20.0, 10.0), 'bboxes': {0: {"iou": 0.0, "bbox_img_coordinates": (0.0, 0.0, 5.0, 5.0)}}},
+            (1, 1, 0): {'anchor_img_coordinates': (10.0, 10.0, 20.0, 20.0), 'bboxes': {0: {"iou": 0.0, "bbox_img_coordinates": (0.0, 0.0, 5.0, 5.0)}}}, 
+            (1, 1, 1): {'anchor_img_coordinates': (5.0, 5.0, 25.0, 25.0), 'bboxes': {0: {"iou": 0.0, "bbox_img_coordinates": (0.0, 0.0, 5.0, 5.0)}}}
+        }
+
+        self.assertEqual(expected_result, utils_object_detectors.get_iou_anchors_bboxes(anchors, image_bboxes))
+
+    def test17_set_anchors_type_validity(self):
+        '''Test of the function utils_object_detectors.set_anchors_type_validity'''
+        anchor_boxes_dict = {
+            (0, 0, 0): {'bboxes': {0: {"iou": 0.3}, 1: {"iou": 0.05}}}, 
+            (1, 0, 0): {'bboxes': {0: {"iou": 0.2}, 1: {"iou": 0.05}}}, 
+            (0, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}},
+            (1, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}}, 
+            (1, 1, 1): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}}
+        }
+
+        image_bboxes =[0, 1]
+        rpn_min_overlap = 0.1
+        rpn_max_overlap = 0.2
+        
+        expected_anchor_boxes_dict = {
+            (0, 0, 0): {'bboxes': {0: {"iou": 0.3}, 1: {"iou": 0.05}}, "anchor_type": "pos", "anchor_validity": 1, "best_bbox_index": 0}, 
+            (1, 0, 0): {'bboxes': {0: {"iou": 0.2}, 1: {"iou": 0.05}}, "anchor_type": "neutral", "anchor_validity": 0, "best_bbox_index": -1}, 
+            (0, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1},
+            (1, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1}, 
+            (1, 1, 1): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1}
+        }
+
+        expected_bboxes_index_with_no_positive = [1]
+        expected_result = (expected_anchor_boxes_dict, expected_bboxes_index_with_no_positive)
+
+        result = utils_object_detectors.set_anchors_type_validity(anchor_boxes_dict, image_bboxes, rpn_min_overlap, rpn_max_overlap)
+
+        self.assertEqual(expected_result, result)
+
+    def test18_complete_at_least_one_anchor_per_bbox(self):
+        '''Test of the function utils_object_detectors.complete_at_least_one_anchor_per_bbox'''
+        anchor_boxes_dict = {
+            (0, 0, 0): {'bboxes': {0: {"iou": 0.3}, 1: {"iou": 0.01}}, "anchor_type": "pos", "anchor_validity": 1, "best_bbox_index": 0}, 
+            (1, 0, 0): {'bboxes': {0: {"iou": 0.2}, 1: {"iou": 0.02}}, "anchor_type": "neutral", "anchor_validity": 0, "best_bbox_index": -1}, 
+            (0, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.03}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1},
+            (1, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.04}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1}, 
+            (1, 1, 1): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1}
+        }
+
+        bboxes_index_with_no_positive = [1]
+
+        expected_result = {
+            (0, 0, 0): {'bboxes': {0: {"iou": 0.3}, 1: {"iou": 0.01}}, "anchor_type": "pos", "anchor_validity": 1, "best_bbox_index": 0}, 
+            (1, 0, 0): {'bboxes': {0: {"iou": 0.2}, 1: {"iou": 0.02}}, "anchor_type": "neutral", "anchor_validity": 0, "best_bbox_index": -1}, 
+            (0, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.03}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1},
+            (1, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.04}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1}, 
+            (1, 1, 1): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}, "anchor_type": "pos", "anchor_validity": 1, "best_bbox_index": 1}
+        }
+
+        result = utils_object_detectors.complete_at_least_one_anchor_per_bbox(anchor_boxes_dict, bboxes_index_with_no_positive)
+
+        self.assertEqual(result, expected_result)
+
+    def test19_restrict_valid_to_n_regions(self):
+        '''Test of the function utils_object_detectors.restrict_valid_to_n_regions'''
+        anchor_boxes_dict = {
+            (0, 0, 0): {'bboxes': {0: {"iou": 0.3}, 1: {"iou": 0.01}}, "anchor_type": "pos", "anchor_validity": 1, "best_bbox_index": 0}, 
+            (1, 0, 0): {'bboxes': {0: {"iou": 0.2}, 1: {"iou": 0.02}}, "anchor_type": "neutral", "anchor_validity": 0, "best_bbox_index": -1}, 
+            (0, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.03}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1},
+            (1, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.04}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1}, 
+            (1, 1, 1): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}, "anchor_type": "pos", "anchor_validity": 1, "best_bbox_index": 1}
+        }
+
+        num_regions = 2
+
+        expected_result = {
+            (0, 0, 0): {'bboxes': {0: {'iou': 0.3}, 1: {'iou': 0.01}}, 'anchor_type': 'pos', 'anchor_validity': 1, 'best_bbox_index': 0}, 
+            (1, 0, 0): {'bboxes': {0: {'iou': 0.2}, 1: {'iou': 0.02}}, 'anchor_type': 'neutral', 'anchor_validity': 0, 'best_bbox_index': -1}, 
+            (0, 1, 0): {'bboxes': {0: {'iou': 0.0}, 1: {'iou': 0.03}}, 'anchor_type': 'neg', 'anchor_validity': 1, 'best_bbox_index': -1}, 
+            (1, 1, 0): {'bboxes': {0: {'iou': 0.0}, 1: {'iou': 0.04}}, 'anchor_type': 'neg', 'anchor_validity': 0, 'best_bbox_index': -1}, 
+            (1, 1, 1): {'bboxes': {0: {'iou': 0.0}, 1: {'iou': 0.05}}, 'anchor_type': 'pos', 'anchor_validity': 0, 'best_bbox_index': 1}
+        }
+
+        random.seed(0) # Mandatory for determinism
+        result = utils_object_detectors.restrict_valid_to_n_regions(anchor_boxes_dict, num_regions)
+        self.assertEqual(result, expected_result)
+
+    def test20_add_regression_target_to_pos_valid(self):
+        '''Test of the function utils_object_detectors.add_regression_target_to_pos_valid'''
+        anchor_boxes_dict = {
+            (0, 0, 0): {
+                'anchor_img_coordinates': (10, 8, 16, 20),
+                'bboxes': {
+                    0: {'iou': 0.3, "bbox_img_coordinates": (5, 13, 9, 18)}, 
+                    1: {'iou': 0.0, "bbox_img_coordinates": (0.0, 5.0, 5.0, 10.)}
+                }, 
+                'anchor_type': 'pos', 
+                'anchor_validity': 1, 
+                'best_bbox_index': 0
+            },
+            (1, 1, 1): {
+                'anchor_img_coordinates': (0.0, 0.0, 10.0, 10.0),
+                'bboxes': {
+                    0: {'iou': 0.0, "bbox_img_coordinates": (0.0, 0.0, 5.0, 5.0)}, 
+                    1: {'iou': 0.1, "bbox_img_coordinates": (0.0, 5.0, 5.0, 10.)}
+                }, 
+                'anchor_type': 'neg', 
+                'anchor_validity': 1, 
+                'best_bbox_index': -1
+            },
+        }
+        
+        tx, ty = (-1., 0.125)  # -6 / 6, 1.5 / 12
+        th, tw = (np.log(5/12), np.log(4/6))  # 5 / 12, 4 / 6
+        expected_result = {
+            (0, 0, 0): {
+                'anchor_img_coordinates': (10, 8, 16, 20),
+                'bboxes': {
+                    0: {'iou': 0.3, "bbox_img_coordinates": (5, 13, 9, 18)}, 
+                    1: {'iou': 0.0, "bbox_img_coordinates": (0.0, 5.0, 5.0, 10.)}
+                }, 
+                'anchor_type': 'pos', 
+                'anchor_validity': 1, 
+                'best_bbox_index': 0,
+                'regression_target': (tx, ty, th, tw)
+            },
+            (1, 1, 1): {
+                'anchor_img_coordinates': (0.0, 0.0, 10.0, 10.0),
+                'bboxes': {
+                    0: {'iou': 0.0, "bbox_img_coordinates": (0.0, 0.0, 5.0, 5.0)}, 
+                    1: {'iou': 0.1, "bbox_img_coordinates": (0.0, 5.0, 5.0, 10.)}
+                }, 
+                'anchor_type': 'neg', 
+                'anchor_validity': 1, 
+                'best_bbox_index': -1,
+                'regression_target': (0, 0, 0, 0)
+            },
+        }
+
+        result = utils_object_detectors.add_regression_target_to_pos_valid(anchor_boxes_dict)
+        self.assertEqual(result, expected_result)
+
+    # def test15_get_rpn_targets(self):
+    #     '''Test of the function utils_object_detectors.get_rpn_targets'''
 
 
 # Perform tests

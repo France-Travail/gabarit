@@ -41,16 +41,13 @@ class UtilsTests(unittest.TestCase):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
-        dname = os.path.dirname(abspath)
-        os.chdir(dname)
+        self.test_dir = os.path.dirname(abspath)
+        self.test_data_dir = os.path.join(self.test_dir, 'test_data')
+
+        utils.DIR_PATH = self.test_data_dir
 
     def test01_read_folder_classification(self):
         '''Test of the function utils.read_folder_classification'''
-        # We set DIR_PATH equal to the test directory in order to use test data
-        current_dir = os.path.abspath(os.getcwd())
-        test_data_path = os.path.join(current_dir, 'test_data')
-        utils.DIR_PATH = test_data_path
-
         #######################################
         # Format 1 : metadata file
         #######################################
@@ -62,7 +59,7 @@ class UtilsTests(unittest.TestCase):
         # Nominal case
         directory_path = os.path.join(utils.get_data_path(), 'test_data_1')
         path_list, classes_list, preprocess_str = utils.read_folder_classification(directory_path)
-        wanted_file_list = [os.path.join(test_data_path, '{{package_name}}-data', 'test_data_1', f) for f in sorted_file_list]
+        wanted_file_list = [os.path.join(self.test_data_dir, '{{package_name}}-data', 'test_data_1', f) for f in sorted_file_list]
         self.assertEqual(sorted(path_list), wanted_file_list)
         self.assertEqual([cl for p, cl in sorted(zip(path_list, classes_list), key=lambda pair: pair[0])], sorted_classes_list)
         self.assertEqual(preprocess_str, 'no_preprocess')
@@ -70,7 +67,7 @@ class UtilsTests(unittest.TestCase):
         # With different sep
         directory_path = os.path.join(utils.get_data_path(), 'test_data_1_diff_sep')
         path_list, classes_list, preprocess_str = utils.read_folder_classification(directory_path, sep=',')
-        wanted_file_list = [os.path.join(test_data_path, '{{package_name}}-data', 'test_data_1_diff_sep', f) for f in sorted_file_list]
+        wanted_file_list = [os.path.join(self.test_data_dir, '{{package_name}}-data', 'test_data_1_diff_sep', f) for f in sorted_file_list]
         self.assertEqual(sorted(path_list), wanted_file_list)
         self.assertEqual([cl for p, cl in sorted(zip(path_list, classes_list), key=lambda pair: pair[0])], sorted_classes_list)
         self.assertEqual(preprocess_str, 'no_preprocess')
@@ -78,7 +75,7 @@ class UtilsTests(unittest.TestCase):
         # With preprocessing
         directory_path = os.path.join(utils.get_data_path(), 'test_data_1_with_preprocess')
         path_list, classes_list, preprocess_str = utils.read_folder_classification(directory_path)
-        wanted_file_list = [os.path.join(test_data_path, '{{package_name}}-data', 'test_data_1_with_preprocess', f) for f in sorted_file_list]
+        wanted_file_list = [os.path.join(self.test_data_dir, '{{package_name}}-data', 'test_data_1_with_preprocess', f) for f in sorted_file_list]
         self.assertEqual(sorted(path_list), wanted_file_list)
         self.assertEqual([cl for p, cl in sorted(zip(path_list, classes_list), key=lambda pair: pair[0])], sorted_classes_list)
         self.assertEqual(preprocess_str, 'test_preprocess')
@@ -86,7 +83,7 @@ class UtilsTests(unittest.TestCase):
         # Without classes
         directory_path = os.path.join(utils.get_data_path(), 'test_data_1_no_class')
         path_list, classes_list, preprocess_str = utils.read_folder_classification(directory_path, accept_no_metadata=True)
-        wanted_file_list = [os.path.join(test_data_path, '{{package_name}}-data', 'test_data_1_no_class', f) for f in sorted_file_list]
+        wanted_file_list = [os.path.join(self.test_data_dir, '{{package_name}}-data', 'test_data_1_no_class', f) for f in sorted_file_list]
         self.assertEqual(sorted(path_list), wanted_file_list)
         self.assertEqual(classes_list, None)
         self.assertEqual(preprocess_str, 'no_preprocess')
@@ -112,7 +109,7 @@ class UtilsTests(unittest.TestCase):
         # Nominal case
         directory_path = os.path.join(utils.get_data_path(), 'test_data_2')
         path_list, classes_list, preprocess_str = utils.read_folder_classification(directory_path)
-        wanted_file_list = [os.path.join(test_data_path, '{{package_name}}-data', 'test_data_2', f) for f in sorted_file_list]
+        wanted_file_list = [os.path.join(self.test_data_dir, '{{package_name}}-data', 'test_data_2', f) for f in sorted_file_list]
         self.assertEqual(sorted(path_list), wanted_file_list)
         self.assertEqual([cl for p, cl in sorted(zip(path_list, classes_list), key=lambda pair: pair[0])], sorted_classes_list)
         self.assertEqual(preprocess_str, 'no_preprocess')
@@ -120,7 +117,7 @@ class UtilsTests(unittest.TestCase):
         # With preprocessing
         directory_path = os.path.join(utils.get_data_path(), 'test_data_2_with_preprocess')
         path_list, classes_list, preprocess_str = utils.read_folder_classification(directory_path)
-        wanted_file_list = [os.path.join(test_data_path, '{{package_name}}-data', 'test_data_2_with_preprocess', f) for f in sorted_file_list]
+        wanted_file_list = [os.path.join(self.test_data_dir, '{{package_name}}-data', 'test_data_2_with_preprocess', f) for f in sorted_file_list]
         self.assertEqual(sorted(path_list), wanted_file_list)
         self.assertEqual([cl for p, cl in sorted(zip(path_list, classes_list), key=lambda pair: pair[0])], sorted_classes_list)
         self.assertEqual(preprocess_str, 'test_preprocess')
@@ -128,7 +125,7 @@ class UtilsTests(unittest.TestCase):
         # Without classes
         directory_path = os.path.join(utils.get_data_path(), 'test_data_2_no_class')
         path_list, classes_list, preprocess_str = utils.read_folder_classification(directory_path)
-        wanted_file_list = [os.path.join(test_data_path, '{{package_name}}-data', 'test_data_2_no_class', f) for f in sorted_file_list_no_class]
+        wanted_file_list = [os.path.join(self.test_data_dir, '{{package_name}}-data', 'test_data_2_no_class', f) for f in sorted_file_list_no_class]
         self.assertEqual(sorted(path_list), wanted_file_list)
         self.assertEqual(classes_list, None)
         self.assertEqual(preprocess_str, 'no_preprocess')
@@ -150,7 +147,7 @@ class UtilsTests(unittest.TestCase):
         # Nominal case
         directory_path = os.path.join(utils.get_data_path(), 'test_data_3')
         path_list, classes_list, preprocess_str = utils.read_folder_classification(directory_path)
-        wanted_file_list = [os.path.join(test_data_path, '{{package_name}}-data', 'test_data_3', f) for f in sorted_file_list]
+        wanted_file_list = [os.path.join(self.test_data_dir, '{{package_name}}-data', 'test_data_3', f) for f in sorted_file_list]
         self.assertEqual(sorted(path_list), wanted_file_list)
         self.assertEqual([cl for p, cl in sorted(zip(path_list, classes_list), key=lambda pair: pair[0])], sorted_classes_list)
         self.assertEqual(preprocess_str, 'no_preprocess')
@@ -158,7 +155,7 @@ class UtilsTests(unittest.TestCase):
         # With preprocessing
         directory_path = os.path.join(utils.get_data_path(), 'test_data_3_with_preprocess')
         path_list, classes_list, preprocess_str = utils.read_folder_classification(directory_path)
-        wanted_file_list = [os.path.join(test_data_path, '{{package_name}}-data', 'test_data_3_with_preprocess', f) for f in sorted_file_list]
+        wanted_file_list = [os.path.join(self.test_data_dir, '{{package_name}}-data', 'test_data_3_with_preprocess', f) for f in sorted_file_list]
         self.assertEqual(sorted(path_list), wanted_file_list)
         self.assertEqual([cl for p, cl in sorted(zip(path_list, classes_list), key=lambda pair: pair[0])], sorted_classes_list)
         self.assertEqual(preprocess_str, 'test_preprocess')
@@ -170,9 +167,6 @@ class UtilsTests(unittest.TestCase):
         directory_path = os.path.join(utils.get_data_path(), 'bad_test_data_3_v2')
         with self.assertRaises(RuntimeError):
             utils.read_folder_classification(directory_path)  # Not only images in sub-folders
-
-        # Clean
-        utils.DIR_PATH = None
 
     @patch('logging.Logger._log')
     def test02_display_shape(self, PrintMockLog):
@@ -230,12 +224,9 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(path.endswith('{{package_name}}-data'), True)
 
         # With a DIR_PATH != None
-        current_dir = os.path.abspath(os.getcwd())
-        utils.DIR_PATH = current_dir
         path = utils.get_data_path()
         self.assertEqual(os.path.isdir(path), True)
-        self.assertEqual(path, os.path.join(current_dir, '{{package_name}}-data'))
-        utils.DIR_PATH = None
+        self.assertEqual(path, os.path.join(self.test_data_dir, '{{package_name}}-data'))
 
     def test05_get_models_path(self):
         '''Test of the function utils.get_models_path'''
@@ -244,13 +235,9 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(os.path.isdir(path), True)
         self.assertEqual(path.endswith('{{package_name}}-models'), True)
 
-        # With a DIR_PATH != None
-        current_dir = os.path.abspath(os.getcwd())
-        utils.DIR_PATH = current_dir
         path = utils.get_models_path()
         self.assertEqual(os.path.isdir(path), True)
-        self.assertEqual(path, os.path.join(current_dir, '{{package_name}}-models'))
-        utils.DIR_PATH = None
+        self.assertEqual(path, os.path.join(self.test_data_dir, '{{package_name}}-models'))
 
     def test06_get_ressources_path(self):
         '''Test of the function utils.get_ressources_path'''
@@ -268,7 +255,7 @@ class UtilsTests(unittest.TestCase):
     def test08_find_folder_path(self):
         '''Test of the function utils.find_folder_path'''
 
-        with tempfile.TemporaryDirectory(dir=os.getcwd()) as tmp_dir:
+        with tempfile.TemporaryDirectory(dir=self.test_dir) as tmp_dir:
             # Create a fake directory structure
             base_folder = tmp_dir
             folderA = os.path.join(base_folder, 'folderA')
@@ -292,6 +279,100 @@ class UtilsTests(unittest.TestCase):
             with self.assertRaises(FileNotFoundError):
                 utils.find_folder_path('this/is/not/a/path', None)
 
+    def test09_read_object_detection(self):
+        '''Test of utils.read_object_detection'''
+        
+        with self.assertRaises(FileNotFoundError):
+            utils.read_folder_object_detection("thisfiledoesnotexist")
+
+        with self.assertRaises(NotADirectoryError):
+            utils.read_folder_object_detection(os.path.join(self.test_data_dir, "test_data_object_detection", "fake_metrics.json"))
+
+        path_list, _, _ = utils.read_folder_object_detection(os.path.join(self.test_data_dir, "test_data_object_detection", "fruits"))
+
+        self.assertEqual(
+            [p.rsplit("/", 1)[1] for p in path_list], 
+            ["apple_76.jpg", "banana_76.jpg", "mixed_22.jpg", "orange_77.jpg"]
+        )
+
+    def test10_read_folder(self):
+        '''Test of utils.read_folder'''
+        # Detection task
+        path_list, _, _, task_type = utils.read_folder(os.path.join(self.test_data_dir, "test_data_object_detection", "fruits"))
+
+        self.assertEqual(task_type, "object_detection")
+        self.assertEqual(
+            [p.rsplit("/", 1)[1] for p in path_list], 
+            ["apple_76.jpg", "banana_76.jpg", "mixed_22.jpg", "orange_77.jpg"]
+        )
+
+        # Classification task
+        expected_files = ['Birman_1.jpg', 'Birman_2.jpg', 'Birman_36.jpg', 'Birman_4.jpg', 
+                          'Bombay_1.png', 'Bombay_10.jpg', 'Bombay_19.jpg', 'Bombay_3.jpg', 
+                          'shiba_inu_15.jpg', 'shiba_inu_30.jpg', 'shiba_inu_31.jpg', 'shiba_inu_34.jpg']
+
+        path_list, _, _, task_type = utils.read_folder(os.path.join(utils.get_data_path(), 'test_data_1'))
+
+        self.assertEqual(task_type, "classification")
+        self.assertEqual(
+            [p.rsplit("/", 1)[1] for p in path_list], 
+            expected_files
+        )
+
+    def test11_rebuild_metadata_object_detection(self):
+        '''Test of utils.rebuild_metadata_object_detection'''
+        filenames_list = ["f1", "f2"]
+        bboxes_list = [
+            [{"class": "a", "x1": 0, "x2": 1, "y1": 0, "y2": 1}, {"class": "b", "x1": 0, "x2": 2, "y1": 0, "y2": 2}],
+            [{"class": "c", "x1": 0, "x2": 3, "y1": 0, "y2": 3}],
+        ]
+
+        df = utils.rebuild_metadata_object_detection(filenames_list, bboxes_list)
+
+        self.assertEqual(list(df["filename"]), ["f1", "f1", "f2"])
+        self.assertEqual(list(df["class"]), list("abc"))
+        self.assertEqual(list(df["x2"]), [1, 2, 3])
+        self.assertEqual(list(df["y2"]), [1, 2, 3])
+
+    def test12_rebuild_metadata_classification(self):
+        '''Test of utils.rebuild_metadata_classification'''
+        filenames_list = ["f1", "f2"]
+        classes_list = ["a", "b"]
+
+        df = utils.rebuild_metadata_classification(filenames_list, classes_list)
+
+        self.assertEqual(list(df["filename"]), ["f1", "f2"])
+        self.assertEqual(list(df["class"]), list("ab"))
+
+    def test13_data_agnostic_str_to_list(self):
+        '''Test of utils.data_agnostic_str_to_list'''
+
+        @utils.data_agnostic_str_to_list
+        def i_want_list(a_list):
+            if not isinstance(a_list, list):
+                raise Exception()
+            else:
+                return True
+
+        self.assertTrue(i_want_list("afuturelist"))
+
+    def test14_trained_needed(self):
+        '''Test of utils.trained_needed'''
+        class M:
+            def __init__(self, trained):
+                self.trained = trained
+
+            @utils.trained_needed
+            def need_trained(self):
+                return True
+
+        m = M(trained=False)
+
+        with self.assertRaises(AttributeError):
+            m.need_trained()
+
+        m.trained = True
+        self.assertTrue(m.need_trained)
 
 # Perform tests
 if __name__ == '__main__':
