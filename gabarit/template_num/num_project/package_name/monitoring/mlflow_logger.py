@@ -69,15 +69,15 @@ class MLflowLogger:
         if experiment:
             experiment_id = experiment.experiment_id
             artifact_uri = experiment.artifact_location
-        # Otherwise we create a new experiment with the provided artifact_rui
+        # Otherwise we create a new experiment with the provided artifact_uri
         else:
             experiment_id = mlflow.create_experiment(experiment_name, artifact_location=artifact_uri)
         
         mlflow.set_experiment(experiment_id=experiment_id)
 
-        self._experiment_id = experiment_id
-        self._experiment_name = experiment_name
-        self._artifact_uri = artifact_uri
+        self.__experiment_id = experiment_id
+        self.__experiment_name = experiment_name
+        self.__artifact_uri = artifact_uri
 
         self.logger.info(f'MLflow running, metrics available @ {self.tracking_uri}')
 
@@ -94,17 +94,17 @@ class MLflowLogger:
     @property
     def experiment_id(self) -> str:
         '''Experiment id. It can not be changed.'''
-        return self._experiment_id
+        return self.__experiment_id
 
     @property
     def experiment_name(self) -> str:
         '''Experiment name. It can not be changed.'''
-        return self._experiment_name
+        return self.__experiment_name
 
     @property
     def artifact_uri(self) -> str:
         '''Experiment artifact URI. It can not be changed.'''
-        return self._artifact_uri
+        return self.__artifact_uri
 
     def end_run(self) -> None:
         '''Stops an MLflow run'''
