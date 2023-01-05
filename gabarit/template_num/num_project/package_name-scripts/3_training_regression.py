@@ -327,6 +327,7 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
         mlflow_logger = MLflowLogger(
             experiment_name=f"{{package_name}}/{mlflow_experiment}",
             tracking_uri="{{mlflow_tracking_uri}}",
+            artifact_uri="{{mlflow_artifact_uri}}",
         )
         mlflow_logger.set_tag('model_name', f"{os.path.basename(model.model_dir)}")
         mlflow_logger.log_df_stats(df_stats)
