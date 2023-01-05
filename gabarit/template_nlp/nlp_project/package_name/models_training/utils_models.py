@@ -368,18 +368,22 @@ def predict_with_proba(content: Union[str, list], model, model_conf: dict) -> Un
     content = preprocessor(content)
 
     # Get prediction (some models need an iterable)
+    # predictions is a ndarray of shape (n_samples, n_classes)
+    # probas is a ndarray of shape (n_samples, n_classes)
     predictions, probas = model.predict_with_proba(content)
 
-    # Rework format
-    if not model.multi_label:
-        prediction = model.inverse_transform(predictions)
-        proba = [max(p) for p in probas]
+    # Rework format :
+    if model.multi_label:
+        model_labels = np.array(model.list_classes)
+        all_preds = [tuple(np.compress(content_pred, model_labels)) for content_pred in predictions]
+        all_probs = [tuple(np.compress(content_pred, content_prob)) for content_pred, content_prob in zip(predictions, probas)]
+
     else:
-        prediction = [tuple(np.array(model.list_classes).compress(indicators)) for indicators in predictions]
-        proba = [tuple(np.array(probas[0]).compress(indicators)) for indicators in predictions]
+        all_preds = model.inverse_transform(predictions)
+        all_probs = probas.max(axis=1)
 
     # Return prediction & proba
-    return prediction, proba
+    return all_preds, all_probs
 
 
 def search_hp_cv(model_cls, model_params: dict, hp_params: dict, scoring_fn: Union[str, Callable],
