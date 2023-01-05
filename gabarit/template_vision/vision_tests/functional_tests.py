@@ -64,6 +64,12 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue(nb, 51)  # 51 images + csv file
         df = pd.read_csv(f"{full_path_lib}/test_template_vision-data/dataset_v1_50_samples/metadata.csv", sep=';', encoding='utf-8')
         self.assertEqual(df.shape[0], 50)
+        # retry without overwrite
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_create_samples.py -d dataset_v1 -n 50"
+        self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
+        # retry with overwrite
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_create_samples.py --overwrite -d dataset_v1 -n 50"
+        self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
 
         # dataset_v2
         dataset_v2 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_create_samples.py --overwrite -d dataset_v2 -n 50"
@@ -114,6 +120,12 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(df_valid.shape[0], 29)
         df_test = pd.read_csv(f"{full_path_lib}/test_template_vision-data/dataset_v1_test/metadata.csv", sep=';', encoding='utf-8')
         self.assertEqual(df_test.shape[0], 29)
+        # retry without overwrite
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_split_train_valid_test.py -d dataset_v1 --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --seed 42"
+        self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
+        # retry with overwrite
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_split_train_valid_test.py --overwrite -d dataset_v1 --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --seed 42"
+        self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
 
         # "Basic" case dataset_v2
         dataset_v2 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_split_train_valid_test.py --overwrite -d dataset_v2 --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --seed 42"
@@ -370,6 +382,12 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(im[0][0][0], 255)
         # Check pipeline has been saved
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_vision-data', 'dataset_v1_valid_preprocess_docs', 'preprocess_pipeline.conf')))
+        # retry without overwrite
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py -d dataset_v1_train dataset_v1_valid"
+        self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
+        # retry with overwrite
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py --overwrite -d dataset_v1_train dataset_v1_valid"
+        self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
 
         # "Basic" case dataset_v2
         dataset_v2 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py --overwrite -d dataset_v2_train dataset_v2_test -p no_preprocess"
