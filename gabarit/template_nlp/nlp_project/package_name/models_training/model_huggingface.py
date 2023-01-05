@@ -658,11 +658,11 @@ class ModelHuggingFace(ModelClass):
             hf_tokenizer_dir (str): Path to HuggingFace tokenizer directory
         Raises:
             ValueError: If configuration_path is None
-            ValueError: If hdf5_path is None
-            ValueError: If tokenizer_path is None
+            ValueError: If hf_model_dir is None
+            ValueError: If hf_tokenizer_dir is None
             FileNotFoundError: If the object configuration_path is not an existing file
-            FileNotFoundError: If the object hdf5_path is not an existing file
-            FileNotFoundError: If the object tokenizer_path is not an existing file
+            FileNotFoundError: If the object hf_model_dir is not an existing file
+            FileNotFoundError: If the object hf_tokenizer_dir is not an existing file
         '''
         # Retrieve args
         configuration_path = kwargs.get('configuration_path', None)

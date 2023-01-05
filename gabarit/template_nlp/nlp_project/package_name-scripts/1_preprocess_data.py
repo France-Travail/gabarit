@@ -35,7 +35,7 @@ logger = logging.getLogger('{{package_name}}.1_preprocess_data')
 
 
 def main(filenames: List[str], preprocessing: Union[str, None], input_col: Union[str, int],
-         sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}') -> None:
+         sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}', overwrite: bool = False) -> None:
     '''Preprocesses some datasets
 
     Args:
@@ -45,6 +45,7 @@ def main(filenames: List[str], preprocessing: Union[str, None], input_col: Union
     Kwargs:
         sep (str): Separator to use with the .csv files
         encoding (str): Encoding to use with the .csv files
+        overwrite (bool): Whether to allow overwriting
     Raises:
         FileNotFoundError: If a given file does not exist in {{package_name}}-data
     '''
@@ -102,7 +103,11 @@ def main(filenames: List[str], preprocessing: Union[str, None], input_col: Union
             # First line is a metadata with the name of the preprocess
             basename = Path(filename).stem
             dataset_preprocessed_path = os.path.join(data_path, f'{basename}_{preprocess_str}.csv')
-            utils.to_csv(df, dataset_preprocessed_path, first_line=f'#{preprocess_str}', sep='{{default_sep}}', encoding='{{default_encoding}}')
+
+            if os.path.exists(dataset_preprocessed_path) and not overwrite:
+                logger.info(f"{dataset_preprocessed_path} already exists. Pass.")
+            else:
+                utils.to_csv(df, dataset_preprocessed_path, first_line=f'#{preprocess_str}', sep='{{default_sep}}', encoding='{{default_encoding}}')
 
 
 if __name__ == '__main__':
@@ -112,5 +117,6 @@ if __name__ == '__main__':
     parser.add_argument('--input_col', default=None, required=True, help='Column to be preprocessed')
     parser.add_argument('--sep', default='{{default_sep}}', help="Separator to use with the .csv files.")
     parser.add_argument('--encoding', default="{{default_encoding}}", help="Encoding to use with the .csv files.")
+    parser.add_argument('--overwrite', action='store_true', help="Whether to allow overwriting")
     args = parser.parse_args()
-    main(filenames=args.filenames, preprocessing=args.preprocessing, input_col=args.input_col, sep=args.sep, encoding=args.encoding)
+    main(filenames=args.filenames, preprocessing=args.preprocessing, input_col=args.input_col, sep=args.sep, encoding=args.encoding, overwrite=args.overwrite)

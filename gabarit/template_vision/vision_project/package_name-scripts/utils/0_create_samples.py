@@ -35,7 +35,7 @@ from {{package_name}} import utils
 logger = logging.getLogger('{{package_name}}.0_create_samples')
 
 
-def main(directories: List[str], n_samples: int = 100, sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}'):
+def main(directories: List[str], n_samples: int = 100, sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}', overwrite: bool = False):
     '''Extracts data subsets from a list of directories
 
     Args:
@@ -44,6 +44,7 @@ def main(directories: List[str], n_samples: int = 100, sep: str = '{{default_sep
         n_samples (int): Number of samples to extract
         sep (str): Separator to use with the metadata file - if exists
         encoding (str): Encoding to use with the metadata file - if exists
+        overwrite (bool): Whether to allow overwriting
     Raises:
         FileNotFoundError: If a given directory does not exist in {{package_name}}-data
         NotADirectoryError: If a given path is not a directory
@@ -68,8 +69,11 @@ def main(directories: List[str], n_samples: int = 100, sep: str = '{{default_sep
         new_directory = os.path.join(data_path, f"{directory}_{n_samples}_samples")
         # We do not trigger an error if the directory exists
         if os.path.exists(new_directory):
-            logger.info(f"{new_directory} already exists. Pass.")
-            continue
+            if overwrite:
+                shutil.rmtree(new_directory)
+            else:
+                logger.info(f"{new_directory} already exists. Pass.")
+                continue
         os.makedirs(new_directory)
 
         # load data
@@ -122,5 +126,6 @@ if __name__ == '__main__':
     parser.add_argument('-n', '--n_samples', type=int, default=100, help="Number of samples to extract")
     parser.add_argument('--sep', default='{{default_sep}}', help="Separator to use with the .csv files")
     parser.add_argument('--encoding', default="{{default_encoding}}", help="Encoding to use with the .csv files")
+    parser.add_argument('--overwrite', action='store_true', help="Whether to allow overwriting")
     args = parser.parse_args()
-    main(directories=args.directories, n_samples=args.n_samples, sep=args.sep, encoding=args.encoding)
+    main(directories=args.directories, n_samples=args.n_samples, sep=args.sep, encoding=args.encoding, overwrite=args.overwrite)
