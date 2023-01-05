@@ -26,6 +26,7 @@ from typing import Type, Union, Any, Iterable
 from lime.explanation import Explanation
 from lime.lime_text import LimeTextExplainer
 
+from ..utils import ndarray_to_builtin_object, is_ndarray_convertable
 from ..preprocessing import preprocess
 from ..models_training.model_class import ModelClass
 
@@ -140,6 +141,10 @@ class LimeExplainer(Explainer):
         Returns:
             (?): An explanation object
         '''
+        # If a numpy object is passed as class_or_label_index we convert it to an object of a builtin type
+        if is_ndarray_convertable(class_or_label_index):
+            class_or_label_index = ndarray_to_builtin_object(class_or_label_index)
+
         if class_or_label_index is None:
             probas = self.classifier_fn([content])[0]
             class_or_label_index = (i for i, p in enumerate(probas) if p >= 0.5)

@@ -58,22 +58,28 @@ class Case1_e2e_pipeline(unittest.TestCase):
         print("Test of the file 0_create_samples.py")
 
         # dataset_v1
-        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_create_samples.py -d dataset_v1 -n 50"
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_create_samples.py --overwrite -d dataset_v1 -n 50"
         self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_vision-data', 'dataset_v1_50_samples','metadata.csv')))
         nb = len(os.listdir(os.path.join(full_path_lib, 'test_template_vision-data', 'dataset_v1_50_samples')))
         self.assertTrue(nb, 51)  # 51 images + csv file
         df = pd.read_csv(f"{full_path_lib}/test_template_vision-data/dataset_v1_50_samples/metadata.csv", sep=';', encoding='utf-8')
         self.assertEqual(df.shape[0], 50)
+        # retry without overwrite
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_create_samples.py -d dataset_v1 -n 50"
+        self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
+        # retry with overwrite
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_create_samples.py --overwrite -d dataset_v1 -n 50"
+        self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
 
         # dataset_v2
-        dataset_v2 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_create_samples.py -d dataset_v2 -n 50"
+        dataset_v2 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_create_samples.py --overwrite -d dataset_v2 -n 50"
         self.assertEqual(subprocess.run(dataset_v2, shell=True).returncode, 0)
         nb = len(os.listdir(os.path.join(full_path_lib, 'test_template_vision-data', 'dataset_v2_50_samples')))
         self.assertTrue(nb, 50)
 
         # dataset_v3
-        dataset_v3 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_create_samples.py -d dataset_v3 -n 50"
+        dataset_v3 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_create_samples.py --overwrite -d dataset_v3 -n 50"
         self.assertEqual(subprocess.run(dataset_v3, shell=True).returncode, 0)
         nb1 = len(os.listdir(os.path.join(full_path_lib, 'test_template_vision-data', 'dataset_v3')))
         nb2 = len(os.listdir(os.path.join(full_path_lib, 'test_template_vision-data', 'dataset_v3_50_samples')))
@@ -85,7 +91,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(len(filelist), 50)
 
         # dataset_object_detection
-        dataset_object_detection = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_create_samples.py -d dataset_object_detection -n 10"
+        dataset_object_detection = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_create_samples.py --overwrite -d dataset_object_detection -n 10"
         self.assertEqual(subprocess.run(dataset_object_detection, shell=True).returncode, 0)
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_vision-data', 'dataset_object_detection_10_samples','metadata_bboxes.csv')))
         nb = len(os.listdir(os.path.join(full_path_lib, 'test_template_vision-data', 'dataset_object_detection_10_samples')))
@@ -115,6 +121,12 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(df_valid.shape[0], 29)
         df_test = pd.read_csv(f"{full_path_lib}/test_template_vision-data/dataset_v1_test/metadata.csv", sep=';', encoding='utf-8')
         self.assertEqual(df_test.shape[0], 29)
+        # retry without overwrite
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_split_train_valid_test.py -d dataset_v1 --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --seed 42"
+        self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
+        # retry with overwrite
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_split_train_valid_test.py --overwrite -d dataset_v1 --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --seed 42"
+        self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
 
         # "Basic" case dataset_v2
         dataset_v2 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/utils/0_split_train_valid_test.py --overwrite -d dataset_v2 --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --seed 42"
@@ -345,7 +357,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         if not os.path.exists(dst):
             shutil.copyfile(src, dst)
         # Preprocessing
-        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py -d dataset_v1_train dataset_v1_valid"
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py --overwrite -d dataset_v1_train dataset_v1_valid"
         self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
         # train
         # Check if exists
@@ -371,9 +383,15 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(im[0][0][0], 255)
         # Check pipeline has been saved
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_vision-data', 'dataset_v1_valid_preprocess_docs', 'preprocess_pipeline.conf')))
+        # retry without overwrite
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py -d dataset_v1_train dataset_v1_valid"
+        self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
+        # retry with overwrite
+        dataset_v1 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py --overwrite -d dataset_v1_train dataset_v1_valid"
+        self.assertEqual(subprocess.run(dataset_v1, shell=True).returncode, 0)
 
         # "Basic" case dataset_v2
-        dataset_v2 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py -d dataset_v2_train dataset_v2_test -p no_preprocess"
+        dataset_v2 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py --overwrite -d dataset_v2_train dataset_v2_test -p no_preprocess"
         self.assertEqual(subprocess.run(dataset_v2, shell=True).returncode, 0)
         self.assertFalse(os.path.exists(os.path.join(full_path_lib, 'test_template_vision-data', 'dataset_v2_train_preprocess_docs')))
         self.assertFalse(os.path.exists(os.path.join(full_path_lib, 'test_template_vision-data', 'dataset_v2_test_preprocess_docs')))
@@ -405,7 +423,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         if not os.path.exists(dst):
             shutil.copyfile(src, dst)
         # Preprocess
-        dataset_v3 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py -d dataset_v3_train dataset_v3_valid -p preprocess_docs"
+        dataset_v3 = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py --overwrite -d dataset_v3_train dataset_v3_valid -p preprocess_docs"
         self.assertEqual(subprocess.run(dataset_v3, shell=True).returncode, 0)
         # train
         # Check preprocess (at least one image)
@@ -705,7 +723,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
                 shutil.rmtree(os.path.join(full_path_lib, 'test_template_vision-data', d))
 
         # Gen. datasets mnist_v1
-        preprocessing = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py -d mnist_v1"
+        preprocessing = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py --overwrite -d mnist_v1"
         # We don't apply the preprocessing on the validation dataset. We will use the train as val in order to simplify the process
         self.assertEqual(subprocess.run(preprocessing, shell=True).returncode, 0)
         # Only keep the 1s and the 0s in order to have 2 classes (for mono class) (remove 'Quatre's)
@@ -719,7 +737,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
         df.to_csv(f"{full_path_lib}/test_template_vision-data/mnist_v1_preprocess_docs/metadata.csv", sep=';', encoding='utf-8', index=False)
 
         # # Gen. datasets mnist_v2
-        # preprocessing = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py -d mnist_v2"
+        # preprocessing = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py --overwrite -d mnist_v2"
         # # We don't apply the preprocessing on the validation dataset. We will use the train as val in order to simplify the process
         # self.assertEqual(subprocess.run(preprocessing, shell=True).returncode, 0)
         # # Only keep the 1s and the 0s in order to have 2 classes (for mono class)
@@ -728,7 +746,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
         #         os.remove(os.path.join(full_path_lib, 'test_template_vision-data', 'mnist_v2_preprocess_docs', f))
         #
         # # Gen. datasets mnist_v3
-        # preprocessing = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py -d mnist_v3"
+        # preprocessing = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py --overwrite -d mnist_v3"
         # # We don't apply the preprocessing on the validation dataset. We will use the train as val in order to simplify the process
         # self.assertEqual(subprocess.run(preprocessing, shell=True).returncode, 0)
         # # Only keep the 1s and the 0s in order to have 2 classes (for mono class)
@@ -892,17 +910,17 @@ class Case3_MultiClassMonoLabel(unittest.TestCase):
 
 
         # Gen. datasets mnist_v1
-        preprocessing = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py -d mnist_v1"
+        preprocessing = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py --overwrite -d mnist_v1"
         # We don't apply the preprocessing on the validation dataset. We will use the train as val in order to simplify the process
         self.assertEqual(subprocess.run(preprocessing, shell=True).returncode, 0)
 
         # # Gen. datasets mnist_v2
-        # preprocessing = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py -d mnist_v2"
+        # preprocessing = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py --overwrite -d mnist_v2"
         # # We don't apply the preprocessing on the validation dataset. We will use the train as val in order to simplify the process
         # self.assertEqual(subprocess.run(preprocessing, shell=True).returncode, 0)
         #
         # # Gen. datasets mnist_v3
-        # preprocessing = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py -d mnist_v3"
+        # preprocessing = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py --overwrite -d mnist_v3"
         # # We don't apply the preprocessing on the validation dataset. We will use the train as val in order to simplify the process
         # self.assertEqual(subprocess.run(preprocessing, shell=True).returncode, 0)
 
@@ -993,7 +1011,7 @@ class Case4_ObjectDetection(unittest.TestCase):
 
 
         # Gen. datasets object_detection
-        preprocessing = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py -d dataset_object_detection_mini"
+        preprocessing = f"{activate_venv}python {full_path_lib}/test_template_vision-scripts/1_preprocess_data.py --overwrite -d dataset_object_detection_mini"
         # We don't apply the preprocessing on the validation dataset. We will use the train as val in order to simplify the process
         self.assertEqual(subprocess.run(preprocessing, shell=True).returncode, 0)
 

@@ -61,7 +61,6 @@ def main(directory: str, split_type: str, perc_train: float, perc_valid: float, 
         ValueError: If perc_valid & perc_test are both null
         FileNotFoundError: If the directory does not exist in {{package_name}}-data
         NotADirectoryError: If the argument `directory` is not a directory
-        FileExistsError: If any save directory already exists & not overwrite_dataset
         ValueError: If stratified split but object detection task identified
     '''
     logger.info(f"Splits {directory} into training / validation / test sets ...")
@@ -98,11 +97,14 @@ def main(directory: str, split_type: str, perc_train: float, perc_valid: float, 
     new_directory_valid = os.path.join(data_path, f"{directory}_valid")
     new_directory_test = os.path.join(data_path, f"{directory}_test")
     if os.path.exists(new_directory_train) and not overwrite_dataset:
-        raise FileExistsError(f"{new_directory_train} already exists. This error can be bypassed with the argument --overwrite.")
+        logger.warning(f"{new_directory_train} already exists. Use --overwrite to overwrite it.")
+        return
     if os.path.exists(new_directory_valid) and not overwrite_dataset and perc_valid != 0.:
-        raise FileExistsError(f"{new_directory_valid} already exists. This error can be bypassed with the argument --overwrite.")
+        logger.warning(f"{new_directory_valid} already exists. Use --overwrite to overwrite it.")
+        return
     if os.path.exists(new_directory_test) and not overwrite_dataset and perc_test != 0.:
-        raise FileExistsError(f"{new_directory_test} already exists. This error can be bypassed with the argument --overwrite.")
+        logger.warning(f"{new_directory_test} already exists. Use --overwrite to overwrite it.")
+        return
     # Create directories
     for path, perc in {new_directory_train: perc_train, new_directory_valid: perc_valid, new_directory_test: perc_test}.items():
         # If exists, delete it (we already checked for --overwrite)

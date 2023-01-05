@@ -39,12 +39,12 @@ from test_template_num.models_training import utils_models
 from test_template_num.models_training.classifiers import model_xgboost_classifier, model_aggregation_classifier
 from test_template_num.models_training.classifiers.models_tensorflow import model_dense_classifier
 from test_template_num.models_training.classifiers.models_sklearn import (model_rf_classifier, model_ridge_classifier, model_logistic_regression_classifier,
-                                                                          model_sgd_classifier, model_svm_classifier, model_knn_classifier, model_gbt_classifier, 
+                                                                          model_sgd_classifier, model_svm_classifier, model_knn_classifier, model_gbt_classifier,
                                                                           model_lgbm_classifier)
 from test_template_num.models_training.regressors import model_xgboost_regressor, model_aggregation_regressor
 from test_template_num.models_training.regressors.models_tensorflow import model_dense_regressor
 from test_template_num.models_training.regressors.models_sklearn import (model_rf_regressor, model_elasticnet_regressor, model_bayesian_ridge_regressor,
-                                                                         model_kernel_ridge_regressor, model_svr_regressor, model_sgd_regressor, 
+                                                                         model_kernel_ridge_regressor, model_svr_regressor, model_sgd_regressor,
                                                                          model_knn_regressor, model_pls_regressor, model_gbt_regressor, model_lgbm_regressor)
 
 def remove_dir(path):
@@ -59,14 +59,20 @@ class Case1_e2e_pipeline(unittest.TestCase):
         print("Test of the file utils/0_create_samples.py")
 
         # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv -n 15"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv -n 15"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_num-data', 'mono_class_mono_label_15_samples.csv')))
         df = pd.read_csv(f"{full_path_lib}/test_template_num-data/mono_class_mono_label_15_samples.csv", sep=';', encoding='utf-8')
         self.assertEqual(df.shape[0], 15)
+        # retry without overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv -n 15"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        # retry with overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv -n 15"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
         # Double files
-        double_files_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000"
+        double_files_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000"
         self.assertEqual(subprocess.run(double_files_run, shell=True).returncode, 0)
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_num-data', 'mono_class_mono_label_2000_samples.csv')))
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_num-data', 'multi_class_mono_label_2000_samples.csv')))
@@ -80,11 +86,17 @@ class Case1_e2e_pipeline(unittest.TestCase):
         print("Test of the file utils/0_merge_files.py")
 
         # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_merge_files.py -f mono_class_mono_label.csv multi_class_mono_label.csv -c col_1 col_2 y_col -o merged_file.csv"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_merge_files.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -c col_1 col_2 y_col -o merged_file.csv"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_num-data', 'merged_file.csv')))
         df = pd.read_csv(f"{full_path_lib}/test_template_num-data/merged_file.csv", sep=';', encoding='utf-8')
         self.assertGreater(df.shape[0], 210)  # We check that there are more than 210 elements (ie. the size of one of the two files)
+        # retry without overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_merge_files.py -f mono_class_mono_label.csv multi_class_mono_label.csv -c col_1 col_2 y_col -o merged_file.csv"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        # retry with overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_merge_files.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -c col_1 col_2 y_col -o merged_file.csv"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
     def test03_SplitTrainValidTest(self):
         '''Test of the file utils/0_split_train_valid_test.py'''
@@ -102,6 +114,12 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(df_train.shape[0], 126)
         self.assertEqual(df_valid.shape[0], 42)
         self.assertEqual(df_test.shape[0], 42)
+        # retry without overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_split_train_valid_test.py -f mono_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --y_col y_col --seed 42"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        # retry with overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --y_col y_col --seed 42"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
         # Test of perc_x arguments
         test_perc = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type random --perc_train 0.3 --perc_valid 0.6 --perc_test 0.1 --y_col y_col --seed 42"
@@ -165,16 +183,22 @@ class Case1_e2e_pipeline(unittest.TestCase):
         remove_dir(mlruns_artifact_dir)
 
         # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         list_filenames = list(os.walk(report_path))[0][2]
         self.assertTrue(len([filename for filename in list_filenames if "report_source" in filename and "report_source_w" not in filename]) == 1)
+        # retry without overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        # retry with overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
         # Check mlflow report artifact
         self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/report_source_*.html", recursive=True)) > 0)
 
         # Compare datasets
-        test_compare = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path} --mlflow_experiment sweetviz_experiment_2"
+        test_compare = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path} --mlflow_experiment sweetviz_experiment_2"
         self.assertEqual(subprocess.run(test_compare, shell=True).returncode, 0)
         list_filenames = list(os.walk(report_path))[0][2]
         self.assertTrue(len([filename for filename in list_filenames if "report_train_valid" in filename]) == 1)
@@ -193,7 +217,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
             df = pd.read_csv(original_dataset_path, sep=';', encoding='utf-8')
             df['tmp_target'] = df['y_col'].apply(lambda x: 1. if x == 'oui' else 0.)
             df.to_csv(tmp_file.name, sep=';', encoding='utf-8', index=None)
-            test_target = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py -s {tmp_file.name} --source_names source_with_target -t tmp_target --config {config_path} --mlflow_experiment sweetviz_experiment_3"
+            test_target = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py --overwrite -s {tmp_file.name} --source_names source_with_target -t tmp_target --config {config_path} --mlflow_experiment sweetviz_experiment_3"
             self.assertEqual(subprocess.run(test_target, shell=True).returncode, 0)
             list_filenames = list(os.walk(report_path))[0][2]
             self.assertTrue(len([filename for filename in list_filenames if "report_source_with_target" in filename]) == 1)
@@ -263,7 +287,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
             path_fairness = os.path.join(data_path, 'reports', 'fairness')
             folder_name = list(os.walk(path_fairness))[0][1][0]
             output_path = os.path.join(path_fairness, folder_name)
-            
+
             # Test the presence (or absence) of files
             for filename in list_filenames_to_check:
                 self.assertTrue(os.path.exists(os.path.join(output_path, filename)))
@@ -277,13 +301,13 @@ class Case1_e2e_pipeline(unittest.TestCase):
                 df = pd.read_csv(os.path.join(output_path, filename), sep=';', encoding='utf-8')
                 self.assertTrue(set_columns_data_distribution.issubset(set(df.columns)))
                 self.assertTrue(len(df) == nb_groups_whole)
-            
+
             # Test the file data_biased_groups.csv
             filename = 'data_biased_groups.csv'
             if os.path.exists(os.path.join(output_path, filename)):
                 df = pd.read_csv(os.path.join(output_path, filename), sep=';', encoding='utf-8')
                 self.assertTrue(set_columns_data_biased.issubset(set(df.columns)))
-            
+
             # Test the file algo_metrics_by_groups.csv
             if with_pred:
                 filename = 'algo_metrics_by_groups.csv'
@@ -295,7 +319,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
             else:
                 filename = 'algo_metrics_by_groups.csv'
                 self.assertFalse(os.path.exists(os.path.join(output_path, filename)))
-            
+
             # Check mlflow artifacts
             self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/data_distributions.png", recursive=True)) > 0)
             self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/data_distribution_score.json", recursive=True)) > 0)
@@ -321,7 +345,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         print("Test of the file 1_preprocess_data.py")
 
         # "Basic" case - classification
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/1_preprocess_data.py -f mono_class_mono_label_train.csv -p preprocess_P1 --target_cols y_col"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/1_preprocess_data.py --overwrite -f mono_class_mono_label_train.csv -p preprocess_P1 --target_cols y_col"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check if exists
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_num-data', 'mono_class_mono_label_train_preprocess_P1.csv')))
@@ -342,9 +366,15 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue('pipeline.info' in os.listdir(pipeline_path))
         self.assertTrue('pipeline.pkl' in os.listdir(pipeline_path))
         self.assertTrue('dataset_sample.csv' in os.listdir(pipeline_path))
+        # retry without overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/1_preprocess_data.py -f mono_class_mono_label_train.csv -p preprocess_P1 --target_cols y_col"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        # retry with overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/1_preprocess_data.py --overwrite -f mono_class_mono_label_train.csv -p preprocess_P1 --target_cols y_col"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
         # "Basic" case - regression
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/1_preprocess_data.py -f mono_output_regression_train.csv -p preprocess_P1 --target_cols y_col"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/1_preprocess_data.py --overwrite -f mono_output_regression_train.csv -p preprocess_P1 --target_cols y_col"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check if exists
         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_num-data', 'mono_output_regression_train_preprocess_P1.csv')))
@@ -373,7 +403,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         pipeline_name_regression = os.listdir(pipelines_dirpath)[-1]
 
         # "Basic" case - classification
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/2_apply_existing_pipeline.py -f mono_class_mono_label_valid.csv -p {pipeline_name_classification} --target_cols y_col"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/2_apply_existing_pipeline.py --overwrite -f mono_class_mono_label_valid.csv -p {pipeline_name_classification} --target_cols y_col"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check if exists
         train_path = os.path.join(full_path_lib, 'test_template_num-data', 'mono_class_mono_label_train_preprocess_P1.csv')
@@ -391,9 +421,15 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(sorted(df_train.num__col_1.unique()), sorted(df_valid.num__col_1.unique()))
         self.assertEqual(sorted(df_train.num__col_2.unique()), sorted(df_valid.num__col_2.unique()))
         self.assertEqual(sorted(df_train.y_col.unique()), sorted(df_valid.y_col.unique()))
+        # retry without overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/2_apply_existing_pipeline.py -f mono_class_mono_label_valid.csv -p {pipeline_name_classification} --target_cols y_col"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        # retry with overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/2_apply_existing_pipeline.py --overwrite -f mono_class_mono_label_valid.csv -p {pipeline_name_classification} --target_cols y_col"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
         # "Basic" case - regression
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/2_apply_existing_pipeline.py -f mono_output_regression_valid.csv -p {pipeline_name_regression} --target_cols y_col"
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/2_apply_existing_pipeline.py --overwrite -f mono_output_regression_valid.csv -p {pipeline_name_regression} --target_cols y_col"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
         # Check if exists
         train_path = os.path.join(full_path_lib, 'test_template_num-data', 'mono_output_regression_train_preprocess_P1.csv')
@@ -645,7 +681,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
 
         # Gen. datasets
         split_train_valid_test = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --y_col y_col --seed 42"
-        preprocessing = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/1_preprocess_data.py -f mono_class_mono_label_train.csv -p preprocess_P1 --target_cols y_col"
+        preprocessing = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/1_preprocess_data.py --overwrite -f mono_class_mono_label_train.csv -p preprocess_P1 --target_cols y_col"
         # We don't apply the preprocessing on the validation dataset. We will use the train dataset as validation to simplify
         self.assertEqual(subprocess.run(split_train_valid_test, shell=True).returncode, 0)
         self.assertEqual(subprocess.run(preprocessing, shell=True).returncode, 0)
@@ -1338,7 +1374,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
                 votes = sorted(votes, key=lambda x: x[1], reverse=True)
                 possible_classes = {vote[0] for vote in votes if vote[1]==votes[0][1]}
                 return [prediction for prediction in predictions if prediction in possible_classes][0]
-                
+
             test_model_5 = model_aggregation_classifier.ModelAggregationClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save="HIGH",
                                                             list_models=list_models, using_proba=False, aggregation_function=function_test,
                                                             multi_label=False, model_name=model_name, model_dir=model_dir, preprocess_pipeline=preprocess_pipeline)
@@ -1444,7 +1480,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
 
         # Gen. datasets
         split_train_valid_test = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_multi_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --y_col y_col_1 --seed 42"
-        preprocessing = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/1_preprocess_data.py -f mono_class_multi_label_train.csv -p preprocess_P1 --target_cols y_col_1 y_col_2"
+        preprocessing = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/1_preprocess_data.py --overwrite -f mono_class_multi_label_train.csv -p preprocess_P1 --target_cols y_col_1 y_col_2"
         # We don't apply the preprocessing on the validation dataset. We will use the train dataset as validation to simplify
         self.assertEqual(subprocess.run(split_train_valid_test, shell=True).returncode, 0)
         self.assertEqual(subprocess.run(preprocessing, shell=True).returncode, 0)
@@ -2043,7 +2079,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
 
         # Gen. datasets
         split_train_valid_test = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_split_train_valid_test.py --overwrite -f multi_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --y_col y_col --seed 42"
-        preprocessing = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/1_preprocess_data.py -f multi_class_mono_label_train.csv -p preprocess_P1 --target_cols y_col"
+        preprocessing = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/1_preprocess_data.py --overwrite -f multi_class_mono_label_train.csv -p preprocess_P1 --target_cols y_col"
         # We don't apply the preprocessing on the validation dataset. We will use the train dataset as validation to simplify
         self.assertEqual(subprocess.run(split_train_valid_test, shell=True).returncode, 0)
         self.assertEqual(subprocess.run(preprocessing, shell=True).returncode, 0)

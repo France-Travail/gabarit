@@ -281,6 +281,54 @@ class UtilsTests(unittest.TestCase):
         flattened_list = list(utils.flatten(test_list))
         self.assertEqual(flattened_list, expected_result)
 
+    def test13_is_ndarray_convertable(self):
+        '''Test of the function utils.is_ndarray_convertable'''
+        class NumpyLike:
+            def __init__(self, *args):
+                self.args = args
+                self.dtype = None
+            def astype(self, _):
+                return self
+            def tolist(self):
+                return self.args
+        
+        for obj, expected_result in (
+            (None, False),
+            ("some text", False),
+            (np.array(1), True),
+            (np.array(1.1), True),
+            (np.array([1, 2, 3], dtype=np.int64), True),
+            (np.array([[1], [2], [3]], dtype=np.int64), True),
+            (NumpyLike(1, 2, 3), True),
+        ):
+            self.assertEqual(expected_result, utils.is_ndarray_convertable(obj))
+
+    def test14_ndarray_to_builtin_object(self):
+        '''Test of the function utils.ndarray_to_builtin_object'''
+        class NumpyLike:
+            def __init__(self, *args):
+                self.args = args
+                self.dtype = None
+            def astype(self, _):
+                return self
+            def tolist(self):
+                return self.args
+        
+        for obj, expected_result in (
+            (None, ValueError),
+            ("some text", ValueError),
+            (np.array(1), 1),
+            (np.array(1.1), 1.1),
+            (np.array([1, 2, 3], dtype=np.int64), [1, 2, 3]),
+            (np.array([[1], [2], [3]], dtype=np.int64), [[1], [2], [3]]),
+            (NumpyLike(1, 2, 3), (1, 2, 3)),
+        ):
+            if expected_result == ValueError:
+                with self.assertRaises(ValueError):
+                    utils.ndarray_to_builtin_object(obj)
+            else:
+                self.assertEqual(expected_result, utils.ndarray_to_builtin_object(obj))
+
 
 # TODO: test trained_needed
 

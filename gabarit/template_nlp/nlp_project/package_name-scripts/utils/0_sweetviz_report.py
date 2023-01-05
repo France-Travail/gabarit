@@ -42,7 +42,7 @@ logger = logging.getLogger("{{package_name}}.0_sweetviz_report.py")
 def main(source_paths: List[str], source_names: List[str] = None, compare_paths: List[str] = None,
          compare_names: List[str] = None, target: str = None, config: str = None,
          sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}', 
-         mlflow_experiment: Union[str, None] = None) -> None:
+         mlflow_experiment: Union[str, None] = None, overwrite: bool = False) -> None:
     '''Uses Sweetviz to get an automatic report of some datasets. It can also make comparisons between
     datasets using the compare_X arguments. Every source/compare combination will be processed.
 
@@ -57,6 +57,7 @@ def main(source_paths: List[str], source_names: List[str] = None, compare_paths:
         sep (str): Separator to use with the .csv files
         encoding (str): Encoding to use with the .csv files
         mlflow_experiment (str): Name of the current experiment. If None, no experiment will be saved.
+        overwrite (bool): Whether to allow overwriting
     '''
 
     ##############################################
@@ -102,7 +103,11 @@ def main(source_paths: List[str], source_names: List[str] = None, compare_paths:
             compare_filename = compare_name.replace(" ", "_")
             output_filename = datetime.datetime.now().strftime(f"report_{source_filename}_{compare_filename}_%Y_%m_%d-%H_%M_%S.html")
             logger.info(f"Generating report between datasets '{source_filename}' and '{compare_filename}'")
+
         output_path = os.path.join(report_folder, output_filename)
+        if os.path.exists(output_path) and not overwrite:
+            logger.info(f"{output_path} already exists. Pass.")
+            continue
 
         # Generate report
         report: sweetviz.DataframeReport = sweetviz.compare(source, compare, target_feat=target,
@@ -243,8 +248,8 @@ if __name__ == "__main__":
     parser.add_argument('--sep', default='{{default_sep}}', help="Separator to use with the .csv files.")
     parser.add_argument('--encoding', default='{{default_encoding}}', help="Encoding to use with the .csv files.")
     parser.add_argument('--mlflow_experiment', help="Name of the current experiment. MLflow tracking is activated only if fulfilled.")
-    #TODO: add --overwrite, cf. https://github.com/OSS-Pole-Emploi/gabarit/issues/71
+    parser.add_argument('--overwrite', action='store_true', help="Whether to allow overwriting")
     args = parser.parse_args()
     main(source_paths=args.source_paths, source_names=args.source_names, compare_paths=args.compare_paths,
          compare_names=args.compare_names, target=args.target, config=args.config, sep=args.sep, encoding=args.encoding, 
-         mlflow_experiment=args.mlflow_experiment)
+         mlflow_experiment=args.mlflow_experiment, overwrite=args.overwrite)

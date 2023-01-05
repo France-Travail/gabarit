@@ -64,7 +64,6 @@ def main(filename: str, split_type: str, perc_train: float, perc_valid: float, p
         ValueError: If abs(perc_train + perc_valid + perc_test - 1) > 0.0001
         ValueError: If perc_valid & perc_test are both null
         FileNotFoundError: If the file does not exist in {{package_name}}-data
-        FileExistsError: If any save file already exists & not overwrite_dataset
     '''
     logger.info(f"Splits {filename} into training / validation / test sets ...")
 
@@ -103,11 +102,14 @@ def main(filename: str, split_type: str, perc_train: float, perc_valid: float, p
     valid_path =  os.path.join(data_path, f"{basename}_valid.csv")
     test_path =  os.path.join(data_path, f"{basename}_test.csv")
     if os.path.exists(train_path) and not overwrite_dataset:
-        raise FileExistsError(f"{train_path} already exists. This error can be bypassed with the argument --overwrite.")
+        logger.warning(f"{train_path} already exists. Use --overwrite to overwrite it.")
+        return
     if os.path.exists(valid_path) and not overwrite_dataset and perc_valid != 0.:
-        raise FileExistsError(f"{valid_path} already exists. This error can be bypassed with the argument --overwrite.")
+        logger.warning(f"{valid_path} already exists. Use --overwrite to overwrite it.")
+        return
     if os.path.exists(test_path) and not overwrite_dataset and perc_test != 0.:
-        raise FileExistsError(f"{test_path} already exists. This error can be bypassed with the argument --overwrite.")
+        logger.warning(f"{test_path} already exists. Use --overwrite to overwrite it.")
+        return
 
     # Get dataframe
     df, first_line = utils.read_csv(file_path, sep=sep, encoding=encoding, dtype=str)
