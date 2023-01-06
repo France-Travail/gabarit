@@ -344,6 +344,7 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
         mlflow_logger = MLflowLogger(
             experiment_name=f"{{package_name}}/{mlflow_experiment}",
             tracking_uri="{{mlflow_tracking_uri}}",
+            artifact_uri="{{mlflow_artifact_uri}}",
         )
         # Set model name, save metrics & configurations
         mlflow_logger.set_tag('model_name', f"{os.path.basename(model.model_dir)}")

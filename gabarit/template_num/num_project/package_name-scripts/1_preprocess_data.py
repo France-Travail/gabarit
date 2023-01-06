@@ -38,7 +38,7 @@ logger = logging.getLogger('{{package_name}}.1_preprocess_data')
 
 
 def main(filenames: List[str], preprocessing: Union[str, None], target_cols: List[Union[str, int]],
-         sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}') -> None:
+         sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}', overwrite: bool = False) -> None:
     '''Preprocesses some datasets
 
     Idea:
@@ -59,6 +59,7 @@ def main(filenames: List[str], preprocessing: Union[str, None], target_cols: Lis
     Kwargs:
         sep (str): Separator to use with the .csv files
         encoding (str): Encoding to use with the .csv files
+        overwrite (bool): Whether to allow overwriting
     Raises:
         ValueError: if the preprocessing is not known
         FileNotFoundError: If a given file does not exist in {{package_name}}-data
@@ -102,8 +103,17 @@ def main(filenames: List[str], preprocessing: Union[str, None], target_cols: Lis
             # 'no_preprocess' must be ignored
             if preprocess_str == 'no_preprocess':
                 continue
+
             gc.collect()  # Fix some OOM in case of huge datasets being preprocessed
-            logger.info(f'Applying preprocessing {preprocess_str} on filename {filename}')
+            
+            # Output path
+            dataset_preprocessed_path = os.path.join(data_path, f'{Path(filename).stem}_{preprocess_str}.csv')
+
+            if os.path.exists(dataset_preprocessed_path) and not overwrite:
+                logger.info(f'{dataset_preprocessed_path} already exists. Pass.')
+                continue
+            else:
+                logger.info(f'Applying preprocessing {preprocess_str} on filename {filename}')
 
             # Get pipeline -> we create a new pipeline for each file
             preprocess_pipeline = preprocess.get_pipeline(preprocess_str)
@@ -144,8 +154,6 @@ def main(filenames: List[str], preprocessing: Union[str, None], target_cols: Lis
 
             # Save preprocessed dataframe ({{default_encoding}}, '{{default_sep}}')
             # First line is a metadata with the name of the pipeline file
-            basename = Path(filename).stem
-            dataset_preprocessed_path = os.path.join(data_path, f'{basename}_{preprocess_str}.csv')
             utils.to_csv(new_df, dataset_preprocessed_path, first_line=f'#{pipeline_name}', sep=sep, encoding=encoding)
 
 
@@ -177,5 +185,6 @@ if __name__ == '__main__':
     parser.add_argument('--target_cols', nargs='+', required=True, help='Y columns.')
     parser.add_argument('--sep', default='{{default_sep}}', help="Separator to use with the .csv files.")
     parser.add_argument('--encoding', default="{{default_encoding}}", help="Encoding to use with the .csv files.")
+    parser.add_argument('--overwrite', action='store_true', help="Whether to allow overwriting")
     args = parser.parse_args()
-    main(filenames=args.filenames, preprocessing=args.preprocessing, target_cols=args.target_cols, sep=args.sep, encoding=args.encoding)
+    main(filenames=args.filenames, preprocessing=args.preprocessing, target_cols=args.target_cols, sep=args.sep, encoding=args.encoding, overwrite=args.overwrite)

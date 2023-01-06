@@ -73,6 +73,7 @@ def main(filename: str, col_target: str, sensitive_cols: List[str], nb_bins: int
         mlflow_logger = MLflowLogger(
             experiment_name=f"{{package_name}}/{mlflow_experiment}",
             tracking_uri="{{mlflow_tracking_uri}}",
+            artifact_uri="{{mlflow_artifact_uri}}",
         )
     else:
         mlflow_logger = None

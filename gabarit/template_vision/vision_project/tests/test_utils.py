@@ -279,7 +279,55 @@ class UtilsTests(unittest.TestCase):
             with self.assertRaises(FileNotFoundError):
                 utils.find_folder_path('this/is/not/a/path', None)
 
-    def test09_read_object_detection(self):
+    def test09_is_ndarray_convertable(self):
+        '''Test of the function utils.is_ndarray_convertable'''
+        class NumpyLike:
+            def __init__(self, *args):
+                self.args = args
+                self.dtype = None
+            def astype(self, _):
+                return self
+            def tolist(self):
+                return self.args
+        
+        for obj, expected_result in (
+            (None, False),
+            ("some text", False),
+            (np.array(1), True),
+            (np.array(1.1), True),
+            (np.array([1, 2, 3], dtype=np.int64), True),
+            (np.array([[1], [2], [3]], dtype=np.int64), True),
+            (NumpyLike(1, 2, 3), True),
+        ):
+            self.assertEqual(expected_result, utils.is_ndarray_convertable(obj))
+
+    def test10_ndarray_to_builtin_object(self):
+        '''Test of the function utils.ndarray_to_builtin_object'''
+        class NumpyLike:
+            def __init__(self, *args):
+                self.args = args
+                self.dtype = None
+            def astype(self, _):
+                return self
+            def tolist(self):
+                return self.args
+        
+        for obj, expected_result in (
+            (None, ValueError),
+            ("some text", ValueError),
+            (np.array(1), 1),
+            (np.array(1.1), 1.1),
+            (np.array([1, 2, 3], dtype=np.int64), [1, 2, 3]),
+            (np.array([[1], [2], [3]], dtype=np.int64), [[1], [2], [3]]),
+            (NumpyLike(1, 2, 3), (1, 2, 3)),
+        ):
+            if expected_result == ValueError:
+                with self.assertRaises(ValueError):
+                    utils.ndarray_to_builtin_object(obj)
+            else:
+                self.assertEqual(expected_result, utils.ndarray_to_builtin_object(obj))
+
+    def test10_read_object_detection(self):
         '''Test of utils.read_object_detection'''
         
         with self.assertRaises(FileNotFoundError):
@@ -295,7 +343,7 @@ class UtilsTests(unittest.TestCase):
             ["apple_76.jpg", "banana_76.jpg", "mixed_22.jpg", "orange_77.jpg"]
         )
 
-    def test10_read_folder(self):
+    def test11_read_folder(self):
         '''Test of utils.read_folder'''
         # Detection task
         path_list, _, _, task_type = utils.read_folder(os.path.join(self.test_data_dir, "test_data_object_detection", "fruits"))
@@ -319,7 +367,7 @@ class UtilsTests(unittest.TestCase):
             expected_files
         )
 
-    def test11_rebuild_metadata_object_detection(self):
+    def test12_rebuild_metadata_object_detection(self):
         '''Test of utils.rebuild_metadata_object_detection'''
         filenames_list = ["f1", "f2"]
         bboxes_list = [
@@ -334,7 +382,7 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(list(df["x2"]), [1, 2, 3])
         self.assertEqual(list(df["y2"]), [1, 2, 3])
 
-    def test12_rebuild_metadata_classification(self):
+    def test13_rebuild_metadata_classification(self):
         '''Test of utils.rebuild_metadata_classification'''
         filenames_list = ["f1", "f2"]
         classes_list = ["a", "b"]
@@ -344,7 +392,7 @@ class UtilsTests(unittest.TestCase):
         self.assertEqual(list(df["filename"]), ["f1", "f2"])
         self.assertEqual(list(df["class"]), list("ab"))
 
-    def test13_data_agnostic_str_to_list(self):
+    def test14_data_agnostic_str_to_list(self):
         '''Test of utils.data_agnostic_str_to_list'''
 
         @utils.data_agnostic_str_to_list
@@ -356,7 +404,7 @@ class UtilsTests(unittest.TestCase):
 
         self.assertTrue(i_want_list("afuturelist"))
 
-    def test14_trained_needed(self):
+    def test15_trained_needed(self):
         '''Test of utils.trained_needed'''
         class M:
             def __init__(self, trained):
@@ -373,6 +421,7 @@ class UtilsTests(unittest.TestCase):
 
         m.trained = True
         self.assertTrue(m.need_trained)
+
 
 # Perform tests
 if __name__ == '__main__':

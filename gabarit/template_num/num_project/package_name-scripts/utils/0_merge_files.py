@@ -45,7 +45,6 @@ def main(filenames: List[str], cols: Union[List[Union[str, int]], None] = None, 
         encoding (str): Encoding to use with the .csv files
     Raises:
         FileNotFoundError: If a given file does not exist in {{package_name}}-data
-        FileExistsError: If the output file already exists & not overwrite_dataset
         ValueError: If any input file has a metadata line (not supported)
     '''
     logger.info("Merging several files ...")
@@ -60,7 +59,8 @@ def main(filenames: List[str], cols: Union[List[Union[str, int]], None] = None, 
     # Manage new file
     output_path = os.path.join(data_path, output)
     if os.path.isfile(output_path) and not overwrite_dataset:
-        raise FileNotFoundError(f"The file {output_path} already exists.")
+        logger.warning(f"{output_path} already exists. Use --overwrite to overwrite it.")
+        return
 
     # Init. dataframe
     df = pd.DataFrame(columns=cols)
