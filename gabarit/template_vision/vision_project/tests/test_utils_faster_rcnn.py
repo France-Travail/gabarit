@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# TODO : There are some tests missing,
-
 # Libs unittest
 import unittest
 from unittest.mock import Mock
