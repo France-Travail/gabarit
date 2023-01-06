@@ -44,7 +44,7 @@ import numpy as np
 import pandas as pd
 import dill as pickle
 from datetime import datetime
-from typing import Union, Tuple, Callable, Any, Dict
+from typing import Union, Tuple, Callable, Any, Dict, List
 
 from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
@@ -309,21 +309,19 @@ def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
     return model, configs
 
 
-# TODO: Shouldn't content be an iterable & shouldn't we return a list ?
-def predict(content: str, model, model_conf: dict, **kwargs) -> Union[str, tuple]:
+def predict(content: Union[str, list], model, model_conf: dict, **kwargs) -> list:
     '''Gets predictions of a model on a content
 
     Args:
-        content (str): New content to be predicted
+        content (Union[str, list]): New content to be predicted
         model (ModelClass): Model to use
         model_conf (dict): Model configurations
     Returns:
-        MONO-LABEL CLASSIFICATION:
-            str: prediction
-        MULTI-LABELS CLASSIFICATION:
-            tuple: predictions
+        list: a list of strings (resp. tuples) in case of mono-label (resp. multi-labels) classification predictions
     '''
-    # TODO : add multiple inputs ?
+    if isinstance(content, str):
+        content = [content]
+        
     # Get preprocessor
     if 'preprocess_str' in model_conf.keys():
         preprocess_str = model_conf['preprocess_str']
@@ -335,28 +333,30 @@ def predict(content: str, model, model_conf: dict, **kwargs) -> Union[str, tuple
     content = preprocessor(content)
 
     # Get prediction (some models need an iterable)
-    predictions = model.predict([content])
+    predictions = model.predict(content)
 
     # Return predictions with inverse transform when relevant
-    return model.inverse_transform(predictions)[0]
+    return model.inverse_transform(predictions)
 
 
-def predict_with_proba(content: str, model, model_conf: dict) -> Tuple[Union[str, tuple], Union[float, tuple]]:
+def predict_with_proba(content: Union[str, list], model, model_conf: dict) -> Union[Tuple[List[str], List[float]], Tuple[List[tuple], List[tuple]]]:
     '''Gets predictions of a model on a content, with probabilities
 
     Args:
-        content (str): New content to be predicted
+        content (Union[str, list]): New content to be predicted
         model (ModelClass): Model to use
         model_conf (dict): Model configurations
     Returns:
         MONO-LABEL CLASSIFICATION:
-            str: prediction
-            float: probability
+            List[str]: predictions
+            List[float]: probabilities
         MULTI-LABELS CLASSIFICATION:
-            tuple: predictions
-            tuple: probabilities
+            List[tuple]: predictions
+            List[tuple]: probabilities
     '''
-    # TODO : add multiple inputs ?
+    if isinstance(content, str):
+        content = [content]
+
     # Get preprocessor
     if 'preprocess_str' in model_conf.keys():
         preprocess_str = model_conf['preprocess_str']
@@ -368,18 +368,22 @@ def predict_with_proba(content: str, model, model_conf: dict) -> Tuple[Union[str
     content = preprocessor(content)
 
     # Get prediction (some models need an iterable)
-    predictions, probas = model.predict_with_proba([content])
+    # predictions is a ndarray of shape (n_samples, n_classes)
+    # probas is a ndarray of shape (n_samples, n_classes)
+    predictions, probas = model.predict_with_proba(content)
 
-    # Rework format
-    if not model.multi_label:
-        prediction = model.inverse_transform(predictions)[0]
-        proba = max(probas[0])
+    # Rework format :
+    if model.multi_label:
+        model_labels = np.array(model.list_classes)
+        all_preds = [tuple(np.compress(content_pred, model_labels)) for content_pred in predictions]
+        all_probs = [tuple(np.compress(content_pred, content_prob)) for content_pred, content_prob in zip(predictions, probas)]
+
     else:
-        prediction = [tuple(np.array(model.list_classes).compress(indicators)) for indicators in predictions][0]
-        proba = [tuple(np.array(probas[0]).compress(indicators)) for indicators in predictions][0]
+        all_preds = model.inverse_transform(predictions)
+        all_probs = probas.max(axis=1)
 
     # Return prediction & proba
-    return prediction, proba
+    return all_preds, all_probs
 
 
 def search_hp_cv(model_cls, model_params: dict, hp_params: dict, scoring_fn: Union[str, Callable],

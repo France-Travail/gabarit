@@ -42,7 +42,7 @@ import numpy as np
 import pandas as pd
 import dill as pickle
 from datetime import datetime
-from typing import Union, Tuple, Callable, Any
+from typing import Union, Tuple, Callable, Any, List
 
 from sklearn.pipeline import Pipeline
 from sklearn.compose import ColumnTransformer
@@ -348,7 +348,7 @@ def apply_pipeline(df: pd.DataFrame, preprocess_pipeline: ColumnTransformer) -> 
     return preprocessed_df
 
 
-def predict(content: pd.DataFrame, model, **kwargs) -> Union[float, str, tuple, list]:
+def predict(content: pd.DataFrame, model, **kwargs) -> list:
     '''Gets predictions of a model on a dataset
 
     Args:
@@ -377,16 +377,11 @@ def predict(content: pd.DataFrame, model, **kwargs) -> Union[float, str, tuple, 
     # Inverse transform (needed for classification)
     predictions = model.inverse_transform(predictions)
 
-    # Return only first element if dataframe has one row
-    # TODO: Shouldn't we return the full prediction even if one row ?
-    if content.shape[0] == 1:
-        predictions = predictions[0]
-
     # Return
     return predictions
 
 
-def predict_with_proba(content: pd.DataFrame, model) -> Tuple[Union[str, tuple, list], Union[float, tuple, list]]:
+def predict_with_proba(content: pd.DataFrame, model) -> Union[Tuple[List[str], List[float]], Tuple[List[tuple], List[tuple]]]:
     '''Gets probabilities predictions of a model on a dataset
 
     Args:
@@ -396,13 +391,11 @@ def predict_with_proba(content: pd.DataFrame, model) -> Tuple[Union[str, tuple, 
         ValueError: If the model type is not classifier
     Returns:
         MONO-LABEL CLASSIFICATION:
-            str: prediction
-            float: probability
+            List[str]: predictions
+            List[float]: probabilities
         MULTI-LABELS CLASSIFICATION:
-            tuple: predictions
-            tuple: probabilities
-
-        If several elements -> list
+            List[tuple]: predictions
+            List[tuple]: probabilities
     '''
     # Regressions
     if not model.model_type == 'classifier':
@@ -425,11 +418,6 @@ def predict_with_proba(content: pd.DataFrame, model) -> Tuple[Union[str, tuple, 
     else:
         prediction = [tuple(np.array(model.list_classes).compress(indicators)) for indicators in predictions]
         proba = [tuple(np.array(probas[i]).compress(indicators)) for i, indicators in enumerate(predictions)]
-
-    # Return only first element if dataframe has one row
-    if content.shape[0] == 1:
-        prediction = prediction[0]
-        proba = proba[0]
 
     # Return prediction & proba
     return prediction, proba

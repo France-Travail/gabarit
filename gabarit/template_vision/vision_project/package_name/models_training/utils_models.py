@@ -207,7 +207,7 @@ def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
 
 
 def predict(data_input: Union[str, List[str], np.ndarray, pd.DataFrame], model, model_conf: dict,
-            return_proba: bool = False, **kwargs) -> Union[str, List[str], np.ndarray]:
+            return_proba: bool = False, **kwargs) -> Union[List[str], np.ndarray]:
     '''Gets predictions of a model on images
 
     Args:
@@ -230,9 +230,9 @@ def predict(data_input: Union[str, List[str], np.ndarray, pd.DataFrame], model, 
         ValueError: If the input DataFrame does not contains a 'file_path' column (input type == pd.DataFrame)
         ValueError: If the input type is not a valid type option
     Returns:
-        str, List[str], np.ndarray: predictions or probabilities
-            - If return_proba -> np.ndarray (shape depends on number of inputs)
-            - Else str or list<str> (depends on number of inputs)
+        List[str], np.ndarray: predictions or probabilities
+            - If return_proba -> np.ndarray
+            - Else List[str]
     '''
     # TODO
     # TODO
@@ -327,18 +327,14 @@ def predict(data_input: Union[str, List[str], np.ndarray, pd.DataFrame], model, 
     ##############################################
     # Return result
     ##############################################
-
-    # TODO: Shouldn't we return the full prediction even if one element ?
-    # Return one element if only one input, else return all
     if return_proba:
-        return probas[0] if len(probas) == 1 else probas
+        return probas
     else:
-        predictions = model.inverse_transform(predictions)
-        return predictions[0] if len(predictions) == 1 else predictions
+        return model.inverse_transform(predictions)
 
 
 def predict_with_proba(data_input: Union[str, List[str], np.ndarray, pd.DataFrame], model,
-                       model_conf: dict) -> Tuple[Union[str, List[str]], Union[float, List[float]]]:
+                       model_conf: dict) -> Tuple[List[str], List[float]]:
     '''Gets probabilities predictions of a model on a dataset
 
     Args:
@@ -354,10 +350,7 @@ def predict_with_proba(data_input: Union[str, List[str], np.ndarray, pd.DataFram
         NotImplementedError: If model is object detection task
         ValueError : If predict does not return an np.ndarray
     Returns:
-        str: prediction
-        float: probability
-
-        If several elements -> list
+        Union[List[str], List[float]]: predictions, probabilities
     '''
     if model.model_type == 'object_detector':
         raise NotImplementedError("`predict_with_proba` is not yet implemented for object detection task")
@@ -370,15 +363,9 @@ def predict_with_proba(data_input: Union[str, List[str], np.ndarray, pd.DataFram
         raise ValueError("Internal error - probas should be an np.ndarray.")
 
     # Manage cases with only one element
-    if len(probas.shape) == 1:
-        predictions = model.get_classes_from_proba(np.expand_dims(probas, 0))
-        predictions = model.inverse_transform(predictions)[0]
-        max_probas = max(probas)
-    # Several elements
-    else:
-        predictions = model.get_classes_from_proba(probas)
-        predictions = model.inverse_transform(predictions)
-        max_probas = list(probas.max(axis=1))
+    predictions = model.get_classes_from_proba(probas)
+    predictions = model.inverse_transform(predictions)
+    max_probas = list(probas.max(axis=1))
 
     # Return
     return predictions, max_probas

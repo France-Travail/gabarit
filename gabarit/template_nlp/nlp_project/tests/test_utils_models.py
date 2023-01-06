@@ -313,8 +313,8 @@ class UtilsModelsTests(unittest.TestCase):
         model.fit(x_train, y_train_mono)
         model.save()
         model, model_conf = utils_models.load_model('test_model3')
-        self.assertEqual(utils_models.predict('Ceci est un test', model, model_conf), 'test')
-        self.assertEqual(utils_models.predict('Test "deux" !', model, model_conf), 'deux')
+        self.assertEqual(utils_models.predict('Ceci est un test', model, model_conf), ['test'])
+        self.assertEqual(utils_models.predict('Test "deux" !', model, model_conf), ['deux'])
         remove_dir(model_dir)
 
         # Nominal case - multi-labels
@@ -325,8 +325,9 @@ class UtilsModelsTests(unittest.TestCase):
         model.fit(x_train, y_train_multi)
         model.save()
         model, model_conf = utils_models.load_model('test_model3')
-        self.assertEqual(utils_models.predict('Ceci est un test', model, model_conf), ('test',))
-        self.assertEqual(utils_models.predict('Toto "deux" !', model, model_conf), ('toto',))
+        self.assertEqual(utils_models.predict('Ceci est un test', model, model_conf), [('test',)])
+        self.assertEqual(utils_models.predict('Toto "deux" !', model, model_conf), [('toto',)])
+        self.assertEqual(utils_models.predict(['Ceci est un test', 'Toto test "deux" !'], model, model_conf), [('test',), ('test', 'toto')])
         remove_dir(model_dir)
 
     def test10_predict_with_proba(self):
@@ -347,11 +348,11 @@ class UtilsModelsTests(unittest.TestCase):
         model.save()
         model, model_conf = utils_models.load_model('test_model4')
         pred, proba = utils_models.predict_with_proba('Ceci est un test', model, model_conf)
-        self.assertEqual(pred, 'test')
-        self.assertEqual(proba, 1.0) # 1.0 because svm
+        self.assertEqual(pred, ['test'])
+        self.assertEqual(proba, [1.0]) # 1.0 because svm
         pred, proba = utils_models.predict_with_proba('Test "deux" !', model, model_conf)
-        self.assertEqual(pred, 'deux')
-        self.assertEqual(proba, 1.0) # 1.0 because svm
+        self.assertEqual(pred, ['deux'])
+        self.assertEqual(proba, [1.0]) # 1.0 because svm
         remove_dir(model_dir)
 
         # Nominal case - multi-labels
@@ -363,11 +364,14 @@ class UtilsModelsTests(unittest.TestCase):
         model.save()
         model, model_conf = utils_models.load_model('test_model4')
         pred, proba = utils_models.predict_with_proba('Ceci est un test', model, model_conf)
-        self.assertEqual(pred, ('test',))
-        self.assertEqual(proba, (1.0,)) # 1.0 because svm
+        self.assertEqual(pred, [('test',)])
+        self.assertEqual(proba, [(1.0,)]) # 1.0 because svm
         pred, proba = utils_models.predict_with_proba('Toto "deux" !', model, model_conf)
-        self.assertEqual(pred, ('toto',))
-        self.assertEqual(proba, (1.0,)) # 1.0 because svm
+        self.assertEqual(pred, [('toto',)])
+        self.assertEqual(proba, [(1.0,)]) # 1.0 because svm
+        pred, proba = utils_models.predict_with_proba(['Ceci est un test', 'Toto test "deux" !'], model, model_conf)
+        self.assertEqual(pred, [('test',), ('test', 'toto')])
+        self.assertEqual(proba, [(1.0,), (1.0, 1.0)]) # 1.0 because svm
         remove_dir(model_dir)
 
     def test11_search_hp_cv(self):
