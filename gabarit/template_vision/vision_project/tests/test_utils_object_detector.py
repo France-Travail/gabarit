@@ -14,8 +14,6 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-# TODO : There are some tests missing,
-
 # Libs unittest
 import unittest
 from unittest.mock import Mock
@@ -23,6 +21,7 @@ from unittest.mock import patch
 
 # Utils libs
 import os
+import random
 import tempfile
 import numpy as np
 import pandas as pd
@@ -569,6 +568,514 @@ class UtilsObjectDetectorTests(unittest.TestCase):
                                                             nms_overlap_threshold_6, nms_max_boxes_6,
                                                             np.array(['titi', 'tata']))
 
+    def test15_get_all_viable_anchors_boxes(self):
+        '''Test of the function utils_object_detectors.get_all_viable_anchors_boxes'''
+        base_anchors = [(10, 10), (20, 20)]
+        subsampling_ratio = 10
+        feature_map_height = 2
+        feature_map_width = 2
+        im_resized_height = 100
+        im_resized_width = 100
+
+        viable_anchor_boxes = utils_object_detectors.get_all_viable_anchors_boxes(
+            base_anchors, subsampling_ratio, feature_map_height, feature_map_width, im_resized_height, im_resized_width
+        )
+
+        self.assertEqual(
+            viable_anchor_boxes, 
+            {
+                (0, 0, 0): {'anchor_img_coordinates': (0.0, 0.0, 10.0, 10.0)}, 
+                (1, 0, 0): {'anchor_img_coordinates': (0.0, 10.0, 10.0, 20.0)}, 
+                (0, 1, 0): {'anchor_img_coordinates': (10.0, 0.0, 20.0, 10.0)},
+                (1, 1, 0): {'anchor_img_coordinates': (10.0, 10.0, 20.0, 20.0)}, 
+                (1, 1, 1): {'anchor_img_coordinates': (5.0, 5.0, 25.0, 25.0)}
+            }
+        )
+
+        # Test with no viable anchor
+        with self.assertRaises(RuntimeError):
+            base_anchors = [(100, 100)]
+            utils_object_detectors.get_all_viable_anchors_boxes(
+                base_anchors, subsampling_ratio, feature_map_height, feature_map_width, im_resized_height, im_resized_width
+            )
+        
+    def test16_get_iou_anchors_bboxes(self):
+        '''Test of the function utils_object_detectors.get_iou_anchors_bboxes'''
+        anchors = {
+            (0, 0, 0): {'anchor_img_coordinates': (0.0, 0.0, 10.0, 10.0)}, 
+            (1, 0, 0): {'anchor_img_coordinates': (0.0, 10.0, 10.0, 20.0)}, 
+            (0, 1, 0): {'anchor_img_coordinates': (10.0, 0.0, 20.0, 10.0)},
+            (1, 1, 0): {'anchor_img_coordinates': (10.0, 10.0, 20.0, 20.0)}, 
+            (1, 1, 1): {'anchor_img_coordinates': (5.0, 5.0, 25.0, 25.0)}
+        }
+
+        image_bboxes = [{"x1": 0.0, "y1": 0.0, "x2": 5.0, "y2": 5.0}]
+
+        expected_result = {
+            (0, 0, 0): {'anchor_img_coordinates': (0.0, 0.0, 10.0, 10.0), 'bboxes': {0: {"iou": 0.25, "bbox_img_coordinates": (0.0, 0.0, 5.0, 5.0)}}}, 
+            (1, 0, 0): {'anchor_img_coordinates': (0.0, 10.0, 10.0, 20.0), 'bboxes': {0: {"iou": 0.0, "bbox_img_coordinates": (0.0, 0.0, 5.0, 5.0)}}}, 
+            (0, 1, 0): {'anchor_img_coordinates': (10.0, 0.0, 20.0, 10.0), 'bboxes': {0: {"iou": 0.0, "bbox_img_coordinates": (0.0, 0.0, 5.0, 5.0)}}},
+            (1, 1, 0): {'anchor_img_coordinates': (10.0, 10.0, 20.0, 20.0), 'bboxes': {0: {"iou": 0.0, "bbox_img_coordinates": (0.0, 0.0, 5.0, 5.0)}}}, 
+            (1, 1, 1): {'anchor_img_coordinates': (5.0, 5.0, 25.0, 25.0), 'bboxes': {0: {"iou": 0.0, "bbox_img_coordinates": (0.0, 0.0, 5.0, 5.0)}}}
+        }
+
+        self.assertEqual(expected_result, utils_object_detectors.get_iou_anchors_bboxes(anchors, image_bboxes))
+
+    def test17_set_anchors_type_validity(self):
+        '''Test of the function utils_object_detectors.set_anchors_type_validity'''
+        anchor_boxes_dict = {
+            (0, 0, 0): {'bboxes': {0: {"iou": 0.3}, 1: {"iou": 0.05}}}, 
+            (1, 0, 0): {'bboxes': {0: {"iou": 0.2}, 1: {"iou": 0.05}}}, 
+            (0, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}},
+            (1, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}}, 
+            (1, 1, 1): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}}
+        }
+
+        image_bboxes =[0, 1]
+        rpn_min_overlap = 0.1
+        rpn_max_overlap = 0.2
+        
+        expected_anchor_boxes_dict = {
+            (0, 0, 0): {'bboxes': {0: {"iou": 0.3}, 1: {"iou": 0.05}}, "anchor_type": "pos", "anchor_validity": 1, "best_bbox_index": 0}, 
+            (1, 0, 0): {'bboxes': {0: {"iou": 0.2}, 1: {"iou": 0.05}}, "anchor_type": "neutral", "anchor_validity": 0, "best_bbox_index": -1}, 
+            (0, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1},
+            (1, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1}, 
+            (1, 1, 1): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1}
+        }
+
+        expected_bboxes_index_with_no_positive = [1]
+        expected_result = (expected_anchor_boxes_dict, expected_bboxes_index_with_no_positive)
+
+        result = utils_object_detectors.set_anchors_type_validity(anchor_boxes_dict, image_bboxes, rpn_min_overlap, rpn_max_overlap)
+
+        self.assertEqual(expected_result, result)
+
+    def test18_complete_at_least_one_anchor_per_bbox(self):
+        '''Test of the function utils_object_detectors.complete_at_least_one_anchor_per_bbox'''
+        anchor_boxes_dict = {
+            (0, 0, 0): {'bboxes': {0: {"iou": 0.3}, 1: {"iou": 0.01}}, "anchor_type": "pos", "anchor_validity": 1, "best_bbox_index": 0}, 
+            (1, 0, 0): {'bboxes': {0: {"iou": 0.2}, 1: {"iou": 0.02}}, "anchor_type": "neutral", "anchor_validity": 0, "best_bbox_index": -1}, 
+            (0, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.03}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1},
+            (1, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.04}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1}, 
+            (1, 1, 1): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1}
+        }
+
+        bboxes_index_with_no_positive = [1]
+
+        expected_result = {
+            (0, 0, 0): {'bboxes': {0: {"iou": 0.3}, 1: {"iou": 0.01}}, "anchor_type": "pos", "anchor_validity": 1, "best_bbox_index": 0}, 
+            (1, 0, 0): {'bboxes': {0: {"iou": 0.2}, 1: {"iou": 0.02}}, "anchor_type": "neutral", "anchor_validity": 0, "best_bbox_index": -1}, 
+            (0, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.03}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1},
+            (1, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.04}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1}, 
+            (1, 1, 1): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}, "anchor_type": "pos", "anchor_validity": 1, "best_bbox_index": 1}
+        }
+
+        result = utils_object_detectors.complete_at_least_one_anchor_per_bbox(anchor_boxes_dict, bboxes_index_with_no_positive)
+
+        self.assertEqual(result, expected_result)
+
+    def test19_restrict_valid_to_n_regions(self):
+        '''Test of the function utils_object_detectors.restrict_valid_to_n_regions'''
+        anchor_boxes_dict = {
+            (0, 0, 0): {'bboxes': {0: {"iou": 0.3}, 1: {"iou": 0.01}}, "anchor_type": "pos", "anchor_validity": 1, "best_bbox_index": 0}, 
+            (1, 0, 0): {'bboxes': {0: {"iou": 0.2}, 1: {"iou": 0.02}}, "anchor_type": "neutral", "anchor_validity": 0, "best_bbox_index": -1}, 
+            (0, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.03}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1},
+            (1, 1, 0): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.04}}, "anchor_type": "neg", "anchor_validity": 1, "best_bbox_index": -1}, 
+            (1, 1, 1): {'bboxes': {0: {"iou": 0.0}, 1: {"iou": 0.05}}, "anchor_type": "pos", "anchor_validity": 1, "best_bbox_index": 1}
+        }
+
+        num_regions = 2
+
+        expected_result = {
+            (0, 0, 0): {'bboxes': {0: {'iou': 0.3}, 1: {'iou': 0.01}}, 'anchor_type': 'pos', 'anchor_validity': 1, 'best_bbox_index': 0}, 
+            (1, 0, 0): {'bboxes': {0: {'iou': 0.2}, 1: {'iou': 0.02}}, 'anchor_type': 'neutral', 'anchor_validity': 0, 'best_bbox_index': -1}, 
+            (0, 1, 0): {'bboxes': {0: {'iou': 0.0}, 1: {'iou': 0.03}}, 'anchor_type': 'neg', 'anchor_validity': 1, 'best_bbox_index': -1}, 
+            (1, 1, 0): {'bboxes': {0: {'iou': 0.0}, 1: {'iou': 0.04}}, 'anchor_type': 'neg', 'anchor_validity': 0, 'best_bbox_index': -1}, 
+            (1, 1, 1): {'bboxes': {0: {'iou': 0.0}, 1: {'iou': 0.05}}, 'anchor_type': 'pos', 'anchor_validity': 0, 'best_bbox_index': 1}
+        }
+
+        random.seed(0) # Mandatory for determinism
+        result = utils_object_detectors.restrict_valid_to_n_regions(anchor_boxes_dict, num_regions)
+        self.assertEqual(result, expected_result)
+
+    def test20_add_regression_target_to_pos_valid(self):
+        '''Test of the function utils_object_detectors.add_regression_target_to_pos_valid'''
+        anchor_boxes_dict = {
+            (0, 0, 0): {
+                'anchor_img_coordinates': (10, 8, 16, 20),
+                'bboxes': {
+                    0: {'iou': 0.3, "bbox_img_coordinates": (5, 13, 9, 18)}, 
+                    1: {'iou': 0.0, "bbox_img_coordinates": (0.0, 5.0, 5.0, 10.)}
+                }, 
+                'anchor_type': 'pos', 
+                'anchor_validity': 1, 
+                'best_bbox_index': 0
+            },
+            (1, 1, 1): {
+                'anchor_img_coordinates': (0.0, 0.0, 10.0, 10.0),
+                'bboxes': {
+                    0: {'iou': 0.0, "bbox_img_coordinates": (0.0, 0.0, 5.0, 5.0)}, 
+                    1: {'iou': 0.1, "bbox_img_coordinates": (0.0, 5.0, 5.0, 10.)}
+                }, 
+                'anchor_type': 'neg', 
+                'anchor_validity': 1, 
+                'best_bbox_index': -1
+            },
+        }
+        
+        tx, ty = (-1., 0.125)  # -6 / 6, 1.5 / 12
+        th, tw = (np.log(5/12), np.log(4/6))  # 5 / 12, 4 / 6
+        expected_result = {
+            (0, 0, 0): {
+                'anchor_img_coordinates': (10, 8, 16, 20),
+                'bboxes': {
+                    0: {'iou': 0.3, "bbox_img_coordinates": (5, 13, 9, 18)}, 
+                    1: {'iou': 0.0, "bbox_img_coordinates": (0.0, 5.0, 5.0, 10.)}
+                }, 
+                'anchor_type': 'pos', 
+                'anchor_validity': 1, 
+                'best_bbox_index': 0,
+                'regression_target': (tx, ty, th, tw)
+            },
+            (1, 1, 1): {
+                'anchor_img_coordinates': (0.0, 0.0, 10.0, 10.0),
+                'bboxes': {
+                    0: {'iou': 0.0, "bbox_img_coordinates": (0.0, 0.0, 5.0, 5.0)}, 
+                    1: {'iou': 0.1, "bbox_img_coordinates": (0.0, 5.0, 5.0, 10.)}
+                }, 
+                'anchor_type': 'neg', 
+                'anchor_validity': 1, 
+                'best_bbox_index': -1,
+                'regression_target': (0, 0, 0, 0)
+            },
+        }
+
+        result = utils_object_detectors.add_regression_target_to_pos_valid(anchor_boxes_dict)
+        self.assertEqual(result, expected_result)
+
+    def test21_get_rpn_targets(self):
+        '''Test of the function utils_object_detectors.get_rpn_targets'''
+        class Model:
+            def __init__(self):
+                    self.list_anchors = [(1, 1), (3, 3)]
+                    self.nb_anchors = 2
+                    self.shared_model_subsampling = 10
+                    self.rpn_min_overlap = 0.1
+                    self.rpn_max_overlap = 0.2
+                    self.rpn_regr_scaling = 1
+                    self.rpn_restrict_num_regions = 2
+
+        img_data_batch = [
+            {
+                "bboxes": [{"x1": 0.0, "y1": 0.0, "x2": 2.0, "y2": 2.0}],
+                "batch_height": 10, 
+                "batch_width": 10, 
+                "resized_height": 10, 
+                "resized_width": 10,
+            }
+        ]
+        model = Model()
+
+        Y1, Y2 = utils_object_detectors.get_rpn_targets(model, img_data_batch)
+        expected_Y1 = np.array([[[[1., 1., 0., 0.]]]])
+        expected_Y2 = np.array([[[[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]]])
+
+        np.testing.assert_almost_equal(Y1, expected_Y1)
+        np.testing.assert_almost_equal(Y2, expected_Y2)
+
+    def test_22_get_roi_from_rpn_predictions(self):
+        '''Test of the function utils_object_detectors.get_roi_from_rpn_predictions'''
+        class Model:
+            def __init__(self):
+                    self.list_anchors = [(1, 1), (3, 3), (5, 5), (7, 7)]
+                    self.nb_anchors = 4
+                    self.shared_model_subsampling = 10
+                    self.rpn_min_overlap = 0.1
+                    self.rpn_max_overlap = 0.2
+                    self.rpn_regr_scaling = 1
+                    self.rpn_restrict_num_regions = 2
+                    self.roi_nms_overlap_threshold = 0.2
+                    self.nms_max_boxes = 2
+
+        img_data_batch = [
+            {
+                "bboxes": [{"x1": 0.0, "y1": 0.0, "x2": 2.0, "y2": 2.0}],
+                "batch_height": 10, 
+                "batch_width": 10, 
+                "resized_height": 10, 
+                "resized_width": 10,
+            }
+        ]
+        model = Model()
+        batch_y_cls = np.array([[[[1., 1., 0., 0.]]]])
+        batch_y_regr = np.array([[[[0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0., 0.]]]])
+
+        result = utils_object_detectors.get_roi_from_rpn_predictions(model, img_data_batch, batch_y_cls, batch_y_regr)
+        expected_result = [np.array([[0, 0, 1, 1]])]
+
+        for r, expected_r in zip(result, expected_result):
+            np.testing.assert_almost_equal(r, expected_r)
+
+    def test23_restrict_and_convert_roi_boxes(self):
+        '''Test of the function utils_object_detectors.restrict_and_convert_roi_boxes'''
+        bbox_coordinates = (-5, -5, 20, 20, 5, 5)
+        expected_result = (0, 0, 5, 5)
+        result = utils_object_detectors.restrict_and_convert_roi_boxes(bbox_coordinates)
+        self.assertEqual(result, expected_result)
+
+    def test24_select_final_rois(self):
+        '''Test of the function utils_object_detectors.select_final_rois'''
+        rois_on_feature_maps = np.array([[
+            [0.45, 0.45, 1., 1.],
+            [0.35, 0.35, 1., 1.],
+            [0.25, 0.25, 1., 1.],
+            [0.15, 0.15, 1., 1.],
+        ]])
+        rois_probas = np.array([[1., 1., 0., 0.]])
+        roi_nms_overlap_threshold = 0.2
+        nms_max_boxes = 2
+        feature_map_sizes= np.array([[1, 1]])
+
+        expected_result = [np.array([[0, 0, 1, 1]])]
+        result = utils_object_detectors.select_final_rois(rois_on_feature_maps, rois_probas, roi_nms_overlap_threshold, nms_max_boxes, feature_map_sizes)
+        
+        for r, expected_r in zip(result, expected_result):
+            np.testing.assert_almost_equal(r, expected_r)
+
+    def test25_get_classifier_train_inputs_and_targets(self):
+        '''Test of the function utils_object_detectors.get_classifier_train_inputs_and_targets'''
+        class Model:
+            def __init__(self):
+                    self.nb_rois_classifier = 1
+                    self.shared_model_subsampling = 10
+                    self.classifier_regr_scaling = 1
+                    self.classifier_min_overlap = 0.1
+                    self.classifier_max_overlap = 0.2
+                    self.dict_classes = {0: "ok"}
+
+
+        img_data_batch = [
+            {
+                "bboxes": [{"x1": 0.0, "y1": 0.0, "x2": 2.0, "y2": 2.0, "class": 0}],
+                "batch_height": 10, 
+                "batch_width": 10, 
+                "resized_height": 10, 
+                "resized_width": 10,
+            }
+        ]
+        model = Model()
+        rois_coordinates = [np.array([[0, 0, 1, 1]])]
+        result = utils_object_detectors.get_classifier_train_inputs_and_targets(model, img_data_batch, rois_coordinates)
+        expected_result = (
+            np.array([[[0., 0., 1., 1.]]]), 
+            np.array([[[0., 1.]]]), 
+            np.array([[[0., 0., 0., 0., 0., 0., 0., 0.]]])
+        )
+
+        for r, expected_r in zip(result, expected_result):
+            np.testing.assert_almost_equal(r, expected_r)
+
+    def test26_get_rois_bboxes_iou(self):
+        '''Test of the function utils_object_detectors.get_rois_bboxes_iou'''
+        rois = np.array([[0, 0, 1, 1]])
+        img_data = {"bboxes": [{"x1": 0.0, "y1": 0.0, "x2": 2.0, "y2": 2.0, "class": 0}]}
+        subsampling_ratio = 8
+        result = utils_object_detectors.get_rois_bboxes_iou(rois, img_data, subsampling_ratio)
+        expected_result = {
+            0: {
+                'coordinates': {'x1': 0, 'y1': 0, 'x2': 1, 'y2': 1, 'h': 1, 'w': 1}, 
+                'bboxes': {
+                    0: {
+                        'coordinates': {'x1': 0.0, 'y1': 0.0, 'x2': 0.25, 'y2': 0.25}, 
+                        'iou': 0.0625, 
+                        'class': 0
+                    }
+                }
+            }
+        }
+        self.assertEqual(result, expected_result)
+
+    def test27_get_rois_targets(self):
+        '''Test of the function utils_object_detectors.get_rois_targets'''
+        dict_rois = {
+            0: {
+                'coordinates': {'x1': 0, 'y1': 0, 'x2': 1, 'y2': 1, 'h': 1, 'w': 1}, 
+                'bboxes': {
+                    0: {
+                        'coordinates': {'x1': 0.0, 'y1': 0.0, 'x2': 0.25, 'y2': 0.25}, 
+                        'iou': 0.0625, 
+                        'class': 0
+                    }
+                }
+            }
+        }
+        classifier_min_overlap = 0.01
+        classifier_max_overlap = 0.02
+        result = utils_object_detectors.get_rois_targets(dict_rois, classifier_min_overlap, classifier_max_overlap)
+        expected_result = {
+            0: {
+                'coordinates': {'x1': 0, 'y1': 0, 'x2': 1, 'y2': 1, 'h': 1, 'w': 1}, 
+                'bboxes': {
+                    0: {
+                        'coordinates': {'x1': 0.0, 'y1': 0.0, 'x2': 0.25, 'y2': 0.25}, 
+                        'iou': 0.0625, 'class': 0
+                    }
+                }, 
+                'best_bbox_index': 0, 
+                'best_iou': 0.0625, 
+                'classifier_regression_target': (-0.375, -0.375, -1.3862943611198906, -1.3862943611198906),
+                'classifier_class_target': 0
+            }
+        }
+
+        self.assertEqual(result, expected_result)
+    
+    def test28_limit_rois_targets(self):
+        '''Test of the function utils_object_detectors.limit_rois_targets'''
+        dict_rois_targets = {
+            0: {
+                'coordinates': {'x1': 0, 'y1': 0, 'x2': 1, 'y2': 1, 'h': 1, 'w': 1}, 
+                'bboxes': {
+                    0: {
+                        'coordinates': {'x1': 0.0, 'y1': 0.0, 'x2': 0.25, 'y2': 0.25}, 
+                        'iou': 0.0625, 
+                        'class': 0
+                    }
+                }, 
+                'best_bbox_index': 0, 
+                'best_iou': 0.0625, 
+                'classifier_regression_target': (-0.375, -0.375, -1.3862943611198906, -1.3862943611198906),
+                'classifier_class_target': 0
+            }
+        }
+        nb_rois_per_img = 2
+        result = utils_object_detectors.limit_rois_targets(dict_rois_targets, nb_rois_per_img)
+        expected_result = {
+            0: {
+                'coordinates': {'x1': 0, 'y1': 0, 'x2': 1, 'y2': 1, 'h': 1, 'w': 1}, 
+                'bboxes': {
+                    0: {
+                        'coordinates': {'x1': 0.0, 'y1': 0.0, 'x2': 0.25, 'y2': 0.25}, 
+                        'iou': 0.0625, 
+                        'class': 0
+                    }
+                }, 
+                'best_bbox_index': 0, 
+                'best_iou': 0.0625, 
+                'classifier_regression_target': (-0.375, -0.375, -1.3862943611198906, -1.3862943611198906),
+                'classifier_class_target': 0
+            }, 
+            1: {
+                'coordinates': {'x1': 0, 'y1': 0, 'x2': 1, 'y2': 1, 'h': 1, 'w': 1}, 
+                'bboxes': {
+                    0: {
+                        'coordinates': {'x1': 0.0, 'y1': 0.0, 'x2': 0.25, 'y2': 0.25}, 
+                        'iou': 0.0625, 
+                        'class': 0
+                    }
+                }, 
+                'best_bbox_index': 0,
+                'best_iou': 0.0625,
+                'classifier_regression_target': (-0.375, -0.375, -1.3862943611198906, -1.3862943611198906),
+                'classifier_class_target': 0
+            }
+        }
+        self.assertEqual(result, expected_result)
+
+    def test29_create_fake_dict_rois_targets(self):
+        '''Test of the function utils_object_detectors.create_fake_dict_rois_targets'''
+        img_data = {"resized_height": 10,  "resized_width": 10}
+        subsampling_ratio = 10
+        nb_rois_per_img = 1
+        result =  utils_object_detectors.create_fake_dict_rois_targets(img_data, subsampling_ratio, nb_rois_per_img)
+        expected_result = {
+            0: {
+                'coordinates': {'x1': 0, 'y1': 0, 'x2': 1, 'y2': 1, 'h': 1, 'w': 1}, 
+                'classifier_regression_target': (0, 0, 0, 0), 
+                'classifier_class_target': 'bg'
+            }
+        }
+        self.assertEqual(result, expected_result)
+
+    def test30_format_classifier_inputs_and_targets(self):
+        '''Test of the function utils_object_detectors.format_classifier_inputs_and_targets'''
+        dict_rois_targets = {
+            0: {
+                'coordinates': {'x1': 0, 'y1': 0, 'x2': 1, 'y2': 1, 'h': 1, 'w': 1},
+                'classifier_regression_target': (0, 0, 0, 0), 
+                'classifier_class_target': 'bg'
+            }
+        }
+        dict_classes = {0: 'ok'}
+        classifier_regr_scaling = 1
+
+        result = utils_object_detectors.format_classifier_inputs_and_targets(dict_rois_targets, dict_classes, classifier_regr_scaling)
+        expected_result = (
+            np.array([[[0., 0., 1., 1.]]]), 
+            np.array([[[0., 1.]]]), 
+            np.array([[[0., 0., 0., 0., 0., 0., 0., 0.]]])
+        )
+        for r, expected_r in zip(result, expected_result):
+            np.testing.assert_almost_equal(r, expected_r)
+
+    def test31_get_classifier_test_inputs(self):
+        '''Test of the function utils_object_detectors.get_classifier_test_inputs'''
+        rois_coordinates = [np.array([[5, 5, 10, 10]])]
+        result = utils_object_detectors.get_classifier_test_inputs(rois_coordinates)
+        expected_result = np.array([[[5, 5, 5, 5]]])
+        np.testing.assert_almost_equal(result, expected_result)
+
+    def test32_get_valid_fm_boxes_from_proba(self):
+        '''Test of the function utils_object_detectors.get_valid_fm_boxes_from_proba'''
+        probas = np.array([[0.1, 0.2]])
+        proba_threshold = 0.05
+        bg_index = 0
+        result = utils_object_detectors.get_valid_fm_boxes_from_proba(probas, proba_threshold, bg_index)
+        expected_result = [(0, 1, 0.2)]
+        self.assertEqual(result, expected_result)
+
+    def test33_get_valid_boxes_from_coordinates(self):
+        '''Test of the function utils_object_detectors.get_valid_boxes_from_coordinates'''
+        input_img = np.zeros(shape=(20, 20))
+        input_rois = np.array([[5, 5, 5, 5]])
+        fm_boxes_candidates = [(0, 0, 0.7)]
+        regr_coordinates = np.array([[0, 0, 0, 0]])
+        classifier_regr_scaling = [1, 1, 1, 1]
+        subsampling_ratio = 1
+        dict_classes = {0: "ok"}
+
+        result = utils_object_detectors.get_valid_boxes_from_coordinates(input_img, input_rois, fm_boxes_candidates,
+                                                                         regr_coordinates, classifier_regr_scaling,
+                                                                         subsampling_ratio, dict_classes)
+        expected_result = [('ok', 0.7, (5.0, 5.0, 10.0, 10.0))]
+        self.assertEqual(result, expected_result)
+
+    def test34_non_max_suppression_fast_on_preds(self):
+        '''Test of the function utils_object_detectors.non_max_suppression_fast_on_preds'''
+        boxes_candidates = [('ok', 0.7, (5.0, 5.0, 10.0, 10.0)), ('ok', 0.6, (6.0, 6.0, 10.0, 10.0))]
+        nms_overlap_threshold = 0.4
+
+        result = utils_object_detectors.non_max_suppression_fast_on_preds(boxes_candidates, nms_overlap_threshold)
+        expected_result = [('ok', 0.7, np.array([ 5.,  5., 10., 10.]))]
+
+        for (c, p, bbox), (expected_c, expected_p, expected_bbox) in zip(result, expected_result):
+            self.assertEqual(c, expected_c)
+            self.assertEqual(p, expected_p)
+            np.testing.assert_almost_equal(bbox, expected_bbox)
+
+    def test35_get_final_bboxes(self):
+        '''Test of the function utils_object_detectors.get_final_bboxes'''
+        final_boxes = [('ok', 0.7, np.array([ 5.,  5., 10., 10.]))]
+        img_data = {
+            "resized_width": 1,
+            "resized_height": 1,
+            "original_width": 2,
+            "original_height": 2
+        }
+
+        result = utils_object_detectors.get_final_bboxes(final_boxes, img_data)
+        expected_result = [{'class': 'ok', 'proba': 0.7, 'x1': 10, 'y1': 10, 'x2': 20, 'y2': 20}]
+        self.assertEqual(result, expected_result)
 
 # Perform tests
 if __name__ == '__main__':

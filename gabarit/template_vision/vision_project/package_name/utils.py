@@ -314,12 +314,14 @@ def rebuild_metadata_object_detection(filenames_list: list, bboxes_list: list) -
         pd.DataFrame: The new metadata dataframe
     '''
     assert len(filenames_list) == len(bboxes_list), "Both list 'filenames_list' & 'bboxes_list' must be of same length"
-    metadata_df = pd.DataFrame(columns=['filename', 'class', 'x1', 'x2', 'y1', 'y2'])
+
+    rows = []
     for filename, bboxes in zip(filenames_list, bboxes_list):
         for bbox in bboxes:
             new_row = {'filename': filename, 'class': bbox['class'], 'x1': bbox['x1'], 'x2': bbox['x2'], 'y1': bbox['y1'], 'y2': bbox['y2']}
-            metadata_df = metadata_df.append(new_row, ignore_index=True)  # TODO : append deprecated, change it
-    return metadata_df
+            rows.append(new_row)
+
+    return pd.DataFrame(rows)
 
 
 def rebuild_metadata_classification(filenames_list: list, classes_list: list) -> pd.DataFrame:
@@ -598,9 +600,6 @@ class NpEncoder(json.JSONEncoder):
             return list(obj)
         else:
             return super(NpEncoder, self).default(obj)
-
-
-# TODO: test trained_needed
 
 
 if __name__ == '__main__':
