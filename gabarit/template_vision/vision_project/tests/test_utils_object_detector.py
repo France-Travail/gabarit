@@ -1037,8 +1037,47 @@ class UtilsObjectDetectorTests(unittest.TestCase):
         self.assertEqual(result, expected_result)
 
     def test33_get_valid_boxes_from_coordinates(self):
-        '''Test of the function utils_object_detectors.test33_get_valid_boxes_from_coordinates'''
+        '''Test of the function utils_object_detectors.get_valid_boxes_from_coordinates'''
+        input_img = np.zeros(shape=(20, 20))
+        input_rois = np.array([[5, 5, 5, 5]])
+        fm_boxes_candidates = [(0, 0, 0.7)]
+        regr_coordinates = np.array([[0, 0, 0, 0]])
+        classifier_regr_scaling = [1, 1, 1, 1]
+        subsampling_ratio = 1
+        dict_classes = {0: "ok"}
 
+        result = utils_object_detectors.get_valid_boxes_from_coordinates(input_img, input_rois, fm_boxes_candidates,
+                                                                         regr_coordinates, classifier_regr_scaling,
+                                                                         subsampling_ratio, dict_classes)
+        expected_result = [('ok', 0.7, (5.0, 5.0, 10.0, 10.0))]
+        self.assertEqual(result, expected_result)
+
+    def test34_non_max_suppression_fast_on_preds(self):
+        '''Test of the function utils_object_detectors.non_max_suppression_fast_on_preds'''
+        boxes_candidates = [('ok', 0.7, (5.0, 5.0, 10.0, 10.0)), ('ok', 0.6, (6.0, 6.0, 10.0, 10.0))]
+        nms_overlap_threshold = 0.4
+
+        result = utils_object_detectors.non_max_suppression_fast_on_preds(boxes_candidates, nms_overlap_threshold)
+        expected_result = [('ok', 0.7, np.array([ 5.,  5., 10., 10.]))]
+
+        for (c, p, bbox), (expected_c, expected_p, expected_bbox) in zip(result, expected_result):
+            self.assertEqual(c, expected_c)
+            self.assertEqual(p, expected_p)
+            np.testing.assert_almost_equal(bbox, expected_bbox)
+
+    def test35_get_final_bboxes(self):
+        '''Test of the function utils_object_detectors.get_final_bboxes'''
+        final_boxes = [('ok', 0.7, np.array([ 5.,  5., 10., 10.]))]
+        img_data = {
+            "resized_width": 1,
+            "resized_height": 1,
+            "original_width": 2,
+            "original_height": 2
+        }
+
+        result = utils_object_detectors.get_final_bboxes(final_boxes, img_data)
+        expected_result = [{'class': 'ok', 'proba': 0.7, 'x1': 10, 'y1': 10, 'x2': 20, 'y2': 20}]
+        self.assertEqual(result, expected_result)
 
 # Perform tests
 if __name__ == '__main__':
