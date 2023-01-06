@@ -207,7 +207,7 @@ def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
 
 
 def predict(data_input: Union[str, List[str], np.ndarray, pd.DataFrame], model, model_conf: dict,
-            return_proba: bool = False, **kwargs) -> Union[str, List[str], np.ndarray]:
+            return_proba: bool = False, **kwargs) -> Union[List[str], List[float]]:
     '''Gets predictions of a model on images
 
     Args:
@@ -230,9 +230,9 @@ def predict(data_input: Union[str, List[str], np.ndarray, pd.DataFrame], model, 
         ValueError: If the input DataFrame does not contains a 'file_path' column (input type == pd.DataFrame)
         ValueError: If the input type is not a valid type option
     Returns:
-        str, List[str], np.ndarray: predictions or probabilities
-            - If return_proba -> np.ndarray (shape depends on number of inputs)
-            - Else str or list<str> (depends on number of inputs)
+        List[str], List[float]: predictions or probabilities
+            - If return_proba -> List[float]
+            - Else List[str]
     '''
     # TODO
     # TODO
