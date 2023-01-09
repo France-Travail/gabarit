@@ -1,0 +1,35 @@
+site_name: Gabarit documentation
+repo_url: https://github.com/OSS-Pole-Emploi/gabarit
+repo_name: OSS-Pole-Emploi/gabarit
+
+theme:
+  name: material
+  palette:
+    - scheme: default # light mode
+      toggle:
+        icon: material/weather-night
+        name: Switch to dark mode
+      primary: indigo
+
+    - scheme: slate # dark mode
+      toggle:
+        icon: material/weather-sunny
+        name: Switch to dark mode
+      primary: indigo
+nav:
+  - Home: index.md
+  - Frameworks: 
+      NLP: frameworks/NLP.md
+      NUM: frameworks/NUM.md
+      VISION: frameworks/VISION.md
+      API: frameworks/API.md
+
+plugins:
+  - search
+  # - gen-files:
+  #     scripts:
+  #     - docs/gen_ref_pages.py
+  - literate-nav:
+      nav_file: SUMMARY.md
+  - section-index
+  - mkdocstrings
