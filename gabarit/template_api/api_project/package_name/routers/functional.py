@@ -30,8 +30,11 @@ router = APIRouter()
 
 
 # This function is async since it uses starlette Request
+# There is no return type annotation because starting from FastAPI 0.89, type annotations are
+# interpreted as response_model and response_model must be valid pydantic. Since we use here a
+# startlette.Response we remove return annotation (cf. https://fastapi.tiangolo.com/release-notes/#0890)
 @router.post("/predict")
-async def predict(request: Request) -> NumpyJSONResponse:
+async def predict(request: Request):
     """Predict route that exposes your model
 
     This function is using starlette Request object instead of pydantic since we can not
@@ -57,8 +60,12 @@ async def predict(request: Request) -> NumpyJSONResponse:
 
     return NumpyJSONResponse(prediction)
 
+# This function is async since it uses starlette Request
+# There is no return type annotation because starting from FastAPI 0.89, type annotations are
+# interpreted as response_model and response_model must be valid pydantic. Since we use here a
+# startlette.Response we remove return annotation (cf. https://fastapi.tiangolo.com/release-notes/#0890)
 @router.post("/explain")
-async def explain(request: Request) -> Union[Response, HTMLResponse, NumpyJSONResponse]:
+async def explain(request: Request):
     """Explain route that expose a model explainer in charge of model explicability
 
     This function is using starlette Request object instead of pydantic since we can not
