@@ -2,6 +2,7 @@
 ![NLP tests](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/nlp_build_tests.yaml/badge.svg)
 ![NUM tests](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/num_build_tests.yaml/badge.svg)
 ![VISION tests](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/vision_build_tests.yaml/badge.svg)
+![API tests](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/api_build_tests.yaml/badge.svg)
 ![NLP wheel](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/nlp_wheel.yaml/badge.svg)
 ![NUM wheel](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/num_wheel.yaml/badge.svg)
 ![VISION wheel](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/vision_wheel.yaml/badge.svg)
@@ -78,7 +79,7 @@ Therefore, these frameworks act as project templates that you can use to generat
 
 Three IA Frameworks are available:
 
-- **NLP**, to tackle classification use cases on textual data
+- **NLP** to tackle classification use cases on textual data
 
 	-	Relies on the Words'n fun module for the preprocessing requirements
 
@@ -108,6 +109,7 @@ Three IA Frameworks are available:
 		- Multi Classes / Mono Label classification
 		- Area of interest detection
 
+And one [**API Framework**](/gabarit/template_api). It can be used to expose a gabarit model or a model of your own.
 
 These frameworks have been developped to manage different subjects but share a common structure and a common philosophy. Once a project made using a framework is in production, any other project can be sent into production following the same process.
 Along with these frameworks, an API template has been developped and should soon be open sourced as well. With it, you can expose framework made models in no time !
