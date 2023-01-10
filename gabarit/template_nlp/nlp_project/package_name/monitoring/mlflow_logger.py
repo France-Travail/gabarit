@@ -27,6 +27,7 @@ import pathlib
 import logging
 import pandas as pd
 from typing import Union
+from urllib.parse import urlparse
 from matplotlib.figure import Figure
 
 from .. import utils
@@ -51,8 +52,13 @@ class MLflowLogger:
         # Backup to local save if no uri (i.e. empty string)
         if not tracking_uri:
             tracking_uri = pathlib.Path(os.path.join(utils.get_data_path(), 'experiments', 'mlruns')).as_uri()
-        
-        if not artifact_uri:
+        # Add "file" scheme if no scheme in the tracking_uri
+        elif not urlparse(tracking_uri).scheme:
+            tracking_uri = pathlib.Path(tracking_uri).resolve().as_uri()
+
+        # If no artifact_uri and tracking_uri scheme is "file", we set a default artifact_uri in experiments folder
+        # Otherwise we suppose artifact_uri is configured by the system
+        if not artifact_uri and urlparse(tracking_uri).scheme == "file":
             artifact_uri = pathlib.Path(os.path.join(utils.get_data_path(), 'experiments', 'mlruns_artifacts')).as_uri()
 
         # Set tracking URI & experiment name
@@ -72,6 +78,8 @@ class MLflowLogger:
         # Otherwise we create a new experiment with the provided artifact_uri
         else:
             experiment_id = mlflow.create_experiment(experiment_name, artifact_location=artifact_uri)
+            experiment = mlflow.get_experiment_by_name(experiment_name)
+            artifact_uri = experiment.artifact_location
         
         mlflow.set_experiment(experiment_id=experiment_id)
 
@@ -79,7 +87,7 @@ class MLflowLogger:
         self.__experiment_name = experiment_name
         self.__artifact_uri = artifact_uri
 
-        self.logger.info(f'MLflow running, metrics available @ {self.tracking_uri}')
+        self.logger.info(f'MLflow running. Metrics available @ {self.tracking_uri}. Experiment artifacts availaible @ {self.artifact_uri}')
 
     @property
     def tracking_uri(self) -> str:
