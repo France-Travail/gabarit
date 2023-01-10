@@ -84,6 +84,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
         # Check mlflow report artifact
+        print(list(glob.glob(f"{mlruns_artifact_dir}/**/*", recursive=True)))
         self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/report_source_*.html", recursive=True)) > 0)
 
         # Compare datasets
@@ -94,6 +95,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue(len([filename for filename in list_filenames if "report_train_test" in filename]) == 1)
 
         # Check mlflow report artifact
+        print(list(glob.glob(f"{mlruns_artifact_dir}/**/*", recursive=True)))
         self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/report_train_valid_*.html", recursive=True)) > 0)
         self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/report_train_test_*.html", recursive=True)) > 0)
 
@@ -210,6 +212,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
                 self.assertFalse(os.path.exists(os.path.join(output_path, filename)))
 
             # Check mlflow artifacts
+            print(list(glob.glob(f"{mlruns_artifact_dir}/**/*", recursive=True)))
             self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/data_distributions.png", recursive=True)) > 0)
             self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/data_distribution_score.json", recursive=True)) > 0)
             self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/data_biased_groups.json", recursive=True)) > 0)
