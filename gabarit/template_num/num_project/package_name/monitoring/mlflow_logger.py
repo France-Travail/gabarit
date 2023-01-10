@@ -79,7 +79,7 @@ class MLflowLogger:
         self.__experiment_name = experiment_name
         self.__artifact_uri = artifact_uri
 
-        self.logger.info(f'MLflow running, metrics available @ {self.tracking_uri}')
+        self.logger.info(f'MLflow running, metrics available @ {self.tracking_uri}, artifacts available @ {self.artifact_uri}')
 
     @property
     def tracking_uri(self) -> str:

@@ -84,7 +84,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
         # Check mlflow report artifact
-        print(list(glob.glob(f"**/*", recursive=True)))
+        print(list(glob.glob(f"{full_path_lib}/**/*", recursive=True)))
         self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/report_source_*.html", recursive=True)) > 0)
 
         # Compare datasets
