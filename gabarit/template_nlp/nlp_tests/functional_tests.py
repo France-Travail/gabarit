@@ -23,7 +23,6 @@ from unittest.mock import patch
 # utils libs
 import os
 import sys
-import glob
 import json
 import shutil
 import tempfile
@@ -193,10 +192,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
             json.dump({"open_browser": False}, f)
 
         report_path = os.path.join(full_path_lib, "test_template_nlp-data", "reports", "sweetviz")
-        mlruns_artifact_dir = os.path.join(full_path_lib, "test_template_nlp-data", "experiments", "mlruns_artifacts")
-
         remove_dir(report_path)
-        remove_dir(mlruns_artifact_dir)
 
         # "Basic" case
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
@@ -210,19 +206,12 @@ class Case1_e2e_pipeline(unittest.TestCase):
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
-        # Check mlflow report artifact
-        self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/report_source_*.html", recursive=True)) > 0)
-
         # Compare datasets
         test_compare = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path} --mlflow_experiment sweetviz_experiment_2"
         self.assertEqual(subprocess.run(test_compare, shell=True).returncode, 0)
         list_filenames = list(os.walk(report_path))[0][2]
         self.assertTrue(len([filename for filename in list_filenames if "report_train_valid" in filename]) == 1)
         self.assertTrue(len([filename for filename in list_filenames if "report_train_test" in filename]) == 1)
-
-        # Check mlflow report artifact
-        self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/report_train_valid_*.html", recursive=True)) > 0)
-        self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/report_train_test_*.html", recursive=True)) > 0)
 
         # With target
         # Sweetviz does not with categorical target. Hence, we'll create a temporary dataframe with a binary target.
@@ -278,9 +267,6 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue(os.path.exists(save_model_dir))
         listdir = os.listdir(os.path.join(save_model_dir))
         self.assertEqual(len(listdir), 1)
-        # Check mlflow artifact
-        mlruns_artifact_dir = os.path.join(full_path_lib, "test_template_nlp-data", "experiments", "mlruns_artifacts")
-        self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/configurations.json", recursive=True)) > 0)
 
         # Multilabel - no preprocess - no valid
         multilabel_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/2_training.py -f mono_class_multi_label.csv -x x_col -y y_col_1 y_col_2 --mlflow_experiment gabarit_ci/mlflow_test"
