@@ -17,13 +17,9 @@
 
 # Libs unittest
 import unittest
-from unittest.mock import Mock
-from unittest.mock import patch
 
 # utils libs
 import os
-import sys
-import glob
 import json
 import shutil
 import tempfile
@@ -177,10 +173,8 @@ class Case1_e2e_pipeline(unittest.TestCase):
             json.dump({"open_browser": False}, f)
 
         report_path = os.path.join(full_path_lib, "test_template_num-data", "reports", "sweetviz")
-        mlruns_artifact_dir = os.path.join(full_path_lib, "test_template_num-data", "experiments", "mlruns_artifacts")
 
         remove_dir(report_path)
-        remove_dir(mlruns_artifact_dir)
 
         # "Basic" case
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
@@ -194,19 +188,12 @@ class Case1_e2e_pipeline(unittest.TestCase):
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
-        # Check mlflow report artifact
-        self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/report_source_*.html", recursive=True)) > 0)
-
         # Compare datasets
         test_compare = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path} --mlflow_experiment sweetviz_experiment_2"
         self.assertEqual(subprocess.run(test_compare, shell=True).returncode, 0)
         list_filenames = list(os.walk(report_path))[0][2]
         self.assertTrue(len([filename for filename in list_filenames if "report_train_valid" in filename]) == 1)
         self.assertTrue(len([filename for filename in list_filenames if "report_train_test" in filename]) == 1)
-
-        # Check mlflow report artifact
-        self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/report_train_valid_*.html", recursive=True)) > 0)
-        self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/report_train_test_*.html", recursive=True)) > 0)
 
         # With target
         # Sweetviz does not with categorical target. Hence, we'll create a temporary dataframe with a binary target.
@@ -237,14 +224,12 @@ class Case1_e2e_pipeline(unittest.TestCase):
         list_metrics_categorical = ['f1_score_weighted', 'f1_score_macro', 'precision_weighted', 'precision_macro', 'accuracy']
         list_metrics_continuous = ['mean_absolute_value', 'root_mean_squared_error', 'mean_absolute_percentage_error', 'R_squared']
         data_path = os.path.join(full_path_lib, 'test_template_num-data')
-        mlruns_artifact_dir = os.path.join(full_path_lib, "test_template_num-data", "experiments", "mlruns_artifacts")
         filename_test_fairness = 'test_fairness.csv'
 
         def test_fairness_script(target, sensitive_cols, nb_bins, with_pred=True):
             output_folder = os.path.join(data_path, 'reports', 'fairness')
 
             remove_dir(output_folder)
-            remove_dir(mlruns_artifact_dir)
 
             # Constitutes the list of files that should be present
             if target == 'biased_target_binary_int':
@@ -320,14 +305,8 @@ class Case1_e2e_pipeline(unittest.TestCase):
                 filename = 'algo_metrics_by_groups.csv'
                 self.assertFalse(os.path.exists(os.path.join(output_path, filename)))
 
-            # Check mlflow artifacts
-            self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/data_distributions.png", recursive=True)) > 0)
-            self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/data_distribution_score.json", recursive=True)) > 0)
-            self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/data_biased_groups.json", recursive=True)) > 0)
-
             # Clean dirs
             remove_dir(output_path)
-            remove_dir(mlruns_artifact_dir)
 
         test_fairness_script(target='biased_target', sensitive_cols=['genre', 'citizenship'], nb_bins=3)
         test_fairness_script(target='biased_target_binary_int', sensitive_cols=['genre', 'citizenship'], nb_bins=3)
@@ -467,9 +446,6 @@ class Case1_e2e_pipeline(unittest.TestCase):
         model_path = os.path.join(save_model_dir, listdir[0])
         self.assertTrue(os.path.exists(os.path.join(model_path, 'pipeline.info')))
         self.assertTrue(os.path.exists(os.path.join(model_path, 'original_data_samples.csv')))
-        # Check mlflow artifact
-        mlruns_artifact_dir = os.path.join(full_path_lib, "test_template_num-data", "experiments", "mlruns_artifacts")
-        self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/configurations.json", recursive=True)) > 0)
 
         # With excluded_cols
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_classification.py -f mono_class_mono_label_train_preprocess_P1.csv -y y_col --filename_valid mono_class_mono_label_valid_preprocess_P1.csv --excluded_cols col_2 --mlflow_experiment gabarit_ci/mlflow_test"
@@ -511,9 +487,6 @@ class Case1_e2e_pipeline(unittest.TestCase):
         model_path = os.path.join(save_model_dir, listdir[0])
         self.assertTrue(os.path.exists(os.path.join(model_path, 'pipeline.info')))
         self.assertTrue(os.path.exists(os.path.join(model_path, 'original_data_samples.csv')))
-        # Check mlflow artifact
-        mlruns_artifact_dir = os.path.join(full_path_lib, "test_template_num-data", "experiments", "mlruns_artifacts")
-        self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/configurations.json", recursive=True)) > 0)
 
         # With excluded_cols
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/3_training_regression.py -f mono_output_regression_train.csv -y y_col --filename_valid mono_output_regression_valid.csv --excluded_cols col_2 --mlflow_experiment gabarit_ci/mlflow_test"

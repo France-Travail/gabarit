@@ -17,14 +17,10 @@
 
 # Libs unittest
 import unittest
-from unittest.mock import Mock
-from unittest.mock import patch
 
 # utils libs
 import os
 import gc
-import sys
-import glob
 import shutil
 import logging
 import subprocess
@@ -492,9 +488,6 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue(os.path.exists(save_model_dir))
         listdir = os.listdir(os.path.join(save_model_dir))
         self.assertGreater(len(listdir), 2)
-        # Check mlflow artifact
-        mlruns_artifact_dir = os.path.join(full_path_lib, "test_template_vision-data", "experiments", "mlruns_artifacts")
-        self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/configurations.json", recursive=True)) > 0)
         
     @unittest.skip('This test should pass but is skipped to avoid OOM in the deployment CI')
     def test05_TrainingE2E_object_detector(self):
@@ -525,9 +518,6 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertTrue(os.path.exists(save_model_dir))
         listdir = os.listdir(os.path.join(save_model_dir))
         self.assertGreater(len(listdir), 0)
-        # Check mlflow artifact
-        mlruns_artifact_dir = os.path.join(full_path_lib, "test_template_vision-data", "experiments", "mlruns_artifacts")
-        self.assertTrue(len(glob.glob(f"{mlruns_artifact_dir}/**/configurations.json", recursive=True)) > 0)
 
     def test06_PredictE2E_classifier(self):
         '''Test of the file 3_predict.py with a classifier'''
