@@ -1,6 +1,7 @@
 """Generate the code reference pages and navigation."""
 import subprocess
 import sys
+import shutil
 from importlib import import_module
 from pathlib import Path
 from typing import Callable
@@ -50,7 +51,7 @@ NAV = mkdocs_gen_files.Nav()
 def create_dot_mkdocs():
     """Create a .mkdocs fodler that will be ignored by git"""
     # Create .mkdocs/templates
-    DIR_GEN_TEMPLATES.mkdir(exist_ok=True)
+    DIR_GEN_TEMPLATES.mkdir(parents=True, exist_ok=True)
 
     # Create .gitignore if it does not exists
     FILE_GITIGNORE = DIR_DOT_DOCS / ".gitignore"
@@ -81,52 +82,70 @@ def generate_and_install_template(template_name: str, generate_function: Callabl
         template_name (str): template name. It is used as template and package name.
         generate_function (Callable): function that render a template
     """
+    generated_template_path: Path = kwargs["project_path"]
+
+    # Remove previous generated template if it exists
+    if generated_template_path.exists():
+        shutil.rmtree(generated_template_path)
+
+    # Create a dummy upload_intructions_path for nlp, num and vision templates
+    if "upload_intructions_path" in kwargs:
+        upload_intructions_path = Path(kwargs["upload_intructions_path"])
+        upload_intructions_path.parent.mkdir(parents=True, exist_ok=True)
+        if not upload_intructions_path.exists():
+            upload_intructions_path.touch()
+
+    # Generate template
+    generate_function(**kwargs)
+
+    # Install generated template if not already installed (edit mode)
     try:
         import_module(template_name)
-
     except ModuleNotFoundError:
-        # Create a dummy upload_intructions_path for nlp, num and vision templates
-        if "upload_intructions_path" in kwargs:
-            upload_intructions_path = Path(kwargs["upload_intructions_path"])
-            upload_intructions_path.parent.mkdir(exist_ok=True)
-            if not upload_intructions_path.exists():
-                upload_intructions_path.touch()
-
-        # Generate template
-        generate_function(**kwargs)
-
-        # Install it in current env
-        pip_install_packages(kwargs["project_path"])
+        pip_install_packages(generated_template_path)
 
 
 def generate_reference_template(template_name: str, dir_template: Path):
     """Generate references doc files
 
+    Based on recipe : https://mkdocstrings.github.io/recipes/#automatic-code-reference-pages
+
     Args:
         template_name (str): template name. It is used as template and package name.
         dir_template (Path): directory containing the generated template.
     """
+    # For each python file in the package directory of the template
     for path in sorted(dir_template.rglob(f"{template_name}/**/*.py")):
+
+        # We get the module path relative to the package directory in a "import format"
+        # ex : package.subpackage.module.py -> package.subpackage.module
         module_path = path.relative_to(dir_template).with_suffix("")
+
+        # We create a markdown path "doc_path" relative to that module and a "full_doc_path"
+        # relative to "reference" directory inside docs
         doc_path = path.relative_to(dir_template).with_suffix(".md")
-        full_doc_path = DIR_DOC_REFERENCE / doc_path
+        full_doc_path = Path("reference", doc_path)
 
         parts = tuple(module_path.parts)
 
+        # __init__.py are converted to index.md
         if parts[-1] == "__init__":
             parts = parts[:-1]
             doc_path = doc_path.with_name("index.md")
             full_doc_path = full_doc_path.with_name("index.md")
+
+        # __main__.py are ignored
         elif parts[-1] == "__main__":
             continue
 
+        # the reference doc is added to mkdocs_gen_files.Nav()
         NAV[parts] = doc_path.as_posix()
 
         with mkdocs_gen_files.open(full_doc_path, "w") as fd:
             ident = ".".join(parts)
             fd.write(f"::: {ident}")
 
-        mkdocs_gen_files.set_edit_path(full_doc_path, path)
+        mkdocs_gen_files.set_edit_path(full_doc_path, doc_path)
 
 
 def main():
