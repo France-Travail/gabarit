@@ -22,8 +22,6 @@ import argparse
 
 # Libs unittest
 import unittest
-from unittest.mock import Mock
-from unittest.mock import patch
 
 # Libs selenium
 try:

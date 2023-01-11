@@ -17,12 +17,9 @@
 
 # Libs unittest
 import unittest
-from unittest.mock import Mock
-from unittest.mock import patch
 
 # utils libs
 import os
-import sys
 import json
 import shutil
 import tempfile
@@ -32,7 +29,6 @@ import pandas as pd
 import importlib.util
 from pathlib import Path
 from datetime import datetime
-from urllib.parse import urlparse
 
 from test_template_num import utils
 from test_template_num.models_training import utils_models

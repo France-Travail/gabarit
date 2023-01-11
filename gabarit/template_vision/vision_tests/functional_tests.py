@@ -17,13 +17,10 @@
 
 # Libs unittest
 import unittest
-from unittest.mock import Mock
-from unittest.mock import patch
 
 # utils libs
 import os
 import gc
-import sys
 import shutil
 import logging
 import subprocess
