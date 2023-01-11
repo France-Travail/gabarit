@@ -48,7 +48,7 @@ def main(filenames: List[str], preprocessing: Union[str, None], target_cols: Lis
             - We save the pipeline
             - We save the preprocessed dataset
 
-    /!\ `validation` dataset MUST NOT be preprocessed here, as this is the fitting part /!\
+    /!\\ `validation` dataset MUST NOT be preprocessed here, as this is the fitting part /!\\
     To apply an existing pipeline to another file, you should use 2_apply_existing_pipeline.py.
 
     Args:

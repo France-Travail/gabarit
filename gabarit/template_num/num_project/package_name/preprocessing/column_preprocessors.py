@@ -254,7 +254,7 @@ class ThresholdingTransform(Estimator):
 
 class AutoBinner(Estimator):
     '''Automatically creates a "other" category when the categories are heavily unbalanced
-    /!\ Replaces the values of some categories /!\
+    /!\\ Replaces the values of some categories /!\\
     '''
 
     def __init__(self, strategy: str = "auto", min_cat_count: int = 3, threshold: float = 0.05) -> None:

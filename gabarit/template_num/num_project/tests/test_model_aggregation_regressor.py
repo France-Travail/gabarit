@@ -524,7 +524,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model_dir, "model_upload_instructions.md")))
         with open(os.path.join(model_dir, "model_upload_instructions.md"), 'r') as read_obj:
             text = read_obj.read()
-            self.assertEqual(text[0:20], "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that"[0:20])
+            self.assertEqual(text[0:20], "/!\\/!\/!\\/!\/!\\   The aggregation model is a special model, please ensure that"[0:20])
         remove_dir_model(model, model_dir)
 
         # Save each trained and unsaved model
@@ -558,7 +558,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model_dir, "model_upload_instructions.md")))
         with open(os.path.join(model_dir, "model_upload_instructions.md"), 'r') as read_obj:
             text = read_obj.read()
-            self.assertEqual(text[0:20], "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that"[0:20])
+            self.assertEqual(text[0:20], "/!\\/!\/!\\/!\/!\\   The aggregation model is a special model, please ensure that"[0:20])
         remove_dir_model(model, model_dir)
 
         # Same thing with a local function
@@ -595,7 +595,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model_dir, "model_upload_instructions.md")))
         with open(os.path.join(model_dir, "model_upload_instructions.md"), 'r') as read_obj:
             text = read_obj.read()
-            self.assertEqual(text[0:20], "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that"[0:20])
+            self.assertEqual(text[0:20], "/!\\/!\/!\\/!\/!\\   The aggregation model is a special model, please ensure that"[0:20])
         remove_dir_model(model, model_dir)
 
     def test12_model_aggregation_prepend_line(self):

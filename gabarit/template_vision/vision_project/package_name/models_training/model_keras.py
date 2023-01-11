@@ -85,11 +85,11 @@ class ModelKeras(ModelClass):
             depth (int): NN input depth
             color_mode (str): NN input color mode
             in_memory (bool): If all images should be loaded in memory, otherwise it uses a generator
-                /!\ OOM errors can happen really quickly (depends on the dataset size)
-                /!\ Data augmentation impossible if `in_memory` is set to True
+                /!\\ OOM errors can happen really quickly (depends on the dataset size)
+                /!\\ Data augmentation impossible if `in_memory` is set to True
             data_augmentation_params (dict): Dictionnary of parameters to be used with the data augmentation
                 cf. https://www.tensorflow.org/api_docs/python/tf/keras/preprocessing/image/ImageDataGenerator
-                /!\ Not used if `in_memory` is set to True
+                /!\\ Not used if `in_memory` is set to True
             nb_train_generator_images_to_save (int): If > 0, save some input generated images
                 If helps with to understand what goes in your NN
             keras_params (dict): Parameters used by keras models.
