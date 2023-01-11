@@ -449,7 +449,7 @@ However, we still provide an operating procedure that must keep your changes whi
    4. You might need to run `git am --skip` as we only had a single patch to apply
 7. Squash the last commits (you should have 3 commits)
    - `git reset --soft HEAD~3`
-   - `commit -m "my_message"`
+   - `git commit -m "my_message"`
 8. CHECK IF EVERYTHING SEEMS OK
 9.  Merge your branch & push :) 
 
