@@ -51,7 +51,7 @@ def main():
 
 
 def generate(package_name: str, project_path: str, gabarit_package_spec: Union[str, None] = None,
-             gabarit_import_name: Union[str, None] = None, custom_templates: Union[List[str], None] = None,
+             gabarit_import_name: Union[str, None] = None, custom_templates: Union[List[str], None] = (),
              gabarit_no_spec: bool = False) -> None:
     """Generates an API python template from arguments.
 

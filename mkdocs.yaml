@@ -23,12 +23,13 @@ nav:
       NUM: frameworks/NUM.md
       VISION: frameworks/VISION.md
       API: frameworks/API.md
+  - Reference: reference/
 
 plugins:
   - search
-  # - gen-files:
-  #     scripts:
-  #     - docs/gen_ref_pages.py
+  - gen-files:
+      scripts:
+      - docs/gen_ref_pages.py
   - literate-nav:
       nav_file: SUMMARY.md
   - section-index
