@@ -207,7 +207,7 @@ However, we still provide an operating procedure that must keep your changes whi
 7. Squash the last commits (you should have 3 commits)
 
       * `git reset --soft HEAD~3`
-      * `commit -m "my_message"`
+      * `git commit -m "my_message"`
 
 8.  CHECK IF EVERYTHING SEEMS OK
 
