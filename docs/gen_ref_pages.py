@@ -1,7 +1,7 @@
 """Generate the code reference pages and navigation."""
+import shutil
 import subprocess
 import sys
-import shutil
 from importlib import import_module
 from pathlib import Path
 from typing import Callable
@@ -61,7 +61,7 @@ def create_dot_mkdocs():
 
 
 def pip_install_packages(*packages, editable=True):
-    """PIp install a package in the current env
+    """Pip install a package in the current env
 
     Args:
         editable (bool, optional): If True, install packages in a editable way. Defaults to True.
@@ -72,8 +72,21 @@ def pip_install_packages(*packages, editable=True):
     subprocess.check_call(command)
 
 
-def generate_and_install_template(template_name: str, generate_function: Callable, **kwargs: dict):
-    """Generate a template with gabarit and install it in the current env
+def get_source_package_tree(package_path: Path) -> list:
+    """Return a package tree as a list of python files
+
+    Args:
+        package_path (Path): path to the package source folder
+
+    Returns:
+        list: package tree as a list of python files
+    """
+    return sorted([file_path.relative_to(package_path).as_posix() for file_path in package_path.rglob("**/*.py")])
+
+
+def generate_and_install_template(template_name: str, generate_function: Callable, **kwargs: dict) -> bool:
+    """Generate a template with gabarit and install it in the current env. Returns true if there is any change
+    in the generated package source code
 
     This is mandatory to be able to use mkdocstrings
     Cf. https://mkdocstrings.github.io/usage/
@@ -81,12 +94,18 @@ def generate_and_install_template(template_name: str, generate_function: Callabl
     Args:
         template_name (str): template name. It is used as template and package name.
         generate_function (Callable): function that render a template
+
+    Returns:
+        bool: True if there is any change in the generated template. False otherwise.
     """
     generated_template_path: Path = kwargs["project_path"]
 
     # Remove previous generated template if it exists
     if generated_template_path.exists():
+        package_tree = get_source_package_tree(generated_template_path / template_name)
         shutil.rmtree(generated_template_path)
+    else:
+        package_tree = None
 
     # Create a dummy upload_intructions_path for nlp, num and vision templates
     if "upload_intructions_path" in kwargs:
@@ -103,6 +122,8 @@ def generate_and_install_template(template_name: str, generate_function: Callabl
         import_module(template_name)
     except ModuleNotFoundError:
         pip_install_packages(generated_template_path)
+
+    return get_source_package_tree(generated_template_path / template_name) != package_tree
 
 
 def generate_reference_template(template_name: str, dir_template: Path):
@@ -153,16 +174,22 @@ def main():
     # Create a .mkdocs to store generated templates
     create_dot_mkdocs()
 
-    # generate and install templates
-    for template_name, generate_function, kwargs in TEMPLATES:
+    # generate and install templates will tracking changed templates
+    changed_templates = [
         generate_and_install_template(template_name, generate_function, **kwargs)
+        for template_name, generate_function, kwargs in TEMPLATES
+    ]
 
-    # generate references
+    # generate references and add them to the NAV object
     for template_name, _, kwargs in TEMPLATES:
         generate_reference_template(template_name, kwargs["project_path"])
 
+    # if at least one of the templates has changed, we rebuild the summary
+    # otherwise we don't rebuild the summary since there is a conflict with live-reloading capability of mkdocs
+    if any(changed_templates):
+        DIR_DOC_REFERENCE.mkdir(exist_ok=True)
+        with mkdocs_gen_files.open(f"{DIR_DOC_REFERENCE}/SUMMARY.md", "w") as reference_nav_file:
+            reference_nav_file.writelines(NAV.build_literate_nav())
+
 
 main()
-
-with mkdocs_gen_files.open(f"{DIR_DOC_REFERENCE}/SUMMARY.md", "w") as nav_file:
-    nav_file.writelines(NAV.build_literate_nav())

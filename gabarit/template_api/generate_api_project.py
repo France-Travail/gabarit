@@ -140,8 +140,6 @@ def generate(package_name: str, project_path: str, gabarit_package_spec: Union[s
                 if any(template_name.endswith(ext) for ext in EXCLUDE_EXTS):
                     continue
 
-                # Process rendering
-                print(f"Rendering {template_name}")
                 # Get render
                 template = env.get_template(template_name)
                 render = template.render(package_name=package_name,
