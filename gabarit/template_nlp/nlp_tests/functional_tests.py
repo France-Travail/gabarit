@@ -26,7 +26,6 @@ import tempfile
 import subprocess
 import numpy as np
 import pandas as pd
-import pkg_resources
 import importlib.util
 from pathlib import Path
 from datetime import datetime

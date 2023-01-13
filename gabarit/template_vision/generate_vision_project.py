@@ -28,7 +28,11 @@ from distutils.dir_util import copy_tree
 from jinja2 import Environment, FileSystemLoader
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
-GABARIT_VERSION = pkg_resources.get_distribution("gabarit").version
+
+try:
+    GABARIT_VERSION = pkg_resources.get_distribution("gabarit").version
+except pkg_resources.DistributionNotFound:
+    GABARIT_VERSION = "custom"
 
 
 def main() -> None:

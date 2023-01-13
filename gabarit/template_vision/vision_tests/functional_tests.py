@@ -27,7 +27,6 @@ import logging
 import subprocess
 import numpy as np
 import pandas as pd
-import pkg_resources
 import importlib.util
 from PIL import Image
 from typing import Any
