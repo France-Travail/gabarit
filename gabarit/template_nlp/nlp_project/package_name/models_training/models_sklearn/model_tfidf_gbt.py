@@ -21,7 +21,7 @@
 
 import os
 import json
-import pickle
+import dill as pickle
 import logging
 import numpy as np
 from typing import Union

@@ -24,7 +24,7 @@ import os
 import re
 import time
 import json
-import pickle
+import dill as pickle
 import logging
 import numpy as np
 import pandas as pd

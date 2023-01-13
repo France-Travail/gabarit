@@ -23,7 +23,7 @@
 import os
 import json
 import shutil
-import pickle
+import dill as pickle
 import logging
 import numpy as np
 import seaborn as sns

@@ -21,7 +21,7 @@
 
 import os
 import json
-import pickle
+import dill as pickle
 import shutil
 import logging
 import numpy as np

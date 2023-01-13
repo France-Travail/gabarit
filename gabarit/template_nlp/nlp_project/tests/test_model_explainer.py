@@ -21,7 +21,7 @@ from unittest.mock import patch
 
 # Utils libs
 import os
-import pickle
+import dill as pickle
 import shutil
 import numpy as np
 import pandas as pd

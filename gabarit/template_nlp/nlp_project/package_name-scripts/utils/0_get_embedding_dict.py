@@ -20,7 +20,7 @@
 
 
 import os
-import pickle
+import dill as pickle
 import logging
 import argparse
 import numpy as np

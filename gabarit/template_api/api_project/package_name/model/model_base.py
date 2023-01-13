@@ -27,7 +27,7 @@ download_model or predict depending on your needs.
 """
 
 
-import pickle
+import dill as pickle
 import logging
 from pathlib import Path
 from pydantic import BaseSettings

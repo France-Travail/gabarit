@@ -20,7 +20,7 @@
 # - ModelPipeline -> Generic model for sklearn pipeline
 
 import os
-import pickle
+import dill as pickle
 import logging
 import numpy as np
 import pandas as pd
