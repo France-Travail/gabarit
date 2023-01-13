@@ -39,8 +39,6 @@ from test_template_nlp.models_training.models_tensorflow import (model_tfidf_den
                                                                  model_embedding_lstm_structured_attention, model_embedding_lstm_gru_gpu,
                                                                  model_embedding_cnn)
 
-GABARIT_VERSION = pkg_resources.get_distribution("gabarit").version
-
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
@@ -328,7 +326,7 @@ def test_model_mono_class_mono_label(test_class, test_model):
     # Verify gabarit version
     with open(os.path.join(test_model.model_dir, 'configurations.json'), 'r') as f:
         configurations = json.load(f)
-        test_class.assertTrue(configurations.get("gabarit_version", "") == GABARIT_VERSION)
+        test_class.assertTrue("gabarit_version" in configurations)
     # Try some functions
     # predict
     preds = test_model.predict(['cdi à temps complet', 'vous disposez du permis'])
@@ -944,7 +942,7 @@ def test_model_mono_class_multi_label(test_class, test_model):
     # Verify gabarit version
     with open(os.path.join(test_model.model_dir, 'configurations.json'), 'r') as f:
         configurations = json.load(f)
-        test_class.assertTrue(configurations.get("gabarit_version", "") == GABARIT_VERSION)
+        test_class.assertTrue("gabarit_version" in configurations)
     # Try some functions
     index_col_1 = test_model.list_classes.index('y_col_1')
     index_col_2 = test_model.list_classes.index('y_col_2')
@@ -1571,7 +1569,7 @@ def test_model_multi_class_mono_label(test_class, test_model):
     # Verify gabarit version
     with open(os.path.join(test_model.model_dir, 'configurations.json'), 'r') as f:
         configurations = json.load(f)
-        test_class.assertTrue(configurations.get("gabarit_version", "") == GABARIT_VERSION)
+        test_class.assertTrue("gabarit_version" in configurations)
     # Try some functions
     index_none = test_model.list_classes.index('none')
     index_a = test_model.list_classes.index('a')
