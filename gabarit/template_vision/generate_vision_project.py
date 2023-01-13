@@ -21,12 +21,14 @@ import os
 import argparse
 import tempfile
 import configparser
+import pkg_resources
 from typing import Union
 from shutil import copyfile, rmtree
 from distutils.dir_util import copy_tree
 from jinja2 import Environment, FileSystemLoader
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+GABARIT_VERSION = pkg_resources.get_distribution("gabarit").version
 
 
 def main() -> None:
@@ -168,7 +170,8 @@ def generate(project_name: str, project_path: str, config_path: str,
                                          detectron_config_base_backup_urls=detectron_config_base_backup_urls,
                                          detectron_config_backup_urls=detectron_config_backup_urls,
                                          detectron_model_backup_urls=detectron_model_backup_urls,
-                                         dvc_config_ok=dvc_config_ok)
+                                         dvc_config_ok=dvc_config_ok,
+                                         gabarit_version=GABARIT_VERSION)
 
                 # Ignore empty files
                 # This is useful to remove some files when configuration are missing, e.g. for DVC

@@ -216,6 +216,7 @@ class ModelClass:
         # Saving JSON configuration
         json_dict = {
             'maintainers': 'Agence DataServices',
+            'gabarit_version': '{{gabarit_version}}',
             'date': datetime.now().strftime("%d/%m/%Y - %H:%M:%S"),  # Not the same as the folder's name
             'package_version': utils.get_package_version(),
             'model_name': self.model_name,
@@ -260,7 +261,7 @@ class ModelClass:
         specific_model_upload_instructions = os.path.join(self.model_dir, "model_upload_instructions.md")
 
         # First, we define a list of "allowed" properties
-        allowed_properties = ["maintainers", "date", "package_version", "model_name", "list_classes",
+        allowed_properties = ["maintainers", "gabarit_version", "date", "package_version", "model_name", "list_classes",
                               "librairie", "fit_time"]
         # Now we filter these properties
         final_dict = {k: v for k, v in json_dict.items() if k in allowed_properties}

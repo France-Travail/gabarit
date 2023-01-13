@@ -21,11 +21,13 @@ import unittest
 # utils libs
 import os
 import gc
+import json
 import shutil
 import logging
 import subprocess
 import numpy as np
 import pandas as pd
+import pkg_resources
 import importlib.util
 from PIL import Image
 from typing import Any
@@ -40,6 +42,7 @@ from test_template_vision.models_training.object_detectors.model_keras_faster_rc
 from test_template_vision.models_training.classifiers.model_transfer_learning_classifier import ModelTransferLearningClassifier
 from test_template_vision.models_training.object_detectors.model_detectron_faster_rcnn import ModelDetectronFasterRcnnObjectDetector
 
+GABARIT_VERSION = pkg_resources.get_distribution("gabarit").version
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
@@ -637,6 +640,11 @@ def test_model_mono_class_mono_label(test_class, test_model):
     # Check files exists
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, 'configurations.json')))
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, f'{test_model.model_name}.pkl')))
+    # Verify gabarit version
+    with open(os.path.join(test_model.model_dir, 'configurations.json'), 'r') as f:
+        configurations = json.load(f)
+        test_class.assertTrue(configurations.get("gabarit_version", "") == GABARIT_VERSION)
+
     test_class.assertEqual(len(test_model.list_classes), 2)
     # Try some functions
     df = pd.DataFrame([os.path.join(full_path_lib, 'test_template_vision-data', 'mnist_v1_preprocess_docs', '663.png'),  # Un
@@ -797,6 +805,10 @@ def test_model_multi_class_mono_label(test_class, test_model):
     # Check files exists
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, 'configurations.json')))
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, f'{test_model.model_name}.pkl')))
+    # Verify gabarit version
+    with open(os.path.join(test_model.model_dir, 'configurations.json'), 'r') as f:
+        configurations = json.load(f)
+        test_class.assertTrue(configurations.get("gabarit_version", "") == GABARIT_VERSION)
     test_class.assertEqual(len(test_model.list_classes), 3)
     # Try some functions
     df = pd.DataFrame([os.path.join(full_path_lib, 'test_template_vision-data', 'mnist_v1_preprocess_docs', '4.png'),  # Quatre
@@ -966,6 +978,10 @@ def test_model_object_detector(test_class, test_model):
     # Check files exists
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, 'configurations.json')))
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, f'{test_model.model_name}.pkl')))
+    # Verify gabarit version
+    with open(os.path.join(test_model.model_dir, 'configurations.json'), 'r') as f:
+        configurations = json.load(f)
+        test_class.assertTrue(configurations.get("gabarit_version", "") == GABARIT_VERSION)
     # Check nb classes
     test_class.assertEqual(len(test_model.list_classes), 3)
     # For now, we have not identified suitable performance test sufficiently "fast"
