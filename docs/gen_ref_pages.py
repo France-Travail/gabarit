@@ -1,4 +1,5 @@
 """Generate the code reference pages and navigation."""
+import os
 import shutil
 import subprocess
 import sys
@@ -46,6 +47,7 @@ TEMPLATES = (
 )
 
 NAV = mkdocs_gen_files.Nav()
+DOC_NO_REF = os.environ.get("DOC_NO_REF", "").lower()
 
 
 def create_dot_mkdocs():
@@ -192,4 +194,5 @@ def main():
             reference_nav_file.writelines(NAV.build_literate_nav())
 
 
-main()
+if DOC_NO_REF != "true":
+    main()

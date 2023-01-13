@@ -11,6 +11,7 @@ We hate it when a project is left in the infamous POC shadow valley where nice i
 As Hadley Wickhman would say: "you can't do data science in a GUI". We are strong believers that during a data science or IA project, you need to be able to fine tune every nooks and crannies to make the best out of your data.  
 
 Therefore, these frameworks act as project templates that you can use to generate a code base from nothing (except for a project name). Doing so would allow your fresh and exciting new project to begin with loads of features on which you wouldn't want to focus this early :
+
 - Built-in models: from the ever useful TF/IDF + SVM to the more recent transformers
 - Model-agnostic save/load/reload : perfect to embed your model behind a web service
 - Generic training/predict scripts to work with your data as soon as possible
@@ -27,34 +28,32 @@ Gabarit contains the following frameworks :
 
   -	Relies on the Words'n fun module for the preprocessing requirements
   - Supports :
-      - Mono Class / Mono Label classification
-      - Multi Classes / Mono Label classification
-      - Mono Class / Multi Labels classification
+      - [x] Mono Class / Mono Label classification
+      - [x] Multi Classes / Mono Label classification
+      - [x] Mono Class / Multi Labels classification
 
 ### [**Numeric**](/frameworks/NUM) 
 *to tackle classification and regression use cases on numerical data*
 
   - Supports :
-    - Regression
-    - Multi Classes / Mono Label classification
-    - Mono Class / Multi Labels classification
+    - [x] Regression
+    - [x] Multi Classes / Mono Label classification
+    - [x] Mono Class / Multi Labels classification
 
 ### [**Computer Vision**](/frameworks/VISION) 
 *to tackle classification use cases on images*
 
   - Supports
-    - Mono Class / Mono Label classification
-    - Multi Classes / Mono Label classification
-    - Area of interest detection
+    - [x] Mono Class / Mono Label classification
+    - [x] Multi Classes / Mono Label classification
+    - [x] Area of interest detection
 
 ### [**API**](/frameworks/API) 
-*for exposing your model to the world*
+*Provides a [FastAPI](https://fastapi.tiangolo.com/) for exposing your model to the world*
 
   - Supports
-    - Gabarit model created with one of the previous package
-    - Any model of your own
-  - Provides
-    - A [FastAPI](https://fastapi.tiangolo.com/) to expose your model
+    - [x] Gabarit model created with one of the previous package
+    - [x] Any model of your own
 
 These frameworks have been developped to manage different subjects but share a common structure and a common philosophy. Once a project made using a framework is in production, any other project can be sent into production following the same process.
 Along with these frameworks, an API template has been developped and should soon be open sourced as well. With it, you can expose framework made models in no time !
@@ -108,6 +107,37 @@ If the `make` tool is available, you can use the features provided in `Makefile`
 - `create-virtualenv`
 - `init-local-env`
 
+## Generate this documentation locally
+
+To generate this document locally first clone the gabarit's repository : 
+
+```bash
+git clone https://github.com/OSS-Pole-Emploi/gabarit.git
+cd gabarit
+```
+
+Then install [mkdocs](https://www.mkdocs.org/) dependencies :
+
+```bash
+pip install \
+'mkdocs>=1.4,<2' \
+'mkdocs-gen-files>=0.4,<1' \
+'mkdocs-literate-nav>=0.6,<1' \
+'mkdocs-material>=9.0,<10' \
+'mkdocs-section-index>=0.3,<1' \
+'mkdocstrings[python]>=0.8,<1'
+```
+
+Finally serve the doc locally : 
+```bash
+mkdocs serve
+```
+
+!!! note
+
+    Generate package references can be long. You can locally disable package references generation by setting
+    an environment variable : `export DOC_NO_REF=true`
+
 ## Security warning
 Gabarit relies on a number of open source packages and therefore may carry on their potential security vulnerabilities. Our philosophy is to be as transparent as possible, which is why we are actively monitoring the dependabot analysis. In order to limit these vulnerabilities, we are in the regular process of upgrading these packages as soon as we can.
 Notice that some packages (namely torch and tensorflow) might lag a few versions behind the actual up to date version due to compatibility issues with CUDA and our own infrastructure.
@@ -123,7 +153,11 @@ The pdf file is located in [pole-emploi.org](https://www.pole-emploi.org/accueil
 
 ## Contacts
 
-If you have any question/enquiry feel free to drop us a mail : contactadsaiframeworks.00619@pole-emploi.fr
+If you have any question/enquiry feel free to drop us a mail :
+
+[:fontawesome-solid-paper-plane: Contact](mailto:contactadsaiframeworks.00619@pole-emploi.fr){ .md-button }
+
+Maintenance team :
 
 - Alexandre GAREL - Data Scientist
 - Nicolas GREFFARD - Data Scientist

@@ -141,16 +141,19 @@ Once you have trained a model which is a release candidate :
     * First you have to build a wheel of the project `.whl` : `python setup.py sdist bdist_wheel`
 
     * Then you have to push it to your repository, for instance by using [twine](https://pypi.org/project/twine/) : `twine upload --username {USER} --password {PWD} --repository-url https://{repository_url} dist/*.whl`
-
-    * Note that we strongly advise to embed these steps within a Continuous Integration Pipeline and ensuring that all your unit tests are OK (you can use nose to run your test suite : `pip install nose nose-cov && nosetests tests/`)
+      
+    !!! note
+        we strongly advise to embed these steps within a Continuous Integration Pipeline and ensuring that all your unit tests are OK (you can use nose to run your test suite : `pip install nose nose-cov && nosetests tests/`)
 
     * Beware, function `utils_models.predict` has to be adapted to your project needs (e.g. if some specific computations are required before or after the actual inference).
 
         + This is the function that has to be called by the web service that will serve your model. Using `utils_models.predict` instead of the actual predict method of the model class ensure that your service can stay model agnostic: if one day you decide to change your design, to use another model; the service won't be impacted.
 
-    * Warning: some libraries (such as torch, detectron2, etc.) may not be hosted on PyPI. You'll need to add an extra `--find-links` option to your pip installation.
-
-    	+ If you don't have access to the internet, you'll need to setup a proxy which will host all the needed libraries. You can then use `--trusted-host` and `--index-url` options.
+    !!! warning
+        
+        some libraries (such as torch, detectron2, etc.) may not be hosted on PyPI. You'll need to add an extra `--find-links` option to your pip installation.
+        
+        If you don't have access to the internet, you'll need to setup a proxy which will host all the needed libraries. You can then use `--trusted-host` and `--index-url` options.
 
 - You can use our API Framework to expose your model, see [API section](/frameworks/API)
 
@@ -194,15 +197,17 @@ However, we still provide an operating procedure that must keep your changes whi
 
 6. Apply the patch : `git am -3 < local_diff.patch`
 
-      1. **RENAMED / MOVED / DELETED FILE** : this won't work for renamed / moved / deleted files.
+    !!! warning annotate "RENAMED / MOVED / DELETED FILES"
 
-           * You'll have to manage them manually
-           * You need to remove files that are no longer in the new Gabarit version BEFORE applying the patch.
-           * The patch will then probably crash. You will have to fix it manually.
+        this won't work for renamed / moved / deleted files :
+        
+        * You'll have to manage them manually
+        * You need to remove files that are no longer in the new Gabarit version BEFORE applying the patch.
+        * The patch will then probably crash. You will have to fix it manually.
 
-      2. You will probably have conflict, resolve them
-      3. Add files and commit changes (commit C3)
-      4. You might need to run `git am --skip` as we only had a single patch to apply
+      1. You will probably have conflict, resolve them
+      2. Add files and commit changes (commit C3)
+      3. You might need to run `git am --skip` as we only had a single patch to apply
 
 7. Squash the last commits (you should have 3 commits)
 
