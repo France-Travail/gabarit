@@ -21,12 +21,18 @@ import os
 import argparse
 import tempfile
 import configparser
+import pkg_resources
 from typing import Union
 from shutil import copyfile, rmtree
 from distutils.dir_util import copy_tree
 from jinja2 import Environment, FileSystemLoader
 
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
+
+try:
+    GABARIT_VERSION = pkg_resources.get_distribution("gabarit").version
+except pkg_resources.DistributionNotFound:
+    GABARIT_VERSION = "custom"
 
 
 def main() -> None:
@@ -153,7 +159,8 @@ def generate(project_name: str, project_path: str, config_path: str,
                                          mlflow_artifact_uri=mlflow_artifact_uri,
                                          huggingface_proxies=huggingface_proxies,
                                          additional_pip_packages=additional_pip_packages,
-                                         dvc_config_ok=dvc_config_ok)
+                                         dvc_config_ok=dvc_config_ok,
+                                         gabarit_version=GABARIT_VERSION)
 
                 # Ignore empty files
                 # This is useful to remove some files when configuration are missing, e.g. for DVC

@@ -21,6 +21,7 @@ import unittest
 # utils libs
 import os
 import gc
+import json
 import shutil
 import logging
 import subprocess
@@ -637,6 +638,11 @@ def test_model_mono_class_mono_label(test_class, test_model):
     # Check files exists
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, 'configurations.json')))
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, f'{test_model.model_name}.pkl')))
+    # Verify gabarit version
+    with open(os.path.join(test_model.model_dir, 'configurations.json'), 'r') as f:
+        configurations = json.load(f)
+        test_class.assertTrue("gabarit_version" in configurations)
+
     test_class.assertEqual(len(test_model.list_classes), 2)
     # Try some functions
     df = pd.DataFrame([os.path.join(full_path_lib, 'test_template_vision-data', 'mnist_v1_preprocess_docs', '663.png'),  # Un
@@ -797,6 +803,10 @@ def test_model_multi_class_mono_label(test_class, test_model):
     # Check files exists
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, 'configurations.json')))
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, f'{test_model.model_name}.pkl')))
+    # Verify gabarit version
+    with open(os.path.join(test_model.model_dir, 'configurations.json'), 'r') as f:
+        configurations = json.load(f)
+        test_class.assertTrue("gabarit_version" in configurations)
     test_class.assertEqual(len(test_model.list_classes), 3)
     # Try some functions
     df = pd.DataFrame([os.path.join(full_path_lib, 'test_template_vision-data', 'mnist_v1_preprocess_docs', '4.png'),  # Quatre
@@ -966,6 +976,10 @@ def test_model_object_detector(test_class, test_model):
     # Check files exists
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, 'configurations.json')))
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, f'{test_model.model_name}.pkl')))
+    # Verify gabarit version
+    with open(os.path.join(test_model.model_dir, 'configurations.json'), 'r') as f:
+        configurations = json.load(f)
+        test_class.assertTrue("gabarit_version" in configurations)
     # Check nb classes
     test_class.assertEqual(len(test_model.list_classes), 3)
     # For now, we have not identified suitable performance test sufficiently "fast"

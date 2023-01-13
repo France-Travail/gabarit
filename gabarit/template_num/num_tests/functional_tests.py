@@ -43,6 +43,7 @@ from test_template_num.models_training.regressors.models_sklearn import (model_r
                                                                          model_kernel_ridge_regressor, model_svr_regressor, model_sgd_regressor,
                                                                          model_knn_regressor, model_pls_regressor, model_gbt_regressor, model_lgbm_regressor)
 
+
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
@@ -582,6 +583,10 @@ def test_model_mono_class_mono_label(test_class, test_model):
     # Check if files exist
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, 'configurations.json')))
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, f'{test_model.model_name}.pkl')))
+    # Verify gabarit version
+    with open(os.path.join(test_model.model_dir, 'configurations.json'), 'r') as f:
+        configurations = json.load(f)
+        test_class.assertTrue("gabarit_version" in configurations)
     # Try some functions
     df_input_preds = pd.DataFrame({
         'col_1': [-5, 3],
@@ -1370,6 +1375,10 @@ def test_model_mono_class_multi_label(test_class, test_model):
     # Check if files exist
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, 'configurations.json')))
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, f'{test_model.model_name}.pkl')))
+    # Verify gabarit version
+    with open(os.path.join(test_model.model_dir, 'configurations.json'), 'r') as f:
+        configurations = json.load(f)
+        test_class.assertTrue("gabarit_version" in configurations)
     # Try some functions
     df_input_preds = pd.DataFrame({
         'col_1': [-10, -5, 0, 3],
@@ -1925,6 +1934,10 @@ def test_model_multi_class_mono_label(test_class, test_model):
     # Check if files exist
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, 'configurations.json')))
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, f'{test_model.model_name}.pkl')))
+    # Verify gabarit version
+    with open(os.path.join(test_model.model_dir, 'configurations.json'), 'r') as f:
+        configurations = json.load(f)
+        test_class.assertTrue("gabarit_version" in configurations)
     # Try some functions
     df_input_preds = pd.DataFrame({
         'col_1': [12, -6, 5, -10],
@@ -2768,6 +2781,10 @@ def test_model_mono_output_regression(test_class, test_model):
     # Check if files exist
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, 'configurations.json')))
     test_class.assertTrue(os.path.exists(os.path.join(test_model.model_dir, f'{test_model.model_name}.pkl')))
+    # Verify gabarit version
+    with open(os.path.join(test_model.model_dir, 'configurations.json'), 'r') as f:
+        configurations = json.load(f)
+        test_class.assertTrue("gabarit_version" in configurations)
     # Try some functions
     df_input_preds = pd.DataFrame({
         'col_1': [-5, 3],
