@@ -76,8 +76,8 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
          mlflow_experiment: Union[str, None] = None) -> None:
     '''Trains a model
 
-    /!\ By default, models are fitted on all available columns (except targets) /!\
-    /!\ Some columns can be excluded with the excluded_cols param /!\
+    /!\\ By default, models are fitted on all available columns (except targets) /!\\
+    /!\\ Some columns can be excluded with the excluded_cols param /!\\
 
     Args:
         filename (str): Name of the training dataset (actually a path relative to {{package_name}}-data)

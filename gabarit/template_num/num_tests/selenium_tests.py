@@ -36,7 +36,7 @@ except ImportError as e:
 class DemonstratorTests(unittest.TestCase):
     '''Main class to check that a demonstrator is running and working
 
-    /!\ The demonstrator must be started BEFORE running this script /!\
+    /!\\ The demonstrator must be started BEFORE running this script /!\\
     '''
     demonstrator_url = None
     trained_models = False

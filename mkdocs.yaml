@@ -9,27 +9,54 @@ theme:
       toggle:
         icon: material/weather-night
         name: Switch to dark mode
-      primary: indigo
+      primary: light blue
 
     - scheme: slate # dark mode
       toggle:
         icon: material/weather-sunny
         name: Switch to dark mode
-      primary: indigo
+      primary: light blue
+  features:
+    - content.code.copy
+
 nav:
   - Home: index.md
   - Frameworks: 
-      NLP: frameworks/NLP.md
-      NUM: frameworks/NUM.md
-      VISION: frameworks/VISION.md
-      API: frameworks/API.md
+      - frameworks/index.md
+      - NLP: frameworks/NLP.md
+      - NUM: frameworks/NUM.md
+      - VISION: frameworks/VISION.md
+      - API: frameworks/API.md
+  - Reference: reference/
 
 plugins:
-  - search
-  # - gen-files:
-  #     scripts:
-  #     - docs/gen_ref_pages.py
+  - gen-files:
+      scripts:
+      - docs/gen_ref_pages.py
   - literate-nav:
       nav_file: SUMMARY.md
-  - section-index
   - mkdocstrings
+  - search
+  - section-index
+
+markdown_extensions:
+  - admonition
+  - def_list
+  - attr_list
+  - md_in_html
+  - pymdownx.details
+  - pymdownx.emoji:
+      emoji_index: !!python/name:materialx.emoji.twemoji
+      emoji_generator: !!python/name:materialx.emoji.to_svg
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.tasklist:
+      custom_checkbox: true
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.inlinehilite
+  - pymdownx.keys
+  - pymdownx.mark
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.tilde

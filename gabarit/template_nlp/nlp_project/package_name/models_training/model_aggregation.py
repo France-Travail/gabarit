@@ -392,7 +392,7 @@ class ModelAggregation(ModelClass):
 
         # Add message in model_upload_instructions.md
         md_path = os.path.join(self.model_dir, f"model_upload_instructions.md")
-        line = "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that all sub-models and the aggregation model are manually saved together in order to be able to load it .  /!\/!\/!\/!\/!\ \n"
+        line = "/!\\/!\\/!\\/!\\/!\\   The aggregation model is a special model, please ensure that all sub-models and the aggregation model are manually saved together in order to be able to load it .  /!\\/!\\/!\\/!\\/!\\ \n"
         self.prepend_line(md_path, line)
 
     def prepend_line(self, file_name: str, line: str) -> None:

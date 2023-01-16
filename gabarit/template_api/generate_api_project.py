@@ -61,7 +61,7 @@ def generate(package_name: str, project_path: str, gabarit_package_spec: Union[s
     Kwargs:
         gabarit_package_spec (str) : Gabarit dependency
         gabarit_import_name (str) : Gabarit import name
-        custom_templates (List[str]) : custom templates or directories
+        custom_templates (List[str]) : Custom templates or directories
     """
     # Parse Gabarit dependency
     if gabarit_package_spec is not None:
@@ -91,6 +91,8 @@ def generate(package_name: str, project_path: str, gabarit_package_spec: Union[s
     # Reference custom templates files in a dict whose keys are custom template file paths
     # and values resulting file path in the generated project
     custom_templates_destinations = {}
+    if custom_templates is None:
+        custom_templates = []
     for custom_template in custom_templates:
         # Read arguments
         try:
@@ -140,8 +142,6 @@ def generate(package_name: str, project_path: str, gabarit_package_spec: Union[s
                 if any(template_name.endswith(ext) for ext in EXCLUDE_EXTS):
                     continue
 
-                # Process rendering
-                print(f"Rendering {template_name}")
                 # Get render
                 template = env.get_template(template_name)
                 render = template.render(package_name=package_name,

@@ -975,7 +975,7 @@ class ModelAggregationTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model_dir, "model_upload_instructions.md")))
         with open(os.path.join(model_dir, "model_upload_instructions.md"), 'r') as read_obj:
             text = read_obj.read()
-            self.assertEqual(text[0:20], "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that"[0:20])
+            self.assertEqual(text[0:20], "/!\\/!\\/!\\/!\\/!\\   The aggregation model is a special model, please ensure that"[0:20])
         remove_dir(model_dir)
 
         # Same thing with a fitted model which is not saved before
@@ -1014,7 +1014,7 @@ class ModelAggregationTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model_dir, "model_upload_instructions.md")))
         with open(os.path.join(model_dir, "model_upload_instructions.md"), 'r') as read_obj:
             text = read_obj.read()
-            self.assertEqual(text[0:20], "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that"[0:20])
+            self.assertEqual(text[0:20], "/!\\/!\\/!\\/!\\/!\\   The aggregation model is a special model, please ensure that"[0:20])
         remove_dir(model_dir)
 
         # Same thing with a local function
@@ -1068,7 +1068,7 @@ class ModelAggregationTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model_dir, "model_upload_instructions.md")))
         with open(os.path.join(model_dir, "model_upload_instructions.md"), 'r') as read_obj:
             text = read_obj.read()
-            self.assertEqual(text[0:20], "/!\/!\/!\/!\/!\   The aggregation model is a special model, please ensure that"[0:20])
+            self.assertEqual(text[0:20], "/!\\/!\\/!\\/!\\/!\\   The aggregation model is a special model, please ensure that"[0:20])
         remove_dir(model_dir)
 
     def test16_model_aggregation_prepend_line(self):
