@@ -69,8 +69,13 @@ def pip_install_packages(*packages, editable=True) -> None:
         editable (bool, optional): If True, install packages in a editable way. Defaults to True.
     """
     command = [sys.executable, "-m", "pip", "install"]
-    if editable: command.append("-e")
-    command += packages
+
+    if editable: 
+        command.append("-e")
+        
+    for package in packages:
+        command.append(package)
+
     subprocess.check_call(command)
 
 
@@ -176,7 +181,7 @@ def main() -> None:
     # Create a .mkdocs to store generated templates
     create_dot_mkdocs()
 
-    # generate and install templates will tracking changed templates
+    # generate and install templates while tracking changed templates
     changed_templates = [
         generate_and_install_template(template_name, generate_function, **kwargs)
         for template_name, generate_function, kwargs in TEMPLATES
