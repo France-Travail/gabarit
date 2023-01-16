@@ -6,6 +6,7 @@
 ![NLP wheel](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/nlp_wheel.yaml/badge.svg)
 ![NUM wheel](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/num_wheel.yaml/badge.svg)
 ![VISION wheel](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/vision_wheel.yaml/badge.svg)
+![Documentation](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/docs.yaml/badge.svg)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Generic badge](https://img.shields.io/badge/python-3.7|3.8-blue.svg)](https://shields.io/)
 
@@ -14,7 +15,7 @@
 
 Gabarit provides you with a set of python templates (a.k.a. frameworks) for your Data Science projects. It allows you to generate a code base that includes many features to speed up the production and testing of your AI models. You just have to focus on the core of Data Science.
 
-![Animated gif](https://s3.gifyu.com/images/gabarit_s1_c75_optim.gif)
+![Animated gif](https://qgahwbtxikhdqmorproz.supabase.co/storage/v1/object/public/public/gabarit_right_optim.gif)
 
 ## Table of Content <!-- omit in toc -->
 1. [Licence](#licence)
