@@ -51,7 +51,7 @@ def main():
 
 
 def generate(package_name: str, project_path: str, gabarit_package_spec: Union[str, None] = None,
-             gabarit_import_name: Union[str, None] = None, custom_templates: Union[List[str], None] = (),
+             gabarit_import_name: Union[str, None] = None, custom_templates: Union[List[str], None] = None,
              gabarit_no_spec: bool = False) -> None:
     """Generates an API python template from arguments.
 
@@ -61,7 +61,7 @@ def generate(package_name: str, project_path: str, gabarit_package_spec: Union[s
     Kwargs:
         gabarit_package_spec (str) : Gabarit dependency
         gabarit_import_name (str) : Gabarit import name
-        custom_templates (List[str]) : custom templates or directories
+        custom_templates (List[str]) : Custom templates or directories
     """
     # Parse Gabarit dependency
     if gabarit_package_spec is not None:
@@ -91,6 +91,8 @@ def generate(package_name: str, project_path: str, gabarit_package_spec: Union[s
     # Reference custom templates files in a dict whose keys are custom template file paths
     # and values resulting file path in the generated project
     custom_templates_destinations = {}
+    if custom_templates is None:
+        custom_templates = []
     for custom_template in custom_templates:
         # Read arguments
         try:

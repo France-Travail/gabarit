@@ -2,7 +2,7 @@
 
 ## Project structure
 
-There is the structure of a project generated with `generate_api_project` command : 
+Here is the structure of a project generated with `generate_api_project` command : 
 
 ```bash
 .
@@ -49,8 +49,11 @@ Gabarit has generated a `template_api` python package that contains all your
 [FastAPI](https://fastapi.tiangolo.com/) application logic.
 
 It contains three main sub-packages (cf. [project structure](#project-structure)) :
+
 - `core` package for configuration and loading your model into your application
+
 - `model` package for defining how to download your model, to load it and make predictions
+
 - `routers` package for defining your API routes and how they work
 
 Have a look at your `.env` file to see the default settings :
@@ -142,9 +145,13 @@ class Model:
 ```
 
 As you can see, a `Model` object has four main attributes :
+
 - `_model` containing your gabarit, scikit-learn or whatever model object
+
 - `_model_conf` which is a python dict with metadata about your model
+
 - `_model_explainer` containing your model explainer
+
 - `_loaded` which is set to `True` after `_load_model` has been called
 
 The `Model` class also define a `download_model` method that will be used to download
@@ -188,7 +195,7 @@ To change the model used by your application, change the model imported here.
 
 Routers are split into two categories by default : technical and functional ones.
 
-- Technical routers are used for technical purpose such as verify liveness or get
+- Technical routers are used for technical purpose such as verifying liveness or getting
   infos about your application
 - Functional ones are used to implement your business logic such as model predictions
   or model explicability

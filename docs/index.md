@@ -24,7 +24,7 @@ Therefore, these frameworks act as project templates that you can use to generat
 Gabarit contains the following frameworks :
 
 ### [**NLP**](/frameworks/NLP) 
-*to tackle classification use cases on textual data*
+*To tackle classification use cases on textual data*
 
   -	Relies on the Words'n fun module for the preprocessing requirements
   - Supports :
@@ -33,7 +33,7 @@ Gabarit contains the following frameworks :
       - [x] Mono Class / Multi Labels classification
 
 ### [**Numeric**](/frameworks/NUM) 
-*to tackle classification and regression use cases on numerical data*
+*To tackle classification and regression use cases on numerical data*
 
   - Supports :
     - [x] Regression
@@ -41,7 +41,7 @@ Gabarit contains the following frameworks :
     - [x] Mono Class / Multi Labels classification
 
 ### [**Computer Vision**](/frameworks/VISION) 
-*to tackle classification use cases on images*
+*To tackle classification use cases on images*
 
   - Supports
     - [x] Mono Class / Mono Label classification
@@ -55,8 +55,8 @@ Gabarit contains the following frameworks :
     - [x] Gabarit model created with one of the previous package
     - [x] Any model of your own
 
-These frameworks have been developped to manage different subjects but share a common structure and a common philosophy. Once a project made using a framework is in production, any other project can be sent into production following the same process.
-Along with these frameworks, an API template has been developped and should soon be open sourced as well. With it, you can expose framework made models in no time !
+These frameworks have been developped to manage different topics but share a common structure and a common philosophy. Once a project made using a framework is in production, any other project can be sent into production following the same process.
+Using the API template, you can expose framework made models in no time !
 
 ## Getting started
 
@@ -84,7 +84,7 @@ They take several parameters as input :
 - **`-n `** or **`--name `** : Name of the package/project (lowercase, no whitespace)
 - **`-p `** or **`--path `** : Path (Absolute or relative) where to create the main directory of the project
 - **`-c `** or **`--config `** : Path (Absolute or relative) to a .ini configuration file.  
-	An default configuration file is given alongside each project. (`default_config.ini`).
+	A default configuration file is given alongside each project. (`default_config.ini`).
 	It usually contains stuff like default encoding, default separator for .csv files, pip proxy settings, etc.
 - **`--upload `** or **`--upload_intructions `** : Path (Absolute or relative) to a file that contains a list of instructions to upload a trained model to your favorite storage solution.
 - **`--dvc `** or **`--dvc_config `** : Path (Absolute or relative) to a DVC configuration file. If not provided, DVC won't be used.
@@ -109,7 +109,7 @@ If the `make` tool is available, you can use the features provided in `Makefile`
 
 ## Generate this documentation locally
 
-To generate this document locally first clone the gabarit's repository : 
+To generate this documentation locally first clone the gabarit repository : 
 
 ```bash
 git clone https://github.com/OSS-Pole-Emploi/gabarit.git
@@ -135,14 +135,14 @@ mkdocs serve
 
 !!! note
 
-    Generate package references can be long. You can locally disable package references generation by setting
+    Generating package references can be long. You can locally disable package references generation by setting
     an environment variable : `export DOC_NO_REF=true`
 
 ## Security warning
-Gabarit relies on a number of open source packages and therefore may carry on their potential security vulnerabilities. Our philosophy is to be as transparent as possible, which is why we are actively monitoring the dependabot analysis. In order to limit these vulnerabilities, we are in the regular process of upgrading these packages as soon as we can.
+Gabarit relies on a number of open source packages and therefore may carry on their potential security vulnerabilities. Our philosophy is to be as transparent as possible, which is why we are actively monitoring the dependabot analysis. In order to limit these vulnerabilities, we regularly upgrade these packages as soon as we can.
 Notice that some packages (namely torch and tensorflow) might lag a few versions behind the actual up to date version due to compatibility issues with CUDA and our own infrastructure.
 
-However, we remind you to be vigilant about the security vulnerabilities of the code and model that you will produce with these frameworks. It is your responsibility to ensure that the final product matches the security standards of your organization.
+However, we remind you to be vigilant about the security vulnerabilities of the code and models that you will produce with these frameworks. It is your responsibility to ensure that the final product matches the security standards of your organization.
 
 ## Ethics
 Pôle emploi intends to include the development and use of artificial intelligence algorithms and solutions in a sustainable and ethical approach. As such, Pôle emploi has adopted an ethical charter, resulting from collaborative and consultative work. The objective is to guarantee a framework of trust, respectful of the values of Pôle emploi, and to minimize the risks associated with the deployment of these technologies.

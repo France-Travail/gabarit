@@ -1,7 +1,7 @@
 # VISION Framework
 ## Project structure
 
-There is the structure of a project generated with `generate_vision_project` command : 
+Here is the structure of a project generated with `generate_vision_project` command : 
 
 ```bash
 .

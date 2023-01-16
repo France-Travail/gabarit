@@ -1,4 +1,4 @@
-"""Generate the code reference pages and navigation."""
+"""Generates the code reference pages and navigation."""
 import os
 import shutil
 import subprocess
@@ -50,8 +50,8 @@ NAV = mkdocs_gen_files.Nav()
 DOC_NO_REF = os.environ.get("DOC_NO_REF", "").lower()
 
 
-def create_dot_mkdocs():
-    """Create a .mkdocs fodler that will be ignored by git"""
+def create_dot_mkdocs() -> None:
+    """Creates a .mkdocs folder that will be ignored by git"""
     # Create .mkdocs/templates
     DIR_GEN_TEMPLATES.mkdir(parents=True, exist_ok=True)
 
@@ -62,8 +62,8 @@ def create_dot_mkdocs():
             f.write("*")
 
 
-def pip_install_packages(*packages, editable=True):
-    """Pip install a package in the current env
+def pip_install_packages(*packages, editable=True) -> None:
+    """Pip installs a package in the current env
 
     Args:
         editable (bool, optional): If True, install packages in a editable way. Defaults to True.
@@ -75,34 +75,34 @@ def pip_install_packages(*packages, editable=True):
 
 
 def get_source_package_tree(package_path: Path) -> list:
-    """Return a package tree as a list of python files
+    """Returns a package tree as a list of python files
 
     Args:
-        package_path (Path): path to the package source folder
+        package_path (Path): Path to the package source folder
 
     Returns:
-        list: package tree as a list of python files
+        list: Package tree as a list of python files
     """
     return sorted([file_path.relative_to(package_path).as_posix() for file_path in package_path.rglob("**/*.py")])
 
 
 def generate_and_install_template(template_name: str, generate_function: Callable, **kwargs: dict) -> bool:
-    """Generate a template with gabarit and install it in the current env. Returns true if there is any change
+    """Generates a template with gabarit and installs it in the current env. Returns True if there are any changes
     in the generated package source code
 
     This is mandatory to be able to use mkdocstrings
     Cf. https://mkdocstrings.github.io/usage/
 
     Args:
-        template_name (str): template name. It is used as template and package name.
-        generate_function (Callable): function that render a template
+        template_name (str): Template name. It is used as template and package name.
+        generate_function (Callable): Function that renders a template
 
     Returns:
         bool: True if there is any change in the generated template. False otherwise.
     """
     generated_template_path: Path = kwargs["project_path"]
 
-    # Remove previous generated template if it exists
+    # Remove previously generated template if it exists
     if generated_template_path.exists():
         package_tree = get_source_package_tree(generated_template_path / template_name)
         shutil.rmtree(generated_template_path)
@@ -128,14 +128,14 @@ def generate_and_install_template(template_name: str, generate_function: Callabl
     return get_source_package_tree(generated_template_path / template_name) != package_tree
 
 
-def generate_reference_template(template_name: str, dir_template: Path):
-    """Generate references doc files
+def generate_reference_template(template_name: str, dir_template: Path) -> None:
+    """Generates references doc files
 
     Based on recipe : https://mkdocstrings.github.io/recipes/#automatic-code-reference-pages
 
     Args:
-        template_name (str): template name. It is used as template and package name.
-        dir_template (Path): directory containing the generated template.
+        template_name (str): Template name. It is used as template and package name.
+        dir_template (Path): Directory containing the generated template.
     """
     # For each python file in the package directory of the template
     for path in sorted(dir_template.rglob(f"{template_name}/**/*.py")):
@@ -171,8 +171,8 @@ def generate_reference_template(template_name: str, dir_template: Path):
         mkdocs_gen_files.set_edit_path(full_doc_path, doc_path)
 
 
-def main():
-    """Main function that generate and install templates and create references doc"""
+def main() -> None:
+    """Main function that generates and installs templates and creates references doc"""
     # Create a .mkdocs to store generated templates
     create_dot_mkdocs()
 

@@ -2,7 +2,7 @@
 
 ## Project structure
 
-There is the structure of a project generated with `generate_nlp_project` command : 
+Here is the structure of a project generated with `generate_nlp_project` command : 
 
 ```bash
 .

@@ -86,7 +86,7 @@ Three IA Frameworks are available:
 		- Multi Classes / Mono Label classification
 		- Area of interest detection
 
-In addition we provide an [**API Framework**](/gabarit/template_api) that can be used to expose a gabarit model or a one of your own.
+In addition we provide an [**API Framework**](/gabarit/template_api) that can be used to expose a gabarit model or one of your own.
 
 ## Prerequisites
 
@@ -149,7 +149,7 @@ and
 Gabarit relies on a number of open source packages and therefore may carry on their potential security vulnerabilities. Our philosophy is to be as transparent as possible, which is why we are actively monitoring the dependabot analysis. In order to limit these vulnerabilities, we are in the regular process of upgrading these packages as soon as we can.
 Notice that some packages (namely torch and tensorflow) might lag a few versions behind the actual up to date version due to compatibility issues with CUDA and our own infrastructure.
 
-However, we remind you to be vigilant about the security vulnerabilities of the code and model that you will produce with these frameworks. It is your responsibility to ensure that the final product matches the security standards of your organization.
+However, we remind you to be vigilant about the security vulnerabilities of the code and models that you will produce with these frameworks. It is your responsibility to ensure that the final product matches the security standards of your organization.
 
 ## Ethics
 Pôle emploi intends to include the development and use of artificial intelligence algorithms and solutions in a sustainable and ethical approach. As such, Pôle emploi has adopted an ethical charter, resulting from collaborative and consultative work. The objective is to guarantee a framework of trust, respectful of the values of Pôle emploi, and to minimize the risks associated with the deployment of these technologies.
@@ -160,7 +160,7 @@ The pdf file is located in [pole-emploi.org](https://www.pole-emploi.org/accueil
 
 ## Contacts
 
-If you have any question/enquiry feel free to drop us a mail : contactadsaiframeworks.00619@pole-emploi.fr
+If you have any question/enquiry feel free to drop us an email : contactadsaiframeworks.00619@pole-emploi.fr
 
 - Alexandre GAREL - Data Scientist
 - Nicolas GREFFARD - Data Scientist
