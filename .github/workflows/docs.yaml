@@ -17,6 +17,7 @@ jobs:
 
       # Install mkdocs dependencies
       - run: |
+          pip install .
           pip install \
           'mkdocs>=1.4,<2' \
           'mkdocs-gen-files>=0.4,<1' \
