@@ -641,7 +641,6 @@ class ModelClass:
         # Save the model if level_save > 'LOW'
         if self.level_save in ['MEDIUM', 'HIGH']:
             with open(pkl_path, 'wb') as f:
-                # TODO: use dill to get rid of  "can't pickle ..." errors
                 pickle.dump(self, f)
 
         # Save configuration JSON

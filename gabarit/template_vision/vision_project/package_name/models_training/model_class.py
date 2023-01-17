@@ -176,7 +176,6 @@ class ModelClass:
 
         # Save model & pipeline preprocessing si level_save > 'LOW'
         if self.level_save in ['MEDIUM', 'HIGH']:
-            # TODO: use dill to get rid of  "can't pickle ..." errors
             with open(pkl_path, 'wb') as f:
                 pickle.dump(self, f)
 
