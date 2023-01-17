@@ -24,7 +24,7 @@ import os
 import json
 import time
 import shutil
-import pickle
+import dill as pickle
 import numpy as np
 import pandas as pd
 

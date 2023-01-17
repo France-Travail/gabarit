@@ -21,7 +21,7 @@
 
 import os
 import json
-import pickle
+import dill as pickle
 import shutil
 import logging
 import numpy as np
@@ -167,7 +167,6 @@ class ModelTfidfDense(ModelKeras):
             tfidf_path = os.path.join(self.model_dir, "tfidf_standalone.pkl")
             # Save as pickle
             with open(tfidf_path, 'wb') as f:
-                # TODO: use dill to get rid of  "can't pickle ..." errors
                 pickle.dump(self.tfidf, f)
 
         # Save

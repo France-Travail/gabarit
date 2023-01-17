@@ -628,7 +628,6 @@ class ModelKeras(ModelClass):
         # Save strategy :
         # - best.hdf5 already saved in fit()
         # - can't pickle keras model, so we drop it, save, and reload it
-        # TODO: Use dill in order to not have "can't pickle ..." problems anymore
         keras_model = self.model
         self.model = None
         super().save(json_data=json_data)

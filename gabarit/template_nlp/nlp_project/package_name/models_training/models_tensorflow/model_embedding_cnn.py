@@ -23,7 +23,7 @@
 import os
 import json
 import shutil
-import pickle
+import dill as pickle
 import logging
 import numpy as np
 import seaborn as sns
@@ -205,7 +205,6 @@ class ModelEmbeddingCnn(ModelKeras):
             tokenizer_path = os.path.join(self.model_dir, "embedding_tokenizer.pkl")
             # Save as pickle
             with open(tokenizer_path, 'wb') as f:
-                # TODO: use dill to get rid of  "can't pickle ..." errors
                 pickle.dump(self.tokenizer, f)
 
         # Save

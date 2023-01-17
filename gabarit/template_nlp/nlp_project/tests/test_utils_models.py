@@ -22,7 +22,7 @@ from unittest.mock import patch
 # Utils libs
 import os
 import shutil
-import pickle
+import dill as pickle
 import numpy as np
 import pandas as pd
 

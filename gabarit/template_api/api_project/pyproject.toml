@@ -11,6 +11,7 @@ dependencies = [
     "uvicorn[standard]>=0.20,<1.0",
     "starlette-prometheus>=0.9,<1.0",
     "numpy>=1.19,<2.0",
+    "dill==0.3.5.1",
     {%- if gabarit_package_spec %}
     "{{gabarit_package_spec}}",
     "dohq-artifactory>=0.8,<1.0",
