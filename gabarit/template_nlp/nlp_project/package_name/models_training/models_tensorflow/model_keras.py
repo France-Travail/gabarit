@@ -138,7 +138,7 @@ class ModelKeras(ModelClass):
                 for i in range(1, self.nb_fit):
                     src_files.append(os.path.join(self.model_dir, f"configurations_fit_{i}.json"))
             # Change model dir
-            self.model_dir = self._get_model_dir()
+            self.model_dir = self._get_new_model_dir()
             # Get dst files
             dst_files = [os.path.join(self.model_dir, f"configurations_fit_{self.nb_fit}.json")]
             if self.nb_fit > 1:
@@ -646,7 +646,23 @@ class ModelKeras(ModelClass):
         super().save(json_data=json_data)
         self.model = keras_model
 
-    def reload_model(self, hdf5_path: str) -> Any:
+    def _hook_post_load_model_pkl(self) -> None:
+        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)
+
+        Raises:
+            FileNotFoundError: if the HF weights file does not exist
+        '''
+        # Paths
+        hdf5_path = os.path.join(self.model_dir, 'best.hdf5')
+
+        # Manage errors
+        if not os.path.exists(hdf5_path):
+            raise FileNotFoundError(f"Can't find weights file ({hdf5_path})")
+
+        # Loading the model
+        self.model = self._reload_weights(hdf5_path)
+
+    def _reload_weights(self, hdf5_path: str) -> Any:
         '''Loads a Keras model from a HDF5 file
 
         Args:
@@ -681,13 +697,13 @@ class ModelKeras(ModelClass):
         # Return
         return keras_model
 
-    def load_standalone_files(self,  *args, hdf5_path:str = None, tokenizer_path:str = None, **kwargs) -> None:
+    def _load_from_standalone_files(self,  *args, hdf5_path:str = None, tokenizer_path:str = None, **kwargs) -> None:
         super().load_standalone_files(*args, **kwargs)
 
         # Default file paths
         if not hdf5_path:
             hdf5_path = os.path.join(self.model_dir, "best.hdf5")
-            
+
         if not tokenizer_path:
             tokenizer_path = os.path.join(self.model_dir, "embedding_tokenizer.pkl")
 

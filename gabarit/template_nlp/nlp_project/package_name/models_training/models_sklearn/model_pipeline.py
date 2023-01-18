@@ -179,7 +179,7 @@ class ModelPipeline(ModelClass):
             with open(pkl_path, 'wb') as f:
                 pickle.dump(self.pipeline, f)
 
-    def load_standalone_files(self,  *args, sklearn_pipeline_path:str = None, **kwargs) -> None:
+    def _load_from_standalone_files(self,  *args, sklearn_pipeline_path:str = None, **kwargs) -> None:
         super().load_standalone_files(*args, **kwargs)
 
         # Default sklearn pipeline file

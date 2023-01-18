@@ -152,7 +152,7 @@ class ModelHuggingFace(ModelClass):
                 for i in range(1, self.nb_fit):
                     src_files.append(os.path.join(self.model_dir, f"configurations_fit_{i}.json"))
             # Change model dir
-            self.model_dir = self._get_model_dir()
+            self.model_dir = self._get_new_model_dir()
             # Get dst files
             dst_files = [os.path.join(self.model_dir, f"configurations_fit_{self.nb_fit}.json")]
             if self.nb_fit > 1:
@@ -628,58 +628,77 @@ class ModelHuggingFace(ModelClass):
         self.model = hf_model
         self.tokenizer = hf_tokenizer
 
-    def reload_model(self, model_path: str) -> Any:
-        '''Loads a HF model from a directory
+    def _hook_post_load_model_pkl(self) -> None:
+        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)
 
-        Args:
-            model_path (str): Path to the directory containing both the model.bin and its conf
-        Returns:
-            ?: HF model
+        Raises:
+            FileNotFoundError: if the HF model directory does not exist
+            FileNotFoundError: if the HF tokenizer directory does not exist
         '''
+        # Paths
+        hf_model_dir = os.path.join(self.model_dir, 'hf_model')
+        hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
+
+        # Manage errors
+        if not os.path.isdir(hf_model_dir):
+            raise FileNotFoundError(f"Can't find HF model directory ({hf_model_dir})")
+        if not os.path.isdir(hf_tokenizer_dir):
+            raise FileNotFoundError(f"Can't find HF tokenizer directory ({hf_tokenizer_dir})")
+
         # Loading the model
-        hf_model = self._get_model(model_path)
-
-        # Set trained to true if not already true
-        # TODO: check if we really need this
-        if not self.trained:
-            self.trained = True
-            self.nb_fit = 1
-
-        # Return
-        return hf_model
-
-    def reload_tokenizer(self, tokenizer_path: str) -> Any:
-        '''Loads a HF model from a directory
-
-        Args:
-            tokenizer_path (str): Path to the directory containing the tokenizer files
-        Returns:
-            ?: HF tokenizer
-        '''
+        self.model = self._get_model(hf_model_dir)
         # Loading the tokenizer
-        hf_tokenizer = self._get_tokenizer(tokenizer_path)
+        self.tokenizer = self._get_tokenizer(hf_tokenizer_dir)
 
-        # Return
-        return hf_tokenizer
+    @classmethod
+    def _load_from_standalone_files(cls, configs: dict, default_model_dir: Union[str, None] = None,
+                                    hf_model_dir: Union[str, None] = None, hf_tokenizer_dir: Union[str, None] = None,
+                                    with_save: bool = False, **kwargs) -> Any:
+        '''Reloads a model from its configuration and "standalone" files
+        Args:
+            configs (dict): configuration of the model to be reloaded
+        Kwargs:
+            default_model_dir (str): a path to look for default file paths
+                                     If None, standalone files path should all be provided
+            hf_model_dir (str): path to HF model directory.
+                                If None, we'll use the default path if default_model_dir is not None
+            hf_tokenizer_dir (str): path to HF tokenizer directory.
+                                    If None, we'll use the default path if default_model_dir is not None
+        Raises:
+            ValueError: If at least one path is not specified and can't be inferred
+            FileNotFoundError: if the HF model directory does not exist
+            FileNotFoundError: if the HF tokenizer directory does not exist
+        Returns:
+            ModelClass: The loaded model
+        '''
+        # Check if we are able to get all needed paths
+        if default_model_dir is None and None in [hf_model_dir, hf_tokenizer_dir]:
+            raise ValueError("At least one path is not specified and can't be inferred")
 
-    def load_standalone_files(self,  *args, model_path:str = None, tokenizer_path:str = None, **kwargs) -> None:
-        super().load_standalone_files(*args, **kwargs)
+        # Retrieve file paths
+        if hf_model_dir is None:
+            hf_model_dir = os.path.join(default_model_dir, "hf_model")
+        if hf_tokenizer_dir is None:
+            hf_tokenizer_dir = os.path.join(default_model_dir, "hf_tokenizer")
 
-        # Default file paths
-        if not model_path:
-            model_path = os.path.join(self.model_dir, "hf_model")
-            
-        if not tokenizer_path:
-            tokenizer_path = os.path.join(self.model_dir, "hf_tokenizer")
+        # Check paths exists
+        if not os.path.isdir(hf_model_dir):
+            raise FileNotFoundError(f"Can't find HF model directory ({hf_model_dir})")
+        if not os.path.isdir(hf_tokenizer_dir):
+            raise FileNotFoundError(f"Can't find HF tokenizer directory ({hf_tokenizer_dir})")
 
-        # Check if we can both load the model and its tokenizer
-        if not os.path.exists(model_path):
-            raise FileNotFoundError(f"Impossible to load the model. {model_path} does not exists")
-        if not os.path.exists(tokenizer_path):
-            raise FileNotFoundError(f"Impossible to load the model tokenizer. {tokenizer_path} does not exists")
+        # Create class
+        model = cls()
 
-        self.model = self._get_model(model_path)
-        self.tokenizer = self._get_tokenizer(tokenizer_path)
+        # Reload model & tokenizer
+        model.model = model._get_model(hf_model_dir_path)
+        model.tokenizer = model._get_tokenizer(hf_tokenizer_dir_path)
+
+        # Save hf folders in new folder
+        new_hf_model_dir_path = os.path.join(model.model_dir, 'hf_model')
+        new_hf_tokenizer_dir_path = os.path.join(model.model_dir, 'hf_tokenizer')
+        shutil.copytree(hf_model_dir_path, new_hf_model_dir_path)
+        shutil.copytree(hf_tokenizer_dir_path, new_hf_tokenizer_dir_path)
 
     def _is_gpu_activated(self) -> bool:
         '''Checks if a GPU is used

@@ -705,7 +705,7 @@ class ModelKerasFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelKeras):
                 for i in range(1, self.nb_fit):
                     src_files.append(os.path.join(self.model_dir, f"configurations_fit_{i}.json"))
             # Change model dir
-            self.model_dir = self._get_model_dir()
+            self.model_dir = self._get_new_model_dir()
             # Get dst files
             dst_files = [os.path.join(self.model_dir, f"configurations_fit_{self.nb_fit}.json")]
             if self.nb_fit > 1:
