@@ -64,7 +64,7 @@ setup(
     ],
     extras_require={
         "tensorflow": ["tensorflow==2.10.0"],
-        "torch": ["torch==1.12.1", "transformers==4.23.0"],  # If GPU, needs pip install torch==1.12.1 --extra-index-url https://download.pytorch.org/whl/cu116
+        "torch": ["torch==1.12.1", "transformers==4.23.0", "sentencepiece>=0.1.91,!=0.1.92,<1.0"],  # If GPU, needs pip install torch==1.12.1 --extra-index-url https://download.pytorch.org/whl/cu116
         "explicability": ['lime>=0.2,<1.0'],
     }
     # pip install {{package_name}} || pip install {{package_name}}[tensorflow] || etc.
