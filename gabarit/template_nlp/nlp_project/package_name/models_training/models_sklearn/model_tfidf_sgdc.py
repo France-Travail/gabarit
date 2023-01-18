@@ -142,7 +142,7 @@ class ModelTfidfSgdc(ModelPipeline):
         # Save
         super().save(json_data=json_data)
 
-    def load_standalone_files(self, *args, sklearn_pipeline_path:str = None, **kwargs) -> None:
+    def _load_from_standalone_files(self, *args, sklearn_pipeline_path:str = None, **kwargs) -> None:
         super().load_standalone_files(*args, sklearn_pipeline_path=sklearn_pipeline_path, **kwargs)
 
         # Reload pipeline elements

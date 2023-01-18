@@ -255,20 +255,25 @@ def preprocess_model_multilabel(df: pd.DataFrame, y_col: Union[str, int], classe
     return df, list(mlb.classes_)
 
 
-def load_model(model_dir: str, *args, **kwargs) -> Tuple[Any, dict]:
-    '''Loads a model from a path
+def load_model(model_dir: str, *args, is_path: bool = False, from_standalone: bool = False, **kwargs) -> Tuple[Any, dict]:
+    '''Loads a model from a path or a model name
 
     Args:
         model_dir (str): Name of the folder containing the model (e.g. model_autres_2019_11_07-13_43_19)
+            It can also be an absolute path if is_path is set to True
     Kwargs:
-        is_path (bool): If folder path instead of name (permits to load model from elsewhere)
+        is_path (bool): If folder path instead of name (allows to load model from anywhere)
+        from_standalone (bool): If the model should be reloaded from standalone files
+            It will use default file names, except if specific **kwargs are provided
+            To see which kwargs are available for your model, checks it's own `_load_standalone_files` function
     Returns:
-        ?: Model
-        dict: Model configurations
+        ModelClass: The loaded model
+        dict: The model configurations
     '''
-    model = ModelClass.load_model(model_dir, *args, **kwargs)
+    # Load model
+    model = ModelClass.load_model(model_dir=model_dir, *args, is_path=is_path, from_standalone=from_standalone, **kwargs)
 
-    # Return model & configs
+    # Return model & its configs
     return model, model.json_dict
 
 
