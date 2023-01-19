@@ -255,7 +255,7 @@ def preprocess_model_multilabel(df: pd.DataFrame, y_col: Union[str, int], classe
     return df, list(mlb.classes_)
 
 
-def load_model(model_dir: str, *args, is_path: bool = False, from_standalone: bool = False, **kwargs) -> Tuple[Any, dict]:
+def load_model(model_dir: str, is_path: bool = False, from_standalone: bool = False, **kwargs) -> Tuple[Any, dict]:
     '''Loads a model from a path or a model name
 
     Args:
@@ -270,8 +270,12 @@ def load_model(model_dir: str, *args, is_path: bool = False, from_standalone: bo
         ModelClass: The loaded model
         dict: The model configurations
     '''
+    # Find model absolute path
+    base_folder = None if is_path else utils.get_models_path()
+    model_dir = utils.find_folder_path(model_dir, base_folder)
+
     # Load model
-    model = ModelClass.load_model(model_dir=model_dir, *args, is_path=is_path, from_standalone=from_standalone, **kwargs)
+    model = ModelClass.load_model(model_dir=model_dir, from_standalone=from_standalone, with_save=False, **kwargs)
 
     # Return model & its configs
     return model, model.json_dict

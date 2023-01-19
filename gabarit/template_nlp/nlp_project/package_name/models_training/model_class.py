@@ -47,13 +47,16 @@ class ModelClass:
     _default_name = 'none'
 
     # Not implemented :
-    # -> fit
-    # -> predict
-    # -> predict_proba
-    # -> _load_from_standalone_files
+    # -> fit (fits a model)
+    # -> predict (predict on new content)
+    # -> predict_proba (predict on new content - returns probas)
+    # -> _load_standalone_files (loads standalone files - for a newly created model)
 
-    # Might need to be overridden, depending on your model :
-    # -> _hook_post_load_model_pkl
+    # Probably need to be overridden, depending on your model :
+    # -> save (specific save instructions)
+    # -> _init_new_class_from_configs (loads model attributes - for a newly created model)
+    # -> _hook_post_load_model_pkl (post pkl load function, e.g. load weights from an HDF5 file)
+    # -> _is_gpu_activated (specific instruction to know if a gpu is used)
 
     def __init__(self, model_dir: Union[str, None] = None, model_name: Union[str, None] = None, x_col: Union[str, int, None] = None,
                  y_col: Union[str, int, list, None] = None, level_save: str = 'HIGH', multi_label: bool = False, **kwargs) -> None:
@@ -782,35 +785,47 @@ class ModelClass:
             f.write(new_content)
 
     @classmethod
-    def load_model(cls, model_dir: str, is_path: bool = False, config_path: Union[str, None] = None,
-                   from_standalone: bool = False, with_save: bool = False, **kwargs) -> Any:
+    def load_model(cls, model_dir: Union[str, None] = None, config_path: Union[str, None] = None,
+                   from_standalone: bool = False, **kwargs) -> Any:
         '''Loads a model from a path or a model name
 
-        Args:
-            model_dir (str): Name of the folder containing the model (e.g. model_autres_2019_11_07-13_43_19)
-                It can also be an absolute path if is_path is set to True
         Kwargs:
-            is_path (bool): If folder path instead of name (allows to load model from anywhere)
+            model_dir (str): Absolute path of the folder containing the model to load
+                             If None, config_path must be set and from_standalone = True.
             config_path (str): Absolute path to a configuration file. Backup on the model_dir defaults configuration file.
-                               Most of the time, this should stay at None.
+                               Most of the time, you should leave this empty.
             from_standalone (bool): If the model should be reloaded from standalone files
                 It will use default file names, except if specific **kwargs are provided
                 To see which kwargs are available for your model, checks it's own `_load_standalone_files` function
-            with_save (bool): If the reloaded model should be saved. Only available if from_standalone is True.
+                WARNING : it will create a new folder for the reloaded model and might copy many files in this new folder
+                          that may take space in your hard disk. If you can, it's better to leave this to False.
+            ModelClass: The loaded model
+        Raises:
+            ValueError: If model_dir is not set and from_standalone is False
+            ValueError: If both model_dir and config_path are not set
         Returns:
             ModelClass: The loaded model
         '''
-        # Find model absolute path
-        base_folder = None if is_path else utils.get_models_path()
-        model_dir = utils.find_folder_path(model_dir, base_folder)
+        # Manage errors
+        if model_dir is None and from_standalone is False:
+            raise ValueError("model_dir must be set if from_standalone is False")
+        if model_dir is None and config_path is None:
+            raise ValueError("Either model_dir or config_path must be set")
 
         # First load the model configurations
-        configs = cls._load_configs(model_dir=model_dir, config_path=config_path)
+        configs = cls.load_configs(model_dir=model_dir, config_path=config_path)
 
         # Load the model
         if from_standalone:
+            # TODO: Add an argument to not create a new directory ?
+            #       Today this is mainly use if the .pkl file is not loadable in order to update a model to a newer version
+            #       But one day we might want to reload a model from standalone just for inference
+            #       In this case we would not want the model to be re-save on disk
             # Load model from standalone files & configurations
-            model = cls._load_from_standalone_files(configs=configs, default_model_dir=model_dir, with_save=with_save, **kwargs)
+            model = cls._init_new_class_from_configs(configs)
+            model = cls._load_standalone_files(new_model=model, default_model_dir=model_dir, **kwargs)
+            # Set configs to new model dir
+            configs['model_dir'] = model.model_dir
         else:
             # Load the model object from a pickle file
             pkl_path = os.path.join(model_dir, f"{configs['model_name']}.pkl")
@@ -819,10 +834,8 @@ class ModelClass:
             # Change model_dir to the input model_dir (usually when the model has been trained on another computer)
             configs['model_dir'] = model_dir
             model.model_dir = model_dir
-            # Add the model's configuration into the model object
-            model.json_dict = configs
             # Post load specificities
-            model._hook_post_load_model_pkl()
+            model = cls._hook_post_load_model_pkl(model)
 
         # Display if GPU is being used
         model.display_if_gpu_activated()
@@ -830,28 +843,28 @@ class ModelClass:
         # Return model
         return model
 
-    def _hook_post_load_model_pkl(self) -> None:
-        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)'''
-        pass
-
     @staticmethod
-    def _load_configs(model_dir: str) -> dict:
+    def load_configs(model_dir: Union[str, None] = None, config_path: Union[str, None] = None) -> dict:
         '''Loads a model's configuration file as a dictionary
 
-        Args:
-            model_dir (str): Absolute path of the model
         Kwargs:
+            model_dir (str): Absolute path of the model.
+                             Can be None to load a configuration path as it is, but config_path can't also be None.
             config_path (str): Absolute path to a configuration file. Backup on the model_dir defaults configuration file.
-                               Most of the time, this should stay at None.
+                               Most of the time, you should leave this empty.
+        Raises:
+            ValueError: If both model_dir and config_path are None.
         Returns:
             dict: A model's configurations
         '''
-        configuration_path = os.path.join(model_dir, 'configurations.json')
+        # Manage errors
+        if model_dir is None and config_path is None:
+            raise ValueError("model_dir and config_path can't both be None in load_configs function")
+
+        # Get configurations
+        configuration_path = os.path.join(model_dir, 'configurations.json') if config_path is None else config_path
         with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
             configs = json.load(f)
-
-        # Change model_dir to be equal to the input model_dir (needed as the model might have been trained on another path)
-        configs["model_dir"] = model_dir
 
         # Can't set int as keys in json, so need to cast it after reloading
         # dict_classes keys are always ints
@@ -864,18 +877,56 @@ class ModelClass:
         return configs
 
     @classmethod
-    def _load_from_standalone_files(cls, configs: dict, default_model_dir: Union[str, None] = None,**kwargs) -> Any:
-        '''Reloads a model from its configuration and "standalone" files
+    def _init_new_class_from_configs(cls, configs) -> Any:
+        '''Inits a new class from a set of configurations
+
         Args:
-            configs (dict): configuration of the model to be reloaded
+            configs: a set of configurations of a model to be reloaded
+        Returns:
+            ModelClass: the newly generated class
+        '''
+        # Create class
+        model = cls()
+
+        # Set class attributes from config
+        # model.model_name = # Keep the created name
+        # model.model_dir = # Keep the created folder
+        model.nb_fit = configs.get('nb_fit', 1)  # Consider one unique fit by default
+        model.trained = configs.get('trained', True)  # Consider trained by default
+        # Try to read the following attributes from configs and, if absent, keep the current one
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+            setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
+
+        # Return the new model
+        return model
+
+    @staticmethod
+    def _load_standalone_files(new_model: Any, default_model_dir: Union[str, None] = None, *args, **kwargs) -> Any:
+        '''Loads standalone files for a newly created model via _init_new_class_from_configs
+
+        Args:
+            new_model (Any): model that needs to reload standalone files
         Kwargs:
             default_model_dir (str): a path to look for default file paths
                                      If None, standalone files path should all be provided
-            with_save (bool): If the reloaded model should be saved.
         Returns:
             ModelClass: The loaded model
         '''
-        raise NotImplementedError("'_load_from_standalone_files' needs to be overridden")
+        raise NotImplementedError("'_load_standalone_files' needs to be overridden")
+
+    @staticmethod
+    def _hook_post_load_model_pkl(new_model: Any) -> Any:
+        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)
+
+        Args:
+            new_model (ModelClass): model that needs to reload standalone files
+        Raises:
+            FileNotFoundError: If the HF model directory does not exist
+            FileNotFoundError: If the HF tokenizer directory does not exist
+        Returns:
+            ModelClass: return the model, with specificities managed
+        '''
+        return new_model
 
     @classmethod
     def reload_from_standalone(cls, *args, **kwargs) -> Any:

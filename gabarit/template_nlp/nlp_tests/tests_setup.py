@@ -218,9 +218,9 @@ class Case3_unit_tests(unittest.TestCase):
             shutil.rmtree(models_path)
             os.makedirs(models_path)
 
-    def test16_test_model_embedding_lstm_gru_gpu(self):
-        '''Launches tests of file model_embedding_lstm_gru_gpu.py'''
-        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_embedding_lstm_gru_gpu.py', shell=True).returncode, 0)
+    def test16_test_model_embedding_lstm_gru(self):
+        '''Launches tests of file model_embedding_lstm_gru.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_embedding_lstm_gru.py', shell=True).returncode, 0)
         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
         if os.path.exists(models_path):
             shutil.rmtree(models_path)

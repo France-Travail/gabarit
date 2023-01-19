@@ -216,6 +216,64 @@ class ModelEmbeddingLstmAttention(ModelKeras):
         # Save
         super().save(json_data=json_data)
 
+    @classmethod
+    def _init_new_class_from_configs(cls, configs):
+        '''Inits a new class from a set of configurations
+
+        Args:
+            configs: a set of configurations of a model to be reloaded
+        Returns:
+            ModelClass: the newly generated class
+        '''
+        # Call parent
+        model = super()._init_new_class_from_configs(configs)
+
+        # Try to read the following attributes from configs and, if absent, keep the current one
+        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
+            setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
+
+        # Return the new model
+        return model
+
+    @staticmethod
+    def _load_standalone_files(new_model: Any, default_model_dir: Union[str, None] = None,  # type: ignore
+                               tokenizer_path: Union[str, None] = None, *args, **kwargs) -> Any:
+        '''Loads standalone files for a newly created model via _init_new_class_from_configs
+
+        Args:
+            new_model (Any): model that needs to reload standalone files
+        Kwargs:
+            default_model_dir (str): a path to look for default file paths
+                                     If None, standalone files path should all be provided
+            tokenizer_path (str): Path to the tokenizer file
+        Raises:
+            ValueError: If the tokenizer file is not specified and can't be inferred
+            FileNotFoundError: If the tokenizer file does not exist
+        Returns:
+            ModelClass: The loaded model
+        '''
+        # Check if we are able to get all needed paths
+        if default_model_dir is None and tokenizer_path is None:
+            raise ValueError("The tokenizer file is not specified and can't be inferred")
+
+        # Call parent
+        new_model = super()._load_standalone_files(new_model=new_model, default_model_dir=default_model_dir, **kwargs)
+
+        # Retrieve file paths
+        if tokenizer_path is None:
+            tokenizer_path = os.path.join(default_model_dir, "embedding_tokenizer.pkl")
+
+        # Check paths exists
+        if not os.path.isfile(tokenizer_path):
+            raise FileNotFoundError(f"Can't find tokenizer file ({tokenizer_path})")
+
+        # Reload tokenizer
+        with open(tokenizer_path, 'rb') as f:
+            new_model.tokenizer = pickle.load(f)
+
+        # Return model
+        return new_model
+
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

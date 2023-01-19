@@ -514,8 +514,8 @@ def find_folder_path(folder_name: str, base_folder: Union[str, None] = None) -> 
     Kwargs:
         base_folder (str): path of the base folder. If None, consider folder_name as a path.
     Raises:
-        FileNotFoundError: if we can't find folder_name in base_folder
-        FileNotFoundError: if folder_name is not a valid path (case where base_folder is None)
+        FileNotFoundError: If we can't find folder_name in base_folder
+        FileNotFoundError: If folder_name is not a valid path (case where base_folder is None)
     Returns:
         str: path to the wanted folder
     '''
