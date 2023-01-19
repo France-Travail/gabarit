@@ -836,7 +836,7 @@ class ModelClass:
             configs['model_dir'] = model_dir
             model.model_dir = model_dir
             # Post load specificities
-            model._hook_post_load_model_pkl(model)
+            model._hook_post_load_model_pkl()
 
         # Display if GPU is being used
         model.display_if_gpu_activated()
