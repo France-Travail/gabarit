@@ -56,10 +56,15 @@ class ModelKeras(ModelClass):
     _default_name = 'model_keras'
 
     # Not implemented :
-    # -> _prepare_x_train
-    # -> _prepare_x_test
-    # -> _get_model
-    # -> reload_from_standalone
+    # -> _prepare_x_train (prepare data for training)
+    # -> _prepare_x_test (prepare data for testing)
+    # -> _get_model (defines the model structure)
+
+    # Probably need to be overridden, depending on your model :
+    # -> predict_proba (predict on new content - returns probas) -> some pipelines do not provide proba, or may have specificities
+    # -> save (specific save instructions)
+    # -> _init_new_class_from_configs (loads model attributes - for a newly created model)
+    # -> _load_standalone_files (loads standalone files - for a newly created model) -> add pipeline elements
 
     def __init__(self, batch_size: int = 64, epochs: int = 99, validation_split: float = 0.2, patience: int = 5,
                  embedding_name: str = 'cc.fr.300.pkl', keras_params: Union[dict, None] = None, **kwargs) -> None:

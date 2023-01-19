@@ -786,7 +786,7 @@ class ModelClass:
 
     @classmethod
     def load_model(cls, model_dir: Union[str, None] = None, config_path: Union[str, None] = None,
-                   from_standalone: bool = False, **kwargs) -> Any:
+                   from_standalone: bool = False, **kwargs) -> Tuple[Any, dict]:
         '''Loads a model from a path or a model name
 
         Kwargs:
@@ -841,7 +841,7 @@ class ModelClass:
         model.display_if_gpu_activated()
 
         # Return model
-        return model
+        return model, configs
 
     @staticmethod
     def load_configs(model_dir: Union[str, None] = None, config_path: Union[str, None] = None) -> dict:
