@@ -182,13 +182,10 @@ class ModelPipeline(ModelClass):
             with open(pkl_path, 'wb') as f:
                 pickle.dump(self.pipeline, f)
 
-    @staticmethod
-    def _load_standalone_files(new_model: Any, default_model_dir: Union[str, None] = None,
-                               sklearn_pipeline_path: Union[str, None] = None, *args, **kwargs) -> Any:
+    def _load_standalone_files(self, default_model_dir: Union[str, None] = None,
+                               sklearn_pipeline_path: Union[str, None] = None, *args, **kwargs):
         '''Loads standalone files for a newly created model via _init_new_class_from_configs
 
-        Args:
-            new_model (Any): model that needs to reload standalone files
         Kwargs:
             default_model_dir (str): a path to look for default file paths
                                      If None, standalone files path should all be provided
@@ -197,8 +194,6 @@ class ModelPipeline(ModelClass):
         Raises:
             ValueError: If the sklearn pipeline is not specified and can't be inferred
             FileNotFoundError: If the sklearn pipeline path does not exist
-        Returns:
-            ModelClass: The loaded model
         '''
         # Check if we are able to get all needed paths
         if default_model_dir is None and sklearn_pipeline_path is None:
@@ -214,10 +209,7 @@ class ModelPipeline(ModelClass):
 
         # Reload sklearn pipeline
         with open(sklearn_pipeline_path, 'rb') as f:
-            new_model.pipeline = pickle.load(f)
-
-        # Return model
-        return new_model
+            self.pipeline = pickle.load(f)
 
 
 if __name__ == '__main__':

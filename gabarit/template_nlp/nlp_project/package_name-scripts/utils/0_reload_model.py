@@ -116,7 +116,6 @@ def main(model_dir: str, config_file: str = 'configurations.json',
 
     # Reload model
     files_dict = {
-        'configuration_path': os.path.join(model_path, config_file) if config_file is not None else None,
         'sklearn_pipeline_path': os.path.join(model_path, sklearn_pipeline_file) if sklearn_pipeline_file is not None else None,
         'hdf5_path': os.path.join(model_path, weights_file) if weights_file is not None else None,
         'tokenizer_path': os.path.join(model_path, tokenizer_file) if tokenizer_file is not None else None,

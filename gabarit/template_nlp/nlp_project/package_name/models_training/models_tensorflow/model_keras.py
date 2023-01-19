@@ -671,13 +671,10 @@ class ModelKeras(ModelClass):
         # Return the new model
         return model
 
-    @staticmethod
-    def _load_standalone_files(new_model: Any, default_model_dir: Union[str, None] = None,
-                               hdf5_path: Union[str, None] = None, *args, **kwargs) -> Any:
+    def _load_standalone_files(self, default_model_dir: Union[str, None] = None,
+                               hdf5_path: Union[str, None] = None, *args, **kwargs):
         '''Loads standalone files for a newly created model via _init_new_class_from_configs
 
-        Args:
-            new_model (Any): model that needs to reload standalone files
         Kwargs:
             default_model_dir (str): a path to look for default file paths
                                      If None, standalone files path should all be provided
@@ -685,8 +682,6 @@ class ModelKeras(ModelClass):
         Raises:
             ValueError: If the hdf5 weights file is not specified and can't be inferred
             FileNotFoundError: If the hdf5 weights file does not exist
-        Returns:
-            ModelClass: The loaded model
         '''
         # Check if we are able to get all needed paths
         if default_model_dir is None and hdf5_path is None:
@@ -701,38 +696,27 @@ class ModelKeras(ModelClass):
             raise FileNotFoundError(f"Can't find hdf5 weights file ({hdf5_path})")
 
         # Reload model
-        new_model.model = new_model._reload_weights(hdf5_path)
+        self.model = self._reload_weights(hdf5_path)
 
         # Save best hdf5 in new folder (as this is skipped in save function)
-        new_hdf5_path = os.path.join(new_model.model_dir, 'best.hdf5')
+        new_hdf5_path = os.path.join(self.model_dir, 'best.hdf5')
         shutil.copyfile(hdf5_path, new_hdf5_path)
 
-        # Return model
-        return new_model
-
-    @staticmethod
-    def _hook_post_load_model_pkl(new_model: Any) -> Any:
+    def _hook_post_load_model_pkl(self):
         '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)
 
-        Args:
-            new_model (ModelClass): model that needs to reload standalone files
         Raises:
             FileNotFoundError: If the weights file does not exist
-        Returns:
-            ModelClass: return the model, with specificities managed
         '''
         # Paths
-        hdf5_path = os.path.join(new_model.model_dir, 'best.hdf5')
+        hdf5_path = os.path.join(self.model_dir, 'best.hdf5')
 
         # Manage errors
         if not os.path.isfile(hdf5_path):
             raise FileNotFoundError(f"Can't find weights file ({hdf5_path})")
 
         # Loading the weights
-        new_model.model = new_model._reload_weights(hdf5_path)
-
-        # Return the model
-        return new_model
+        self.model = self._reload_weights(hdf5_path)
 
     def _reload_weights(self, hdf5_path: str) -> Any:
         '''Loads a Keras model from a HDF5 file

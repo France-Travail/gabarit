@@ -255,7 +255,7 @@ def preprocess_model_multilabel(df: pd.DataFrame, y_col: Union[str, int], classe
     return df, list(mlb.classes_)
 
 
-def load_model(model_dir: str, is_path: bool = False, from_standalone: bool = False, **kwargs) -> Tuple[Any, dict]:
+def load_model(model_dir: str, is_path: bool = False, from_standalone: bool = False, model_class: Any = None, **kwargs) -> Tuple[Any, dict]:
     '''Loads a model from a path or a model name
 
     Args:
@@ -266,16 +266,22 @@ def load_model(model_dir: str, is_path: bool = False, from_standalone: bool = Fa
         from_standalone (bool): If the model should be reloaded from standalone files
             It will use default file names, except if specific **kwargs are provided
             To see which kwargs are available for your model, checks it's own `_load_standalone_files` function
+        model_class (Any): The class of the model to be reloaded. Compulsory if from_standalone, else ignored.
     Returns:
         ModelClass: The loaded model
         dict: The model configurations
     '''
+    # Manage errors
+    if from_standalone and model_class is None:
+        raise ValueError("model_class should be set if from_standalone is True")
+
     # Find model absolute path
     base_folder = None if is_path else utils.get_models_path()
     model_dir = utils.find_folder_path(model_dir, base_folder)
 
     # Load model
-    model, model_conf = ModelClass.load_model(model_dir=model_dir, from_standalone=from_standalone, with_save=False, **kwargs)
+    model_cl = model_class if from_standalone else ModelClass
+    model, model_conf = model_cl.load_model(model_dir=model_dir, from_standalone=from_standalone, with_save=False, **kwargs)
 
     # Return model & its configs
     return model, model_conf

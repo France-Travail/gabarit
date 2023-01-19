@@ -230,13 +230,10 @@ class ModelEmbeddingCnn(ModelKeras):
         # Return the new model
         return model
 
-    @staticmethod
-    def _load_standalone_files(new_model: Any, default_model_dir: Union[str, None] = None,  # type: ignore
-                               tokenizer_path: Union[str, None] = None, *args, **kwargs) -> Any:
+    def _load_standalone_files(self, default_model_dir: Union[str, None] = None,  # type: ignore
+                               tokenizer_path: Union[str, None] = None, *args, **kwargs):
         '''Loads standalone files for a newly created model via _init_new_class_from_configs
 
-        Args:
-            new_model (Any): model that needs to reload standalone files
         Kwargs:
             default_model_dir (str): a path to look for default file paths
                                      If None, standalone files path should all be provided
@@ -244,15 +241,13 @@ class ModelEmbeddingCnn(ModelKeras):
         Raises:
             ValueError: If the tokenizer file is not specified and can't be inferred
             FileNotFoundError: If the tokenizer file does not exist
-        Returns:
-            ModelClass: The loaded model
         '''
         # Check if we are able to get all needed paths
         if default_model_dir is None and tokenizer_path is None:
             raise ValueError("The tokenizer file is not specified and can't be inferred")
 
         # Call parent
-        new_model = super()._load_standalone_files(new_model=new_model, default_model_dir=default_model_dir, **kwargs)
+        super()._load_standalone_files(default_model_dir=default_model_dir, **kwargs)
 
         # Retrieve file paths
         if tokenizer_path is None:
@@ -264,10 +259,7 @@ class ModelEmbeddingCnn(ModelKeras):
 
         # Reload tokenizer
         with open(tokenizer_path, 'rb') as f:
-            new_model.tokenizer = pickle.load(f)
-
-        # Return model
-        return new_model
+            self.tokenizer = pickle.load(f)
 
 
 if __name__ == '__main__':

@@ -799,7 +799,8 @@ class ModelClass:
                 To see which kwargs are available for your model, checks it's own `_load_standalone_files` function
                 WARNING : it will create a new folder for the reloaded model and might copy many files in this new folder
                           that may take space in your hard disk. If you can, it's better to leave this to False.
-            ModelClass: The loaded model
+                WARNING : this function should be called with the class of the model to be reloaded
+                          e.g. ModelEmbeddingLstm.load_model(...)
         Raises:
             ValueError: If model_dir is not set and from_standalone is False
             ValueError: If both model_dir and config_path are not set
@@ -807,7 +808,7 @@ class ModelClass:
             ModelClass: The loaded model
         '''
         # Manage errors
-        if model_dir is None and from_standalone is False:
+        if model_dir is None and not from_standalone:
             raise ValueError("model_dir must be set if from_standalone is False")
         if model_dir is None and config_path is None:
             raise ValueError("Either model_dir or config_path must be set")
@@ -823,7 +824,7 @@ class ModelClass:
             #       In this case we would not want the model to be re-save on disk
             # Load model from standalone files & configurations
             model = cls._init_new_class_from_configs(configs)
-            model = cls._load_standalone_files(new_model=model, default_model_dir=model_dir, **kwargs)
+            model._load_standalone_files(default_model_dir=model_dir, **kwargs)
             # Set configs to new model dir
             configs['model_dir'] = model.model_dir
         else:
@@ -835,7 +836,7 @@ class ModelClass:
             configs['model_dir'] = model_dir
             model.model_dir = model_dir
             # Post load specificities
-            model = cls._hook_post_load_model_pkl(model)
+            model._hook_post_load_model_pkl(model)
 
         # Display if GPU is being used
         model.display_if_gpu_activated()
@@ -900,33 +901,18 @@ class ModelClass:
         # Return the new model
         return model
 
-    @staticmethod
-    def _load_standalone_files(new_model: Any, default_model_dir: Union[str, None] = None, *args, **kwargs) -> Any:
+    def _load_standalone_files(self, default_model_dir: Union[str, None] = None, *args, **kwargs):
         '''Loads standalone files for a newly created model via _init_new_class_from_configs
 
-        Args:
-            new_model (Any): model that needs to reload standalone files
         Kwargs:
             default_model_dir (str): a path to look for default file paths
                                      If None, standalone files path should all be provided
-        Returns:
-            ModelClass: The loaded model
         '''
         raise NotImplementedError("'_load_standalone_files' needs to be overridden")
 
-    @staticmethod
-    def _hook_post_load_model_pkl(new_model: Any) -> Any:
-        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)
-
-        Args:
-            new_model (ModelClass): model that needs to reload standalone files
-        Raises:
-            FileNotFoundError: If the HF model directory does not exist
-            FileNotFoundError: If the HF tokenizer directory does not exist
-        Returns:
-            ModelClass: return the model, with specificities managed
-        '''
-        return new_model
+    def _hook_post_load_model_pkl(self):
+        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)'''
+        pass
 
     @classmethod
     def reload_from_standalone(cls, *args, **kwargs) -> Any:
