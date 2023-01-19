@@ -20,13 +20,11 @@
 # - ModelTfidfDense -> Model for predictions via TF-IDF + Dense
 
 import os
-import json
-import dill as pickle
-import shutil
 import logging
 import numpy as np
+import dill as pickle
 import seaborn as sns
-from typing import Union, List, Callable
+from typing import Union, List, Callable, Any
 from sklearn.feature_extraction.text import TfidfVectorizer
 
 from tensorflow.keras.optimizers import Adam
@@ -171,6 +169,45 @@ class ModelTfidfDense(ModelKeras):
 
         # Save
         super().save(json_data=json_data)
+
+    @staticmethod
+    def _load_standalone_files(new_model: Any, default_model_dir: Union[str, None] = None,  # type: ignore
+                               tfidf_path: Union[str, None] = None, *args, **kwargs) -> Any:
+        '''Loads standalone files for a newly created model via _init_new_class_from_configs
+
+        Args:
+            new_model (Any): model that needs to reload standalone files
+        Kwargs:
+            default_model_dir (str): a path to look for default file paths
+                                     If None, standalone files path should all be provided
+            tfidf_path (str): Path to the TFIDF file
+        Raises:
+            ValueError: If the TFIDF file is not specified and can't be inferred
+            FileNotFoundError: If the TFIDF file does not exist
+        Returns:
+            ModelClass: The loaded model
+        '''
+        # Check if we are able to get all needed paths
+        if default_model_dir is None and tfidf_path is None:
+            raise ValueError("The TFIDF file is not specified and can't be inferred")
+
+        # Call parent
+        new_model = super()._load_standalone_files(new_model=new_model, default_model_dir=default_model_dir, **kwargs)
+
+        # Retrieve file paths
+        if tfidf_path is None:
+            tfidf_path = os.path.join(default_model_dir, "tfidf_standalone.pkl")
+
+        # Check paths exists
+        if not os.path.isfile(tfidf_path):
+            raise FileNotFoundError(f"Can't find the TFIDF file ({tfidf_path})")
+
+        # Reload tfidf
+        with open(tfidf_path, 'rb') as f:
+            new_model.tfidf = pickle.load(f)
+
+        # Return model
+        return new_model
 
 
 if __name__ == '__main__':

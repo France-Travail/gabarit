@@ -37,7 +37,7 @@ from typing import Optional, no_type_check, Union, Tuple, Callable, Any
 import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.utils import plot_model
-from tensorflow.keras.models import load_model
+from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.preprocessing.sequence import pad_sequences
 from tensorflow.keras.callbacks import (CSVLogger, EarlyStopping, ModelCheckpoint,
                                         TerminateOnNaN, LearningRateScheduler)
@@ -275,7 +275,7 @@ class ModelKeras(ModelClass):
             time_spent = time.time() - start_time
             if time_spent >= 60 and os.path.exists(best_path):
                 # 3.
-                self.model = load_model(best_path, custom_objects=self.custom_objects)
+                self.model = load_model_keras(best_path, custom_objects=self.custom_objects)
                 # 4.
                 self.trained = True
                 self.nb_fit += 1
@@ -300,7 +300,7 @@ class ModelKeras(ModelClass):
             # Plot accuracy
             self._plot_metrics_and_loss(fit_history)
             # Reload best model
-            self.model = load_model(os.path.join(self.model_dir, 'best.hdf5'), custom_objects=self.custom_objects)
+            self.model = load_model_keras(os.path.join(self.model_dir, 'best.hdf5'), custom_objects=self.custom_objects)
 
         # Set trained
         self.trained = True
@@ -646,21 +646,88 @@ class ModelKeras(ModelClass):
         super().save(json_data=json_data)
         self.model = keras_model
 
-    def _hook_post_load_model_pkl(self) -> None:
+    @classmethod
+    def _init_new_class_from_configs(cls, configs):
+        '''Inits a new class from a set of configurations
+
+        Args:
+            configs: a set of configurations of a model to be reloaded
+        Returns:
+            ModelClass: the newly generated class
+        '''
+        # Call parent
+        model = super()._init_new_class_from_configs(configs)
+
+        # Try to read the following attributes from configs and, if absent, keep the current one
+        for attribute in ['batch_size', 'epochs', 'validation_split', 'patience',
+                          'embedding_name', 'keras_params']:
+            setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
+
+        # Return the new model
+        return model
+
+    @staticmethod
+    def _load_standalone_files(new_model: Any, default_model_dir: Union[str, None] = None,
+                               hdf5_path: Union[str, None] = None, *args, **kwargs) -> Any:
+        '''Loads standalone files for a newly created model via _init_new_class_from_configs
+
+        Args:
+            new_model (Any): model that needs to reload standalone files
+        Kwargs:
+            default_model_dir (str): a path to look for default file paths
+                                     If None, standalone files path should all be provided
+            hdf5_path (str): Path to the hdf5 weights file
+        Raises:
+            ValueError: If the hdf5 weights file is not specified and can't be inferred
+            FileNotFoundError: If the hdf5 weights file does not exist
+        Returns:
+            ModelClass: The loaded model
+        '''
+        # Check if we are able to get all needed paths
+        if default_model_dir is None and hdf5_path is None:
+            raise ValueError("The hdf5 weights file is not specified and can't be inferred")
+
+        # Retrieve file paths
+        if hdf5_path is None:
+            hdf5_path = os.path.join(default_model_dir, "best.hdf5")
+
+        # Check paths exists
+        if not os.path.isfile(hdf5_path):
+            raise FileNotFoundError(f"Can't find hdf5 weights file ({hdf5_path})")
+
+        # Reload model
+        new_model.model = new_model._reload_weights(hdf5_path)
+
+        # Save best hdf5 in new folder (as this is skipped in save function)
+        new_hdf5_path = os.path.join(new_model.model_dir, 'best.hdf5')
+        shutil.copyfile(hdf5_path, new_hdf5_path)
+
+        # Return model
+        return new_model
+
+    @staticmethod
+    def _hook_post_load_model_pkl(new_model: Any) -> Any:
         '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)
 
+        Args:
+            new_model (ModelClass): model that needs to reload standalone files
         Raises:
-            FileNotFoundError: if the HF weights file does not exist
+            FileNotFoundError: If the weights file does not exist
+        Returns:
+            ModelClass: return the model, with specificities managed
         '''
         # Paths
-        hdf5_path = os.path.join(self.model_dir, 'best.hdf5')
+        hdf5_path = os.path.join(new_model.model_dir, 'best.hdf5')
 
         # Manage errors
-        if not os.path.exists(hdf5_path):
+        if not os.path.isfile(hdf5_path):
             raise FileNotFoundError(f"Can't find weights file ({hdf5_path})")
 
-        # Loading the model
-        self.model = self._reload_weights(hdf5_path)
+        # Loading the weights
+        new_model.model = new_model._reload_weights(hdf5_path)
+
+        # Return the model
+        return new_model
 
     def _reload_weights(self, hdf5_path: str) -> Any:
         '''Loads a Keras model from a HDF5 file
@@ -687,36 +754,10 @@ class ModelKeras(ModelClass):
             custom_objects = utils_deep_keras.custom_objects
 
         # Loading of the model
-        keras_model = load_model(hdf5_path, custom_objects=custom_objects)
-
-        # Set trained to true if not already true
-        if not self.trained:
-            self.trained = True
-            self.nb_fit = 1
+        keras_model = load_model_keras(hdf5_path, custom_objects=custom_objects)
 
         # Return
         return keras_model
-
-    def _load_from_standalone_files(self,  *args, hdf5_path:str = None, tokenizer_path:str = None, **kwargs) -> None:
-        super().load_standalone_files(*args, **kwargs)
-
-        # Default file paths
-        if not hdf5_path:
-            hdf5_path = os.path.join(self.model_dir, "best.hdf5")
-
-        if not tokenizer_path:
-            tokenizer_path = os.path.join(self.model_dir, "embedding_tokenizer.pkl")
-
-        # Load model weights
-        if not os.path.exists(hdf5_path):
-            raise FileNotFoundError(f"Impossible to load weights. {hdf5_path} does not exists")
-
-        self.model = self.reload_model(hdf5_path)
-
-        # Load model tokenizer
-        if os.path.exists(tokenizer_path):
-            with open(tokenizer_path, 'rb') as f:
-                self.tokenizer = pickle.load(f)
 
     def _is_gpu_activated(self) -> bool:
         '''Checks if a GPU is used

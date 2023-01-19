@@ -21,7 +21,7 @@
 
 import logging
 import numpy as np
-from typing import Union
+from typing import Union, Any
 
 from sklearn.pipeline import Pipeline
 from sklearn.multioutput import MultiOutputClassifier
@@ -119,17 +119,52 @@ class ModelTfidfGbt(ModelPipeline):
         # Save
         super().save(json_data=json_data)
 
-    def _load_from_standalone_files(self, *args, sklearn_pipeline_path:str = None, **kwargs) -> None:
-        super().load_standalone_files(*args, sklearn_pipeline_path=sklearn_pipeline_path, **kwargs)
+    @classmethod
+    def _init_new_class_from_configs(cls, configs):
+        '''Inits a new class from a set of configurations
+
+        Args:
+            configs: a set of configurations of a model to be reloaded
+        Returns:
+            ModelClass: the newly generated class
+        '''
+        # Call parent
+        model = super()._init_new_class_from_configs(configs)
+
+        # Try to read the following attributes from configs and, if absent, keep the current one
+        for attribute in ['multiclass_strategy']:
+            setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
+
+        # Return the new model
+        return model
+
+    @staticmethod
+    def _load_standalone_files(new_model: Any, default_model_dir: Union[str, None] = None, *args, **kwargs) -> Any:
+        '''Loads standalone files for a newly created model via _init_new_class_from_configs
+
+        Args:
+            new_model (Any): model that needs to reload standalone files
+        Kwargs:
+            default_model_dir (str): a path to look for default file paths
+                                     If None, standalone files path should all be provided
+        Returns:
+            ModelClass: The loaded model
+        '''
+        # Call parent
+        new_model = super()._load_standalone_files(new_model=new_model, default_model_dir=default_model_dir, **kwargs)
 
         # Reload pipeline elements
-        self.tfidf = self.pipeline['tfidf']
+        new_model.tfidf = new_model.pipeline['tfidf']
 
         # Manage multi-labels or multi-classes
-        if not self.multi_label and self.multiclass_strategy is None:
-            self.gbt = self.pipeline['gbt']
+        if not new_model.multi_label and new_model.multiclass_strategy is None:
+            new_model.gbt = new_model.pipeline['gbt']
         else:
-            self.gbt = self.pipeline['gbt'].estimator
+            new_model.gbt = new_model.pipeline['gbt'].estimator
+
+        # Return model
+        return new_model
+
 
 if __name__ == '__main__':
     logger = logging.getLogger(__name__)

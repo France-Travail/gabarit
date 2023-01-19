@@ -27,7 +27,7 @@ import logging
 import numpy as np
 import pandas as pd
 import dill as pickle
-from typing import Callable, Union, Tuple, Type
+from typing import Callable, Union, Tuple, Type, Any
 
 from .. import utils
 from . import utils_models
@@ -395,7 +395,8 @@ class ModelAggregation(ModelClass):
         line = "/!\\/!\\/!\\/!\\/!\\   The aggregation model is a special model, please ensure that all sub-models and the aggregation model are manually saved together in order to be able to load it .  /!\\/!\\/!\\/!\\/!\\ \n"
         self.prepend_line(md_path, line)
 
-    def prepend_line(self, file_name: str, line: str) -> None:
+    @staticmethod
+    def _prepend_line(file_name: str, line: str) -> None:
         ''' Insert given string as a new line at the beginning of a file
 
         Kwargs:
@@ -408,57 +409,63 @@ class ModelAggregation(ModelClass):
             f.seek(0)
             f.writelines(lines)
 
-    def reload_from_standalone(self, **kwargs) -> None:
-        '''Reloads a model aggregation from its configuration and "standalones" files
-           Reloads the sub_models from their files
+    @classmethod
+    def _init_new_class_from_configs(cls, configs):
+        '''Inits a new class from a set of configurations
 
-        Kwargs:
-            configuration_path (str): Path to configuration file
-            aggregation_function_path (str): Path to aggregation_function_path
-        Raises:
-            ValueError: If configuration_path is None
-            ValueError: If aggregation_function_path is None
-            FileNotFoundError: If the object configuration_path is not an existing file
-            FileNotFoundError: If the object aggregation_function_path is not an existing file
+        Args:
+            configs: a set of configurations of a model to be reloaded
+        Returns:
+            ModelClass: the newly generated class
         '''
-        # Retrieve args
-        configuration_path = kwargs.get('configuration_path', None)
-        aggregation_function_path = kwargs.get('aggregation_function_path', None)
+        # Call parent
+        model = super()._init_new_class_from_configs(configs)
 
-        # Checks
-        if configuration_path is None:
-            raise ValueError("The argument configuration_path can't be None")
-        if aggregation_function_path is None:
-            raise ValueError("The argument aggregation_function_path can't be None")
-        if not os.path.exists(configuration_path):
-            raise FileNotFoundError(f"The file {configuration_path} does not exist")
-        if not os.path.exists(aggregation_function_path):
-            raise FileNotFoundError(f"The file {aggregation_function_path} does not exist")
-
-        # Load confs
-        with open(configuration_path, 'r', encoding='utf-8') as f:
-            configs = json.load(f)
-        # Can't set int as keys in json, so need to cast it after reloading
-        # dict_classes keys are always ints
-        if 'dict_classes' in configs.keys():
-            configs['dict_classes'] = {int(k): v for k, v in configs['dict_classes'].items()}
-        elif 'list_classes' in configs.keys():
-            configs['dict_classes'] = {i: col for i, col in enumerate(configs['list_classes'])}
-
-        # Reload aggregation_function_path
-        with open(aggregation_function_path, 'rb') as f:
-            self.aggregation_function = pickle.load(f)
-
-        # Set class vars
-        # self.model_name = # Keep the created name
-        # self.model_dir = # Keep the created folder
-        self.nb_fit = configs.get('nb_fit', 1)  # Consider one unique fit by default
-        self.trained = configs.get('trained', True)  # Consider trained by default
-        self.sub_models = configs.get('list_models_name', [])  # Transform the list into a list of dictionnaries [{'name': xxx, 'model': xxx,}, ...]
+        # Add attributes
+        model.sub_models = configs.get('list_models_name', [])  # Transforms the list into a list of dictionnaries [{'name': xxx, 'model': xxx,}, ...]
         # Try to read the following attributes from configs and, if absent, keep the current one
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label',
-                          'level_save', 'using_proba']:
-            setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
+        for attribute in ['using_proba']:
+            setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
+
+        # Return the new model
+        return model
+
+    @staticmethod
+    def _load_standalone_files(new_model: Any, default_model_dir: Union[str, None] = None,
+                               aggregation_function_path: Union[str, None] = None, *args, **kwargs) -> Any:
+        '''Loads standalone files for a newly created model via _init_new_class_from_configs
+
+        Args:
+            new_model (Any): model that needs to reload standalone files
+        Kwargs:
+            default_model_dir (str): a path to look for default file paths
+                                     If None, standalone files path should all be provided
+            aggregation_function_path (str): Path to the aggregation function
+                                             If None, we'll use the default path if default_model_dir is not None
+        Raises:
+            ValueError: If at least one path is not specified and can't be inferred
+            FileNotFoundError: If the aggregation function path does not exist
+        Returns:
+            ModelClass: The loaded model
+        '''
+        # Check if we are able to get all needed paths
+        if default_model_dir is None and aggregation_function_path is None:
+            raise ValueError("Aggregation function path is not specified and can't be inferred")
+
+        # Retrieve file paths
+        if aggregation_function_path is None:
+            aggregation_function_path = os.path.join(default_model_dir, "aggregation_function.pkl")
+
+        # Check paths exists
+        if not os.path.isfile(aggregation_function_path):
+            raise FileNotFoundError(f"Can't find aggregation function path ({aggregation_function_path})")
+
+        # Reload aggregation function
+        with open(aggregation_function_path, 'rb') as f:
+            new_model.aggregation_function = pickle.load(f)
+
+        # Return model
+        return new_model
 
 
 if __name__ == '__main__':

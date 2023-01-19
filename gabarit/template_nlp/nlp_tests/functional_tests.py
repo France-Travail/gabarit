@@ -35,7 +35,7 @@ from test_template_nlp.models_training import model_huggingface, model_aggregati
 from test_template_nlp.models_training.models_sklearn import (model_tfidf_svm, model_tfidf_gbt, model_tfidf_lgbm,
                                                               model_tfidf_sgdc)
 from test_template_nlp.models_training.models_tensorflow import (model_tfidf_dense, model_embedding_lstm, model_embedding_lstm_attention,
-                                                                 model_embedding_lstm_structured_attention, model_embedding_lstm_gru_gpu,
+                                                                 model_embedding_lstm_structured_attention, model_embedding_lstm_gru,
                                                                  model_embedding_cnn)
 
 def remove_dir(path):
@@ -624,7 +624,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_EmbeddingLstmAttention failed')
 
-    def test08_Model_EmbeddingLstmGruGpu(self):
+    def test08_Model_EmbeddingLstmGru(self):
         '''Test of the model Embedding/LSTM/GRU'''
         print('            ------------------ >     Test of the model Embedding/LSTM/GRU     /   Mono-class & Mono-label')
 
@@ -637,7 +637,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_name = 'embedding_lstm_gru_mono_class_mono_label'
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             os.makedirs(model_dir)
-            test_model = model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_embedding_lstm_gru.ModelEmbeddingLstmGru(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                                                batch_size=16, epochs=20, patience=20,
                                                                                max_sequence_length=60, max_words=100000,
                                                                                embedding_name="custom.300.pkl",
@@ -647,7 +647,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_mono_label(self, test_model)
         except Exception:
-            self.fail('testModel_EmbeddingLstmGruGpu failed')
+            self.fail('testModel_EmbeddingLstmGru failed')
 
     def test09_Model_EmbeddingCnn(self):
         '''Test of the model Embedding/CNN'''
@@ -1258,7 +1258,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_EmbeddingLstmAttention failed')
 
-    def test08_Model_EmbeddingLstmGruGpu(self):
+    def test08_Model_EmbeddingLstmGru(self):
         '''Test of the model Embedding/LSTM/GRU'''
         print('            ------------------ >     Test of the model Embedding/LSTM/GRU     /   Mono-class & Multi-labels')
 
@@ -1271,7 +1271,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             model_name = 'embedding_lstm_gru_mono_class_multi_label'
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             os.makedirs(model_dir)
-            test_model = model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_embedding_lstm_gru.ModelEmbeddingLstmGru(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                                                batch_size=16, epochs=20, patience=20,
                                                                                max_sequence_length=60, max_words=100000,
                                                                                embedding_name="custom.300.pkl",
@@ -1281,7 +1281,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_multi_label(self, test_model)
         except Exception:
-            self.fail('testModel_EmbeddingLstmGruGpu failed')
+            self.fail('testModel_EmbeddingLstmGru failed')
 
     def test09_Model_EmbeddingCnn(self):
         '''Test of the model Embedding/CNN'''
@@ -1924,7 +1924,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_EmbeddingLstmAttention failed')
 
-    def test08_Model_EmbeddingLstmGruGpu(self):
+    def test08_Model_EmbeddingLstmGru(self):
         '''Test of the model Embedding/LSTM/GRU'''
         print('            ------------------ >     Test of the model Embedding/LSTM/GRU     /   Multi-classes & Mono-label')
 
@@ -1937,7 +1937,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             model_name = 'embedding_lstm_gru_multi_class_mono_label'
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             os.makedirs(model_dir)
-            test_model = model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_embedding_lstm_gru.ModelEmbeddingLstmGru(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                                                batch_size=16, epochs=20, patience=20,
                                                                                max_sequence_length=60, max_words=100000,
                                                                                embedding_name="custom.300.pkl",
@@ -1947,7 +1947,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_multi_class_mono_label(self, test_model)
         except Exception:
-            self.fail('testModel_EmbeddingLstmGruGpu failed')
+            self.fail('testModel_EmbeddingLstmGru failed')
 
     def test09_Model_EmbeddingCnn(self):
         '''Test of the model Embedding/CNN'''
