@@ -161,32 +161,24 @@ class ModelTfidfSgdc(ModelPipeline):
         # Return the new model
         return model
 
-    @staticmethod
-    def _load_standalone_files(new_model: Any, default_model_dir: Union[str, None] = None, *args, **kwargs) -> Any:
+    def _load_standalone_files(self, default_model_dir: Union[str, None] = None, *args, **kwargs):
         '''Loads standalone files for a newly created model via _init_new_class_from_configs
 
-        Args:
-            new_model (Any): model that needs to reload standalone files
         Kwargs:
             default_model_dir (str): a path to look for default file paths
                                      If None, standalone files path should all be provided
-        Returns:
-            ModelClass: The loaded model
         '''
         # Call parent
-        new_model = super()._load_standalone_files(new_model=new_model, default_model_dir=default_model_dir, **kwargs)
+        super()._load_standalone_files(default_model_dir=default_model_dir, **kwargs)
 
         # Reload pipeline elements
-        new_model.tfidf = new_model.pipeline['tfidf']
+        self.tfidf = self.pipeline['tfidf']
 
         # Manage multi-labels or multi-classes
-        if not new_model.multi_label and new_model.multiclass_strategy is None:
-            new_model.sgdc = new_model.pipeline['sgdc']
+        if not self.multi_label and self.multiclass_strategy is None:
+            self.sgdc = self.pipeline['sgdc']
         else:
-            new_model.sgdc = new_model.pipeline['sgdc'].estimator
-
-        # Return model
-        return new_model
+            self.sgdc = self.pipeline['sgdc'].estimator
 
 
 if __name__ == '__main__':

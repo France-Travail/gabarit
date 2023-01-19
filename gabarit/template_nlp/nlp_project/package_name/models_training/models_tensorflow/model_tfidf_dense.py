@@ -170,13 +170,10 @@ class ModelTfidfDense(ModelKeras):
         # Save
         super().save(json_data=json_data)
 
-    @staticmethod
-    def _load_standalone_files(new_model: Any, default_model_dir: Union[str, None] = None,  # type: ignore
-                               tfidf_path: Union[str, None] = None, *args, **kwargs) -> Any:
+    def _load_standalone_files(self, default_model_dir: Union[str, None] = None,  # type: ignore
+                               tfidf_path: Union[str, None] = None, *args, **kwargs):
         '''Loads standalone files for a newly created model via _init_new_class_from_configs
 
-        Args:
-            new_model (Any): model that needs to reload standalone files
         Kwargs:
             default_model_dir (str): a path to look for default file paths
                                      If None, standalone files path should all be provided
@@ -184,15 +181,13 @@ class ModelTfidfDense(ModelKeras):
         Raises:
             ValueError: If the TFIDF file is not specified and can't be inferred
             FileNotFoundError: If the TFIDF file does not exist
-        Returns:
-            ModelClass: The loaded model
         '''
         # Check if we are able to get all needed paths
         if default_model_dir is None and tfidf_path is None:
             raise ValueError("The TFIDF file is not specified and can't be inferred")
 
         # Call parent
-        new_model = super()._load_standalone_files(new_model=new_model, default_model_dir=default_model_dir, **kwargs)
+        super()._load_standalone_files(default_model_dir=default_model_dir, **kwargs)
 
         # Retrieve file paths
         if tfidf_path is None:
@@ -204,10 +199,7 @@ class ModelTfidfDense(ModelKeras):
 
         # Reload tfidf
         with open(tfidf_path, 'rb') as f:
-            new_model.tfidf = pickle.load(f)
-
-        # Return model
-        return new_model
+            self.tfidf = pickle.load(f)
 
 
 if __name__ == '__main__':
