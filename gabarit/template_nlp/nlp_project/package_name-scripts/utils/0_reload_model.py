@@ -26,20 +26,26 @@ import argparse
 
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
-from {{package_name}}.models_training import (model_tfidf_dense,
-                                              model_tfidf_gbt,
-                                              model_tfidf_lgbm,
-                                              model_tfidf_sgdc,
-                                              model_tfidf_svm,
-                                              model_embedding_cnn,
-                                              model_embedding_lstm,
-                                              model_embedding_lstm_attention,
-                                              model_embedding_lstm_structured_attention,
-                                              model_embedding_lstm_gru_gpu,
-                                              model_huggingface,
-                                              model_aggregation,
-                                              utils_models,
-                                              utils_deep_keras)
+from {{package_name}}.models_training import (
+    utils_models,
+    model_aggregation,
+    model_huggingface,
+)
+from {{package_name}}.models_training.models_sklearn import (
+    model_tfidf_gbt,
+    model_tfidf_lgbm,
+    model_tfidf_sgdc,
+    model_tfidf_svm,
+)
+from {{package_name}}.models_training.models_tensorflow import (
+    model_embedding_cnn,
+    model_embedding_lstm,
+    model_embedding_lstm_attention,
+    model_embedding_lstm_structured_attention,
+    model_embedding_lstm_gru,
+    model_tfidf_dense,
+    utils_deep_keras,
+)
 
 # Get logger
 logger = logging.getLogger('{{package_name}}.0_reload_model')
@@ -96,7 +102,7 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'model_embedding_lstm': model_embedding_lstm.ModelEmbeddingLstm,
         'model_embedding_lstm_attention': model_embedding_lstm_attention.ModelEmbeddingLstmAttention,
         'model_embedding_lstm_structured_attention': model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention,
-        'model_embedding_lstm_gru_gpu': model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu,
+        'model_embedding_lstm_gru': model_embedding_lstm_gru.ModelEmbeddingLstmGru,
         'model_huggingface': model_huggingface.ModelHuggingFace,
         'model_aggregation': model_aggregation.ModelAggregation,
     }
@@ -177,4 +183,4 @@ if __name__ == '__main__':
     main(model_dir=args.model_dir, config_file=args.config_file, weights_file=args.weights_file,
          sklearn_pipeline_file=args.sklearn_pipeline_file, tokenizer_file=args.tokenizer_file,
          tfidf_file=args.tfidf_file, hf_model_dir=args.hf_model_dir, hf_tokenizer_dir=args.hf_tokenizer_dir,
-         aggregation_function_file=args.aggregation_function)
+         aggregation_function_file=args.aggregation_function_file)
