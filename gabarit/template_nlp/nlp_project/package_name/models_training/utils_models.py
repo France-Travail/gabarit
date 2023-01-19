@@ -275,10 +275,10 @@ def load_model(model_dir: str, is_path: bool = False, from_standalone: bool = Fa
     model_dir = utils.find_folder_path(model_dir, base_folder)
 
     # Load model
-    model = ModelClass.load_model(model_dir=model_dir, from_standalone=from_standalone, with_save=False, **kwargs)
+    model, model_conf = ModelClass.load_model(model_dir=model_dir, from_standalone=from_standalone, with_save=False, **kwargs)
 
     # Return model & its configs
-    return model, model.json_dict
+    return model, model_conf
 
 
 # TODO: Shouldn't content be an iterable & shouldn't we return a list ?

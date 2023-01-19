@@ -24,7 +24,6 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import gc
-import re
 import time
 import logging
 import argparse

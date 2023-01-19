@@ -24,7 +24,6 @@ import pickle
 import logging
 import argparse
 import numpy as np
-import pandas as pd
 
 from {{package_name}} import utils
 

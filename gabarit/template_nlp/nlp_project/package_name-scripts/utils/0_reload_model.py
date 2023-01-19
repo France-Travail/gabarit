@@ -21,11 +21,8 @@
 
 import os
 import json
-import ntpath
 import logging
 import argparse
-import pandas as pd
-from typing import Union
 
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
@@ -77,23 +74,16 @@ def main(model_dir: str, config_file: str = 'configurations.json',
     logger.info(f"Reloading a model ...")
 
     ##############################################
-    # Loading configuration
+    # Retrieve model class
     ##############################################
 
     # Get model's path
     model_path = utils.find_folder_path(model_dir, utils.get_models_path())
 
-    # Load conf
-    conf_path = os.path.join(model_path, config_file)
-    if not os.path.exists(conf_path):
-        raise FileNotFoundError(f"The file {conf_path} does not exist")
-    with open(conf_path, 'r', encoding='{{default_encoding}}') as f:
-        configs = json.load(f)
-
-
-    ##############################################
-    # Retrieve model type
-    ##############################################
+    # Get conf's path
+    config_path = os.path.join(model_path, config_file)
+    if not os.path.exists(config_path):
+        raise FileNotFoundError(f"The file {config_path} does not exist")
 
     # Get model type
     model_type_dicts = {
@@ -110,7 +100,10 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'model_huggingface': model_huggingface.ModelHuggingFace,
         'model_aggregation': model_aggregation.ModelAggregation,
     }
-    model_type = configs['model_name']
+    with open(config_path, 'r', encoding='{{default_encoding}}') as f:
+        model_type = json.load(f)['model_name']
+
+    # Get model class
     if model_type not in model_type_dicts:
         raise ValueError(f"The model's type {model_type} is invalid.")
     else:
@@ -122,7 +115,6 @@ def main(model_dir: str, config_file: str = 'configurations.json',
     ##############################################
 
     # Reload model
-    model = model_class()
     files_dict = {
         'configuration_path': os.path.join(model_path, config_file) if config_file is not None else None,
         'sklearn_pipeline_path': os.path.join(model_path, sklearn_pipeline_file) if sklearn_pipeline_file is not None else None,
@@ -133,7 +125,7 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'hf_tokenizer_dir_path': os.path.join(model_path, hf_tokenizer_dir) if hf_tokenizer_dir is not None else None,
         'aggregation_function_path': os.path.join(model_path, aggregation_function_file) if aggregation_function_file is not None else None,
     }
-    model.reload_from_standalone(**files_dict)
+    model, model_conf = model_class.load_model(model_dir=model_path, config_path=config_path, from_standalone=True, **files_dict)
 
 
     ##############################################
@@ -141,8 +133,8 @@ def main(model_dir: str, config_file: str = 'configurations.json',
     ##############################################
 
     # We check if the model's preprocessing is defined in the preprocess file
-    if 'preprocess_str' in configs.keys():
-        if configs['preprocess_str'] not in preprocess.get_preprocessors_dict().keys():
+    if 'preprocess_str' in model_conf.keys():
+        if model_conf['preprocess_str'] not in preprocess.get_preprocessors_dict().keys():
             logging.warning(f"The reloaded model's preprocessing is not defined.")
             logging.warning(f"Please add it in the preprocess.py file.")
             logging.warning(f"The model won't be able to make any prediction otherwise.")
@@ -153,17 +145,17 @@ def main(model_dir: str, config_file: str = 'configurations.json',
     list_keys_json_data = ['filename', 'filename_valid', 'min_rows', 'preprocess_str',
                            'fit_time', 'date', '_get_model', '_get_learning_rate_scheduler',
                            '_get_tokenizer', 'custom_objects']
-    json_data = {key: configs.get(key, None) for key in list_keys_json_data}
+    json_data = {key: model_conf.get(key, None) for key in list_keys_json_data}
 
     # Add training version
-    if 'package_version' in configs:
+    if 'package_version' in model_conf:
         # If no trained version yet, use package version
-        trained_version = configs.get('trained_version', configs['package_version'])
+        trained_version = model_conf.get('trained_version', model_conf['package_version'])
         if trained_version != utils.get_package_version():
             json_data['trained_version'] = trained_version
 
     # Save
-    json_data = {k: v for k, v in json_data.items() if v is not None}  # Only consider not None values
+    json_data = {k: v for k, v in json_data.items() if v is not None}  # Only considers not None values
     model.save(json_data)
 
     logger.info(f"Model {model_dir} has been successfully reloaded")
