@@ -602,6 +602,7 @@ class ModelHuggingFace(ModelClass):
         json_data['transformer_name'] = self.transformer_name
         json_data['transformer_params'] = self.transformer_params
         json_data['trainer_params'] = self.trainer_params
+        json_data['model_max_length'] = self.model_max_length
 
         # Add model structure if not none
         if self.model is not None:
@@ -714,7 +715,7 @@ class ModelHuggingFace(ModelClass):
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label',
                           'level_save', 'batch_size', 'epochs', 'validation_split', 'patience',
-                          'transformer_name', 'transformer_params', 'trainer_params']:
+                          'transformer_name', 'transformer_params', 'trainer_params', 'model_max_length']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload model & tokenizer
