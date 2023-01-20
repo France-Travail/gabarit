@@ -36,7 +36,7 @@ from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_sc
 import torch
 from datasets import Dataset, load_metric
 from datasets.arrow_dataset import Batch
-from transformers.tokenization_utils_base import BatchEncoding
+from transformers.tokenization_utils_base import BatchEncoding, VERY_LARGE_INTEGER
 from transformers import (AutoModelForSequenceClassification, TrainingArguments, Trainer, DataCollatorWithPadding,
                           AutoTokenizer, TextClassificationPipeline, PreTrainedTokenizer, EvalPrediction,
                           TrainerCallback, EarlyStoppingCallback)
@@ -64,7 +64,7 @@ class ModelHuggingFace(ModelClass):
 
     def __init__(self, batch_size: int = 8, epochs: int = 99, validation_split: float = 0.2, patience: int = 5,
                  transformer_name: str = 'Geotrend/distilbert-base-fr-cased', transformer_params: Union[dict, None] = None,
-                 trainer_params: Union[dict, None] = None, **kwargs) -> None:
+                 trainer_params: Union[dict, None] = None, model_max_length: int = None, **kwargs) -> None:
         '''Initialization of the class (see ModelClass for more arguments)
 
         Kwargs:
@@ -92,6 +92,8 @@ class ModelHuggingFace(ModelClass):
         self.validation_split = validation_split
         self.patience = patience
         self.transformer_name = transformer_name
+        self.model_max_length = model_max_length
+
         # transformer_params has no use as of 14/12/2022
         # we still leave it for compatibility with keras models and future usage
         self.transformer_params = transformer_params
@@ -456,6 +458,17 @@ class ModelHuggingFace(ModelClass):
         tokenizer = AutoTokenizer.from_pretrained(self.transformer_name if model_path is None else model_path,
                                                   {% if huggingface_proxies is not none %}proxies={{huggingface_proxies}},
                                                   {% endif %}cache_dir=HF_CACHE_DIR)
+
+        if self.model_max_length:
+            tokenizer.model_max_length = self.model_max_length
+
+        # If the model name is not in tokenizer.max_model_input_sizes it is likely that the attribute model_max_length is not well
+        # initialized. If it is set to VERY_LARGE_INTEGER we warn the user that there is a risk of errors with long sequences
+        elif self.transformer_name not in tokenizer.max_model_input_sizes and tokenizer.model_max_length == VERY_LARGE_INTEGER:
+            self.logger.warning(f"The model name '{self.transformer_name}' is not present in tokenizer.max_model_input_sizes : '{tokenizer.max_model_input_sizes}' "
+                                f"and tokenizer.model_max_length is set to VERY_LARGE_INTEGER. You may encounter errors with long sequences. "
+                                f"see. https://huggingface.co/transformers/v4.0.1/main_classes/tokenizer.html?highlight=very_large_integer#transformers.PreTrainedTokenizer")
+
         return tokenizer
 
     def _get_optimizers(self) -> Tuple[Any, Any]:
@@ -589,6 +602,7 @@ class ModelHuggingFace(ModelClass):
         json_data['transformer_name'] = self.transformer_name
         json_data['transformer_params'] = self.transformer_params
         json_data['trainer_params'] = self.trainer_params
+        json_data['model_max_length'] = self.model_max_length
 
         # Add model structure if not none
         if self.model is not None:
@@ -701,7 +715,7 @@ class ModelHuggingFace(ModelClass):
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label',
                           'level_save', 'batch_size', 'epochs', 'validation_split', 'patience',
-                          'transformer_name', 'transformer_params', 'trainer_params']:
+                          'transformer_name', 'transformer_params', 'trainer_params', 'model_max_length']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload model & tokenizer

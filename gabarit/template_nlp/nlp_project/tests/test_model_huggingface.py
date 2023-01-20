@@ -89,6 +89,11 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertEqual(model.patience, 10)
         remove_dir(model_dir)
 
+        #
+        model = ModelHuggingFace(model_dir=model_dir, model_max_length=10)
+        self.assertEqual(model.model_max_length, 10)
+        remove_dir(model_dir)
+
         # Can't be tested as this would try to load a transformer called 'toto'
         # We could patch it, but w/e
         # model = ModelHuggingFace(model_dir=model_dir, transformer_name='toto')
@@ -778,7 +783,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
         x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
         y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                 validation_split=0.3, patience=6, transformer_params={'toto': 5})
+                                 validation_split=0.3, patience=6, transformer_params={'toto': 5}, 
+                                 model_max_length=35)
         model.fit(x_train, y_train_mono)
         model.save()
 
@@ -803,6 +809,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertEqual(model.epochs, new_model.epochs)
         self.assertEqual(model.validation_split, new_model.validation_split)
         self.assertEqual(model.patience, new_model.patience)
+        self.assertEqual(model.model_max_length, new_model.model_max_length)
         self.assertEqual(model.transformer_name, new_model.transformer_name)
         self.assertEqual(model.transformer_params, new_model.transformer_params)
         self.assertEqual(model.trainer_params, new_model.trainer_params)
