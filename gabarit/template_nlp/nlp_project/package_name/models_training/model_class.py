@@ -785,58 +785,32 @@ class ModelClass:
             f.write(new_content)
 
     @classmethod
-    def load_model(cls, model_dir: Union[str, None] = None, config_path: Union[str, None] = None,
-                   from_standalone: bool = False, **kwargs) -> Tuple[Any, dict]:
+    def load_model(cls, model_dir: str, config_path: Union[str, None] = None, **kwargs) -> Tuple[Any, dict]:
         '''Loads a model from a path or a model name
 
-        Kwargs:
+        Args:
             model_dir (str): Absolute path of the folder containing the model to load
-                             If None, config_path must be set and from_standalone = True.
+        Kwargs:
             config_path (str): Absolute path to a configuration file. Backup on the model_dir defaults configuration file.
                                Most of the time, you should leave this empty.
-            from_standalone (bool): If the model should be reloaded from standalone files
-                It will use default file names, except if specific **kwargs are provided
-                To see which kwargs are available for your model, checks it's own `_load_standalone_files` function
-                WARNING : it will create a new folder for the reloaded model and might copy many files in this new folder
-                          that may take space in your hard disk. If you can, it's better to leave this to False.
-                WARNING : this function should be called with the class of the model to be reloaded
-                          e.g. ModelEmbeddingLstm.load_model(...)
-        Raises:
-            ValueError: If model_dir is not set and from_standalone is False
-            ValueError: If both model_dir and config_path are not set
         Returns:
             ModelClass: The loaded model
+            dict: The model configuration
         '''
-        # Manage errors
-        if model_dir is None and not from_standalone:
-            raise ValueError("model_dir must be set if from_standalone is False")
-        if model_dir is None and config_path is None:
-            raise ValueError("Either model_dir or config_path must be set")
-
         # First load the model configurations
         configs = cls.load_configs(model_dir=model_dir, config_path=config_path)
 
-        # Load the model
-        if from_standalone:
-            # TODO: Add an argument to not create a new directory ?
-            #       Today this is mainly use if the .pkl file is not loadable in order to update a model to a newer version
-            #       But one day we might want to reload a model from standalone just for inference
-            #       In this case we would not want the model to be re-save on disk
-            # Load model from standalone files & configurations
-            model = cls._init_new_class_from_configs(configs)
-            model._load_standalone_files(default_model_dir=model_dir, **kwargs)
-            # Set configs to new model dir
-            configs['model_dir'] = model.model_dir
-        else:
-            # Load the model object from a pickle file
-            pkl_path = os.path.join(model_dir, f"{configs['model_name']}.pkl")
-            with open(pkl_path, 'rb') as f:
-                model = pickle.load(f)
-            # Change model_dir to the input model_dir (usually when the model has been trained on another computer)
-            configs['model_dir'] = model_dir
-            model.model_dir = model_dir
-            # Post load specificities
-            model._hook_post_load_model_pkl()
+        # Load the model object from a pickle file
+        pkl_path = os.path.join(model_dir, f"{configs['model_name']}.pkl")
+        with open(pkl_path, 'rb') as f:
+            model = pickle.load(f)
+
+        # Change model_dir to the input model_dir (usually when the model has been trained on another computer)
+        configs['model_dir'] = model_dir
+        model.model_dir = model_dir
+
+        # Post load specificities
+        model._hook_post_load_model_pkl()
 
         # Display if GPU is being used
         model.display_if_gpu_activated()
@@ -877,6 +851,56 @@ class ModelClass:
         # Return configs
         return configs
 
+    def _hook_post_load_model_pkl(self):
+        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)'''
+        pass
+
+    @classmethod
+    def init_from_standalone_files(cls, model_dir: Union[str, None] = None, config_path: Union[str, None] = None, **kwargs) -> Tuple[Any, dict]:
+        '''Init. a new model from a config file and standalone files.
+
+        The main purpose of this function is to be able to use an old model trained with an old version which is not
+        anymore unpicklable.
+        We should be able to recreate a new class object as this library tries to save all infos in a configuration file,
+        and all models / tokenizers / etc. in standalone files.
+
+        The standalone files will be inferred from the model_dir argument, except if specific **kwargs are provided.
+        To see which kwargs are available for your model, checks it's own `_load_standalone_files` function.
+        Of course, the function will raise an error if `model_dir` is None and no **kwargs arguments are provided.
+
+        WARNING : It will create a new folder for the reloaded model and copy many files in this new folder.
+                  That may take some space in your hard disk.
+        WARNING : This function should be called with the class of the model to be reloaded.
+                  e.g. ModelEmbeddingLstm.init_from_standalone_files(...)
+
+        Kwargs:
+            model_dir (str): Absolute path of the folder containing the model to load.
+                             If None, config_path must be set.
+            config_path (str): Absolute path to a configuration file.
+                               If None, backups on the model_dir defaults configuration file.
+                               If None, model_dir must be set.
+        Returns:
+            ModelClass: The loaded model
+            dict: The model configuration
+        '''
+        if model_dir is None and config_path is None:
+            raise ValueError("Either model_dir or config_path must be set")
+
+        # First load the model configurations
+        configs = cls.load_configs(model_dir=model_dir, config_path=config_path)
+
+        # Init model from configurations
+        model = cls._init_new_class_from_configs(configs)
+
+        # Load standalone files
+        model._load_standalone_files(default_model_dir=model_dir, **kwargs)
+
+        # Set configs to new model dir
+        configs['model_dir'] = model.model_dir
+
+        # Return model
+        return model, configs
+
     @classmethod
     def _init_new_class_from_configs(cls, configs) -> Any:
         '''Inits a new class from a set of configurations
@@ -909,10 +933,6 @@ class ModelClass:
                                      If None, standalone files path should all be provided
         '''
         raise NotImplementedError("'_load_standalone_files' needs to be overridden")
-
-    def _hook_post_load_model_pkl(self):
-        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)'''
-        pass
 
     @classmethod
     def reload_from_standalone(cls, *args, **kwargs) -> Any:
