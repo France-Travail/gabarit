@@ -130,7 +130,7 @@ def main(model_dir: str, config_file: str = 'configurations.json',
         'hf_tokenizer_dir_path': os.path.join(model_path, hf_tokenizer_dir) if hf_tokenizer_dir is not None else None,
         'aggregation_function_path': os.path.join(model_path, aggregation_function_file) if aggregation_function_file is not None else None,
     }
-    model, model_conf = model_class.load_model(model_dir=model_path, config_path=config_path, from_standalone=True, **files_dict)
+    model, model_conf = model_class.init_from_standalone_files(model_dir=model_path, config_path=config_path, **files_dict)
 
 
     ##############################################
