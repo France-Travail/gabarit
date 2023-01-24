@@ -626,6 +626,28 @@ class ModelHuggingFace(ModelClass):
         self.model = hf_model
         self.tokenizer = hf_tokenizer
 
+    def _hook_post_load_model_pkl(self):
+        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)
+
+        Raises:
+            FileNotFoundError: If the HF model directory does not exist
+            FileNotFoundError: If the HF tokenizer directory does not exist
+        '''
+        # Paths
+        hf_model_dir = os.path.join(self.model_dir, 'hf_model')
+        hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
+
+        # Manage errors
+        if not os.path.isdir(hf_model_dir):
+            raise FileNotFoundError(f"Can't find HF model directory ({hf_model_dir})")
+        if not os.path.isdir(hf_tokenizer_dir):
+            raise FileNotFoundError(f"Can't find HF tokenizer directory ({hf_tokenizer_dir})")
+
+        # Loading the model
+        self.model = self._get_model(hf_model_dir)
+        # Loading the tokenizer
+        self.tokenizer = self._get_tokenizer(hf_tokenizer_dir)
+
     @classmethod
     def _init_new_class_from_configs(cls, configs):
         '''Inits a new class from a set of configurations
@@ -687,28 +709,6 @@ class ModelHuggingFace(ModelClass):
         new_hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
         shutil.copytree(hf_model_dir, new_hf_model_dir)
         shutil.copytree(hf_tokenizer_dir, new_hf_tokenizer_dir)
-
-    def _hook_post_load_model_pkl(self):
-        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)
-
-        Raises:
-            FileNotFoundError: If the HF model directory does not exist
-            FileNotFoundError: If the HF tokenizer directory does not exist
-        '''
-        # Paths
-        hf_model_dir = os.path.join(self.model_dir, 'hf_model')
-        hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
-
-        # Manage errors
-        if not os.path.isdir(hf_model_dir):
-            raise FileNotFoundError(f"Can't find HF model directory ({hf_model_dir})")
-        if not os.path.isdir(hf_tokenizer_dir):
-            raise FileNotFoundError(f"Can't find HF tokenizer directory ({hf_tokenizer_dir})")
-
-        # Loading the model
-        self.model = self._get_model(hf_model_dir)
-        # Loading the tokenizer
-        self.tokenizer = self._get_tokenizer(hf_tokenizer_dir)
 
     def _is_gpu_activated(self) -> bool:
         '''Checks if a GPU is used

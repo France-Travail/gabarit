@@ -651,6 +651,22 @@ class ModelKeras(ModelClass):
         super().save(json_data=json_data)
         self.model = keras_model
 
+    def _hook_post_load_model_pkl(self):
+        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)
+
+        Raises:
+            FileNotFoundError: If the weights file does not exist
+        '''
+        # Paths
+        hdf5_path = os.path.join(self.model_dir, 'best.hdf5')
+
+        # Manage errors
+        if not os.path.isfile(hdf5_path):
+            raise FileNotFoundError(f"Can't find weights file ({hdf5_path})")
+
+        # Loading the weights
+        self.model = self._reload_weights(hdf5_path)
+
     @classmethod
     def _init_new_class_from_configs(cls, configs):
         '''Inits a new class from a set of configurations
@@ -701,22 +717,6 @@ class ModelKeras(ModelClass):
         # Save best hdf5 in new folder (as this is skipped in save function)
         new_hdf5_path = os.path.join(self.model_dir, 'best.hdf5')
         shutil.copyfile(hdf5_path, new_hdf5_path)
-
-    def _hook_post_load_model_pkl(self):
-        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)
-
-        Raises:
-            FileNotFoundError: If the weights file does not exist
-        '''
-        # Paths
-        hdf5_path = os.path.join(self.model_dir, 'best.hdf5')
-
-        # Manage errors
-        if not os.path.isfile(hdf5_path):
-            raise FileNotFoundError(f"Can't find weights file ({hdf5_path})")
-
-        # Loading the weights
-        self.model = self._reload_weights(hdf5_path)
 
     def _reload_weights(self, hdf5_path: str) -> Any:
         '''Loads a Keras model from a HDF5 file
