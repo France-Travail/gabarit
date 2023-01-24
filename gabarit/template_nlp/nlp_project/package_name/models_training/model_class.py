@@ -879,6 +879,8 @@ class ModelClass:
             config_path (str): Absolute path to a configuration file.
                                If None, backups on the model_dir defaults configuration file.
                                If None, model_dir must be set.
+        Raises:
+            ValueError: If both model_dir and config_path are None.
         Returns:
             ModelClass: The loaded model
             dict: The model configuration
