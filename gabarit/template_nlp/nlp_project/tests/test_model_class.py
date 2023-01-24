@@ -26,7 +26,6 @@ import shutil
 import numpy as np
 import pandas as pd
 
-from sklearn.svm import LinearSVC
 from sklearn.pipeline import Pipeline
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.ensemble import RandomForestClassifier
@@ -113,38 +112,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.level_save, 'LOW')
         remove_dir(model_dir)
 
-    def test02_model_class_get_classes_from_proba(self):
-        '''Test of the method {{package_name}}.models_training.model_class.ModelClass.get_classes_from_proba'''
-        # TODO: same as test05 ?
-
-        # Model creation
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-        model_name = 'test'
-        x_col = 'test_x'
-
-        # Test mono-label
-        multi_label = False
-        y_col = 'test_y'
-        model = ModelClass(model_dir=model_dir, model_name=model_name, x_col=x_col, y_col=y_col, multi_label=multi_label)
-        model.list_classes = ['a', 'b']
-        model.dict_classes = {0: 'a', 1: 'b'}
-        probas = np.array([[0.2, 0.8], [0.6, 0.4]])
-        self.assertEqual(list(model.get_classes_from_proba(probas)), ['b', 'a'])
-        remove_dir(model_dir)
-
-        # Test multi-labels
-        multi_label = True
-        y_col = ['test_y1', 'test_y2']
-        model = ModelClass(model_dir=model_dir, model_name=model_name, x_col=x_col, y_col=y_col, multi_label=multi_label)
-        model.list_classes = ['a', 'b', 'c']
-        model.dict_classes = {0: 'a', 1: 'b', 2: 'c'}
-        probas = np.array([[0.2, 0.8, 0.6], [0.6, 0.4, 0.8], [0.6, 0.9, 0.8], [0.3, 0.4, 0.4]])
-        self.assertEqual([list(_) for _ in model.get_classes_from_proba(probas)], [[0, 1, 1], [1, 0, 1], [1, 1, 1], [0, 0, 0]])
-        remove_dir(model_dir)
-
-
-    def test03_model_class_predict_with_proba(self):
+    def test02_model_class_predict_with_proba(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass.predict_with_proba'''
         # /!\ We must use a sub-class for the tests because the class ModelClass does not implement predict / predict_proba
 
@@ -185,8 +153,7 @@ class ModelClassTests(unittest.TestCase):
             model.predict_with_proba(x_train)
         remove_dir(model_dir)
 
-
-    def test04_model_class_get_predict_position(self):
+    def test03_model_class_get_predict_position(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass.get_predict_position'''
         # /!\ We must use a sub-class for the tests because the class ModelClass does not implement predict / predict_proba
 
@@ -226,6 +193,35 @@ class ModelClassTests(unittest.TestCase):
             model.get_predict_position(x_train, y_train_mono)
         remove_dir(model_dir)
 
+    def test04_model_class_get_classes_from_proba(self):
+        '''Test of the method {{package_name}}.models_training.model_class.ModelClass.get_classes_from_proba'''
+        # TODO: same as test05 ?
+
+        # Model creation
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_name = 'test'
+        x_col = 'test_x'
+
+        # Test mono-label
+        multi_label = False
+        y_col = 'test_y'
+        model = ModelClass(model_dir=model_dir, model_name=model_name, x_col=x_col, y_col=y_col, multi_label=multi_label)
+        model.list_classes = ['a', 'b']
+        model.dict_classes = {0: 'a', 1: 'b'}
+        probas = np.array([[0.2, 0.8], [0.6, 0.4]])
+        self.assertEqual(list(model.get_classes_from_proba(probas)), ['b', 'a'])
+        remove_dir(model_dir)
+
+        # Test multi-labels
+        multi_label = True
+        y_col = ['test_y1', 'test_y2']
+        model = ModelClass(model_dir=model_dir, model_name=model_name, x_col=x_col, y_col=y_col, multi_label=multi_label)
+        model.list_classes = ['a', 'b', 'c']
+        model.dict_classes = {0: 'a', 1: 'b', 2: 'c'}
+        probas = np.array([[0.2, 0.8, 0.6], [0.6, 0.4, 0.8], [0.6, 0.9, 0.8], [0.3, 0.4, 0.4]])
+        self.assertEqual([list(_) for _ in model.get_classes_from_proba(probas)], [[0, 1, 1], [1, 0, 1], [1, 1, 1], [0, 0, 0]])
+        remove_dir(model_dir)
 
     def test05_model_class_get_classes_from_proba(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass.get_classes_from_proba'''
@@ -238,7 +234,6 @@ class ModelClassTests(unittest.TestCase):
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
         y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
         y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0], 'test2': [1, 0, 0, 0, 0]})
-        cols = ['test1', 'test2']
 
         # Mono-label
         tfidf = TfidfVectorizer()
@@ -315,10 +310,7 @@ class ModelClassTests(unittest.TestCase):
         # Model creation
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
-        model_name = 'test'
-        x_col = 'test_x'
         y_col = 'test_y'
-        multi_label = True
 
         # inverse_transform - mono-label
         model = ModelClass(model_dir=model_dir, y_col=y_col, multi_label=False)
@@ -467,7 +459,6 @@ class ModelClassTests(unittest.TestCase):
         # Model creation
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
-        model_name = 'test'
         model = ModelClass(model_dir=model_dir)
         c_mat = [[10, 5], [8, 1]]
         expected_result = {'Accuracy': (10 + 1) / (10 + 5 + 8 + 1),
@@ -490,16 +481,28 @@ class ModelClassTests(unittest.TestCase):
         info_dict = model._update_info_from_c_mat(c_mat, label='toto', log_info=False)
         self.assertEqual(info_dict, expected_result)
 
-    def test12_model_class_save(self):
+    def test12_model_class_get_new_model_dir(self):
+        '''Test of the method {{package_name}}.models_training.model_class.ModelClass._get_new_model_dir'''
+
+        # Model creation
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_name = 'test'
+
+        # Nominal case
+        model = ModelClass(model_dir=model_dir, model_name=model_name)
+        expected_dir = os.path.join(utils.get_models_path(), model_name, f"{model_name}_")
+        res_dir = model._get_new_model_dir()
+        self.assertTrue(res_dir.startswith(expected_dir))
+        remove_dir(model_dir)
+
+    def test13_model_class_save(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass.save'''
 
         # Model creation
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
         model_name = 'test'
-        x_col = 'test_x'
-        y_col = 'test_y'
-        multi_label = True
 
         # test save
         model = ModelClass(model_dir=model_dir, model_name=model_name)
@@ -541,7 +544,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(configs['test'], 8)
         remove_dir(model_dir)
 
-    def test13_model_class_save_upload_properties(self):
+    def test14_model_class_save_upload_properties(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass._save_upload_properties'''
 
         # Model creation
@@ -655,21 +658,36 @@ class ModelClassTests(unittest.TestCase):
         self.assertFalse('autre_bruit' in properties.keys())
         remove_dir(model_dir)
 
-    def test14_model_class_get_new_model_dir(self):
-        '''Test of the method {{package_name}}.models_training.model_class.ModelClass._get_new_model_dir'''
+    def test15_model_class_load_model(self):
+        '''Test of the method {{package_name}}.models_training.model_class.ModelClass.load_model'''
 
         # Model creation
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
         model_name = 'test'
 
-        # Nominal case
+        # Create and save a model
         model = ModelClass(model_dir=model_dir, model_name=model_name)
-        expected_dir = os.path.join(utils.get_models_path(), model_name, f"{model_name}_")
-        res_dir = model._get_new_model_dir()
-        self.assertTrue(res_dir.startswith(expected_dir))
-        remove_dir(model_dir)
+        configuration_path = os.path.join(model.model_dir, 'configurations.json')
+        model.toto = 'titi'
+        model.save(json_data={'test': 8})
 
+        # Load it back
+        new_model, new_conf = ModelClass.load_model(model_dir)
+        self.assertEqual(new_model.toto, 'titi')
+        self.assertEqual(new_conf['test'], 8)
+
+        # Load it with != config_path
+        new_conf_dir = os.path.join(os.getcwd(), 'model_test_123456789', 'subdir')
+        new_conf_path = os.path.join(new_conf_dir, 'configurations.json')
+        os.makedirs(new_conf_dir)
+        shutil.move(configuration_path, new_conf_path)
+        new_model_2, new_conf_2 = ModelClass.load_model(model_dir, config_path=new_conf_path)
+        self.assertEqual(new_model_2.toto, 'titi')
+        self.assertEqual(new_conf_2['test'], 8)
+
+        # Clean
+        remove_dir(model_dir)
 
 # Perform tests
 if __name__ == '__main__':

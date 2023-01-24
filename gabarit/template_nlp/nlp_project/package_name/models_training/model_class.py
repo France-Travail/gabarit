@@ -843,9 +843,9 @@ class ModelClass:
 
         # Can't set int as keys in json, so need to cast it after reloading
         # dict_classes keys are always ints
-        if 'dict_classes' in configs.keys():
+        if 'dict_classes' in configs.keys() and configs['dict_classes'] is not None:
             configs['dict_classes'] = {int(i): col for i, col in configs['dict_classes'].items()}
-        elif 'list_classes' in configs.keys():
+        elif 'list_classes' in configs.keys() and configs['list_classes'] is not None:
             configs['dict_classes'] = {i: col for i, col in enumerate(configs['list_classes'])}
 
         # Return configs
