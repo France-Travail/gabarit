@@ -689,6 +689,113 @@ class ModelClassTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
+    def test16_model_class_load_configs(self):
+        '''Test of the method {{package_name}}.models_training.model_class.ModelClass.load_configs'''
+
+        # Model creation
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_name = 'test'
+
+        # Create and save a model
+        model = ModelClass(model_dir=model_dir, model_name=model_name)
+        model.dict_classes = {0: 'tata', 1: 'toto'}
+        model.list_classes = ['tata', 'toto']
+        configuration_path = os.path.join(model.model_dir, 'configurations.json')
+        model.save(json_data={'test': 8})
+
+        # Load configuration from model_dir
+        confs = ModelClass.load_configs(model_dir=model_dir)
+        self.assertEqual(confs['test'], 8)
+        self.assertEqual(confs['dict_classes'], model.dict_classes)
+        self.assertEqual(confs['list_classes'], model.list_classes)
+
+        # Load configuration from configuration path
+        confs = ModelClass.load_configs(config_path=configuration_path)
+        self.assertEqual(confs['test'], 8)
+        self.assertEqual(confs['dict_classes'], model.dict_classes)
+        self.assertEqual(confs['list_classes'], model.list_classes)
+
+        # Load conf, but with dict_classes & list_classes empty
+        model.dict_classes = None
+        model.list_classes = None
+        model.save(json_data={'test': 8})
+        confs = ModelClass.load_configs(model_dir=model_dir)
+        self.assertEqual(confs['test'], 8)
+        self.assertEqual(confs['dict_classes'], None)
+        self.assertEqual(confs['list_classes'], None)
+
+        # Manage errors
+        with self.assertRaises(ValueError):
+            ModelClass.load_configs()
+
+        # Clean
+        remove_dir(model_dir)
+
+    def test17_model_class_init_from_standalone_files(self):
+        '''Test of the method {{package_name}}.models_training.model_class.ModelClass.init_from_standalone_files'''
+
+        # Model creation
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_name = 'test'
+
+        # Create and save a model
+        model = ModelClass(model_dir=model_dir, model_name=model_name)
+        model.save(json_data={'test': 8})
+
+        # Manage errors
+        with self.assertRaises(ValueError):
+            ModelClass.init_from_standalone_files()
+        with self.assertRaises(NotImplementedError):
+            ModelClass.init_from_standalone_files(model_dir=model_dir)
+
+        # Clean
+        remove_dir(model_dir)
+
+    def test18_model_class_init_new_class_from_configs(self):
+        '''Test of the method {{package_name}}.models_training.model_class.ModelClass._init_new_class_from_configs'''
+        # Create a set of configurations
+        configs = {
+            'model_name': 'toto',
+            'model_dir': os.getcwd(),
+            'nb_fit': '25',
+            'trained': True,
+            'x_col': 'titi',
+            'y_col': 'tata',
+            'list_classes': ['tata', 'toto'],
+            'dict_classes': {0: 'tata', 1: 'toto'},
+            'multi_label': True,
+            'level_save': 'HIGH',
+        }
+
+        # Init new class from configuration path
+        model = ModelClass._init_new_class_from_configs(configs=configs)
+        self.assertNotEqual(model.model_name, configs['model_name'])
+        self.assertNotEqual(model.model_dir, configs['model_dir'])
+        self.assertEqual(model.nb_fit, configs['nb_fit'])
+        self.assertEqual(model.trained, configs['trained'])
+        self.assertEqual(model.x_col, configs['x_col'])
+        self.assertEqual(model.y_col, configs['y_col'])
+        self.assertEqual(model.list_classes, configs['list_classes'])
+        self.assertEqual(model.dict_classes, configs['dict_classes'])
+        self.assertEqual(model.multi_label, configs['multi_label'])
+        self.assertEqual(model.level_save, configs['level_save'])
+
+        # Load from empty configuration
+        model = ModelClass._init_new_class_from_configs(configs={})
+        self.assertNotEqual(model.model_name, None)
+        self.assertNotEqual(model.model_dir, None)
+        self.assertEqual(model.nb_fit, 1)
+        self.assertEqual(model.trained, True)
+        self.assertEqual(model.x_col, None)
+        self.assertEqual(model.y_col, None)
+        self.assertEqual(model.list_classes, None)
+        self.assertEqual(model.dict_classes, None)
+        self.assertNotEqual(model.multi_label, None)
+        self.assertNotEqual(model.level_save, None)
+
+
 # Perform tests
 if __name__ == '__main__':
     # Start tests
