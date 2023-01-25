@@ -23,7 +23,7 @@ Therefore, these frameworks act as project templates that you can use to generat
 
 Gabarit contains the following frameworks :
 
-### [**NLP**](/frameworks/NLP) 
+### [**NLP**](/gabarit/frameworks/NLP) 
 *To tackle classification use cases on textual data*
 
   -	Relies on the Words'n fun module for the preprocessing requirements
@@ -32,7 +32,7 @@ Gabarit contains the following frameworks :
       - [x] Multi Classes / Mono Label classification
       - [x] Mono Class / Multi Labels classification
 
-### [**Numeric**](/frameworks/NUM) 
+### [**Numeric**](/gabarit/frameworks/NUM) 
 *To tackle classification and regression use cases on numerical data*
 
   - Supports :
@@ -40,7 +40,7 @@ Gabarit contains the following frameworks :
     - [x] Multi Classes / Mono Label classification
     - [x] Mono Class / Multi Labels classification
 
-### [**Computer Vision**](/frameworks/VISION) 
+### [**Computer Vision**](/gabarit/frameworks/VISION) 
 *To tackle classification use cases on images*
 
   - Supports
@@ -48,7 +48,7 @@ Gabarit contains the following frameworks :
     - [x] Multi Classes / Mono Label classification
     - [x] Area of interest detection
 
-### [**API**](/frameworks/API) 
+### [**API**](/gabarit/frameworks/API) 
 *Provides a [FastAPI](https://fastapi.tiangolo.com/) for exposing your model to the world*
 
   - Supports
