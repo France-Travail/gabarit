@@ -668,16 +668,16 @@ class ModelHuggingFace(ModelClass):
         # Return the new model
         return model
 
-    def _load_standalone_files(self, default_model_dir: Union[str, None] = None, hf_model_dir: Union[str, None] = None,
-                               hf_tokenizer_dir: Union[str, None] = None, *args, **kwargs):
+    def _load_standalone_files(self, default_model_dir: Union[str, None] = None, hf_model_dir_path: Union[str, None] = None,
+                               hf_tokenizer_dir_path: Union[str, None] = None, *args, **kwargs):
         '''Loads standalone files for a newly created model via _init_new_instance_from_configs
 
         Kwargs:
             default_model_dir (str): a path to look for default file paths
                                      If None, standalone files path should all be provided
-            hf_model_dir (str): path to HF model directory.
+            hf_model_dir_path (str): path to HF model directory.
                                 If None, we'll use the default path if default_model_dir is not None
-            hf_tokenizer_dir (str): path to HF tokenizer directory.
+            hf_tokenizer_dir_path (str): path to HF tokenizer directory.
                                     If None, we'll use the default path if default_model_dir is not None
         Raises:
             ValueError: If at least one path is not specified and can't be inferred
@@ -685,30 +685,30 @@ class ModelHuggingFace(ModelClass):
             FileNotFoundError: If the HF tokenizer directory does not exist
         '''
         # Check if we are able to get all needed paths
-        if default_model_dir is None and None in [hf_model_dir, hf_tokenizer_dir]:
+        if default_model_dir is None and None in [hf_model_dir_path, hf_tokenizer_dir_path]:
             raise ValueError("At least one path is not specified and can't be inferred")
 
         # Retrieve file paths
-        if hf_model_dir is None:
-            hf_model_dir = os.path.join(default_model_dir, "hf_model")
-        if hf_tokenizer_dir is None:
-            hf_tokenizer_dir = os.path.join(default_model_dir, "hf_tokenizer")
+        if hf_model_dir_path is None:
+            hf_model_dir_path = os.path.join(default_model_dir, "hf_model")
+        if hf_tokenizer_dir_path is None:
+            hf_tokenizer_dir_path = os.path.join(default_model_dir, "hf_tokenizer")
 
         # Check paths exists
-        if not os.path.isdir(hf_model_dir):
-            raise FileNotFoundError(f"Can't find HF model directory ({hf_model_dir})")
-        if not os.path.isdir(hf_tokenizer_dir):
-            raise FileNotFoundError(f"Can't find HF tokenizer directory ({hf_tokenizer_dir})")
+        if not os.path.isdir(hf_model_dir_path):
+            raise FileNotFoundError(f"Can't find HF model directory ({hf_model_dir_path})")
+        if not os.path.isdir(hf_tokenizer_dir_path):
+            raise FileNotFoundError(f"Can't find HF tokenizer directory ({hf_tokenizer_dir_path})")
 
         # Reload model & tokenizer
-        self.model = self._get_model(hf_model_dir)
-        self.tokenizer = self._get_tokenizer(hf_tokenizer_dir)
+        self.model = self._get_model(hf_model_dir_path)
+        self.tokenizer = self._get_tokenizer(hf_tokenizer_dir_path)
 
         # Save hf folders in new folder (as this is skipped in save function)
-        new_hf_model_dir = os.path.join(self.model_dir, 'hf_model')
-        new_hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
-        shutil.copytree(hf_model_dir, new_hf_model_dir)
-        shutil.copytree(hf_tokenizer_dir, new_hf_tokenizer_dir)
+        new_hf_model_dir_path = os.path.join(self.model_dir, 'hf_model')
+        new_hf_tokenizer_dir_path = os.path.join(self.model_dir, 'hf_tokenizer')
+        shutil.copytree(hf_model_dir_path, new_hf_model_dir_path)
+        shutil.copytree(hf_tokenizer_dir_path, new_hf_tokenizer_dir_path)
 
     def _is_gpu_activated(self) -> bool:
         '''Checks if a GPU is used

@@ -27,7 +27,6 @@ import argparse
 from {{package_name}} import utils
 from {{package_name}}.preprocessing import preprocess
 from {{package_name}}.models_training import (
-    utils_models,
     model_aggregation,
     model_huggingface,
 )
@@ -43,8 +42,7 @@ from {{package_name}}.models_training.models_tensorflow import (
     model_embedding_lstm_attention,
     model_embedding_lstm_structured_attention,
     model_embedding_lstm_gru,
-    model_tfidf_dense,
-    utils_deep_keras,
+    model_tfidf_dense
 )
 
 # Get logger
