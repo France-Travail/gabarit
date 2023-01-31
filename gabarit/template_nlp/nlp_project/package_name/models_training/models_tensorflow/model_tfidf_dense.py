@@ -172,7 +172,7 @@ class ModelTfidfDense(ModelKeras):
 
     def _load_standalone_files(self, default_model_dir: Union[str, None] = None,  # type: ignore
                                tfidf_path: Union[str, None] = None, *args, **kwargs):
-        '''Loads standalone files for a newly created model via _init_new_class_from_configs
+        '''Loads standalone files for a newly created model via _init_new_instance_from_configs
 
         Kwargs:
             default_model_dir (str): a path to look for default file paths

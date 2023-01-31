@@ -54,7 +54,7 @@ class ModelClass:
 
     # Probably need to be overridden, depending on your model :
     # -> save (specific save instructions)
-    # -> _init_new_class_from_configs (loads model attributes - for a newly created model)
+    # -> _init_new_instance_from_configs (loads model attributes - for a newly created model)
     # -> _hook_post_load_model_pkl (post pkl load function, e.g. load weights from an HDF5 file)
     # -> _is_gpu_activated (specific instruction to know if a gpu is used)
 
@@ -892,7 +892,7 @@ class ModelClass:
         configs = cls.load_configs(model_dir=model_dir, config_path=config_path)
 
         # Init model from configurations
-        model = cls._init_new_class_from_configs(configs)
+        model = cls._init_new_instance_from_configs(configs)
 
         # Load standalone files
         model._load_standalone_files(default_model_dir=model_dir, **kwargs)
@@ -904,8 +904,8 @@ class ModelClass:
         return model, configs
 
     @classmethod
-    def _init_new_class_from_configs(cls, configs) -> Any:
-        '''Inits a new class from a set of configurations
+    def _init_new_instance_from_configs(cls, configs) -> Any:
+        '''Inits a new instance from a set of configurations
 
         Args:
             configs: a set of configurations of a model to be reloaded
@@ -928,7 +928,7 @@ class ModelClass:
         return model
 
     def _load_standalone_files(self, default_model_dir: Union[str, None] = None, *args, **kwargs):
-        '''Loads standalone files for a newly created model via _init_new_class_from_configs
+        '''Loads standalone files for a newly created model via _init_new_instance_from_configs
 
         Kwargs:
             default_model_dir (str): a path to look for default file paths

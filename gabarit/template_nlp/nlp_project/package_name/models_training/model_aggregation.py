@@ -427,8 +427,8 @@ class ModelAggregation(ModelClass):
             self.aggregation_function = pickle.load(f)
 
     @classmethod
-    def _init_new_class_from_configs(cls, configs):
-        '''Inits a new class from a set of configurations
+    def _init_new_instance_from_configs(cls, configs):
+        '''Inits a new instance from a set of configurations
 
         Args:
             configs: a set of configurations of a model to be reloaded
@@ -436,7 +436,7 @@ class ModelAggregation(ModelClass):
             ModelClass: the newly generated class
         '''
         # Call parent
-        model = super()._init_new_class_from_configs(configs)
+        model = super()._init_new_instance_from_configs(configs)
 
         # Add attributes
         model.sub_models = configs.get('list_models_name', [])  # Transforms the list into a list of dictionnaries [{'name': xxx, 'model': xxx,}, ...]
@@ -449,7 +449,7 @@ class ModelAggregation(ModelClass):
 
     def _load_standalone_files(self, default_model_dir: Union[str, None] = None,
                                aggregation_function_path: Union[str, None] = None, *args, **kwargs):
-        '''Loads standalone files for a newly created model via _init_new_class_from_configs
+        '''Loads standalone files for a newly created model via _init_new_instance_from_configs
 
         Kwargs:
             default_model_dir (str): a path to look for default file paths

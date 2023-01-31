@@ -122,8 +122,8 @@ class ModelTfidfLgbm(ModelPipeline):
         super().save(json_data=json_data)
 
     @classmethod
-    def _init_new_class_from_configs(cls, configs):
-        '''Inits a new class from a set of configurations
+    def _init_new_instance_from_configs(cls, configs):
+        '''Inits a new instance from a set of configurations
 
         Args:
             configs: a set of configurations of a model to be reloaded
@@ -131,7 +131,7 @@ class ModelTfidfLgbm(ModelPipeline):
             ModelClass: the newly generated class
         '''
         # Call parent
-        model = super()._init_new_class_from_configs(configs)
+        model = super()._init_new_instance_from_configs(configs)
 
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['multiclass_strategy']:
@@ -141,7 +141,7 @@ class ModelTfidfLgbm(ModelPipeline):
         return model
 
     def _load_standalone_files(self, default_model_dir: Union[str, None] = None, *args, **kwargs):
-        '''Loads standalone files for a newly created model via _init_new_class_from_configs
+        '''Loads standalone files for a newly created model via _init_new_instance_from_configs
 
         Kwargs:
             default_model_dir (str): a path to look for default file paths

@@ -40,7 +40,7 @@ class ModelPipeline(ModelClass):
     # Probably need to be overridden, depending on your model :
     # -> predict_proba (predict on new content - returns probas) -> some pipelines do not provide proba, or may have specificities
     # -> save (specific save instructions)
-    # -> _init_new_class_from_configs (loads model attributes - for a newly created model)
+    # -> _init_new_instance_from_configs (loads model attributes - for a newly created model)
     # -> _load_standalone_files (loads standalone files - for a newly created model) -> add pipeline elements
 
     def __init__(self, pipeline: Union[Pipeline, None] = None, **kwargs) -> None:
@@ -184,7 +184,7 @@ class ModelPipeline(ModelClass):
 
     def _load_standalone_files(self, default_model_dir: Union[str, None] = None,
                                sklearn_pipeline_path: Union[str, None] = None, *args, **kwargs):
-        '''Loads standalone files for a newly created model via _init_new_class_from_configs
+        '''Loads standalone files for a newly created model via _init_new_instance_from_configs
 
         Kwargs:
             default_model_dir (str): a path to look for default file paths

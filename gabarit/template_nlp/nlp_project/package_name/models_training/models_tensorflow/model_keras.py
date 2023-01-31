@@ -63,7 +63,7 @@ class ModelKeras(ModelClass):
     # Probably need to be overridden, depending on your model :
     # -> predict_proba (predict on new content - returns probas) -> some pipelines do not provide proba, or may have specificities
     # -> save (specific save instructions)
-    # -> _init_new_class_from_configs (loads model attributes - for a newly created model)
+    # -> _init_new_instance_from_configs (loads model attributes - for a newly created model)
     # -> _load_standalone_files (loads standalone files - for a newly created model) -> add pipeline elements
 
     def __init__(self, batch_size: int = 64, epochs: int = 99, validation_split: float = 0.2, patience: int = 5,
@@ -668,8 +668,8 @@ class ModelKeras(ModelClass):
         self.model = self._reload_weights(hdf5_path)
 
     @classmethod
-    def _init_new_class_from_configs(cls, configs):
-        '''Inits a new class from a set of configurations
+    def _init_new_instance_from_configs(cls, configs):
+        '''Inits a new instance from a set of configurations
 
         Args:
             configs: a set of configurations of a model to be reloaded
@@ -677,7 +677,7 @@ class ModelKeras(ModelClass):
             ModelClass: the newly generated class
         '''
         # Call parent
-        model = super()._init_new_class_from_configs(configs)
+        model = super()._init_new_instance_from_configs(configs)
 
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['batch_size', 'epochs', 'validation_split', 'patience',
@@ -689,7 +689,7 @@ class ModelKeras(ModelClass):
 
     def _load_standalone_files(self, default_model_dir: Union[str, None] = None,
                                hdf5_path: Union[str, None] = None, *args, **kwargs):
-        '''Loads standalone files for a newly created model via _init_new_class_from_configs
+        '''Loads standalone files for a newly created model via _init_new_instance_from_configs
 
         Kwargs:
             default_model_dir (str): a path to look for default file paths

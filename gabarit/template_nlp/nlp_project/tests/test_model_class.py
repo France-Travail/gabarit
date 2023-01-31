@@ -753,8 +753,8 @@ class ModelClassTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test18_model_class_init_new_class_from_configs(self):
-        '''Test of the method {{package_name}}.models_training.model_class.ModelClass._init_new_class_from_configs'''
+    def test18_model_class_init_new_instance_from_configs(self):
+        '''Test of the method {{package_name}}.models_training.model_class.ModelClass._init_new_instance_from_configs'''
         # Create a set of configurations
         configs = {
             'model_name': 'toto',
@@ -770,7 +770,7 @@ class ModelClassTests(unittest.TestCase):
         }
 
         # Init new class from configuration path
-        model = ModelClass._init_new_class_from_configs(configs=configs)
+        model = ModelClass._init_new_instance_from_configs(configs=configs)
         self.assertNotEqual(model.model_name, configs['model_name'])
         self.assertNotEqual(model.model_dir, configs['model_dir'])
         self.assertEqual(model.nb_fit, configs['nb_fit'])
@@ -783,7 +783,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.level_save, configs['level_save'])
 
         # Load from empty configuration
-        model = ModelClass._init_new_class_from_configs(configs={})
+        model = ModelClass._init_new_instance_from_configs(configs={})
         self.assertNotEqual(model.model_name, None)
         self.assertNotEqual(model.model_dir, None)
         self.assertEqual(model.nb_fit, 1)
