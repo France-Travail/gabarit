@@ -393,7 +393,7 @@ class ModelAggregation(ModelClass):
         # Add message in model_upload_instructions.md
         md_path = os.path.join(self.model_dir, f"model_upload_instructions.md")
         line = "/!\\/!\\/!\\/!\\/!\\   The aggregation model is a special model, please ensure that all sub-models and the aggregation model are manually saved together in order to be able to load it .  /!\\/!\\/!\\/!\\/!\\ \n"
-        self.prepend_line(md_path, line)
+        self._prepend_line(md_path, line)
 
     @staticmethod
     def _prepend_line(file_name: str, line: str) -> None:
@@ -408,6 +408,23 @@ class ModelAggregation(ModelClass):
             lines.insert(0, line)
             f.seek(0)
             f.writelines(lines)
+
+    def _hook_post_load_model_pkl(self):
+        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)
+
+        Raises:
+            FileNotFoundError: If the aggregation_function file does not exist
+        '''
+        # Path
+        aggregation_function_path = os.path.join(self.model_dir, "aggregation_function.pkl")
+
+        # Manage errors
+        if not os.path.isfile(aggregation_function_path):
+            raise FileNotFoundError(f"Can't find aggregation_function file ({aggregation_function_path})")
+
+        # Reload aggregation function
+        with open(aggregation_function_path, 'rb') as f:
+            self.aggregation_function = pickle.load(f)
 
     @classmethod
     def _init_new_class_from_configs(cls, configs):

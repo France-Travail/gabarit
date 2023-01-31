@@ -24,10 +24,10 @@ import os
 import re
 import time
 import json
-import dill as pickle
 import logging
 import numpy as np
 import pandas as pd
+import dill as pickle
 import seaborn as sns
 from datetime import datetime
 import matplotlib.pyplot as plt
@@ -723,7 +723,7 @@ class ModelClass:
         # Save configuration JSON
         json_dict = {
             'maintainers': 'Agence DataServices',
-            'gabarit_version': '{{gabarit_version}}'
+            'gabarit_version': '{{gabarit_version}}',
             'date': datetime.now().strftime("%d/%m/%Y - %H:%M:%S"),  # Not the same as the folder's name
             'package_version': utils.get_package_version(),
             'model_name': self.model_name,
@@ -860,7 +860,7 @@ class ModelClass:
         '''Init. a new model from a config file and standalone files.
 
         The main purpose of this function is to be able to use an old model trained with an old version which is not
-        anymore unpicklable.
+        unpicklable anymore.
         We should be able to recreate a new class object as this library tries to save all infos in a configuration file,
         and all models / tokenizers / etc. in standalone files.
 
