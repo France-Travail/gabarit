@@ -742,7 +742,23 @@ class ModelClassTests(unittest.TestCase):
 
         # Create and save a model
         model = ModelClass(model_dir=model_dir, model_name=model_name)
+        model.x_col = 'coucou_x_col'
+        model.dict_classes = {0: 'tata', 1: 'toto'}
+        model.list_classes = ['tata', 'toto']
+        model.trained = True
+        model.nb_fit = 3
         model.save(json_data={'test': 8})
+
+        with patch.object(ModelClass, '_load_standalone_files', return_value=None):
+            new_model, confs = ModelClass.init_from_standalone_files(model_dir=model_dir)
+            self.assertEqual(new_model.x_col, 'coucou_x_col')
+            self.assertEqual(confs['test'], 8)
+            self.assertEqual(confs['dict_classes'], model.dict_classes)
+            self.assertEqual(confs['list_classes'], model.list_classes)
+            self.assertEqual(new_model.dict_classes, model.dict_classes)
+            self.assertEqual(new_model.list_classes, model.list_classes)
+            self.assertEqual(new_model.nb_fit, 3)
+            self.assertTrue(new_model.trained)
 
         # Manage errors
         with self.assertRaises(ValueError):
