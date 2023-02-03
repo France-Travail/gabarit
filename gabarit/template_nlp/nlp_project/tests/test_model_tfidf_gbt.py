@@ -448,16 +448,20 @@ class ModelTfidfGbtTests(unittest.TestCase):
         model.save(json_data={'test': 8})
 
         new_model = ModelTfidfGbt(model_dir=new_model_dir)
-        tfidf = new_model.pipeline['tfidf']
-        gbt = new_model.pipeline['gbt']
+        tfidf = new_model.tfidf
+        gbt = new_model.gbt
         self.assertEqual(tfidf.ngram_range, (1, 1))
         self.assertAlmostEqual(tfidf.max_df, 1.0)
         self.assertEqual(tfidf.min_df, 1)
         self.assertAlmostEqual(gbt.learning_rate, 0.1)
         self.assertEqual(gbt.n_estimators, 100)
+        # First load the model configurations
+        configs = ModelTfidfGbt.load_configs(model_dir=model_dir)
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'multiclass_strategy']:
+            setattr(new_model, attribute, configs.get(attribute, getattr(new_model, attribute)))
         new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
-        tfidf = new_model.pipeline['tfidf']
-        gbt = new_model.pipeline['gbt']
+        tfidf = new_model.tfidf
+        gbt = new_model.gbt
         self.assertEqual(tfidf.ngram_range, (2, 2))
         self.assertAlmostEqual(tfidf.max_df, 0.9)
         self.assertEqual(tfidf.min_df, 2)
@@ -475,16 +479,20 @@ class ModelTfidfGbtTests(unittest.TestCase):
         model.save(json_data={'test': 8})
 
         new_model = ModelTfidfGbt(model_dir=new_model_dir)
-        tfidf = new_model.pipeline['tfidf']
-        gbt = new_model.pipeline['gbt']
+        tfidf = new_model.tfidf
+        gbt = new_model.gbt
         self.assertEqual(tfidf.ngram_range, (1, 1))
         self.assertAlmostEqual(tfidf.max_df, 1.0)
         self.assertEqual(tfidf.min_df, 1)
         self.assertAlmostEqual(gbt.learning_rate, 0.1)
         self.assertEqual(gbt.n_estimators, 100)
+        # First load the model configurations
+        configs = ModelTfidfGbt.load_configs(model_dir=model_dir)
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'multiclass_strategy']:
+            setattr(new_model, attribute, configs.get(attribute, getattr(new_model, attribute)))
         new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
-        tfidf = new_model.pipeline['tfidf']
-        gbt = new_model.pipeline['gbt'].estimator
+        tfidf = new_model.tfidf
+        gbt = new_model.gbt
         self.assertEqual(tfidf.ngram_range, (2, 2))
         self.assertAlmostEqual(tfidf.max_df, 0.9)
         self.assertEqual(tfidf.min_df, 2)
