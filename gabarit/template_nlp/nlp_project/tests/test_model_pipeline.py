@@ -25,6 +25,7 @@ import json
 import shutil
 import numpy as np
 import pandas as pd
+import dill as pickle
 
 from sklearn.svm import LinearSVC
 from sklearn.pipeline import Pipeline
@@ -279,6 +280,10 @@ class ModelPipelineTests(unittest.TestCase):
         # Specific model used
         self.assertTrue('tfidf_confs' in configs.keys())
         self.assertTrue('rf_confs' in configs.keys())
+        with open(os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl"), 'rb') as pickle_file:
+            loaded_pipeline = pickle.load(pickle_file)
+        self.assertTrue(isinstance(loaded_pipeline[0], TfidfVectorizer))
+        self.assertTrue(isinstance(loaded_pipeline[1], RandomForestClassifier))
         remove_dir(model_dir)
 
         # Without Pipeline
@@ -338,6 +343,52 @@ class ModelPipelineTests(unittest.TestCase):
         # Specific model used
         self.assertTrue('tfidf_confs' in configs.keys())
         self.assertTrue('rf_confs' in configs.keys())
+        remove_dir(model_dir)
+
+    def test06_model_pipeline_load_standalone_files(self):
+        '''Test of the method _load_standalone_files of {{package_name}}.models_training.models_sklearn.model_pipeline.ModelPipeline'''
+        
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        new_model_dir = os.path.join(os.getcwd(), 'model_test_987654321')
+        remove_dir(new_model_dir)
+
+        # With Pipeline
+        tfidf = TfidfVectorizer()
+        rf = RandomForestClassifier(n_estimators=10)
+        pipeline = Pipeline([('tfidf', tfidf), ('rf', rf)])
+        model = ModelPipeline(model_dir=model_dir, pipeline=pipeline)
+        sklearn_pipeline_path = os.path.join(model_dir, "sklearn_pipeline_standalone.pkl")
+        
+        # Check errors
+        with self.assertRaises(ValueError):
+            model._load_standalone_files()
+        with self.assertRaises(FileNotFoundError):
+            model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
+        with self.assertRaises(FileNotFoundError):
+            model._load_standalone_files(sklearn_pipeline_path=model_dir)
+
+        # Save model
+        model.save(json_data={'test': 8})
+
+        # Reload it with a pipeline path
+        new_model = ModelPipeline(model_dir=new_model_dir)
+        self.assertTrue(new_model.pipeline is None)
+        new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
+        self.assertEqual(len(new_model.pipeline), 2)
+        self.assertTrue(isinstance(new_model.pipeline[0], TfidfVectorizer))
+        self.assertTrue(isinstance(new_model.pipeline[1], RandomForestClassifier))
+        remove_dir(new_model_dir)
+
+        # Reload it from a default_model_dir
+        new_model = ModelPipeline(model_dir=new_model_dir)
+        self.assertTrue(new_model.pipeline is None)
+        new_model._load_standalone_files(default_model_dir=model_dir)
+        self.assertEqual(len(new_model.pipeline), 2)
+        self.assertTrue(isinstance(new_model.pipeline[0], TfidfVectorizer))
+        self.assertTrue(isinstance(new_model.pipeline[1], RandomForestClassifier))
+        remove_dir(new_model_dir)
+
         remove_dir(model_dir)
 
 
