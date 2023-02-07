@@ -37,6 +37,7 @@ from tensorflow.keras.preprocessing.sequence import pad_sequences
 from {{package_name}} import utils
 from {{package_name}}.models_training.models_tensorflow import utils_deep_keras
 from {{package_name}}.models_training.models_tensorflow.model_keras import ModelKeras
+from {{package_name}}.models_training.models_tensorflow.model_embedding_cnn import ModelEmbeddingCnn
 from {{package_name}}.models_training.models_tensorflow.model_embedding_lstm import ModelEmbeddingLstm
 
 # Disable logging
@@ -77,6 +78,13 @@ class ModelKerasTests(unittest.TestCase):
         fake_path = os.path.join(data_path, 'fake_embedding.pkl')
         if os.path.exists(fake_path):
             os.remove(fake_path)
+
+    def check_weights_equality(self, model_1, model_2):
+        self.assertEqual(len(model_1.model.weights), len(model_2.model.weights))
+        for layer_nb in range(len(model_1.model.weights)):
+            self.assertEqual(model_1.model.weights[layer_nb].numpy().shape, model_2.model.weights[layer_nb].numpy().shape)
+        for layer_nb, x1, x2, x3 in [(1, 0, 0, 0), (7, 1, 2, 3)]:
+            self.assertAlmostEqual(model_1.model.weights[layer_nb].numpy()[x1, x2, x3], model_2.model.weights[layer_nb].numpy()[x1, x2, x3])
 
     def test01_model_keras_init(self):
         '''Test of the initialization of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
@@ -685,33 +693,195 @@ class ModelKerasTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test09_model_keras_reload_model(self):
-        '''Test of the method reload_model of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
+    def test09_model_keras_hook_post_load_model_pkl(self):
+        '''Test of the method _hook_post_load_model_pkl of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        new_model_dir = os.path.join(os.getcwd(), 'model_test_987654321')
+        remove_dir(new_model_dir)
 
+        old_hdf5_path = os.path.join(model_dir, 'best.hdf5')
+        new_hdf5_path = os.path.join(new_model_dir, 'best.hdf5')
+
+        # Nominal case
+        model = ModelEmbeddingCnn(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
+        model.list_classes = ['class_1', 'class_2']
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+
+        new_model = ModelKeras(model_dir=new_model_dir, embedding_name='fake_embedding.pkl')
+        shutil.copyfile(old_hdf5_path, new_hdf5_path)
+        self.assertTrue(new_model.model is None)
+        new_model._hook_post_load_model_pkl()
+        self.check_weights_equality(model, new_model)
+
+        remove_dir(new_model_dir)
+
+        # Error
+        new_model = ModelKeras(model_dir=new_model_dir, embedding_name='fake_embedding.pkl')
+        self.assertTrue(new_model.model is None)
+        with self.assertRaises(FileNotFoundError):
+            new_model._hook_post_load_model_pkl()
+
+        remove_dir(new_model_dir)
+        remove_dir(model_dir)
+
+    def test10_model_keras_init_new_instance_from_configs(self):
+        '''Test of the method _init_new_instance_from_configs of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
-        # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
-        y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
-        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
 
-        # We test with a model embedding LSTM
-        model = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                   max_sequence_length=10, max_words=100,
-                                   embedding_name='fake_embedding.pkl')
-        model.fit(x_train, y_train_mono)
-        model.save()
+        # Nominal case
+        model = ModelKeras(model_dir=model_dir)
+        model.save(json_data={'test': 8})
+        configs = model.load_configs(model_dir=model_dir)
 
-        # Reload keras
-        hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
-        reloaded_model = model.reload_model(hdf5_path)
-        self.assertEqual([list(_) for _ in reloaded_model.predict(model._prepare_x_test(['test', 'toto', 'titi']))], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
+        new_model = ModelKeras._init_new_instance_from_configs(configs=configs)
+        self.assertTrue(isinstance(new_model, ModelKeras))
+        self.assertEqual(new_model.nb_fit, 0)
+        self.assertFalse(new_model.trained)
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
+                          'validation_split', 'patience', 'embedding_name', 'keras_params']:
+            self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
 
-        # Test without custom_objects
-        model.custom_objects = None
-        reloaded_model = model.reload_model(hdf5_path)
-        self.assertEqual([list(_) for _ in reloaded_model.predict(model._prepare_x_test(['test', 'toto', 'titi']))], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
+        # Check by changing some attributes
+        model = ModelKeras(model_dir=model_dir)
+        model.nb_fit = 2
+        model.trained = True
+        model.x_col = 'coucou'
+        model.y_col = 'coucou_2'
+        model.list_classes = ['class_1', 'class_2', 'class_3']
+        model.dict_classes = {0: 'class_1', 1: 'class_2', 2: 'class_3'}
+        model.multi_label = True
+        model.level_save = 'MEDIUM'
+        model.batch_size = 13
+        model.epochs = 42
+        model.validation_split = 0.3
+        model.patience = 15
+        model.embedding_name = 'coucou_embedding'
+        model.keras_params = {'coucou':1, 'coucou2': 0.3, 'coucou3':'coucou4'}
+        model.save(json_data={'test': 8})
+        configs = model.load_configs(model_dir=model_dir)
+
+        new_model = ModelKeras._init_new_instance_from_configs(configs=configs)
+        self.assertTrue(isinstance(new_model, ModelKeras))
+        self.assertEqual(new_model.nb_fit, 2)
+        self.assertTrue(new_model.trained)
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
+                          'patience', 'embedding_name']:
+            self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+        for attribute in ['validation_split']:
+            self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
+        self.assertEqual(set(model.keras_params), set(new_model.keras_params))
+        self.assertEqual(model.keras_params['coucou'], new_model.keras_params['coucou'])
+        self.assertAlmostEqual(model.keras_params['coucou2'], new_model.keras_params['coucou2'])
+        self.assertEqual(model.keras_params['coucou3'], new_model.keras_params['coucou3'])
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+    
+    def test11_model_keras_load_standalone_files(self):
+        '''Test of the method _load_standalone_files of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        new_model_dir = os.path.join(os.getcwd(), 'model_test_987654321')
+        remove_dir(new_model_dir)
+
+        old_hdf5_path = os.path.join(model_dir, 'best.hdf5')
+        
+
+        # Nominal case with default_model_dir
+        model = ModelEmbeddingCnn(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
+        model.list_classes = ['class_1', 'class_2']
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelKeras._init_new_instance_from_configs(configs=configs)
+        new_hdf5_path = os.path.join(new_model.model_dir, 'best.hdf5')
+        new_model._load_standalone_files(default_model_dir=model_dir)
+        self.assertTrue(os.path.exists(new_hdf5_path))
+        self.check_weights_equality(model, new_model)
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        # Nominal case with hdf5_path
+        model = ModelEmbeddingCnn(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
+        model.list_classes = ['class_1', 'class_2']
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelKeras._init_new_instance_from_configs(configs=configs)
+        new_hdf5_path = os.path.join(new_model.model_dir, 'best.hdf5')
+        new_model._load_standalone_files(hdf5_path=old_hdf5_path)
+        self.assertTrue(os.path.exists(new_hdf5_path))
+        self.check_weights_equality(model, new_model)
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        # Errors
+        # Nominal case with hdf5_path
+        model = ModelEmbeddingCnn(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
+        model.list_classes = ['class_1', 'class_2']
+        model.model = model._get_model()
+        model.save(json_data={'test': 8})
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelKeras._init_new_instance_from_configs(configs=configs)
+        with self.assertRaises(ValueError):
+            new_model._load_standalone_files()
+        with self.assertRaises(FileNotFoundError):
+            new_model._load_standalone_files(hdf5_path=old_hdf5_path)
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+    def test12_model_keras_reload_weights(self):
+        '''Test of the method _reload_weights of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        new_model_dir = os.path.join(os.getcwd(), 'model_test_987654321')
+        remove_dir(new_model_dir)
+        old_hdf5_path = os.path.join(model_dir, 'best.hdf5')
+
+        model = ModelEmbeddingCnn(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
+        model.list_classes = ['class_1', 'class_2']
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
+
+        # Nominal case
+        new_model = ModelKeras(model_dir=new_model_dir)
+        new_model.model = new_model._reload_weights(old_hdf5_path)
+        self.check_weights_equality(model, new_model)
+        remove_dir(new_model_dir)
+
+        # with custom_objects at None
+        new_model = ModelKeras(model_dir=new_model_dir)
+        new_model.custom_objects = None
+        new_model.model = new_model._reload_weights(old_hdf5_path)
+        self.check_weights_equality(model, new_model)
+        remove_dir(new_model_dir)
+
+        # without custom_objects at None
+        new_model = ModelKeras(model_dir=new_model_dir)
+        del new_model.__dict__['custom_objects']
+        new_model.model = new_model._reload_weights(old_hdf5_path)
+        self.check_weights_equality(model, new_model)
+        remove_dir(new_model_dir)
 
         remove_dir(model_dir)
 
