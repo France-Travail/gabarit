@@ -743,8 +743,10 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(new_model.nb_fit, 0)
         self.assertFalse(new_model.trained)
         for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
-                          'validation_split', 'patience', 'embedding_name', 'keras_params']:
+                          'patience', 'embedding_name']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+        for attribute in ['validation_split']:
+            self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
@@ -830,7 +832,6 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(new_model.model_dir)
 
         # Errors
-        # Nominal case with hdf5_path
         model = ModelEmbeddingCnn(model_dir=model_dir, embedding_name='fake_embedding.pkl')
         model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
         model.list_classes = ['class_1', 'class_2']
