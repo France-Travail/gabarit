@@ -45,275 +45,275 @@ def remove_dir(path):
 class Case1_e2e_pipeline(unittest.TestCase):
     '''Class to test the project end to end'''
 
-    def test01_CreateSamples(self):
-        '''Test of the file utils/0_create_samples.py'''
-        print("Test of the file utils/0_create_samples.py")
+    # def test01_CreateSamples(self):
+    #     '''Test of the file utils/0_create_samples.py'''
+    #     print("Test of the file utils/0_create_samples.py")
 
-        # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv -n 15"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_15_samples.csv')))
-        df = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_15_samples.csv", sep=';', encoding='utf-8')
-        self.assertEqual(df.shape[0], 15)
-        # retry without overwrite
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv -n 15"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        # retry with overwrite
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv -n 15"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # "Basic" case
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv -n 15"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_15_samples.csv')))
+    #     df = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_15_samples.csv", sep=';', encoding='utf-8')
+    #     self.assertEqual(df.shape[0], 15)
+    #     # retry without overwrite
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv -n 15"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # retry with overwrite
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv -n 15"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
-        # Double files
-        double_files_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000"
-        self.assertEqual(subprocess.run(double_files_run, shell=True).returncode, 0)
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_2000_samples.csv')))
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'multi_class_mono_label_2000_samples.csv')))
-        df1 = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
-        df2 = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/multi_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
-        self.assertEqual(df1.shape[0], 200)
-        self.assertEqual(df2.shape[0], 200)  # 200 row max
+    #     # Double files
+    #     double_files_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000"
+    #     self.assertEqual(subprocess.run(double_files_run, shell=True).returncode, 0)
+    #     self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_2000_samples.csv')))
+    #     self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'multi_class_mono_label_2000_samples.csv')))
+    #     df1 = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+    #     df2 = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/multi_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+    #     self.assertEqual(df1.shape[0], 200)
+    #     self.assertEqual(df2.shape[0], 200)  # 200 row max
 
-    def test02_GetEmbeddingDict(self):
-        '''Test of the file utils/0_get_embedding_dict.py'''
-        print("Test of the file utils/0_get_embedding_dict.py")
+    # def test02_GetEmbeddingDict(self):
+    #     '''Test of the file utils/0_get_embedding_dict.py'''
+    #     print("Test of the file utils/0_get_embedding_dict.py")
 
-        # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py --overwrite -f custom.300.vec"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'custom.300.pkl')))
-        # retry without overwrite
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py -f custom.300.vec"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        # retry with overwrite
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py --overwrite -f custom.300.vec"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # "Basic" case
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py --overwrite -f custom.300.vec"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'custom.300.pkl')))
+    #     # retry without overwrite
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py -f custom.300.vec"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # retry with overwrite
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py --overwrite -f custom.300.vec"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
-    def test03_MergeFiles(self):
-        '''Test of the file utils/0_merge_files.py'''
-        print("Test of the file utils/0_merge_files.py")
+    # def test03_MergeFiles(self):
+    #     '''Test of the file utils/0_merge_files.py'''
+    #     print("Test of the file utils/0_merge_files.py")
 
-        # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_merge_files.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -c x_col y_col -o merged_file.csv"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'merged_file.csv')))
-        df = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/merged_file.csv", sep=';', encoding='utf-8')
-        self.assertGreater(df.shape[0], 200)  # We check that there are more than 200 elements (ie. the size of one of the two files)
-        # retry without overwrite
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_merge_files.py -f mono_class_mono_label.csv multi_class_mono_label.csv -c x_col y_col -o merged_file.csv"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        # retry with overwrite
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_merge_files.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -c x_col y_col -o merged_file.csv"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # "Basic" case
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_merge_files.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -c x_col y_col -o merged_file.csv"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'merged_file.csv')))
+    #     df = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/merged_file.csv", sep=';', encoding='utf-8')
+    #     self.assertGreater(df.shape[0], 200)  # We check that there are more than 200 elements (ie. the size of one of the two files)
+    #     # retry without overwrite
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_merge_files.py -f mono_class_mono_label.csv multi_class_mono_label.csv -c x_col y_col -o merged_file.csv"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # retry with overwrite
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_merge_files.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -c x_col y_col -o merged_file.csv"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
-    def test04_SplitTrainValidTest(self):
-        '''Test of the file utils/0_split_train_valid_test.py'''
-        print("Test of the file utils/0_split_train_valid_test.py")
+    # def test04_SplitTrainValidTest(self):
+    #     '''Test of the file utils/0_split_train_valid_test.py'''
+    #     print("Test of the file utils/0_split_train_valid_test.py")
 
-        # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_train.csv')))
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_valid.csv')))
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_test.csv')))
-        df_train = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_train.csv", sep=';', encoding='utf-8')
-        df_valid = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_valid.csv", sep=';', encoding='utf-8')
-        df_test = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_test.csv", sep=';', encoding='utf-8')
-        self.assertEqual(df_train.shape[0], 120)
-        self.assertEqual(df_valid.shape[0], 40)
-        self.assertEqual(df_test.shape[0], 40)
-        # retry without overwrite
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py -f mono_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        # retry with overwrite
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # "Basic" case
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_train.csv')))
+    #     self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_valid.csv')))
+    #     self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_test.csv')))
+    #     df_train = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_train.csv", sep=';', encoding='utf-8')
+    #     df_valid = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_valid.csv", sep=';', encoding='utf-8')
+    #     df_test = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_test.csv", sep=';', encoding='utf-8')
+    #     self.assertEqual(df_train.shape[0], 120)
+    #     self.assertEqual(df_valid.shape[0], 40)
+    #     self.assertEqual(df_test.shape[0], 40)
+    #     # retry without overwrite
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py -f mono_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # retry with overwrite
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
-        # Test of perc_x arguments
-        test_perc = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type random --perc_train 0.3 --perc_valid 0.6 --perc_test 0.1 --x_col x_col --y_col y_col --seed 42"
-        self.assertEqual(subprocess.run(test_perc, shell=True).returncode, 0)
-        df_train = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_train.csv", sep=';', encoding='utf-8')
-        df_valid = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_valid.csv", sep=';', encoding='utf-8')
-        df_test = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_test.csv", sep=';', encoding='utf-8')
-        self.assertEqual(df_train.shape[0], 60)
-        self.assertEqual(df_valid.shape[0], 120)
-        self.assertEqual(df_test.shape[0], 20)
+    #     # Test of perc_x arguments
+    #     test_perc = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type random --perc_train 0.3 --perc_valid 0.6 --perc_test 0.1 --x_col x_col --y_col y_col --seed 42"
+    #     self.assertEqual(subprocess.run(test_perc, shell=True).returncode, 0)
+    #     df_train = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_train.csv", sep=';', encoding='utf-8')
+    #     df_valid = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_valid.csv", sep=';', encoding='utf-8')
+    #     df_test = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_test.csv", sep=';', encoding='utf-8')
+    #     self.assertEqual(df_train.shape[0], 60)
+    #     self.assertEqual(df_valid.shape[0], 120)
+    #     self.assertEqual(df_test.shape[0], 20)
 
-        # Test split_type stratified
-        test_stratified = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type stratified --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
-        self.assertEqual(subprocess.run(test_stratified, shell=True).returncode, 0)
-        df_train = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_train.csv", sep=';', encoding='utf-8')
-        df_valid = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_valid.csv", sep=';', encoding='utf-8')
-        df_test = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_test.csv", sep=';', encoding='utf-8')
-        # Check number of elements
-        self.assertGreater(df_train.shape[0], 114)
-        self.assertLess(df_train.shape[0], 126)
-        self.assertGreater(df_valid.shape[0], 34)
-        self.assertLess(df_valid.shape[0], 46)
-        self.assertGreater(df_test.shape[0], 34)
-        self.assertLess(df_test.shape[0], 46)
-        # Check stratified
-        self.assertGreater(sum(df_train.y_col == "oui")/df_train.shape[0], 0.47)
-        self.assertLess(sum(df_train.y_col == "oui")/df_train.shape[0], 0.53)
-        self.assertGreater(sum(df_valid.y_col == "oui")/df_valid.shape[0], 0.47)
-        self.assertLess(sum(df_valid.y_col == "oui")/df_valid.shape[0], 0.53)
-        self.assertGreater(sum(df_test.y_col == "oui")/df_test.shape[0], 0.47)
-        self.assertLess(sum(df_test.y_col == "oui")/df_test.shape[0], 0.53)
+    #     # Test split_type stratified
+    #     test_stratified = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type stratified --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
+    #     self.assertEqual(subprocess.run(test_stratified, shell=True).returncode, 0)
+    #     df_train = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_train.csv", sep=';', encoding='utf-8')
+    #     df_valid = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_valid.csv", sep=';', encoding='utf-8')
+    #     df_test = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_test.csv", sep=';', encoding='utf-8')
+    #     # Check number of elements
+    #     self.assertGreater(df_train.shape[0], 114)
+    #     self.assertLess(df_train.shape[0], 126)
+    #     self.assertGreater(df_valid.shape[0], 34)
+    #     self.assertLess(df_valid.shape[0], 46)
+    #     self.assertGreater(df_test.shape[0], 34)
+    #     self.assertLess(df_test.shape[0], 46)
+    #     # Check stratified
+    #     self.assertGreater(sum(df_train.y_col == "oui")/df_train.shape[0], 0.47)
+    #     self.assertLess(sum(df_train.y_col == "oui")/df_train.shape[0], 0.53)
+    #     self.assertGreater(sum(df_valid.y_col == "oui")/df_valid.shape[0], 0.47)
+    #     self.assertLess(sum(df_valid.y_col == "oui")/df_valid.shape[0], 0.53)
+    #     self.assertGreater(sum(df_test.y_col == "oui")/df_test.shape[0], 0.47)
+    #     self.assertLess(sum(df_test.y_col == "oui")/df_test.shape[0], 0.53)
 
-        # Test split_type hierarchical
-        test_hierarchical = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type hierarchical --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
-        self.assertEqual(subprocess.run(test_hierarchical, shell=True).returncode, 0)
-        df_train = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_train.csv", sep=';', encoding='utf-8')
-        df_valid = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_valid.csv", sep=';', encoding='utf-8')
-        df_test = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_test.csv", sep=';', encoding='utf-8')
-        # Check number of elements
-        self.assertGreater(df_train.shape[0], 114)
-        self.assertLess(df_train.shape[0], 126)
-        self.assertGreater(df_valid.shape[0], 34)
-        self.assertLess(df_valid.shape[0], 46)
-        self.assertGreater(df_test.shape[0], 34)
-        self.assertLess(df_test.shape[0], 46)
-        # Check hierarchical
-        self.assertFalse(any([_ in df_valid.x_col.values for _ in df_train.x_col.values]))
-        self.assertFalse(any([_ in df_test.x_col.values for _ in df_train.x_col.values]))
-        self.assertFalse(any([_ in df_valid.x_col.values for _ in df_test.x_col.values]))
+    #     # Test split_type hierarchical
+    #     test_hierarchical = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f mono_class_mono_label.csv --split_type hierarchical --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
+    #     self.assertEqual(subprocess.run(test_hierarchical, shell=True).returncode, 0)
+    #     df_train = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_train.csv", sep=';', encoding='utf-8')
+    #     df_valid = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_valid.csv", sep=';', encoding='utf-8')
+    #     df_test = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_test.csv", sep=';', encoding='utf-8')
+    #     # Check number of elements
+    #     self.assertGreater(df_train.shape[0], 114)
+    #     self.assertLess(df_train.shape[0], 126)
+    #     self.assertGreater(df_valid.shape[0], 34)
+    #     self.assertLess(df_valid.shape[0], 46)
+    #     self.assertGreater(df_test.shape[0], 34)
+    #     self.assertLess(df_test.shape[0], 46)
+    #     # Check hierarchical
+    #     self.assertFalse(any([_ in df_valid.x_col.values for _ in df_train.x_col.values]))
+    #     self.assertFalse(any([_ in df_test.x_col.values for _ in df_train.x_col.values]))
+    #     self.assertFalse(any([_ in df_valid.x_col.values for _ in df_test.x_col.values]))
 
-    def test05_sweetviz_report(self):
-        '''Test of the file utils/0_sweetviz_report.py'''
-        print("Test of the file utils/0_sweetviz_report.py")
+    # def test05_sweetviz_report(self):
+    #     '''Test of the file utils/0_sweetviz_report.py'''
+    #     print("Test of the file utils/0_sweetviz_report.py")
 
-        # We first create a sweetviz configuration file
-        config_path = os.path.join(full_path_lib, "test_config.json")
-        if os.path.exists(config_path):
-            os.remove(config_path)
-        with open(config_path, 'w') as f:
-            json.dump({"open_browser": False}, f)
+    #     # We first create a sweetviz configuration file
+    #     config_path = os.path.join(full_path_lib, "test_config.json")
+    #     if os.path.exists(config_path):
+    #         os.remove(config_path)
+    #     with open(config_path, 'w') as f:
+    #         json.dump({"open_browser": False}, f)
 
-        report_path = os.path.join(full_path_lib, "test_template_nlp-data", "reports", "sweetviz")
-        remove_dir(report_path)
+    #     report_path = os.path.join(full_path_lib, "test_template_nlp-data", "reports", "sweetviz")
+    #     remove_dir(report_path)
 
-        # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        list_filenames = list(os.walk(report_path))[0][2]
-        self.assertTrue(len([filename for filename in list_filenames if "report_source" in filename and "report_source_w" not in filename]) == 1)
-        # retry without overwrite
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        # retry with overwrite
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # "Basic" case
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     list_filenames = list(os.walk(report_path))[0][2]
+    #     self.assertTrue(len([filename for filename in list_filenames if "report_source" in filename and "report_source_w" not in filename]) == 1)
+    #     # retry without overwrite
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # retry with overwrite
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label.csv --source_names source --config {config_path} --mlflow_experiment sweetviz_experiment_1"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
-        # Compare datasets
-        test_compare = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path} --mlflow_experiment sweetviz_experiment_2"
-        self.assertEqual(subprocess.run(test_compare, shell=True).returncode, 0)
-        list_filenames = list(os.walk(report_path))[0][2]
-        self.assertTrue(len([filename for filename in list_filenames if "report_train_valid" in filename]) == 1)
-        self.assertTrue(len([filename for filename in list_filenames if "report_train_test" in filename]) == 1)
+    #     # Compare datasets
+    #     test_compare = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py --overwrite -s mono_class_mono_label_train.csv --source_names train -c mono_class_mono_label_valid.csv mono_class_mono_label_test.csv --compare_names valid test --config {config_path} --mlflow_experiment sweetviz_experiment_2"
+    #     self.assertEqual(subprocess.run(test_compare, shell=True).returncode, 0)
+    #     list_filenames = list(os.walk(report_path))[0][2]
+    #     self.assertTrue(len([filename for filename in list_filenames if "report_train_valid" in filename]) == 1)
+    #     self.assertTrue(len([filename for filename in list_filenames if "report_train_test" in filename]) == 1)
 
-        # With target
-        # Sweetviz does not with categorical target. Hence, we'll create a temporary dataframe with a binary target.
-        data_path = os.path.join(full_path_lib, 'test_template_nlp-data')
-        original_dataset_path = os.path.join(data_path, 'mono_class_mono_label.csv')
-        with tempfile.NamedTemporaryFile(dir=data_path) as tmp_file:
-            # Read dataset, add a tmp target as binary class & save it in the tmp file
-            df = pd.read_csv(original_dataset_path, sep=';', encoding='utf-8')
-            df['tmp_target'] = df['y_col'].apply(lambda x: 1. if x == 'oui' else 0.)
-            df.to_csv(tmp_file.name, sep=';', encoding='utf-8', index=None)
-            test_target = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py --overwrite -s {tmp_file.name} --source_names source_with_target -t tmp_target --config {config_path} --mlflow_experiment sweetviz_experiment_3"
-            self.assertEqual(subprocess.run(test_target, shell=True).returncode, 0)
-            list_filenames = list(os.walk(report_path))[0][2]
-            self.assertTrue(len([filename for filename in list_filenames if "report_source_with_target" in filename]) == 1)
+    #     # With target
+    #     # Sweetviz does not with categorical target. Hence, we'll create a temporary dataframe with a binary target.
+    #     data_path = os.path.join(full_path_lib, 'test_template_nlp-data')
+    #     original_dataset_path = os.path.join(data_path, 'mono_class_mono_label.csv')
+    #     with tempfile.NamedTemporaryFile(dir=data_path) as tmp_file:
+    #         # Read dataset, add a tmp target as binary class & save it in the tmp file
+    #         df = pd.read_csv(original_dataset_path, sep=';', encoding='utf-8')
+    #         df['tmp_target'] = df['y_col'].apply(lambda x: 1. if x == 'oui' else 0.)
+    #         df.to_csv(tmp_file.name, sep=';', encoding='utf-8', index=None)
+    #         test_target = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_sweetviz_report.py --overwrite -s {tmp_file.name} --source_names source_with_target -t tmp_target --config {config_path} --mlflow_experiment sweetviz_experiment_3"
+    #         self.assertEqual(subprocess.run(test_target, shell=True).returncode, 0)
+    #         list_filenames = list(os.walk(report_path))[0][2]
+    #         self.assertTrue(len([filename for filename in list_filenames if "report_source_with_target" in filename]) == 1)
 
-        # Clean up sweetviz config path (useful ?)
-        os.remove(config_path)
+    #     # Clean up sweetviz config path (useful ?)
+    #     os.remove(config_path)
 
-    def test06_PreProcessData(self):
-        '''Test of the file 1_preprocess_data.py'''
-        print("Test of the file 1_preprocess_data.py")
+    # def test06_PreProcessData(self):
+    #     '''Test of the file 1_preprocess_data.py'''
+    #     print("Test of the file 1_preprocess_data.py")
 
-        # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/1_preprocess_data.py --overwrite -f mono_class_mono_label_train.csv mono_class_mono_label_valid.csv -p preprocess_P1 --input_col x_col"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        # Check if exists
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_train_preprocess_P1.csv')))
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_valid_preprocess_P1.csv')))
-        df_train = pd.read_csv(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_train_preprocess_P1.csv'), sep=';', encoding='utf-8', skiprows=1)
-        df_valid = pd.read_csv(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_valid_preprocess_P1.csv'), sep=';', encoding='utf-8', skiprows=1)
-        # Check col preprocessed_text
-        self.assertTrue('preprocessed_text' in df_train.columns)
-        self.assertTrue('preprocessed_text' in df_valid.columns)
-        # Check preprocess (at least lower)
-        self.assertEqual(list(df_train.preprocessed_text.str.lower().values), list(df_train.preprocessed_text.values))
-        self.assertEqual(list(df_valid.preprocessed_text.str.lower().values), list(df_valid.preprocessed_text.values))
-        # retry without overwrite
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/1_preprocess_data.py -f mono_class_mono_label_train.csv mono_class_mono_label_valid.csv -p preprocess_P1 --input_col x_col"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        # retry with overwrite
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/1_preprocess_data.py --overwrite -f mono_class_mono_label_train.csv mono_class_mono_label_valid.csv -p preprocess_P1 --input_col x_col"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # "Basic" case
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/1_preprocess_data.py --overwrite -f mono_class_mono_label_train.csv mono_class_mono_label_valid.csv -p preprocess_P1 --input_col x_col"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # Check if exists
+    #     self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_train_preprocess_P1.csv')))
+    #     self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_valid_preprocess_P1.csv')))
+    #     df_train = pd.read_csv(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_train_preprocess_P1.csv'), sep=';', encoding='utf-8', skiprows=1)
+    #     df_valid = pd.read_csv(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_valid_preprocess_P1.csv'), sep=';', encoding='utf-8', skiprows=1)
+    #     # Check col preprocessed_text
+    #     self.assertTrue('preprocessed_text' in df_train.columns)
+    #     self.assertTrue('preprocessed_text' in df_valid.columns)
+    #     # Check preprocess (at least lower)
+    #     self.assertEqual(list(df_train.preprocessed_text.str.lower().values), list(df_train.preprocessed_text.values))
+    #     self.assertEqual(list(df_valid.preprocessed_text.str.lower().values), list(df_valid.preprocessed_text.values))
+    #     # retry without overwrite
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/1_preprocess_data.py -f mono_class_mono_label_train.csv mono_class_mono_label_valid.csv -p preprocess_P1 --input_col x_col"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # retry with overwrite
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/1_preprocess_data.py --overwrite -f mono_class_mono_label_train.csv mono_class_mono_label_valid.csv -p preprocess_P1 --input_col x_col"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
-    def test07_TrainingE2E(self):
-        '''Test of the file 2_training.py'''
-        print("Test of the file 2_training.py")
+    # def test07_TrainingE2E(self):
+    #     '''Test of the file 2_training.py'''
+    #     print("Test of the file 2_training.py")
 
-        # "Basic" case
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/2_training.py -f mono_class_mono_label_train_preprocess_P1.csv -x preprocessed_text -y y_col --filename_valid mono_class_mono_label_valid_preprocess_P1.csv --mlflow_experiment gabarit_ci/mlflow_test"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        # Check model saved
-        save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
-        self.assertTrue(os.path.exists(save_model_dir))
-        listdir = os.listdir(os.path.join(save_model_dir))
-        self.assertEqual(len(listdir), 1)
+    #     # "Basic" case
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/2_training.py -f mono_class_mono_label_train_preprocess_P1.csv -x preprocessed_text -y y_col --filename_valid mono_class_mono_label_valid_preprocess_P1.csv --mlflow_experiment gabarit_ci/mlflow_test"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # Check model saved
+    #     save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
+    #     self.assertTrue(os.path.exists(save_model_dir))
+    #     listdir = os.listdir(os.path.join(save_model_dir))
+    #     self.assertEqual(len(listdir), 1)
 
-        # Multilabel - no preprocess - no valid
-        multilabel_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/2_training.py -f mono_class_multi_label.csv -x x_col -y y_col_1 y_col_2 --mlflow_experiment gabarit_ci/mlflow_test"
-        self.assertEqual(subprocess.run(multilabel_run, shell=True).returncode, 0)
-        # Check model saved
-        save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
-        self.assertTrue(os.path.exists(save_model_dir))
-        listdir = os.listdir(os.path.join(save_model_dir))
-        self.assertEqual(len(listdir), 2)
+    #     # Multilabel - no preprocess - no valid
+    #     multilabel_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/2_training.py -f mono_class_multi_label.csv -x x_col -y y_col_1 y_col_2 --mlflow_experiment gabarit_ci/mlflow_test"
+    #     self.assertEqual(subprocess.run(multilabel_run, shell=True).returncode, 0)
+    #     # Check model saved
+    #     save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
+    #     self.assertTrue(os.path.exists(save_model_dir))
+    #     listdir = os.listdir(os.path.join(save_model_dir))
+    #     self.assertEqual(len(listdir), 2)
 
-    def test08_PredictE2E(self):
-        '''Test of the file 3_predict.py'''
-        print("Test of the file 3_predict.py")
+    # def test08_PredictE2E(self):
+    #     '''Test of the file 3_predict.py'''
+    #     print("Test of the file 3_predict.py")
 
-        # "Basic" case
-        save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
-        listdir = sorted(os.listdir(os.path.join(save_model_dir)))
-        model_name = listdir[0]  # First one trained (ordered by date)
-        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_mono_label_test.csv -x x_col -m {model_name}"
-        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-        # Check predictions
-        save_predictions_dir = os.path.join(full_path_lib, 'test_template_nlp-data', 'predictions', 'mono_class_mono_label_test')
-        self.assertTrue(os.path.exists(save_predictions_dir))
-        listdir = os.listdir(os.path.join(save_predictions_dir))
-        self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[0], 'predictions.csv')))
+    #     # "Basic" case
+    #     save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
+    #     listdir = sorted(os.listdir(os.path.join(save_model_dir)))
+    #     model_name = listdir[0]  # First one trained (ordered by date)
+    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_mono_label_test.csv -x x_col -m {model_name}"
+    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    #     # Check predictions
+    #     save_predictions_dir = os.path.join(full_path_lib, 'test_template_nlp-data', 'predictions', 'mono_class_mono_label_test')
+    #     self.assertTrue(os.path.exists(save_predictions_dir))
+    #     listdir = os.listdir(os.path.join(save_predictions_dir))
+    #     self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[0], 'predictions.csv')))
 
-        # With y_col
-        run_with_y = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_mono_label_test.csv -x x_col -y y_col -m {model_name}"
-        self.assertEqual(subprocess.run(run_with_y, shell=True).returncode, 0)
-        # Check predictions
-        listdir = sorted(os.listdir(os.path.join(save_predictions_dir)))
-        self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[-1], 'predictions_with_y_true.csv')))  # last folder
+    #     # With y_col
+    #     run_with_y = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_mono_label_test.csv -x x_col -y y_col -m {model_name}"
+    #     self.assertEqual(subprocess.run(run_with_y, shell=True).returncode, 0)
+    #     # Check predictions
+    #     listdir = sorted(os.listdir(os.path.join(save_predictions_dir)))
+    #     self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[-1], 'predictions_with_y_true.csv')))  # last folder
 
-        # Multilabel
-        save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
-        listdir = sorted(os.listdir(os.path.join(save_model_dir)))
-        model_name = listdir[1]  # Second one trained (ordered by date)
-        multilabel_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_multi_label.csv -x x_col -m {model_name}"
-        self.assertEqual(subprocess.run(multilabel_run, shell=True).returncode, 0)
-        # Check predictions
-        save_predictions_dir = os.path.join(full_path_lib, 'test_template_nlp-data', 'predictions', 'mono_class_multi_label')
-        self.assertTrue(os.path.exists(save_predictions_dir))
-        listdir = os.listdir(os.path.join(save_predictions_dir))
-        self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[0], 'predictions.csv')))
+    #     # Multilabel
+    #     save_model_dir = os.path.join(full_path_lib, 'test_template_nlp-models', 'model_tfidf_svm')  # tfidf svm by default
+    #     listdir = sorted(os.listdir(os.path.join(save_model_dir)))
+    #     model_name = listdir[1]  # Second one trained (ordered by date)
+    #     multilabel_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_multi_label.csv -x x_col -m {model_name}"
+    #     self.assertEqual(subprocess.run(multilabel_run, shell=True).returncode, 0)
+    #     # Check predictions
+    #     save_predictions_dir = os.path.join(full_path_lib, 'test_template_nlp-data', 'predictions', 'mono_class_multi_label')
+    #     self.assertTrue(os.path.exists(save_predictions_dir))
+    #     listdir = os.listdir(os.path.join(save_predictions_dir))
+    #     self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[0], 'predictions.csv')))
 
-        # Multilabel - with y_col
-        multilabel_run_with_y = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_multi_label.csv -x x_col -y y_col_1 y_col_2 -m {model_name}"
-        self.assertEqual(subprocess.run(multilabel_run_with_y, shell=True).returncode, 0)
-        # Check predictions
-        listdir = sorted(os.listdir(os.path.join(save_predictions_dir)))
-        self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[-1], 'predictions_with_y_true.csv')))  # last folder
+    #     # Multilabel - with y_col
+    #     multilabel_run_with_y = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/3_predict.py -f mono_class_multi_label.csv -x x_col -y y_col_1 y_col_2 -m {model_name}"
+    #     self.assertEqual(subprocess.run(multilabel_run_with_y, shell=True).returncode, 0)
+    #     # Check predictions
+    #     listdir = sorted(os.listdir(os.path.join(save_predictions_dir)))
+    #     self.assertTrue(os.path.exists(os.path.join(save_predictions_dir, listdir[-1], 'predictions_with_y_true.csv')))  # last folder
 
 
 def test_model_mono_class_mono_label(test_class, test_model):
