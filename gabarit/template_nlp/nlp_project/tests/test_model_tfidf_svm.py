@@ -477,7 +477,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
-    def test_08_model_tfidf_svm__load_standalone_files(self):
+    def test_08_model_tfidf_svm_load_standalone_files(self):
         '''Test of the method {{package_name}}.models_training.models_sklearn.model_tfidf_svm.ModelTfidfSvm._load_standalone_files'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)

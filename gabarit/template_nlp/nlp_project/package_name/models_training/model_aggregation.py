@@ -415,16 +415,23 @@ class ModelAggregation(ModelClass):
         Raises:
             FileNotFoundError: If the aggregation_function file does not exist
         '''
-        # Path
+        # Paths
         aggregation_function_path = os.path.join(self.model_dir, "aggregation_function.pkl")
+        configs_path = os.path.join(self.model_dir, 'configurations.json')
 
         # Manage errors
         if not os.path.isfile(aggregation_function_path):
             raise FileNotFoundError(f"Can't find aggregation_function file ({aggregation_function_path})")
+        if not os.path.isfile(configs_path):
+            raise FileNotFoundError(f"Can't find configuration file ({configs_path})")
 
         # Reload aggregation function
         with open(aggregation_function_path, 'rb') as f:
             self.aggregation_function = pickle.load(f)
+        
+        # Reload sub_models
+        configs = self.load_configs(config_path=configs_path)
+        self.sub_models = configs['list_models_name']
 
     @classmethod
     def _init_new_instance_from_configs(cls, configs):

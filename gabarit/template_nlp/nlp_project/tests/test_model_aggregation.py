@@ -23,6 +23,7 @@ import json
 import shutil
 import numpy as np
 import pandas as pd
+import dill as pickle
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.models_sklearn.model_tfidf_svm import ModelTfidfSvm
@@ -1072,7 +1073,7 @@ class ModelAggregationTests(unittest.TestCase):
         remove_dir(model_dir)
 
     def test16_model_aggregation_prepend_line(self):
-        '''Test of {{package_name}}.models_training.model_aggregation.ModelAaggregation.prepend_line'''
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation._prepend_line'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -1083,143 +1084,212 @@ class ModelAggregationTests(unittest.TestCase):
             f.write('toto')
         with open(path, 'r') as f:
             self.assertTrue(f.read() == 'toto')
-        model.prepend_line(path, 'titi\n')
+        model._prepend_line(path, 'titi\n')
         with open(path, 'r') as f:
             self.assertTrue(f.read() == 'titi\ntoto')
         remove_dir(model_dir)
 
-    def test17_model_aggregation_reload_from_standalone(self):
-        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation.reload_from_standalone'''
+    def test17_model_aggregation_hook_post_load_model_pkl(self):
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation._hook_post_load_model_pkl'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        model_new_dir = os.path.join(os.getcwd(), 'model_new_test_123456789')
         remove_dir(model_dir)
-        remove_dir(model_new_dir)
 
-        #######################
-        #  mono_label
-        #######################
+        # Basic case with several different aggregation function
+        for multi_label, aggregation_function in [(False, 'majority_vote'), (False, 'proba_argmax'),
+                                                  (True, 'all_predictions'), (True, 'vote_labels')]:
+            sub_model_1 = ModelTfidfSvm(multi_label=multi_label)
+            sub_model_2 = ModelTfidfSvm(multi_label=multi_label)
+            model = ModelAggregation(list_models=[sub_model_1, sub_model_2], model_dir=model_dir,
+                                     multi_label=multi_label, aggregation_function=aggregation_function)
+            model.save()
+            with open(os.path.join(model_dir, f'{model.model_name}.pkl'), 'rb') as f:
+                new_model = pickle.load(f)
+            self.assertTrue(new_model.aggregation_function is None)
+            self.assertTrue(new_model.sub_models is None)
+            new_model._hook_post_load_model_pkl()
+            self.assertEqual(new_model.aggregation_function.__name__, model.aggregation_function.__name__)
+            self.assertEqual([sub_model['name'] for sub_model in new_model.sub_models],
+                             [os.path.split(sub_model_1.model_dir)[-1], os.path.split(sub_model_2.model_dir)[-1]])
+            remove_dir(model_dir)
+            remove_dir(sub_model_1.model_dir)
+            remove_dir(sub_model_2.model_dir)
 
-        # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ici test", "là, rien!"])
-        y_train_mono = np.array([0, 1, 0, 1, 2])
-
-        # Create model
-        svm, gbt, _, _ = self.create_svm_gbt()
-        model = ModelAggregation(model_dir=model_dir, list_models=[svm, gbt])
-        model.fit(x_train, y_train_mono)
+        # Basic case with a custom aggregation function
+        def test_aggregation_function(predictions, **kwargs):
+            return 'coucou'
+        sub_model_1 = ModelTfidfSvm()
+        sub_model_2 = ModelTfidfSvm()
+        model = ModelAggregation(list_models=[sub_model_1, sub_model_2], model_dir=model_dir,
+                                 aggregation_function=test_aggregation_function)
         model.save()
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"aggregation_function.pkl")))
-
-        # Reload
-        conf_path = os.path.join(model.model_dir, "configurations.json")
-        aggregation_function_path = os.path.join(model.model_dir, "aggregation_function.pkl")
-        model_new = ModelAggregation(model_dir=model_new_dir)
-        model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path=aggregation_function_path)
-
-        # Test
-        for attribute in ['trained', 'nb_fit', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'using_proba']:
-            self.assertEqual(getattr(model, attribute), getattr(model_new, attribute))
-
-        for sub_model, new_sub_model in zip(model.sub_models, model_new.sub_models):
-            self.assertTrue(isinstance(sub_model['name'], type(new_sub_model['name'])))
-            self.assertTrue(isinstance(sub_model['model'], type(new_sub_model['model'])))
-        self.assertEqual(model.aggregation_function.__code__.co_code, model_new.aggregation_function.__code__.co_code)
-
-        preds = model.predict(x_test)
-        preds_proba = model.predict_proba(x_test)
-        new_preds = model_new.predict(x_test)
-        new_preds_proba = model_new.predict_proba(x_test)
-        for pred, new_pred in zip(preds, new_preds):
-            self.assertEqual(pred, new_pred)
-        for pred_proba, new_pred_proba in zip(preds_proba, new_preds_proba):
-            for proba_value, new_proba_value in zip(pred_proba, new_pred_proba):
-                self.assertAlmostEqual(proba_value, new_proba_value)
-
-        for sub_model in model.sub_models:
-            remove_dir(os.path.join(models_path, os.path.split(sub_model['model'].model_dir)[-1]))
-        for sub_model in model_new.sub_models:
-            remove_dir(os.path.join(models_path, os.path.split(sub_model['model'].model_dir)[-1]))
+        with open(os.path.join(model_dir, f'{model.model_name}.pkl'), 'rb') as f:
+            new_model = pickle.load(f)
+        self.assertTrue(new_model.aggregation_function is None)
+        self.assertTrue(new_model.sub_models is None)
+        new_model._hook_post_load_model_pkl()
+        self.assertEqual(new_model.aggregation_function(''), 'coucou')
+        self.assertEqual([sub_model['name'] for sub_model in new_model.sub_models],
+                             [os.path.split(sub_model_1.model_dir)[-1], os.path.split(sub_model_2.model_dir)[-1]])
         remove_dir(model_dir)
-        remove_dir(model_new_dir)
+        remove_dir(sub_model_1.model_dir)
+        remove_dir(sub_model_2.model_dir)
 
-        #######################
-        #  multi_label
-        #######################
-
-        # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
-        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0], 'test2': [1, 0, 0, 0, 0], 'test3': [0, 0, 0, 1, 0]})
-
-        # Create model
-        svm, gbt, _, _ = self.create_svm_gbt(svm_param={'multi_label': True}, gbt_param={'multi_label': True})
-        model = ModelAggregation(model_dir=model_dir, list_models=[svm, gbt], aggregation_function='all_predictions', multi_label=True)
-        model.fit(x_train, y_train_multi)
-        model.save()
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, f"aggregation_function.pkl")))
-
-        # Reload
-        conf_path = os.path.join(model.model_dir, "configurations.json")
-        aggregation_function_path = os.path.join(model.model_dir, "aggregation_function.pkl")
-        model_new = ModelAggregation(model_dir=model_new_dir)
-        model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path=aggregation_function_path)
-
-        # Test
-        for attribute in ['trained', 'nb_fit', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'using_proba']:
-            self.assertEqual(getattr(model, attribute), getattr(model_new, attribute))
-
-        for sub_model, new_sub_model in zip(model.sub_models, model_new.sub_models):
-            self.assertTrue(isinstance(sub_model['name'], type(new_sub_model['name'])))
-            self.assertTrue(isinstance(sub_model['model'], type(new_sub_model['model'])))
-        self.assertEqual(model.aggregation_function.__code__.co_code, model_new.aggregation_function.__code__.co_code)
-
-        preds = model.predict(x_test)
-        preds_proba = model.predict_proba(x_test)
-        new_preds = model_new.predict(x_test)
-        new_preds_proba = model_new.predict_proba(x_test)
-        for pred, new_pred in zip(preds, new_preds):
-            for pred_value, new_pred_value in zip(pred, new_pred):
-                self.assertEqual(pred_value, new_pred_value)
-        for pred_proba, new_pred_proba in zip(preds_proba, new_preds_proba):
-            for proba_value, new_proba_value in zip(pred_proba, new_pred_proba):
-                self.assertAlmostEqual(proba_value, new_proba_value)
-
-        for sub_model in model.sub_models:
-            remove_dir(os.path.join(models_path, os.path.split(sub_model['model'].model_dir)[-1]))
-        for sub_model in model_new.sub_models:
-            remove_dir(os.path.join(models_path, os.path.split(sub_model['model'].model_dir)[-1]))
-        remove_dir(model_dir)
-        remove_dir(model_new_dir)
-
-        ############################################
         # Errors
-        ############################################
-
-        model_new = ModelAggregation(model_dir=model_new_dir)
+        model = ModelAggregation(model_dir=model_dir)
+        model.save()
+        os.remove(os.path.join(model_dir, 'aggregation_function.pkl'))
+        with open(os.path.join(model_dir, f'{model.model_name}.pkl'), 'rb') as f:
+            new_model = pickle.load(f)
         with self.assertRaises(FileNotFoundError):
-            model_new.reload_from_standalone(model_dir=model_dir, configuration_path='toto.json', aggregation_function_path=aggregation_function_path)
-        remove_dir(model_new.model_dir)
-        remove_dir(model_new_dir)
-        model_new = ModelAggregation(model_dir=model_new_dir)
-        with self.assertRaises(FileNotFoundError):
-            model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path, aggregation_function_path='toto.pkl')
-        remove_dir(model_new.model_dir)
-        remove_dir(model_new_dir)
-        model_new = ModelAggregation(model_dir=model_new_dir)
-        with self.assertRaises(ValueError):
-            model_new.reload_from_standalone(model_dir=model_dir, aggregation_function_path=aggregation_function_path)
-        remove_dir(model_new.model_dir)
-        remove_dir(model_new_dir)
-        model_new = ModelAggregation(model_dir=model_new_dir)
-        with self.assertRaises(ValueError):
-            model_new.reload_from_standalone(model_dir=model_dir, configuration_path=conf_path)
-        remove_dir(model_new.model_dir)
-        remove_dir(model_new_dir)
+            new_model._hook_post_load_model_pkl()
+        remove_dir(model_dir)  
 
+        model = ModelAggregation(model_dir=model_dir)
+        model.save()
+        os.remove(os.path.join(model_dir, 'configurations.json'))
+        with open(os.path.join(model_dir, f'{model.model_name}.pkl'), 'rb') as f:
+            new_model = pickle.load(f)
+        with self.assertRaises(FileNotFoundError):
+            new_model._hook_post_load_model_pkl()
+        remove_dir(model_dir)  
+
+
+    def test18_model_aggregation_init_new_instance_from_configs(self):
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation._init_new_instance_from_configs'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Nominal case
+        sub_model_1 = ModelTfidfSvm()
+        sub_model_2 = ModelTfidfSvm()
+        model = ModelAggregation( list_models=[sub_model_1, sub_model_2], model_dir=model_dir)
+        model.save(json_data={'test': 8})
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelAggregation._init_new_instance_from_configs(configs=configs)
+        self.assertTrue(isinstance(new_model, ModelAggregation))
+        self.assertEqual(new_model.nb_fit, 0)
+        self.assertFalse(new_model.trained)
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'using_proba']:
+            self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+        self.assertEqual([sub_model['name'] for sub_model in new_model.sub_models],
+                             [os.path.split(sub_model_1.model_dir)[-1], os.path.split(sub_model_2.model_dir)[-1]])
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+        remove_dir(sub_model_1.model_dir)
+        remove_dir(sub_model_2.model_dir)
+
+        # Check by changing some attributes
+        sub_model_1 = ModelTfidfSvm()
+        sub_model_1.save()
+        sub_model_2 = ModelTfidfSvm()
+        sub_model_2.save()
+        model = ModelAggregation(list_models=[os.path.split(sub_model_1.model_dir)[-1], os.path.split(sub_model_2.model_dir)[-1]],
+                                 model_dir=model_dir, using_proba=True, aggregation_function='proba_argmax')
+        model.nb_fit = 2
+        model.trained = True
+        model.x_col = 'coucou'
+        model.y_col = 'coucou_2'
+        model.list_classes = ['class_1', 'class_2', 'class_3']
+        model.dict_classes = {0: 'class_1', 1: 'class_2', 2: 'class_3'}
+        model.multi_label = True
+        model.level_save = 'MEDIUM'
+        model.save(json_data={'test': 8})
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelAggregation._init_new_instance_from_configs(configs=configs)
+        self.assertTrue(isinstance(new_model, ModelAggregation))
+        self.assertEqual(new_model.nb_fit, 2)
+        self.assertTrue(new_model.trained)
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'using_proba']:
+            self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+        self.assertEqual([sub_model['name'] for sub_model in new_model.sub_models],
+                             [os.path.split(sub_model_1.model_dir)[-1], os.path.split(sub_model_2.model_dir)[-1]])
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+        remove_dir(sub_model_1.model_dir)
+        remove_dir(sub_model_2.model_dir)
+
+    def test19_model_aggregation_load_standalone_files(self):
+        '''Test of {{package_name}}.models_training.model_aggregation.ModelAggregation._load_standalone_files'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Test for a registered aggregation_function with default_model_dir
+        for multi_label, aggregation_function in [(False, 'majority_vote'), (False, 'proba_argmax'),
+                                                  (True, 'all_predictions'), (True, 'vote_labels')]:
+            model = ModelAggregation(model_dir=model_dir, multi_label=multi_label,
+                                     aggregation_function=aggregation_function)
+            model.save()
+
+            configs = ModelAggregation.load_configs(model_dir=model_dir)
+            new_model = ModelAggregation._init_new_instance_from_configs(configs)
+            self.assertEqual(new_model.aggregation_function.__name__, 'majority_vote')
+            new_model._load_standalone_files(default_model_dir=model_dir)
+            self.assertEqual(new_model.aggregation_function.__name__, aggregation_function)
+            remove_dir(model_dir)
+            remove_dir(new_model.model_dir)
+
+        # Test for a custom aggregation_function with default_model_dir
+        def test_aggregation_function(predictions, **kwargs):
+            return 'coucou'
+        model = ModelAggregation(model_dir=model_dir, aggregation_function=test_aggregation_function)
+        model.save()
+
+        configs = ModelAggregation.load_configs(model_dir=model_dir)
+        new_model = ModelAggregation._init_new_instance_from_configs(configs)
+        self.assertEqual(new_model.aggregation_function.__name__, 'majority_vote')
+        new_model._load_standalone_files(default_model_dir=model_dir)
+        self.assertEqual(new_model.aggregation_function([]), 'coucou')
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+
+        aggregation_function_path = os.path.join(model_dir, 'aggregation_function.pkl')
+        # Test for a registered aggregation_function with aggregation_function path
+        for multi_label, aggregation_function in [(False, 'majority_vote'), (False, 'proba_argmax'),
+                                                  (True, 'all_predictions'), (True, 'vote_labels')]:
+            model = ModelAggregation(model_dir=model_dir, multi_label=multi_label,
+                                     aggregation_function=aggregation_function)
+            model.save()
+
+            configs = ModelAggregation.load_configs(model_dir=model_dir)
+            new_model = ModelAggregation._init_new_instance_from_configs(configs)
+            self.assertEqual(new_model.aggregation_function.__name__, 'majority_vote')
+            new_model._load_standalone_files(aggregation_function_path=aggregation_function_path)
+            self.assertEqual(new_model.aggregation_function.__name__, aggregation_function)
+            remove_dir(model_dir)
+            remove_dir(new_model.model_dir)
+
+        # Test for a custom aggregation_function with aggregation_function path
+        def test_aggregation_function(predictions, **kwargs):
+            return 'coucou'
+        model = ModelAggregation(model_dir=model_dir, aggregation_function=test_aggregation_function)
+        model.save()
+
+        configs = ModelAggregation.load_configs(model_dir=model_dir)
+        new_model = ModelAggregation._init_new_instance_from_configs(configs)
+        self.assertEqual(new_model.aggregation_function.__name__, 'majority_vote')
+        new_model._load_standalone_files(aggregation_function_path=aggregation_function_path)
+        self.assertEqual(new_model.aggregation_function([]), 'coucou')
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        # Errors
+        model = ModelAggregation(model_dir=model_dir, aggregation_function=test_aggregation_function)
+        model.save()
+        configs = ModelAggregation.load_configs(model_dir=model_dir)
+        new_model = ModelAggregation._init_new_instance_from_configs(configs)
+        with self.assertRaises(ValueError):
+            new_model._load_standalone_files()
+        with self.assertRaises(FileNotFoundError):
+            new_model._load_standalone_files(aggregation_function_path=os.path.join(model_dir, 'aggregation_function_2.pkl'))
+        os.remove(os.path.join(model_dir, 'aggregation_function.pkl'))
+        with self.assertRaises(FileNotFoundError):
+            new_model._load_standalone_files(default_model_dir=model_dir)
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
 
 # Perform tests
 if __name__ == '__main__':
