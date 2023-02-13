@@ -41,6 +41,18 @@ from test_template_nlp.models_training.models_tensorflow import (model_tfidf_den
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
+def test_reload_model(model_type, arguments):
+    model = model_type(**arguments)
+    x_train = ['coucou', 'coucou_1', 'coucou_2', 'coucou_3']
+    y_train = ['class_1', 'class_2', 'class_3', 'class_1']
+    x_valid = ['coucou_4', 'coucou_5', 'coucou_6', 'coucou_7']
+    y_valid = ['class_2', 'class_2', 'class_3', 'class_1']
+    model.fit(x_train=x_train, y_train=y_train, x_valid=x_valid, y_valid=y_valid)
+    model.save()
+
+    basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_reload_model.py -m {model.model.dir}"
+    self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+
 
 class Case1_e2e_pipeline(unittest.TestCase):
     '''Class to test the project end to end'''
@@ -103,6 +115,12 @@ class Case1_e2e_pipeline(unittest.TestCase):
     #     # retry with overwrite
     #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_merge_files.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -c x_col y_col -o merged_file.csv"
     #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+
+    def test04_ReloadModel(self):
+        '''Test of the file utils/0_reload_model.py'''
+        print("Test of the file utils/0_reload_model.py")
+
+        test_reload_model(model.tfidf_svm.ModelTfidfSvm, {})
 
     # def test05_SplitTrainValidTest(self):
     #     '''Test of the file utils/0_split_train_valid_test.py'''
