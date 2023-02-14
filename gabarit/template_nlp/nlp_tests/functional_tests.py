@@ -31,7 +31,7 @@ from pathlib import Path
 from datetime import datetime
 
 from test_template_nlp import utils
-from test_template_nlp.models_training import model_huggingface, model_aggregation
+from test_template_nlp.models_training import model_huggingface, model_aggregation, model_class
 from test_template_nlp.models_training.models_sklearn import (model_tfidf_svm, model_tfidf_gbt, model_tfidf_lgbm,
                                                               model_tfidf_sgdc)
 from test_template_nlp.models_training.models_tensorflow import (model_tfidf_dense, model_embedding_lstm, model_embedding_lstm_attention,
@@ -54,9 +54,15 @@ def test_reload_model(test_class, model_type, arguments):
     y_valid = ['class_2', 'class_2', 'class_3', 'class_1']
     model.fit(x_train=x_train, y_train=y_train, x_valid=x_valid, y_valid=y_valid)
     model.save()
+    model_name = os.path.split(model.model_dir)[1]
 
-    basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_reload_model.py -m {model.model_dir}"
+    basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_reload_model.py -m {model_name}"
     test_class.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+
+    # path_to_model = os.path.split(model.model_dir)[0]
+    # new_model_name = get_last_model_created(path_to_model)
+    # new_model_dir = os.path.join(path_to_model, new_model_name)
+    # new_model, new_conf = model_class.ModelClass.load_model(model_dir=new_model_dir)
 
 
 class Case1_e2e_pipeline(unittest.TestCase):
