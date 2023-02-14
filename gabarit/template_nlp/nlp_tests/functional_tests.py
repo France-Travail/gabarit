@@ -68,6 +68,7 @@ def test_reload_model(test_class, model_type, arguments):
     new_model_dir = os.path.join(path_to_model, new_model_name)
     new_model, new_conf = model_class.ModelClass.load_model(model_dir=new_model_dir)
     test_same_model_predictions(test_class, model, new_model, x_test)
+    test_class.assertNotEqual(model.model_dir, new_model.model_dir)
     return model, new_model
 
 
