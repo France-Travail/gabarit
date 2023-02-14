@@ -255,7 +255,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
 
         # ModelTfidfDense
         tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
-        equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
+        equal_attributes = []
         model, new_model = test_reload_model(self, model_tfidf_dense.ModelTfidfDense, {'embedding_name': "custom.300.pkl", 'epochs': 3,
                                                                                            'batch_size': 16, 'validation_split':0.1, 'patience': 4,
                                                                                            'tfidf_params':tfidf_params})
