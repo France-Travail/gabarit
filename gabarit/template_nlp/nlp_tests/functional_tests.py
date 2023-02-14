@@ -184,11 +184,14 @@ class Case1_e2e_pipeline(unittest.TestCase):
 
         # ModelTfidfSgdc
         tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
-        sgdc_params = {'loss': 'log_loss', 'penalty': 'l1', 'alpha': 0.0002, 'l1_ratio': 0.09}
+        sgdc_params = {'penalty': 'l1', 'alpha': 0.0002, 'l1_ratio': 0.09}
         model, new_model = test_reload_model(self, model_tfidf_sgdc.ModelTfidfSgdc, {'tfidf_params': tfidf_params, 'sgdc_params': sgdc_params})
         test_same_model_tfidf(self, model, new_model, 'sgdc', ['loss', 'penalty'], ['alpha', 'l1_ratio'])
         remove_dir(model.model_dir)
         remove_dir(new_model.model_dir)
+
+        # ModelEmbeddingCnn
+
 
     # def test05_SplitTrainValidTest(self):
     #     '''Test of the file utils/0_split_train_valid_test.py'''
