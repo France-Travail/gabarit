@@ -50,7 +50,7 @@ def test_reload_model(model_type, arguments):
     model.fit(x_train=x_train, y_train=y_train, x_valid=x_valid, y_valid=y_valid)
     model.save()
 
-    basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_reload_model.py -m {model.model.dir}"
+    basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_reload_model.py -m {model.model_dir}"
     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
 
