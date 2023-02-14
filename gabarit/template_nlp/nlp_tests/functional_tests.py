@@ -41,6 +41,7 @@ from test_template_nlp.models_training.models_tensorflow import (model_tfidf_den
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
+
 def get_last_model_created(path_to_folder):
     list_models = list(os.walk(path_to_folder))[0][1]
     list_models.sort()
@@ -162,24 +163,32 @@ class Case1_e2e_pipeline(unittest.TestCase):
         svc_params = {'penalty':'l2', 'loss':'hinge', 'C':0.9}
         model, new_model = test_reload_model(self, model_tfidf_svm.ModelTfidfSvm, {'tfidf_params': tfidf_params, 'svc_params': svc_params})
         test_same_model_tfidf(self, model, new_model, 'svc', ['penalty', 'loss', 'fit_intercept'], ['C'])
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
 
         # ModelTfidfGbt
         tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
         gbt_params = {'learning_rate':0.11, 'n_estimators':90, 'min_samples_split':3}
-        model, new_model = test_reload_model(self, model_tfidf_sgdc.ModelTfidfGbt, {'tfidf_params': tfidf_params, 'gbt_params': gbt_params})
+        model, new_model = test_reload_model(self, model_tfidf_gbt.ModelTfidfGbt, {'tfidf_params': tfidf_params, 'gbt_params': gbt_params})
         test_same_model_tfidf(self, model, new_model, 'gbt', ['n_estimators', 'min_samples_split'], ['learning_rate'])
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
 
         # ModelTfidfLgbm
         tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
         lgbm_params = {'num_leaves': 29, 'max_depth': 30, 'learning_rate': 0.11, 'n_estimators': 98, 'min_split_gain': 0.01}
         model, new_model = test_reload_model(self, model_tfidf_lgbm.ModelTfidfLgbm, {'tfidf_params': tfidf_params, 'lgbm_params': lgbm_params})
         test_same_model_tfidf(self, model, new_model, 'gbt', ['num_leaves', 'max_depth', 'n_estimators'], ['learning_rate', 'min_split_gain'])
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
 
         # ModelTfidfSgdc
         tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
         sgdc_params = {'loss': 'log_loss', 'penalty': 'l1', 'alpha': 0.0002, 'l1_ratio': 0.09}
         model, new_model = test_reload_model(self, model_tfidf_sgdc.ModelTfidfSgdc, {'tfidf_params': tfidf_params, 'sgdc_params': sgdc_params})
         test_same_model_tfidf(self, model, new_model, 'sgdc', ['loss', 'penalty'], ['alpha', 'l1_ratio'])
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
 
     # def test05_SplitTrainValidTest(self):
     #     '''Test of the file utils/0_split_train_valid_test.py'''
