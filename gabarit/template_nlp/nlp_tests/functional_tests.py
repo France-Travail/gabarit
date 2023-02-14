@@ -72,9 +72,9 @@ def test_reload_model(test_class, model_type, arguments):
 def test_same_model_tfidf(test_class, model, new_model, name_sub_model, model_equal_attributes, model_almost_equal_attributes):
     tfidf = model.tfidf
     new_tfidf = new_model.tfidf
-    for attribute in ['max_df', 'min_df']
+    for attribute in ['max_df', 'min_df']:
         test_class.assertAlmostEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
-    for attribute in ['ngram_range', 'norm']
+    for attribute in ['ngram_range', 'norm']:
         test_class.assertEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
     sub_model = getattr(model, name_sub_model)
     new_sub_model = getattr(new_model, name_sub_model)
@@ -157,7 +157,9 @@ class Case1_e2e_pipeline(unittest.TestCase):
         '''Test of the file utils/0_reload_model.py'''
         print("Test of the file utils/0_reload_model.py")
 
-        model, new_model = test_reload_model(self, model_tfidf_svm.ModelTfidfSvm, {})
+        tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
+        svc_params = {'penalty':'l2', 'loss':'hinge', 'C':0.9}
+        model, new_model = test_reload_model(self, model_tfidf_svm.ModelTfidfSvm, {'tfidf_params':tfidf_params, 'svc_params':svc_params})
         test_same_model_tfidf(self, model, new_model, 'svc', ['penalty', 'loss', 'fit_intercept'], ['C'])
 
 
