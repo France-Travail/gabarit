@@ -157,7 +157,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         '''Test of the file utils/0_reload_model.py'''
         print("Test of the file utils/0_reload_model.py")
 
-        model, new_model = test_reload_model(self, model_tfidf_svm.ModelTfidfSvm, {}, ['multi_label'], [])
+        model, new_model = test_reload_model(self, model_tfidf_svm.ModelTfidfSvm, {})
         test_same_model_tfidf(self, model, new_model, 'svc', ['penalty', 'loss', 'fit_intercept'], ['C'])
 
 
