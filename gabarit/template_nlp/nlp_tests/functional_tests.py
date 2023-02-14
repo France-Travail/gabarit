@@ -85,6 +85,13 @@ def test_same_model_tfidf(test_class, model, new_model, name_sub_model, model_eq
         test_class.assertAlmostEqual(getattr(sub_model, attribute), getattr(new_sub_model, attribute))
 
 
+def test_same_model_not_tfidf(test_class, model, new_model, equal_attributes, almost_equal_attributes):
+    for attribute in equal_attributes:
+        test_class.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+    for attribute in almost_equal_attributes:
+        test_class.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
+
+
 def test_same_model_predictions(test_class, model, new_model, x_test):
     test_class.assertEqual(type(model), type(new_model))
     model_list_predict = list(model.predict(x_test))
@@ -95,47 +102,47 @@ def test_same_model_predictions(test_class, model, new_model, x_test):
 class Case1_e2e_pipeline(unittest.TestCase):
     '''Class to test the project end to end'''
 
-    # def test01_CreateSamples(self):
-    #     '''Test of the file utils/0_create_samples.py'''
-    #     print("Test of the file utils/0_create_samples.py")
+    def test01_CreateSamples(self):
+        '''Test of the file utils/0_create_samples.py'''
+        print("Test of the file utils/0_create_samples.py")
 
-    #     # "Basic" case
-    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv -n 15"
-    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-    #     self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_15_samples.csv')))
-    #     df = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_15_samples.csv", sep=';', encoding='utf-8')
-    #     self.assertEqual(df.shape[0], 15)
-    #     # retry without overwrite
-    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv -n 15"
-    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-    #     # retry with overwrite
-    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv -n 15"
-    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        # "Basic" case
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv -n 15"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_15_samples.csv')))
+        df = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_15_samples.csv", sep=';', encoding='utf-8')
+        self.assertEqual(df.shape[0], 15)
+        # retry without overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py -f mono_class_mono_label.csv -n 15"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        # retry with overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv -n 15"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
-    #     # Double files
-    #     double_files_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000"
-    #     self.assertEqual(subprocess.run(double_files_run, shell=True).returncode, 0)
-    #     self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_2000_samples.csv')))
-    #     self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'multi_class_mono_label_2000_samples.csv')))
-    #     df1 = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
-    #     df2 = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/multi_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
-    #     self.assertEqual(df1.shape[0], 200)
-    #     self.assertEqual(df2.shape[0], 200)  # 200 row max
+        # Double files
+        double_files_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000"
+        self.assertEqual(subprocess.run(double_files_run, shell=True).returncode, 0)
+        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label_2000_samples.csv')))
+        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'multi_class_mono_label_2000_samples.csv')))
+        df1 = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        df2 = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/multi_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        self.assertEqual(df1.shape[0], 200)
+        self.assertEqual(df2.shape[0], 200)  # 200 row max
 
-    # def test02_GetEmbeddingDict(self):
-    #     '''Test of the file utils/0_get_embedding_dict.py'''
-    #     print("Test of the file utils/0_get_embedding_dict.py")
+    def test02_GetEmbeddingDict(self):
+        '''Test of the file utils/0_get_embedding_dict.py'''
+        print("Test of the file utils/0_get_embedding_dict.py")
 
-    #     # "Basic" case
-    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py --overwrite -f custom.300.vec"
-    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-    #     self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'custom.300.pkl')))
-    #     # retry without overwrite
-    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py -f custom.300.vec"
-    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
-    #     # retry with overwrite
-    #     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py --overwrite -f custom.300.vec"
-    #     self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        # "Basic" case
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py --overwrite -f custom.300.vec"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'custom.300.pkl')))
+        # retry without overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py -f custom.300.vec"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+        # retry with overwrite
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_get_embedding_dict.py --overwrite -f custom.300.vec"
+        self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
     # def test03_MergeFiles(self):
     #     '''Test of the file utils/0_merge_files.py'''
@@ -190,8 +197,16 @@ class Case1_e2e_pipeline(unittest.TestCase):
         remove_dir(model.model_dir)
         remove_dir(new_model.model_dir)
 
-        # ModelEmbeddingCnn
 
+        equal_attributes_keras = ['batch_size', 'epochs', 'patience', 'embedding_name']
+        almost_equal_attributes_keras = ['validation_split']
+        
+        # ModelEmbeddingCnn
+        equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
+        model, new_model = test_reload_model(self, model_embedding_cnn.ModelEmbeddingCnn, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'max_sequence_length':199, 'max_words': 99999})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
 
     # def test05_SplitTrainValidTest(self):
     #     '''Test of the file utils/0_split_train_valid_test.py'''
