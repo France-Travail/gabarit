@@ -178,7 +178,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
         lgbm_params = {'num_leaves': 29, 'max_depth': 30, 'learning_rate': 0.11, 'n_estimators': 98, 'min_split_gain': 0.01}
         model, new_model = test_reload_model(self, model_tfidf_lgbm.ModelTfidfLgbm, {'tfidf_params': tfidf_params, 'lgbm_params': lgbm_params})
-        test_same_model_tfidf(self, model, new_model, 'gbt', ['num_leaves', 'max_depth', 'n_estimators'], ['learning_rate', 'min_split_gain'])
+        test_same_model_tfidf(self, model, new_model, 'lgbm', ['num_leaves', 'max_depth', 'n_estimators'], ['learning_rate', 'min_split_gain'])
         remove_dir(model.model_dir)
         remove_dir(new_model.model_dir)
 
