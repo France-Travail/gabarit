@@ -50,11 +50,12 @@ def get_last_model_created(path_to_folder):
 
 def test_reload_model(test_class, model_type, arguments):
     model = model_type(**arguments)
-    x_train = ['coucou toto test titi', 'coucou', 'toto', 'test titi', 'coucou', 'coucou test titi', 'toto test', 'coucou toto titi', 'test', 'toto']
+    x_train = ['technique triage logistique fabricants', 'technique', 'triage', 'logistique fabricants', 'technique', 'technique logistique fabricants', 
+               'triage logistique', 'technique triage fabricants', 'logistique', 'triage']
     y_train = ['class_1', 'class_2', 'class_3', 'class_1', 'class_1', 'class_2', 'class_3', 'class_1', 'class_2', 'class_3']
-    x_valid = ['titi', 'test titi', 'toto', 'coucou titi', 'coucou coucou', 'test test']
+    x_valid = ['fabricants', 'logistique fabricants', 'triage', 'technique fabricants', 'technique technique', 'logistique logistique']
     y_valid = ['class_2', 'class_2', 'class_3', 'class_1', 'class_2', 'class_1']
-    x_test = x_train + x_valid + ['test coucou', 'toto titi', 'titi titi']
+    x_test = x_train + x_valid + ['logistique technique', 'triage fabricants', 'fabricants fabricants']
     model.fit(x_train=x_train, y_train=y_train, x_valid=x_valid, y_valid=y_valid)
     model.save()
     model_name = os.path.split(model.model_dir)[1]
@@ -94,6 +95,11 @@ def test_same_model_not_tfidf(test_class, model, new_model, equal_attributes, al
 
 def test_same_model_predictions(test_class, model, new_model, x_test):
     test_class.assertEqual(type(model), type(new_model))
+    list_classes = model.list_classes
+    list_classes.sort()
+    new_list_classes = new_model.list_classes
+    new_list_classes.sort()
+    test_class.assertEqual(list_classes, new_list_classes)
     model_list_predict = list(model.predict(x_test))
     new_model_list_predict = list(new_model.predict(x_test))
     test_class.assertEqual(model_list_predict, new_model_list_predict)
@@ -197,7 +203,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         remove_dir(model.model_dir)
         remove_dir(new_model.model_dir)
 
-
+        # Attributes for ModelKeras
         equal_attributes_keras = ['batch_size', 'epochs', 'patience', 'embedding_name']
         almost_equal_attributes_keras = ['validation_split']
         
@@ -207,6 +213,60 @@ class Case1_e2e_pipeline(unittest.TestCase):
                                                                                            'batch_size': 16, 'validation_split':0.1, 'patience': 4,
                                                                                            'max_sequence_length':199, 'max_words': 99999})
         test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelEmbeddingLstmAttention
+        equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
+        model, new_model = test_reload_model(self, model_embedding_lstm_attention.ModelEmbeddingLstmAttention, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'max_sequence_length':199, 'max_words': 99999})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelEmbeddingLstmGru
+        equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
+        model, new_model = test_reload_model(self, model_embedding_lstm_gru.ModelEmbeddingLstmGru, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'max_sequence_length':199, 'max_words': 99999})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelEmbeddingLstmStructuredAttention
+        equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
+        model, new_model = test_reload_model(self, model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'max_sequence_length':199, 'max_words': 99999})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelEmbeddingLstm
+        equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
+        model, new_model = test_reload_model(self, model_embedding_lstm.ModelEmbeddingLstm, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'max_sequence_length':199, 'max_words': 99999})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelTfidfDense
+        tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
+        equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
+        model, new_model = test_reload_model(self, model_tfidf_dense.ModelTfidfDense, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'tfidf_params':tfidf_params})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        tfidf = model.tfidf
+        new_tfidf = new_model.tfidf
+        for attribute in ['max_df', 'min_df']:
+            test_class.assertAlmostEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
+        for attribute in ['ngram_range', 'norm']:
+            test_class.assertEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
 
     # def test05_SplitTrainValidTest(self):
     #     '''Test of the file utils/0_split_train_valid_test.py'''
