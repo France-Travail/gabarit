@@ -120,7 +120,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         '''Test of the file utils/0_reload_model.py'''
         print("Test of the file utils/0_reload_model.py")
 
-        test_reload_model(model.tfidf_svm.ModelTfidfSvm, {})
+        test_reload_model(model_tfidf_svm.ModelTfidfSvm, {})
 
     # def test05_SplitTrainValidTest(self):
     #     '''Test of the file utils/0_split_train_valid_test.py'''
