@@ -41,7 +41,12 @@ from test_template_nlp.models_training.models_tensorflow import (model_tfidf_den
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
-def test_reload_model(model_type, arguments):
+def get_last_model_created(path_to_folder):
+    list_models = list(os.walk(path_to_folder))[0][1]
+    list_models.sort()
+    return list_models[-1]
+
+def test_reload_model(test_class, model_type, arguments):
     model = model_type(**arguments)
     x_train = ['coucou', 'coucou_1', 'coucou_2', 'coucou_3']
     y_train = ['class_1', 'class_2', 'class_3', 'class_1']
@@ -51,7 +56,7 @@ def test_reload_model(model_type, arguments):
     model.save()
 
     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_reload_model.py -m {model.model_dir}"
-    self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+    test_class.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
 
 class Case1_e2e_pipeline(unittest.TestCase):
@@ -120,7 +125,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         '''Test of the file utils/0_reload_model.py'''
         print("Test of the file utils/0_reload_model.py")
 
-        test_reload_model(model_tfidf_svm.ModelTfidfSvm, {})
+        test_reload_model(self, model_tfidf_svm.ModelTfidfSvm, {})
 
     # def test05_SplitTrainValidTest(self):
     #     '''Test of the file utils/0_split_train_valid_test.py'''
