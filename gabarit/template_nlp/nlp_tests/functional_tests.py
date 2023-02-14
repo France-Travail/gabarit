@@ -262,9 +262,9 @@ class Case1_e2e_pipeline(unittest.TestCase):
         tfidf = model.tfidf
         new_tfidf = new_model.tfidf
         for attribute in ['max_df', 'min_df']:
-            test_class.assertAlmostEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
+            self.assertAlmostEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
         for attribute in ['ngram_range', 'norm']:
-            test_class.assertEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
+            self.assertEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
         remove_dir(model.model_dir)
         remove_dir(new_model.model_dir)
 
