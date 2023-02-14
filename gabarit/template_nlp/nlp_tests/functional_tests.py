@@ -46,6 +46,7 @@ def get_last_model_created(path_to_folder):
     list_models.sort()
     return list_models[-1]
 
+
 def test_reload_model(test_class, model_type, arguments):
     model = model_type(**arguments)
     x_train = ['coucou', 'coucou_1', 'coucou_2', 'coucou_3']
@@ -59,10 +60,16 @@ def test_reload_model(test_class, model_type, arguments):
     basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_reload_model.py -m {model_name}"
     test_class.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
-    # path_to_model = os.path.split(model.model_dir)[0]
-    # new_model_name = get_last_model_created(path_to_model)
-    # new_model_dir = os.path.join(path_to_model, new_model_name)
-    # new_model, new_conf = model_class.ModelClass.load_model(model_dir=new_model_dir)
+    path_to_model = os.path.split(model.model_dir)[0]
+    new_model_name = get_last_model_created(path_to_model)
+    new_model_dir = os.path.join(path_to_model, new_model_name)
+    new_model, new_conf = model_class.ModelClass.load_model(model_dir=new_model_dir)
+
+    test_same_model(test_class, model, new_model)
+
+
+def test_same_model(test_class, model, new_model):
+    test_class.assertEqual(type(model), type(new_model))
 
 
 class Case1_e2e_pipeline(unittest.TestCase):
