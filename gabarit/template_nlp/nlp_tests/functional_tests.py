@@ -47,12 +47,13 @@ def get_last_model_created(path_to_folder):
     return list_models[-1]
 
 
-def test_reload_model(test_class, model_type, arguments):
+def test_reload_model(test_class, model_type, arguments, list_attributes_equal, list_attributes_almost_equal):
     model = model_type(**arguments)
-    x_train = ['coucou', 'coucou_1', 'coucou_2', 'coucou_3']
-    y_train = ['class_1', 'class_2', 'class_3', 'class_1']
-    x_valid = ['coucou_4', 'coucou_5', 'coucou_6', 'coucou_7']
-    y_valid = ['class_2', 'class_2', 'class_3', 'class_1']
+    x_train = ['coucou toto test titi', 'coucou', 'toto', 'test titi', 'coucou', 'coucou test titi', 'toto test', 'coucou toto titi', 'test', 'toto']
+    y_train = ['class_1', 'class_2', 'class_3', 'class_1', 'class_1', 'class_2', 'class_3', 'class_1', 'class_2', 'class_3']
+    x_valid = ['titi', 'test titi', 'toto', 'coucou titi', 'coucou coucou', 'test test']
+    y_valid = ['class_2', 'class_2', 'class_3', 'class_1', 'class_2', 'class_1']
+    x_test = x_train + x_valid + ['test coucou', 'toto titi', 'titi titi']
     model.fit(x_train=x_train, y_train=y_train, x_valid=x_valid, y_valid=y_valid)
     model.save()
     model_name = os.path.split(model.model_dir)[1]
@@ -65,11 +66,18 @@ def test_reload_model(test_class, model_type, arguments):
     new_model_dir = os.path.join(path_to_model, new_model_name)
     new_model, new_conf = model_class.ModelClass.load_model(model_dir=new_model_dir)
 
-    test_same_model(test_class, model, new_model)
+    test_same_model(test_class, model, new_model, x_test, list_attributes_equal, list_attributes_almost_equal)
 
 
-def test_same_model(test_class, model, new_model):
+def test_same_model(test_class, model, new_model, x_test, list_attributes_equal, list_attributes_almost_equal):
     test_class.assertEqual(type(model), type(new_model))
+    model_list_predict = list(model.predict(x_test))
+    new_model_list_predict = list(new_model.predict(x_test))
+    test_class.assertEqual(model_list_predict, new_model_list_predict)
+    for attribute in list_attributes_equal:
+        test_class.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+    for attribute in list_attributes_almost_equal:
+        test_class.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
 
 
 class Case1_e2e_pipeline(unittest.TestCase):
@@ -138,7 +146,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         '''Test of the file utils/0_reload_model.py'''
         print("Test of the file utils/0_reload_model.py")
 
-        test_reload_model(self, model_tfidf_svm.ModelTfidfSvm, {})
+        test_reload_model(self, model_tfidf_svm.ModelTfidfSvm, {}, ['multi_label'], [])
 
     # def test05_SplitTrainValidTest(self):
     #     '''Test of the file utils/0_split_train_valid_test.py'''
