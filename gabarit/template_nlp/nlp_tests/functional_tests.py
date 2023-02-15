@@ -358,12 +358,12 @@ class Case1_e2e_pipeline(unittest.TestCase):
         remove_dir(model.model_dir)
         remove_dir(new_model.model_dir)
 
-        # tfidf_standalone
+        # tfidf_file
         tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
         equal_attributes = []
         model, new_model = test_reload_model(self, model_tfidf_dense.ModelTfidfDense, {'embedding_name': "custom.300.pkl", 'epochs': 3,
                                                                                            'batch_size': 16, 'validation_split':0.1, 'patience': 4,
-                                                                                           'tfidf_params':tfidf_params}, change_file='tfidf_standalone')
+                                                                                           'tfidf_params':tfidf_params}, change_file='tfidf_file')
         test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
         tfidf = model.tfidf
         new_tfidf = new_model.tfidf
