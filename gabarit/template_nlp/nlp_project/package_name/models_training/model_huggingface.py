@@ -618,13 +618,14 @@ class ModelHuggingFace(ModelClass):
         #   will be reloaded automatically at first call to predict functions
         hf_model = self.model
         hf_tokenizer = self.tokenizer
+        pipe = self.pipe
         self.model = None
         self.tokenizer = None
-        if self.pipe is not None:
-            self.pipe = None
+        self.pipe = None
         super().save(json_data=json_data)
         self.model = hf_model
         self.tokenizer = hf_tokenizer
+        self.pipe = pipe
 
     def _hook_post_load_model_pkl(self):
         '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)
