@@ -49,6 +49,10 @@ def get_last_model_created(path_to_folder):
 
 
 def test_reload_model(test_class, model_type, arguments):
+    if isinstance(model_type, model_aggregation.ModelAggregation):
+        sub_model_1 = model_tfidf_svm.ModelTfidfSvm()
+        sub_model_2 = model_tfidf_gbt.ModelTfidfGbt()
+        arguments['list_models'] = [sub_model_1, sub_model_2]
     model = model_type(**arguments)
     x_train = ['technique triage logistique fabricants', 'technique', 'triage', 'logistique fabricants', 'technique', 'technique logistique fabricants', 
                'triage logistique', 'technique triage fabricants', 'logistique', 'triage']
@@ -266,6 +270,31 @@ class Case1_e2e_pipeline(unittest.TestCase):
             self.assertAlmostEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
         for attribute in ['ngram_range', 'norm']:
             self.assertEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelHuggingFace
+        equal_attributes = ['transformer_name', 'batch_size', 'epochs', 'patience']
+        almost_equal_attributes = ['validation_split']
+        model, new_model = test_reload_model(self, model_huggingface.ModelHuggingFace, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 4, 'validation_split':0.1, 'patience': 4})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes, almost_equal_attributes)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelAggregation
+        equal_attributes = ['using_proba']
+        almost_equal_attributes = []
+        model, new_model = test_reload_model(self, model_aggregation.ModelAggregation, {'aggregation_function': "proba_argmax", 'using_proba': True})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes, almost_equal_attributes)
+        self.assertEqual(model.aggregation_function.__name__, new_model.aggregation_function.__name__)
+        for sub_model, new_sub_model in zip(model.sub_models, new_model.sub_models):
+            if hasattr(sub_model, 'svc'):
+                test_same_model_tfidf(self, sub_model, new_sub_model, 'svc', ['penalty', 'loss', 'fit_intercept'], ['C'])
+            if hasattr(sub_model, 'gbt'):
+                test_same_model_tfidf(self, sub_model, new_sub_model, 'gbt', ['n_estimators', 'min_samples_split'], ['learning_rate'])
+        for sub_model in model.sub_models:
+            remove_dir(sub_model.model_dir)
         remove_dir(model.model_dir)
         remove_dir(new_model.model_dir)
 
