@@ -48,7 +48,7 @@ def get_last_model_created(path_to_folder):
     return list_models[-1]
 
 
-def test_reload_model(test_class, model_type, arguments):
+def test_reload_model(test_class, model_type, arguments, change_file=None):
     if model_type == model_aggregation.ModelAggregation:
         sub_model_1 = model_tfidf_svm.ModelTfidfSvm()
         sub_model_2 = model_tfidf_gbt.ModelTfidfGbt()
@@ -64,7 +64,13 @@ def test_reload_model(test_class, model_type, arguments):
     model.save()
     model_name = os.path.split(model.model_dir)[1]
 
-    basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_reload_model.py -m {model_name}"
+    dict_change_file = {'sklearn_pipeline_file': ()}
+
+    if change_file is None:
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_reload_model.py -m {model_name}"
+    else:
+        if change_file == 'sklearn_pipeline_file':
+            pass
     test_class.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
     path_to_model = os.path.split(model.model_dir)[0]
@@ -289,12 +295,14 @@ class Case1_e2e_pipeline(unittest.TestCase):
         test_same_model_not_tfidf(self, model, new_model, equal_attributes, almost_equal_attributes)
         self.assertEqual(model.aggregation_function.__name__, new_model.aggregation_function.__name__)
         for sub_model, new_sub_model in zip(model.sub_models, new_model.sub_models):
+            sub_model = sub_model['model']
+            new_sub_model = new_sub_model['model']
             if hasattr(sub_model, 'svc'):
                 test_same_model_tfidf(self, sub_model, new_sub_model, 'svc', ['penalty', 'loss', 'fit_intercept'], ['C'])
             if hasattr(sub_model, 'gbt'):
                 test_same_model_tfidf(self, sub_model, new_sub_model, 'gbt', ['n_estimators', 'min_samples_split'], ['learning_rate'])
         for sub_model in model.sub_models:
-            remove_dir(sub_model.model_dir)
+            remove_dir(sub_model['model'].model_dir)
         remove_dir(model.model_dir)
         remove_dir(new_model.model_dir)
 
