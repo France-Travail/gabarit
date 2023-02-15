@@ -49,7 +49,7 @@ def get_last_model_created(path_to_folder):
 
 
 def test_reload_model(test_class, model_type, arguments):
-    if isinstance(model_type, model_aggregation.ModelAggregation):
+    if model_type == model_aggregation.ModelAggregation:
         sub_model_1 = model_tfidf_svm.ModelTfidfSvm()
         sub_model_2 = model_tfidf_gbt.ModelTfidfGbt()
         arguments['list_models'] = [sub_model_1, sub_model_2]
