@@ -225,13 +225,13 @@ class Case1_e2e_pipeline(unittest.TestCase):
         # remove_dir(model.model_dir)
         # remove_dir(new_model.model_dir)
 
-        # # ------------------------------------
-        # # Keras Models
-        # # ------------------------------------
+        # ------------------------------------
+        # Keras Models
+        # ------------------------------------
 
-        # # Attributes for ModelKeras
-        # equal_attributes_keras = ['batch_size', 'epochs', 'patience', 'embedding_name']
-        # almost_equal_attributes_keras = ['validation_split']
+        # Attributes for ModelKeras
+        equal_attributes_keras = ['batch_size', 'epochs', 'patience', 'embedding_name']
+        almost_equal_attributes_keras = ['validation_split']
         
         # # ModelEmbeddingCnn
         # equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
