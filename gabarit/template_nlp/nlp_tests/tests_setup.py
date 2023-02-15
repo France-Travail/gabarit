@@ -103,158 +103,158 @@ class Case2_functionals_tests(unittest.TestCase):
             os.makedirs(models_path)
 
 
-# class Case3_unit_tests(unittest.TestCase):
-#     '''Main class to test unit tests'''
+class Case3_unit_tests(unittest.TestCase):
+    '''Main class to test unit tests'''
 
-#     def test01_test_static_type(self):
-#         '''Launches mypy tests'''
-#         # https://realpython.com/python-type-checking/#static-type-checking
-#         self.assertEqual(subprocess.run(f'(cd {full_path_lib} && {activate_venv}python -m mypy --ignore-missing-imports --allow-redefinition --no-strict-optional -p test_template_nlp)', shell=True).returncode, 0)
+    def test01_test_static_type(self):
+        '''Launches mypy tests'''
+        # https://realpython.com/python-type-checking/#static-type-checking
+        self.assertEqual(subprocess.run(f'(cd {full_path_lib} && {activate_venv}python -m mypy --ignore-missing-imports --allow-redefinition --no-strict-optional -p test_template_nlp)', shell=True).returncode, 0)
 
-#     def test02_test_utils(self):
-#         '''Launches tests of file utils.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_utils.py', shell=True).returncode, 0)
+    def test02_test_utils(self):
+        '''Launches tests of file utils.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_utils.py', shell=True).returncode, 0)
 
-#     def test03_test_utils_models(self):
-#         '''Launches tests of file utils_models.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_utils_models.py', shell=True).returncode, 0)
-#         # Clear models
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test03_test_utils_models(self):
+        '''Launches tests of file utils_models.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_utils_models.py', shell=True).returncode, 0)
+        # Clear models
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test04_test_preprocess(self):
-#         '''Launches tests of file preprocess.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_preprocess.py', shell=True).returncode, 0)
+    def test04_test_preprocess(self):
+        '''Launches tests of file preprocess.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_preprocess.py', shell=True).returncode, 0)
 
-#     def test05_test_model_class(self):
-#         '''Launches tests of file model_class.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_class.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test05_test_model_class(self):
+        '''Launches tests of file model_class.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_class.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test06_test_model_pipeline(self):
-#         '''Launches tests of file model_pipeline.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_pipeline.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test06_test_model_pipeline(self):
+        '''Launches tests of file model_pipeline.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_pipeline.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test07_test_model_tfidf_svm(self):
-#         '''Launches tests of file model_tfidf_svm.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_tfidf_svm.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test07_test_model_tfidf_svm(self):
+        '''Launches tests of file model_tfidf_svm.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_tfidf_svm.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test08_test_model_model_tfidf_gbt(self):
-#         '''Launches tests of file model_tfidf_gbt.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_tfidf_gbt.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test08_test_model_model_tfidf_gbt(self):
+        '''Launches tests of file model_tfidf_gbt.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_tfidf_gbt.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test09_test_model_model_tfidf_lgbm(self):
-#         '''Launches tests of file model_tfidf_lgbm.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_tfidf_lgbm.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test09_test_model_model_tfidf_lgbm(self):
+        '''Launches tests of file model_tfidf_lgbm.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_tfidf_lgbm.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test10_test_model_model_tfidf_sgdc(self):
-#         '''Launches tests of file model_tfidf_sgdc.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_tfidf_sgdc.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test10_test_model_model_tfidf_sgdc(self):
+        '''Launches tests of file model_tfidf_sgdc.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_tfidf_sgdc.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test11_test_model_keras(self):
-#         '''Launches tests of file model_keras.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_keras.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test11_test_model_keras(self):
+        '''Launches tests of file model_keras.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_keras.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test12_test_model_embedding_cnn(self):
-#         '''Launches tests of file model_embedding_cnn.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_embedding_cnn.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test12_test_model_embedding_cnn(self):
+        '''Launches tests of file model_embedding_cnn.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_embedding_cnn.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test13_test_model_embedding_lstm(self):
-#         '''Launches tests of file model_embedding_lstm.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_embedding_lstm.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test13_test_model_embedding_lstm(self):
+        '''Launches tests of file model_embedding_lstm.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_embedding_lstm.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test14_test_model_embedding_lstm_attention(self):
-#         '''Launches tests of file model_embedding_lstm_attention.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_embedding_lstm_attention.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test14_test_model_embedding_lstm_attention(self):
+        '''Launches tests of file model_embedding_lstm_attention.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_embedding_lstm_attention.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test15_test_model_embedding_lstm_attention(self):
-#         '''Launches tests of file model_embedding_lstm_structured_attention.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_embedding_lstm_structured_attention.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test15_test_model_embedding_lstm_attention(self):
+        '''Launches tests of file model_embedding_lstm_structured_attention.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_embedding_lstm_structured_attention.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test16_test_model_embedding_lstm_gru(self):
-#         '''Launches tests of file model_embedding_lstm_gru.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_embedding_lstm_gru.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test16_test_model_embedding_lstm_gru(self):
+        '''Launches tests of file model_embedding_lstm_gru.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_embedding_lstm_gru.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test17_test_model_tfidf_dense(self):
-#         '''Launches tests of file model_tfidf_dense.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_tfidf_dense.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test17_test_model_tfidf_dense(self):
+        '''Launches tests of file model_tfidf_dense.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_tfidf_dense.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test18_test_model_huggingface(self):
-#         '''Launches tests of file model_huggingface.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_huggingface.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test18_test_model_huggingface(self):
+        '''Launches tests of file model_huggingface.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_huggingface.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
-#     def test19_test_mlflow_logger(self):
-#         '''Launches tests of file mlflow_logger.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_mlflow_logger.py', shell=True).returncode, 0)
+    def test19_test_mlflow_logger(self):
+        '''Launches tests of file mlflow_logger.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_mlflow_logger.py', shell=True).returncode, 0)
 
-#     def test20_test_model_explainer(self):
-#         '''Launches tests of file model_explainer.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_explainer.py', shell=True).returncode, 0)
+    def test20_test_model_explainer(self):
+        '''Launches tests of file model_explainer.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_explainer.py', shell=True).returncode, 0)
 
-#     def test21_test_model_aggregation(self):
-#         '''Launches tests of file model_aggregation.py'''
-#         self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_aggregation.py', shell=True).returncode, 0)
-#         models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
-#         if os.path.exists(models_path):
-#             shutil.rmtree(models_path)
-#             os.makedirs(models_path)
+    def test21_test_model_aggregation(self):
+        '''Launches tests of file model_aggregation.py'''
+        self.assertEqual(subprocess.run(f'{activate_venv}python {full_path_lib}/tests/test_model_aggregation.py', shell=True).returncode, 0)
+        models_path = os.path.join(full_path_lib, 'test_template_nlp-models')
+        if os.path.exists(models_path):
+            shutil.rmtree(models_path)
+            os.makedirs(models_path)
 
 
 if __name__ == '__main__':
