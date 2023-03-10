@@ -63,6 +63,9 @@ def generate(package_name: str, project_path: str, gabarit_package_spec: Union[s
         gabarit_import_name (str) : Gabarit import name
         custom_templates (List[str]) : Custom templates or directories
     """
+    # Python package names can not have : "-"
+    package_name = package_name.replace("-", "_")
+    
     # Parse Gabarit dependency
     if gabarit_package_spec is not None:
         # Parse Gabarit package specs.
