@@ -50,6 +50,7 @@ from sklearn.preprocessing import MultiLabelBinarizer
 from sklearn.model_selection import train_test_split, KFold, StratifiedKFold
 
 from .. import utils
+from .model_class import ModelClass
 from ..preprocessing import preprocess
 
 
@@ -254,59 +255,27 @@ def preprocess_model_multilabel(df: pd.DataFrame, y_col: Union[str, int], classe
     return df, list(mlb.classes_)
 
 
-def load_model(model_dir: str, is_path: bool = False) -> Tuple[Any, dict]:
-    '''Loads a model from a path
+def load_model(model_dir: str, is_path: bool = False, **kwargs) -> Tuple[Any, dict]:
+    '''Loads a model from a path or a model name
 
     Args:
         model_dir (str): Name of the folder containing the model (e.g. model_autres_2019_11_07-13_43_19)
+            It can also be an absolute path if is_path is set to True
     Kwargs:
-        is_path (bool): If folder path instead of name (permits to load model from elsewhere)
+        is_path (bool): If folder path instead of name (allows to load model from anywhere)
     Returns:
-        ?: Model
-        dict: Model configurations
+        ModelClass: The loaded model
+        dict: The model configurations
     '''
-    # Find model path
+    # Find model absolute path
     base_folder = None if is_path else utils.get_models_path()
-    model_path = utils.find_folder_path(model_dir, base_folder)
-
-    # Get configs
-    configuration_path = os.path.join(model_path, 'configurations.json')
-    with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
-        configs = json.load(f)
-    # Can't set int as keys in json, so need to cast it after reloading
-    # dict_classes keys are always ints
-    if 'dict_classes' in configs.keys() and configs['dict_classes'] is not None:
-        configs['dict_classes'] = {int(k): v for k, v in configs['dict_classes'].items()}
+    model_dir = utils.find_folder_path(model_dir, base_folder)
 
     # Load model
-    pkl_path = os.path.join(model_path, f"{configs['model_name']}.pkl")
-    with open(pkl_path, 'rb') as f:
-        model = pickle.load(f)
+    model, model_conf = ModelClass.load_model(model_dir=model_dir, **kwargs)
 
-    # Change model_dir if diff
-    if model_path != model.model_dir:
-        model.model_dir = model_path
-        configs['model_dir'] = model_path
-
-    # Load specifics
-    hdf5_path = os.path.join(model_path, 'best.hdf5')
-    hf_model_dir = os.path.join(model_path, 'hf_model')
-    hf_tokenizer_dir = os.path.join(model_path, 'hf_tokenizer')
-
-    # TODO : we should probably have a single function `load_self` and let the model manage its reload
-    # Check for keras model
-    if os.path.exists(hdf5_path):
-        model.model = model.reload_model(hdf5_path)
-    # Check for huggingface model
-    if os.path.exists(hf_model_dir):
-        model.model = model.reload_model(hf_model_dir)
-        model.tokenizer = model.reload_tokenizer(hf_tokenizer_dir)
-
-    # Display if GPU is being used
-    model.display_if_gpu_activated()
-
-    # Return model & configs
-    return model, configs
+    # Return model & its configs
+    return model, model_conf
 
 
 def predict(content: Union[str, list], model, model_conf: dict, **kwargs) -> list:

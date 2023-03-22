@@ -203,7 +203,7 @@ class ModelDetectronFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelClas
                 self.logger.warning("The configuration file of the faster RCNN of detectron2 is not present in your data folder.")
                 self.logger.warning("Trying to download the file.")
                 utils.download_url(detectron_config_backup_urls, detectron_config_path)
-                
+
                 # Configure _BASE_ keyword from detectron_config_path
                 with open(detectron_config_path, "r") as f:
                     detectron_config = yaml.load(f, yaml.CLoader)
@@ -377,7 +377,7 @@ class ModelDetectronFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelClas
                 for i in range(1, self.nb_fit):
                     src_files.append(os.path.join(self.model_dir, f"configurations_fit_{i}.json"))
             # Change model dir
-            self.model_dir = self._get_model_dir()
+            self.model_dir = self._get_new_model_dir()
             self.cfg.OUTPUT_DIR = self.model_dir
             # Get dst files
             dst_files = [os.path.join(self.model_dir, f"configurations_fit_{self.nb_fit}.json")]

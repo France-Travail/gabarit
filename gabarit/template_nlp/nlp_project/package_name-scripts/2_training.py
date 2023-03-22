@@ -24,7 +24,6 @@ import os
 os.environ['TF_CPP_MIN_LOG_LEVEL'] = '3'
 
 import gc
-import re
 import time
 import logging
 import argparse
@@ -54,7 +53,7 @@ from {{package_name}}.models_training.models_tensorflow import (
     model_embedding_lstm,
     model_embedding_lstm_attention,
     model_embedding_lstm_structured_attention,
-    model_embedding_lstm_gru_gpu,
+    model_embedding_lstm_gru,
     model_tfidf_dense,
 )
 
@@ -262,7 +261,7 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
         #                                                                                         batch_size=64, epochs=99, patience=5,
         #                                                                                         max_sequence_length=200, max_words=100000,
         #                                                                                         multi_label=multi_label)
-        # model = model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu(x_col=x_col, y_col=y_col, level_save=level_save,
+        # model = model_embedding_lstm_gru.ModelEmbeddingLstmGru(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                               batch_size=64, epochs=99, patience=5,
         #                                                               max_sequence_length=60, max_words=100000,
         #                                                               multi_label=multi_label)

@@ -29,6 +29,7 @@ import pandas as pd
 
 import tensorflow
 import tensorflow.keras as keras
+from sklearn.feature_extraction.text import TfidfVectorizer
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.models_tensorflow.model_tfidf_dense import ModelTfidfDense
@@ -51,6 +52,13 @@ class ModelTfidfDenseTests(unittest.TestCase):
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
+
+    def check_weights_equality(self, model_1, model_2):
+        self.assertEqual(len(model_1.model.weights), len(model_2.model.weights))
+        for layer_nb in range(len(model_1.model.weights)):
+            self.assertEqual(model_1.model.weights[layer_nb].numpy().shape, model_2.model.weights[layer_nb].numpy().shape)
+        for layer_nb, x1, x2 in [(6, 100,42), (12, 42, 10)]:
+            self.assertAlmostEqual(model_1.model.weights[layer_nb].numpy()[x1, x2], model_2.model.weights[layer_nb].numpy()[x1, x2])
 
     def test01_model_tfidf_dense_init(self):
         '''Test of {{package_name}}.models_training.test_model_tfidf_dense.ModelTfidfDense.__init__'''
@@ -246,81 +254,75 @@ class ModelTfidfDenseTests(unittest.TestCase):
         self.assertEqual(configs['test'], 8)
         remove_dir(model_dir)
 
-
-    def test08_model_tfidf_dense_reload_model(self):
-        '''Test of the method reload_model of {{package_name}}.models_training.models_tensorflow.model_tfidf_dense.ModelTfidfDense'''
-
-        # Create model
+    def test08_model_tfidf_dense_load_standalone_files(self):
+        '''Test of the method _load_standalone_files of {{package_name}}.models_training.models_tensorflow.model_tfidf_dense.ModelTfidfDense'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
-
-        # Fit a model
-        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
-        model.fit(x_train, y_train_mono)
-        model.save()
-
-        # Reload keras
-        hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
-        reloaded_model = model.reload_model(hdf5_path)
-        self.assertEqual([list(_) for _ in reloaded_model.predict(model._prepare_x_test(['test', 'toto', 'titi']))], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
-
-        # Test without custom_objects
-        model.custom_objects = None
-        reloaded_model = model.reload_model(hdf5_path)
-        self.assertEqual([list(_) for _ in reloaded_model.predict(model._prepare_x_test(['test', 'toto', 'titi']))], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
-
         remove_dir(model_dir)
+        new_model_dir = os.path.join(os.getcwd(), 'model_test_987654321')
+        remove_dir(new_model_dir)
 
-    def test09_test_model_tfidf_dense_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.models_tensorflow.model_tfidf_dense.ModelTfidfDense.reload_from_standalone'''
+        old_hdf5_path = os.path.join(model_dir, 'best.hdf5')
 
-        # Create model
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
-        y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
-        model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
-        model.fit(x_train, y_train_mono)
-        model.save()
+        # Nominal case with default_model_dir
+        model = ModelTfidfDense(model_dir=model_dir)
+        model.list_classes = ['class_1', 'class_2']
+        x_train = ['test titi toto', 'toto', 'titi test test toto']
+        model._prepare_x_train(x_train)  # We force the creation of the tokenizer
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
 
-        # Reload
-        conf_path = os.path.join(model.model_dir, "configurations.json")
-        hdf5_path = os.path.join(model.model_dir, "best.hdf5")
-        tfidf_path = os.path.join(model.model_dir, f"tfidf_standalone.pkl")
-        new_model = ModelTfidfDense(model_dir=model_dir_2)
-        new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tfidf_path=tfidf_path)
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelTfidfDense._init_new_instance_from_configs(configs=configs)
+        new_hdf5_path = os.path.join(new_model.model_dir, 'best.hdf5')
+        new_model._load_standalone_files(default_model_dir=model_dir)
+        self.assertTrue(os.path.exists(new_hdf5_path))
+        self.check_weights_equality(model, new_model)
+        self.assertTrue(isinstance(new_model.tfidf, TfidfVectorizer))
 
-        # Test
-        self.assertEqual(model.model_name, new_model.model_name)
-        self.assertEqual(model.x_col, new_model.x_col)
-        self.assertEqual(model.y_col, new_model.y_col)
-        self.assertEqual(model.list_classes, new_model.list_classes)
-        self.assertEqual(model.dict_classes, new_model.dict_classes)
-        self.assertEqual(model.multi_label, new_model.multi_label)
-        self.assertEqual(model.level_save, new_model.level_save)
-        self.assertEqual(model.nb_fit, new_model.nb_fit)
-        self.assertEqual(model.trained, new_model.trained)
-        self.assertEqual(model.batch_size, new_model.batch_size)
-        self.assertEqual(model.epochs, new_model.epochs)
-        self.assertEqual(model.validation_split, new_model.validation_split)
-        self.assertEqual(model.patience, new_model.patience)
-        self.assertEqual(model.embedding_name, new_model.embedding_name)
-        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
-        # Check errors
+        # Nominal case with explicit paths
+        model = ModelTfidfDense(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.list_classes = ['class_1', 'class_2']
+        x_train = ['test titi toto', 'toto', 'titi test test toto']
+        model._prepare_x_train(x_train)  # We force the creation of the tokenizer
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelTfidfDense._init_new_instance_from_configs(configs=configs)
+        new_hdf5_path = os.path.join(new_model.model_dir, 'best.hdf5')
+        new_model._load_standalone_files(tfidf_path=os.path.join(model_dir, 'tfidf_standalone.pkl'),
+                                         hdf5_path=os.path.join(model_dir, 'best.hdf5'))
+        self.assertTrue(os.path.exists(new_hdf5_path))
+        self.check_weights_equality(model, new_model)
+        self.assertTrue(isinstance(new_model.tfidf, TfidfVectorizer))
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        # Errors
+        model = ModelTfidfDense(model_dir=model_dir)
+        model.list_classes = ['class_1', 'class_2']
+        x_train = ['test titi toto', 'toto', 'titi test test toto']
+        model._prepare_x_train(x_train)  # We force the creation of the tokenizer
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
+        os.remove(os.path.join(model_dir, 'tfidf_standalone.pkl'))
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelTfidfDense._init_new_instance_from_configs(configs=configs)
+        with self.assertRaises(ValueError):
+            new_model._load_standalone_files()
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfDense(model_dir=model_dir_2)
-            new_model.reload_from_standalone(configuration_path='toto.json', hdf5_path=hdf5_path, tfidf_path=tfidf_path)
-        with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfDense(model_dir=model_dir_2)
-            new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path='toto.hdf5', tfidf_path=tfidf_path)
-        with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfDense(model_dir=model_dir_2)
-            new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tfidf_path='toto.pkl')
+            new_model._load_standalone_files(default_model_dir=model_dir)
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
 
 
 # Perform tests

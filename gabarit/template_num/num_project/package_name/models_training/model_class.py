@@ -99,7 +99,7 @@ class ModelClass:
 
         # Model folder
         if model_dir is None:
-            self.model_dir = self._get_model_dir()
+            self.model_dir = self._get_new_model_dir()
         else:
             if not os.path.exists(model_dir):
                 os.makedirs(model_dir)
@@ -243,7 +243,7 @@ class ModelClass:
         with open(conf_path, 'w', encoding='{{default_encoding}}') as json_file:
             json.dump(json_dict, json_file, indent=4, cls=utils.NpEncoder)
 
-        # Now, save a proprietes file for the model upload
+        # Now, save a properties file for the model upload
         self._save_upload_properties(json_dict)
 
     def _save_upload_properties(self, json_dict: Union[dict, None] = None) -> None:
@@ -256,7 +256,7 @@ class ModelClass:
             json_dict = {}
 
         # Manage paths
-        proprietes_path = os.path.join(self.model_dir, "proprietes.json")
+        properties_path = os.path.join(self.model_dir, "properties.json")
         vanilla_model_upload_instructions = os.path.join(utils.get_ressources_path(), 'model_upload_instructions.md')
         specific_model_upload_instructions = os.path.join(self.model_dir, "model_upload_instructions.md")
 
@@ -266,7 +266,7 @@ class ModelClass:
         # Now we filter these properties
         final_dict = {k: v for k, v in json_dict.items() if k in allowed_properties}
         # Save
-        with open(proprietes_path, 'w', encoding='{{default_encoding}}') as f:
+        with open(properties_path, 'w', encoding='{{default_encoding}}') as f:
             json.dump(final_dict, f, indent=4, cls=utils.NpEncoder)
 
         # Add instructions to upload a model to a storage solution (e.g. Artifactory)
@@ -277,7 +277,7 @@ class ModelClass:
         with open(specific_model_upload_instructions, 'w', encoding='{{default_encoding}}') as f:
             f.write(new_content)
 
-    def _get_model_dir(self) -> str:
+    def _get_new_model_dir(self) -> str:
         '''Gets a folder where to save the model
 
         Returns:
@@ -289,7 +289,7 @@ class ModelClass:
         model_dir = os.path.join(subfolder, folder_name)
         if os.path.isdir(model_dir):
             time.sleep(1)  # Wait 1 second so that the 'date' changes...
-            return self._get_model_dir()  # Get new directory name
+            return self._get_new_model_dir()  # Get new directory name
         else:
             os.makedirs(model_dir)
         return model_dir

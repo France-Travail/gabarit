@@ -125,24 +125,24 @@ class ModelAuthor(ModelTfidfSvm):
         # Save
         super().save(json_data=json_data)
 
-    def reload_from_standalone(self, **kwargs) -> None:
-        '''Reloads a model from its configuration and "standalones" files
-        - /!\\ Experimental /!\\ -
+    @classmethod
+    def _init_new_instance_from_configs(cls, configs):
+        '''Inits a new instance from a set of configurations
 
-        Kwargs:
-            configuration_path (str): Path to configuration file
-            sklearn_pipeline_path (str): Path to standalone pipeline
-        Raises:
-            ValueError: If configuration_path is None
-            ValueError: If sklearn_pipeline_path is None
-            FileNotFoundError: If the object configuration_path is not an existing file
-            FileNotFoundError: If the object sklearn_pipeline_path is not an existing file
+        Args:
+            configs: a set of configurations of a model to be reloaded
+        Returns:
+            ModelClass: the newly generated class
         '''
-        super().reload_from_standalone(**kwargs)
-        configuration_path = kwargs.get('configuration_path', None)
-        with open(configuration_path, 'r', encoding='utf-8') as f:
-            configs = json.load(f)
-        self.nb_word_sentence = configs.get('nb_word_sentence', self.nb_word_sentence)
+        # Call parent
+        model = super()._init_new_instance_from_configs(configs)
+
+        # Try to read the following attributes from configs and, if absent, keep the current one
+        for attribute in ['nb_word_sentence']:
+            setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
+
+        # Return the new model
+        return model
 
 ### Fonctions utilitaires
 

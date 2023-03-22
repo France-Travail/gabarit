@@ -32,7 +32,7 @@ import tensorflow.keras as keras
 from tensorflow.keras.preprocessing.text import Tokenizer
 
 from {{package_name}} import utils
-from {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu import ModelEmbeddingLstmGruGpu
+from {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru import ModelEmbeddingLstmGru
 
 # Disable logging
 import logging
@@ -43,8 +43,8 @@ def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
 
-class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
-    '''Main class to test model_embedding_lstm_gru_gpu'''
+class ModelEmbeddingLstmGruTests(unittest.TestCase):
+    '''Main class to test model_embedding_lstm_gru'''
 
     def setUp(self):
         '''Setup fonction -> we create a mock embedding'''
@@ -73,12 +73,19 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         if os.path.exists(fake_path):
             os.remove(fake_path)
 
-    def test01_model_embedding_lstm_gru_gpu_init(self):
-        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu.__init__'''
+    def check_weights_equality(self, model_1, model_2):
+        self.assertEqual(len(model_1.model.weights), len(model_2.model.weights))
+        for layer_nb in range(len(model_1.model.weights)):
+            self.assertEqual(model_1.model.weights[layer_nb].numpy().shape, model_2.model.weights[layer_nb].numpy().shape)
+        for layer_nb, x1, x2 in [(5, 1, 100), (16, 1, 132)]:
+            self.assertAlmostEqual(model_1.model.weights[layer_nb].numpy()[x1, x2], model_2.model.weights[layer_nb].numpy()[x1, x2])
+
+    def test01_model_embedding_lstm_gru_init(self):
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru.ModelEmbeddingLstmGru.__init__'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
         # Init., test all parameters
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir)
+        model = ModelEmbeddingLstmGru(model_dir=model_dir)
         self.assertEqual(model.model_dir, model_dir)
         self.assertTrue(os.path.isdir(model_dir))
         self.assertTrue(model.tokenizer is None)
@@ -88,7 +95,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         remove_dir(model_dir)
 
         #
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, max_sequence_length=20)
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, max_sequence_length=20)
         self.assertEqual(model.model_dir, model_dir)
         self.assertTrue(os.path.isdir(model_dir))
         self.assertEqual(model.max_sequence_length, 20)
@@ -96,7 +103,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         remove_dir(model_dir)
 
         #
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, max_words=100)
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, max_words=100)
         self.assertEqual(model.model_dir, model_dir)
         self.assertTrue(os.path.isdir(model_dir))
         self.assertEqual(model.max_words, 100)
@@ -104,7 +111,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         remove_dir(model_dir)
 
         #
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, padding='post')
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, padding='post')
         self.assertEqual(model.model_dir, model_dir)
         self.assertTrue(os.path.isdir(model_dir))
         self.assertEqual(model.padding, 'post')
@@ -112,7 +119,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         remove_dir(model_dir)
 
         #
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, truncating='pre')
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, truncating='pre')
         self.assertEqual(model.model_dir, model_dir)
         self.assertTrue(os.path.isdir(model_dir))
         self.assertEqual(model.truncating, 'pre')
@@ -120,7 +127,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         remove_dir(model_dir)
 
         #
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, tokenizer_filters="!;/")
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, tokenizer_filters="!;/")
         self.assertEqual(model.model_dir, model_dir)
         self.assertTrue(os.path.isdir(model_dir))
         self.assertEqual(model.tokenizer_filters, "!;/")
@@ -134,12 +141,12 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
 
         # Check errors
         with self.assertRaises(ValueError):
-            model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, padding='toto')
+            model = ModelEmbeddingLstmGru(model_dir=model_dir, padding='toto')
         with self.assertRaises(ValueError):
-            model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, truncating='toto')
+            model = ModelEmbeddingLstmGru(model_dir=model_dir, truncating='toto')
 
-    def test02_model_embedding_lstm_gru_gpu_predict_proba(self):
-        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu.predict_proba'''
+    def test02_model_embedding_lstm_gru_predict_proba(self):
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru.ModelEmbeddingLstmGru.predict_proba'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -154,7 +161,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         cols = ['test1', 'test2', 'test3']
 
         # Mono-label
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                          max_sequence_length=10, max_words=100,
                                          padding='pre', truncating='post',
                                          embedding_name='fake_embedding.pkl')
@@ -166,7 +173,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         remove_dir(model_dir)
 
         #
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                          max_sequence_length=10, max_words=100,
                                          padding='pre', truncating='post',
                                          embedding_name='fake_embedding.pkl')
@@ -178,7 +185,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Multi-labels
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
                                          max_sequence_length=10, max_words=100,
                                          padding='pre', truncating='post',
                                          embedding_name='fake_embedding.pkl')
@@ -190,7 +197,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         remove_dir(model_dir)
 
         #
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
                                          max_sequence_length=10, max_words=100,
                                          padding='pre', truncating='post',
                                          embedding_name='fake_embedding.pkl')
@@ -203,21 +210,21 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
 
         # Model needs to be fitted
         with self.assertRaises(AttributeError):
-            model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+            model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                              max_sequence_length=10, max_words=100,
                                              padding='pre', truncating='post',
                                              embedding_name='fake_embedding.pkl')
             model.predict_proba('test')
         remove_dir(model_dir)
 
-    def test03_model_embedding_lstm_gru_gpu_prepare_x_train(self):
-        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu._prepare_x_train'''
+    def test03_model_embedding_lstm_gru_prepare_x_train(self):
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru.ModelEmbeddingLstmGru._prepare_x_train'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
         max_sequence_length = 10
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                          max_sequence_length=max_sequence_length, max_words=100,
                                          padding='pre', truncating='post',
                                          embedding_name='fake_embedding.pkl')
@@ -232,14 +239,14 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test04_model_embedding_lstm_gru_gpu_prepare_x_test(self):
-        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu._prepare_x_test'''
+    def test04_model_embedding_lstm_gru_prepare_x_test(self):
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru.ModelEmbeddingLstmGru._prepare_x_test'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
         max_sequence_length = 10
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                          max_sequence_length=max_sequence_length, max_words=100,
                                          padding='pre', truncating='post',
                                          embedding_name='fake_embedding.pkl')
@@ -255,13 +262,13 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test05_model_embedding_lstm_gru_gpu_get_model(self):
-        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu._get_model'''
+    def test05_model_embedding_lstm_gru_get_model(self):
+        '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru.ModelEmbeddingLstmGru._get_model'''
 
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                          max_sequence_length=10, max_words=100,
                                          padding='pre', truncating='post',
                                          embedding_name='fake_embedding.pkl')
@@ -282,8 +289,8 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test06_model_embedding_lstm_gru_gpu_save(self):
-        '''Test of the method save of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu'''
+    def test06_model_embedding_lstm_gru_save(self):
+        '''Test of the method save of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru.ModelEmbeddingLstmGru'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -294,14 +301,14 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         tokenizer_filters = "!;/"
 
         # Nominal case - without tokenizer
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                          max_sequence_length=max_sequence_length, max_words=100,
                                          padding=padding, truncating=truncating, tokenizer_filters=tokenizer_filters,
                                          embedding_name='fake_embedding.pkl')
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5'))) -> no model trained
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'model_embedding_lstm_gru_gpu.pkl')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'model_embedding_lstm_gru.pkl')))
         self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'embedding_tokenizer.pkl')))
         with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='{{default_encoding}}') as f:
             configs = json.load(f)
@@ -316,7 +323,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         # Nominal case - with tokenizer
         tokenizer = Tokenizer()
         tokenizer.fit_on_texts(['toto', 'test', 'tata'])
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                          max_sequence_length=max_sequence_length, max_words=100,
                                          padding=padding, truncating=truncating, tokenizer_filters=tokenizer_filters,
                                          embedding_name='fake_embedding.pkl')
@@ -324,7 +331,7 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5'))) -> no model trained
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'model_embedding_lstm_gru_gpu.pkl')))
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'model_embedding_lstm_gru.pkl')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'embedding_tokenizer.pkl')))
         with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='{{default_encoding}}') as f:
             configs = json.load(f)
@@ -339,14 +346,14 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         # Nominal case - with tokenizer, but level_save = 'LOW'
         tokenizer = Tokenizer()
         tokenizer.fit_on_texts(['toto', 'test', 'tata'])
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                          max_sequence_length=max_sequence_length, max_words=100,
                                          padding=padding, truncating=truncating, tokenizer_filters=tokenizer_filters,
                                          embedding_name='fake_embedding.pkl', level_save='LOW')
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5'))) -> no model trained
-        self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'model_embedding_lstm_gru_gpu.pkl')))
+        self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'model_embedding_lstm_gru.pkl')))
         self.assertFalse(os.path.exists(os.path.join(model.model_dir, 'embedding_tokenizer.pkl')))
         with open(os.path.join(model.model_dir, 'configurations.json'), 'r', encoding='{{default_encoding}}') as f:
             configs = json.load(f)
@@ -358,92 +365,136 @@ class ModelEmbeddingLstmGruGpuTests(unittest.TestCase):
         self.assertEqual(configs['tokenizer_filters'], tokenizer_filters)
         remove_dir(model_dir)
 
-    def test07_model_embedding_lstm_gru_gpu_reload_model(self):
-        '''Test of the method reload_model of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu'''
-
-        # Create model
+    def test07_model_embedding_lstm_gru_init_new_instance_from_configs(self):
+        '''Test of the method _init_new_instance_from_configs of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru.ModelEmbeddingLstmGru'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
-        y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                         max_sequence_length=10, max_words=100,
-                                         padding='post', truncating='pre',
-                                         embedding_name='fake_embedding.pkl')
-        model.fit(x_train, y_train_mono)
-        model.save()
-
-        # Reload keras
-        hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
-        reloaded_model = model.reload_model(hdf5_path)
-        self.assertEqual([list(_) for _ in reloaded_model.predict(model._prepare_x_test(['test', 'toto', 'titi']))], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
-
-        # Test without custom_objects
-        model.custom_objects = None
-        reloaded_model = model.reload_model(hdf5_path)
-        self.assertEqual([list(_) for _ in reloaded_model.predict(model._prepare_x_test(['test', 'toto', 'titi']))], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
-
         remove_dir(model_dir)
 
-    def test08_test_model_embedding_lstm_gru_gpu_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu.reload_from_standalone'''
+        # Nominal case
+        model = ModelEmbeddingLstmGru(model_dir=model_dir)
+        model.save(json_data={'test': 8})
+        configs = model.load_configs(model_dir=model_dir)
 
-        # Create model
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
-        y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
-        model = ModelEmbeddingLstmGruGpu(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                         max_sequence_length=10, max_words=100,
-                                         padding='post', truncating='pre',
-                                         embedding_name='fake_embedding.pkl')
-        model.fit(x_train, y_train_mono)
-        model.save()
-
-        # Reload
-        conf_path = os.path.join(model.model_dir, "configurations.json")
-        hdf5_path = os.path.join(model.model_dir, "best.hdf5")
-        tokenizer_path = os.path.join(model.model_dir, 'embedding_tokenizer.pkl')
-        new_model = ModelEmbeddingLstmGruGpu(model_dir=model_dir_2)
-        new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tokenizer_path=tokenizer_path)
-
-        # Test
-        self.assertEqual(model.model_name, new_model.model_name)
-        self.assertEqual(model.x_col, new_model.x_col)
-        self.assertEqual(model.y_col, new_model.y_col)
-        self.assertEqual(model.list_classes, new_model.list_classes)
-        self.assertEqual(model.dict_classes, new_model.dict_classes)
-        self.assertEqual(model.multi_label, new_model.multi_label)
-        self.assertEqual(model.level_save, new_model.level_save)
-        self.assertEqual(model.nb_fit, new_model.nb_fit)
-        self.assertEqual(model.trained, new_model.trained)
-        self.assertEqual(model.batch_size, new_model.batch_size)
-        self.assertEqual(model.epochs, new_model.epochs)
-        self.assertEqual(model.validation_split, new_model.validation_split)
-        self.assertEqual(model.patience, new_model.patience)
-        self.assertEqual(model.embedding_name, new_model.embedding_name)
-        self.assertEqual(model.max_sequence_length, new_model.max_sequence_length)
-        self.assertEqual(model.max_words, new_model.max_words)
-        self.assertEqual(model.padding, new_model.padding)
-        self.assertEqual(model.truncating, new_model.truncating)
-        self.assertEqual(model.tokenizer_filters, new_model.tokenizer_filters)
-        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
+        new_model = ModelEmbeddingLstmGru._init_new_instance_from_configs(configs=configs)
+        self.assertTrue(isinstance(new_model, ModelEmbeddingLstmGru))
+        self.assertEqual(new_model.nb_fit, 0)
+        self.assertFalse(new_model.trained)
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
+                          'patience', 'embedding_name', 'max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
+            self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+        for attribute in ['validation_split']:
+            self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
-        # Check errors
-        with self.assertRaises(FileNotFoundError):
-            new_model = ModelEmbeddingLstmGruGpu(model_dir=model_dir_2)
-            new_model.reload_from_standalone(configuration_path='toto.json', hdf5_path=hdf5_path, tokenizer_path=tokenizer_path)
-        with self.assertRaises(FileNotFoundError):
-            new_model = ModelEmbeddingLstmGruGpu(model_dir=model_dir_2)
-            new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path='toto.hdf5', tokenizer_path=tokenizer_path)
-        with self.assertRaises(FileNotFoundError):
-            new_model = ModelEmbeddingLstmGruGpu(model_dir=model_dir_2)
-            new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tokenizer_path='toto.pkl')
+        # Check by changing some attributes
+        model = ModelEmbeddingLstmGru(model_dir=model_dir)
+        model.nb_fit = 2
+        model.trained = True
+        model.x_col = 'coucou'
+        model.y_col = 'coucou_2'
+        model.list_classes = ['class_1', 'class_2', 'class_3']
+        model.dict_classes = {0: 'class_1', 1: 'class_2', 2: 'class_3'}
+        model.multi_label = True
+        model.level_save = 'MEDIUM'
+        model.batch_size = 13
+        model.epochs = 42
+        model.validation_split = 0.3
+        model.patience = 15
+        model.embedding_name = 'coucou_embedding'
+        model.keras_params = {'coucou':1, 'coucou2': 0.3, 'coucou3':'coucou4'}
+        model.max_sequence_length = 10
+        model.max_words = 232
+        model.padding = 'post'
+        model.truncating = 'pre'
+        model.tokenizer_filters = 'coucou'
+        model.save(json_data={'test': 8})
+        configs = model.load_configs(model_dir=model_dir)
 
+        new_model = ModelEmbeddingLstmGru._init_new_instance_from_configs(configs=configs)
+        self.assertTrue(isinstance(new_model, ModelEmbeddingLstmGru))
+        self.assertEqual(new_model.nb_fit, 2)
+        self.assertTrue(new_model.trained)
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
+                          'patience', 'embedding_name', 'max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
+            self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+        for attribute in ['validation_split']:
+            self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
+        self.assertEqual(set(model.keras_params), set(new_model.keras_params))
+        self.assertEqual(model.keras_params['coucou'], new_model.keras_params['coucou'])
+        self.assertAlmostEqual(model.keras_params['coucou2'], new_model.keras_params['coucou2'])
+        self.assertEqual(model.keras_params['coucou3'], new_model.keras_params['coucou3'])
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
 
+    def test08_model_embedding_lstm_gru_load_standalone_files(self):
+        '''Test of the method _load_standalone_files of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru.ModelEmbeddingLstmGru'''
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        new_model_dir = os.path.join(os.getcwd(), 'model_test_987654321')
+        remove_dir(new_model_dir)
+
+        old_hdf5_path = os.path.join(model_dir, 'best.hdf5')
+
+        # Nominal case with default_model_dir
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
+        model.list_classes = ['class_1', 'class_2']
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelEmbeddingLstmGru._init_new_instance_from_configs(configs=configs)
+        new_hdf5_path = os.path.join(new_model.model_dir, 'best.hdf5')
+        new_model._load_standalone_files(default_model_dir=model_dir)
+        self.assertTrue(os.path.exists(new_hdf5_path))
+        self.check_weights_equality(model, new_model)
+        self.assertTrue(isinstance(new_model.tokenizer, Tokenizer))
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        # Nominal case with explicit paths
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
+        model.list_classes = ['class_1', 'class_2']
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelEmbeddingLstmGru._init_new_instance_from_configs(configs=configs)
+        new_hdf5_path = os.path.join(new_model.model_dir, 'best.hdf5')
+        new_model._load_standalone_files(tokenizer_path=os.path.join(model_dir, 'embedding_tokenizer.pkl'),
+                                         hdf5_path=os.path.join(model_dir, 'best.hdf5'))
+        self.assertTrue(os.path.exists(new_hdf5_path))
+        self.check_weights_equality(model, new_model)
+        self.assertTrue(isinstance(new_model.tokenizer, Tokenizer))
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        # Errors
+        model = ModelEmbeddingLstmGru(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
+        model.list_classes = ['class_1', 'class_2']
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
+        os.remove(os.path.join(model_dir, 'embedding_tokenizer.pkl'))
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelEmbeddingLstmGru._init_new_instance_from_configs(configs=configs)
+        with self.assertRaises(ValueError):
+            new_model._load_standalone_files()
+        with self.assertRaises(FileNotFoundError):
+            new_model._load_standalone_files(default_model_dir=model_dir)
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        
 # Perform tests
 if __name__ == '__main__':
     # Start tests

@@ -31,15 +31,96 @@ from pathlib import Path
 from datetime import datetime
 
 from test_template_nlp import utils
-from test_template_nlp.models_training import model_huggingface, model_aggregation
+from test_template_nlp.models_training import model_huggingface, model_aggregation, model_class
 from test_template_nlp.models_training.models_sklearn import (model_tfidf_svm, model_tfidf_gbt, model_tfidf_lgbm,
                                                               model_tfidf_sgdc)
 from test_template_nlp.models_training.models_tensorflow import (model_tfidf_dense, model_embedding_lstm, model_embedding_lstm_attention,
-                                                                 model_embedding_lstm_structured_attention, model_embedding_lstm_gru_gpu,
+                                                                 model_embedding_lstm_structured_attention, model_embedding_lstm_gru,
                                                                  model_embedding_cnn)
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
+
+
+def get_last_model_created(path_to_folder):
+    list_models = list(os.walk(path_to_folder))[0][1]
+    list_models.sort()
+    return list_models[-1]
+
+
+def test_reload_model(test_class, model_type, arguments, change_file=None):
+    if model_type == model_aggregation.ModelAggregation:
+        sub_model_1 = model_tfidf_svm.ModelTfidfSvm()
+        sub_model_2 = model_tfidf_gbt.ModelTfidfGbt()
+        arguments['list_models'] = [sub_model_1, sub_model_2]
+    model = model_type(**arguments)
+    x_train = ['technique triage logistique fabricants', 'technique', 'triage', 'logistique fabricants', 'technique', 'technique logistique fabricants', 
+               'triage logistique', 'technique triage fabricants', 'logistique', 'triage']
+    y_train = ['class_1', 'class_2', 'class_3', 'class_1', 'class_1', 'class_2', 'class_3', 'class_1', 'class_2', 'class_3']
+    x_valid = ['fabricants', 'logistique fabricants', 'triage', 'technique fabricants', 'technique technique', 'logistique logistique']
+    y_valid = ['class_2', 'class_2', 'class_3', 'class_1', 'class_2', 'class_1']
+    x_test = x_train + x_valid + ['logistique technique', 'triage fabricants', 'fabricants fabricants']
+    model.fit(x_train=x_train, y_train=y_train, x_valid=x_valid, y_valid=y_valid)
+    model.save()
+    model_name = os.path.split(model.model_dir)[1]
+
+    dict_change_file = {'sklearn_pipeline_file': ('sklearn_pipeline_standalone.pkl', 'sklearn_pipeline_standalone_2.pkl'),
+                        'weights_file': ('best.hdf5', 'best_2.hdf5'),
+                        'tokenizer_file': ('embedding_tokenizer.pkl', 'embedding_tokenizer_2.pkl'),
+                        'tfidf_file': ('tfidf_standalone.pkl', 'tfidf_standalone_2.pkl'),
+                        'aggregation_function_file': ('aggregation_function.pkl', 'aggregation_function_2.pkl'), 
+                        'hf_model_dir': ('hf_model', 'hf_model_2'),
+                        'hf_tokenizer_dir': ('hf_tokenizer', 'hf_tokenizer_2')}
+
+    if change_file is None:
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_reload_model.py -m {model_name}"
+    else:
+        old_file_name, new_file_name = dict_change_file[change_file]
+        shutil.move(os.path.join(model.model_dir, old_file_name), os.path.join(model.model_dir, new_file_name))
+        basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_reload_model.py -m {model_name} --{change_file} {new_file_name}"
+    test_class.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
+
+    path_to_model = os.path.split(model.model_dir)[0]
+    new_model_name = get_last_model_created(path_to_model)
+    new_model_dir = os.path.join(path_to_model, new_model_name)
+    new_model, new_conf = model_class.ModelClass.load_model(model_dir=new_model_dir)
+    test_same_model_predictions(test_class, model, new_model, x_test)
+    test_class.assertNotEqual(model.model_dir, new_model.model_dir)
+    return model, new_model
+
+
+def test_same_model_tfidf(test_class, model, new_model, name_sub_model, model_equal_attributes, model_almost_equal_attributes):
+    tfidf = model.tfidf
+    new_tfidf = new_model.tfidf
+    for attribute in ['max_df', 'min_df']:
+        test_class.assertAlmostEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
+    for attribute in ['ngram_range', 'norm']:
+        test_class.assertEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
+    sub_model = getattr(model, name_sub_model)
+    new_sub_model = getattr(new_model, name_sub_model)
+    for attribute in model_equal_attributes:
+        test_class.assertEqual(getattr(sub_model, attribute), getattr(new_sub_model, attribute))
+    for attribute in model_almost_equal_attributes:
+        test_class.assertAlmostEqual(getattr(sub_model, attribute), getattr(new_sub_model, attribute))
+
+
+def test_same_model_not_tfidf(test_class, model, new_model, equal_attributes, almost_equal_attributes):
+    for attribute in equal_attributes:
+        test_class.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+    for attribute in almost_equal_attributes:
+        test_class.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
+
+
+def test_same_model_predictions(test_class, model, new_model, x_test):
+    test_class.assertEqual(type(model), type(new_model))
+    list_classes = model.list_classes
+    list_classes.sort()
+    new_list_classes = new_model.list_classes
+    new_list_classes.sort()
+    test_class.assertEqual(list_classes, new_list_classes)
+    model_list_predict = list(model.predict(x_test))
+    new_model_list_predict = list(new_model.predict(x_test))
+    test_class.assertEqual(model_list_predict, new_model_list_predict)
 
 
 class Case1_e2e_pipeline(unittest.TestCase):
@@ -104,7 +185,235 @@ class Case1_e2e_pipeline(unittest.TestCase):
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_merge_files.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -c x_col y_col -o merged_file.csv"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
-    def test04_SplitTrainValidTest(self):
+    def test04_ReloadModel(self):
+        '''Test of the file utils/0_reload_model.py'''
+        print("Test of the file utils/0_reload_model.py")
+
+        # ------------------------------------
+        # Sklearn Models
+        # ------------------------------------
+
+        # ModelTfidfSvm
+        tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
+        svc_params = {'penalty':'l2', 'loss':'hinge', 'C':0.9}
+        model, new_model = test_reload_model(self, model_tfidf_svm.ModelTfidfSvm, {'tfidf_params': tfidf_params, 'svc_params': svc_params})
+        test_same_model_tfidf(self, model, new_model, 'svc', ['penalty', 'loss', 'fit_intercept'], ['C'])
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelTfidfGbt
+        tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
+        gbt_params = {'learning_rate':0.11, 'n_estimators':90, 'min_samples_split':3}
+        model, new_model = test_reload_model(self, model_tfidf_gbt.ModelTfidfGbt, {'tfidf_params': tfidf_params, 'gbt_params': gbt_params})
+        test_same_model_tfidf(self, model, new_model, 'gbt', ['n_estimators', 'min_samples_split'], ['learning_rate'])
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelTfidfLgbm
+        tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
+        lgbm_params = {'num_leaves': 29, 'max_depth': 30, 'learning_rate': 0.11, 'n_estimators': 98, 'min_split_gain': 0.01}
+        model, new_model = test_reload_model(self, model_tfidf_lgbm.ModelTfidfLgbm, {'tfidf_params': tfidf_params, 'lgbm_params': lgbm_params})
+        test_same_model_tfidf(self, model, new_model, 'lgbm', ['num_leaves', 'max_depth', 'n_estimators'], ['learning_rate', 'min_split_gain'])
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelTfidfSgdc
+        tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
+        sgdc_params = {'penalty': 'l1', 'alpha': 0.0002, 'l1_ratio': 0.09}
+        model, new_model = test_reload_model(self, model_tfidf_sgdc.ModelTfidfSgdc, {'tfidf_params': tfidf_params, 'sgdc_params': sgdc_params})
+        test_same_model_tfidf(self, model, new_model, 'sgdc', ['loss', 'penalty'], ['alpha', 'l1_ratio'])
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ------------------------------------
+        # Keras Models
+        # ------------------------------------
+
+        # Attributes for ModelKeras
+        equal_attributes_keras = ['batch_size', 'epochs', 'patience', 'embedding_name']
+        almost_equal_attributes_keras = ['validation_split']
+        
+        # ModelEmbeddingCnn
+        equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
+        model, new_model = test_reload_model(self, model_embedding_cnn.ModelEmbeddingCnn, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'max_sequence_length':199, 'max_words': 99999})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelEmbeddingLstmAttention
+        equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
+        model, new_model = test_reload_model(self, model_embedding_lstm_attention.ModelEmbeddingLstmAttention, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'max_sequence_length':199, 'max_words': 99999})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelEmbeddingLstmGru
+        equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
+        model, new_model = test_reload_model(self, model_embedding_lstm_gru.ModelEmbeddingLstmGru, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'max_sequence_length':199, 'max_words': 99999})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelEmbeddingLstmStructuredAttention
+        equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
+        model, new_model = test_reload_model(self, model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'max_sequence_length':199, 'max_words': 99999})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelEmbeddingLstm
+        equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
+        model, new_model = test_reload_model(self, model_embedding_lstm.ModelEmbeddingLstm, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'max_sequence_length':199, 'max_words': 99999})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelTfidfDense
+        tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
+        equal_attributes = []
+        model, new_model = test_reload_model(self, model_tfidf_dense.ModelTfidfDense, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'tfidf_params':tfidf_params})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        tfidf = model.tfidf
+        new_tfidf = new_model.tfidf
+        for attribute in ['max_df', 'min_df']:
+            self.assertAlmostEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
+        for attribute in ['ngram_range', 'norm']:
+            self.assertEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ------------------------------------
+        # Other Models
+        # ------------------------------------
+
+        # ModelHuggingFace
+        equal_attributes = ['transformer_name', 'batch_size', 'epochs', 'patience']
+        almost_equal_attributes = ['validation_split']
+        model, new_model = test_reload_model(self, model_huggingface.ModelHuggingFace, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 4, 'validation_split':0.1, 'patience': 4})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes, almost_equal_attributes)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ModelAggregation
+        equal_attributes = ['using_proba']
+        almost_equal_attributes = []
+        model, new_model = test_reload_model(self, model_aggregation.ModelAggregation, {'aggregation_function': "proba_argmax", 'using_proba': True})
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes, almost_equal_attributes)
+        self.assertEqual(model.aggregation_function.__name__, new_model.aggregation_function.__name__)
+        for sub_model, new_sub_model in zip(model.sub_models, new_model.sub_models):
+            sub_model = sub_model['model']
+            new_sub_model = new_sub_model['model']
+            if hasattr(sub_model, 'svc'):
+                test_same_model_tfidf(self, sub_model, new_sub_model, 'svc', ['penalty', 'loss', 'fit_intercept'], ['C'])
+            if hasattr(sub_model, 'gbt'):
+                test_same_model_tfidf(self, sub_model, new_sub_model, 'gbt', ['n_estimators', 'min_samples_split'], ['learning_rate'])
+        for sub_model in model.sub_models:
+            remove_dir(sub_model['model'].model_dir)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # ------------------------------------
+        # Check file paths
+        # ------------------------------------
+
+        # sklearn_pipeline_file
+        tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
+        svc_params = {'penalty':'l2', 'loss':'hinge', 'C':0.9}
+        model, new_model = test_reload_model(self, model_tfidf_svm.ModelTfidfSvm, {'tfidf_params': tfidf_params, 'svc_params': svc_params},
+                                             change_file='sklearn_pipeline_file')
+        test_same_model_tfidf(self, model, new_model, 'svc', ['penalty', 'loss', 'fit_intercept'], ['C'])
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # weights_file
+        equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
+        model, new_model = test_reload_model(self, model_embedding_cnn.ModelEmbeddingCnn, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'max_sequence_length':199, 'max_words': 99999},
+                                            change_file='weights_file')
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # tokenizer_file
+        equal_attributes = ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']
+        model, new_model = test_reload_model(self, model_embedding_cnn.ModelEmbeddingCnn, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'max_sequence_length':199, 'max_words': 99999},
+                                            change_file='tokenizer_file')
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # tfidf_file
+        tfidf_params = {'min_df': 2, 'max_df': 0.9, 'norm':'l1', 'ngram_range':(1, 2)}
+        equal_attributes = []
+        model, new_model = test_reload_model(self, model_tfidf_dense.ModelTfidfDense, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 16, 'validation_split':0.1, 'patience': 4,
+                                                                                           'tfidf_params':tfidf_params}, change_file='tfidf_file')
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes_keras+equal_attributes, almost_equal_attributes_keras)
+        tfidf = model.tfidf
+        new_tfidf = new_model.tfidf
+        for attribute in ['max_df', 'min_df']:
+            self.assertAlmostEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
+        for attribute in ['ngram_range', 'norm']:
+            self.assertEqual(getattr(tfidf, attribute), getattr(new_tfidf, attribute))
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # hf_model_dir
+        equal_attributes = ['transformer_name', 'batch_size', 'epochs', 'patience']
+        almost_equal_attributes = ['validation_split']
+        model, new_model = test_reload_model(self, model_huggingface.ModelHuggingFace, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 4, 'validation_split':0.1, 'patience': 4},
+                                             change_file='hf_model_dir')
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes, almost_equal_attributes)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # hf_tokenizer_dir
+        equal_attributes = ['transformer_name', 'batch_size', 'epochs', 'patience']
+        almost_equal_attributes = ['validation_split']
+        model, new_model = test_reload_model(self, model_huggingface.ModelHuggingFace, {'embedding_name': "custom.300.pkl", 'epochs': 3,
+                                                                                           'batch_size': 4, 'validation_split':0.1, 'patience': 4},
+                                             change_file='hf_tokenizer_dir')
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes, almost_equal_attributes)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+        # aggregation_function_file
+        equal_attributes = ['using_proba']
+        almost_equal_attributes = []
+        model, new_model = test_reload_model(self, model_aggregation.ModelAggregation, {'aggregation_function': "proba_argmax", 'using_proba': True},
+                                             change_file='aggregation_function_file')
+        test_same_model_not_tfidf(self, model, new_model, equal_attributes, almost_equal_attributes)
+        self.assertEqual(model.aggregation_function.__name__, new_model.aggregation_function.__name__)
+        for sub_model, new_sub_model in zip(model.sub_models, new_model.sub_models):
+            sub_model = sub_model['model']
+            new_sub_model = new_sub_model['model']
+            if hasattr(sub_model, 'svc'):
+                test_same_model_tfidf(self, sub_model, new_sub_model, 'svc', ['penalty', 'loss', 'fit_intercept'], ['C'])
+            if hasattr(sub_model, 'gbt'):
+                test_same_model_tfidf(self, sub_model, new_sub_model, 'gbt', ['n_estimators', 'min_samples_split'], ['learning_rate'])
+        for sub_model in model.sub_models:
+            remove_dir(sub_model['model'].model_dir)
+        remove_dir(model.model_dir)
+        remove_dir(new_model.model_dir)
+
+    def test05_SplitTrainValidTest(self):
         '''Test of the file utils/0_split_train_valid_test.py'''
         print("Test of the file utils/0_split_train_valid_test.py")
 
@@ -176,7 +485,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertFalse(any([_ in df_test.x_col.values for _ in df_train.x_col.values]))
         self.assertFalse(any([_ in df_valid.x_col.values for _ in df_test.x_col.values]))
 
-    def test05_sweetviz_report(self):
+    def test06_sweetviz_report(self):
         '''Test of the file utils/0_sweetviz_report.py'''
         print("Test of the file utils/0_sweetviz_report.py")
 
@@ -226,7 +535,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         # Clean up sweetviz config path (useful ?)
         os.remove(config_path)
 
-    def test06_PreProcessData(self):
+    def test07_PreProcessData(self):
         '''Test of the file 1_preprocess_data.py'''
         print("Test of the file 1_preprocess_data.py")
 
@@ -251,7 +560,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         basic_run = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/1_preprocess_data.py --overwrite -f mono_class_mono_label_train.csv mono_class_mono_label_valid.csv -p preprocess_P1 --input_col x_col"
         self.assertEqual(subprocess.run(basic_run, shell=True).returncode, 0)
 
-    def test07_TrainingE2E(self):
+    def test08_TrainingE2E(self):
         '''Test of the file 2_training.py'''
         print("Test of the file 2_training.py")
 
@@ -273,7 +582,7 @@ class Case1_e2e_pipeline(unittest.TestCase):
         listdir = os.listdir(os.path.join(save_model_dir))
         self.assertEqual(len(listdir), 2)
 
-    def test08_PredictE2E(self):
+    def test09_PredictE2E(self):
         '''Test of the file 3_predict.py'''
         print("Test of the file 3_predict.py")
 
@@ -624,7 +933,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_EmbeddingLstmAttention failed')
 
-    def test08_Model_EmbeddingLstmGruGpu(self):
+    def test08_Model_EmbeddingLstmGru(self):
         '''Test of the model Embedding/LSTM/GRU'''
         print('            ------------------ >     Test of the model Embedding/LSTM/GRU     /   Mono-class & Mono-label')
 
@@ -637,7 +946,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_name = 'embedding_lstm_gru_mono_class_mono_label'
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             os.makedirs(model_dir)
-            test_model = model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_embedding_lstm_gru.ModelEmbeddingLstmGru(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                                                batch_size=16, epochs=20, patience=20,
                                                                                max_sequence_length=60, max_words=100000,
                                                                                embedding_name="custom.300.pkl",
@@ -647,7 +956,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_mono_label(self, test_model)
         except Exception:
-            self.fail('testModel_EmbeddingLstmGruGpu failed')
+            self.fail('testModel_EmbeddingLstmGru failed')
 
     def test09_Model_EmbeddingCnn(self):
         '''Test of the model Embedding/CNN'''
@@ -1258,7 +1567,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_EmbeddingLstmAttention failed')
 
-    def test08_Model_EmbeddingLstmGruGpu(self):
+    def test08_Model_EmbeddingLstmGru(self):
         '''Test of the model Embedding/LSTM/GRU'''
         print('            ------------------ >     Test of the model Embedding/LSTM/GRU     /   Mono-class & Multi-labels')
 
@@ -1271,7 +1580,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             model_name = 'embedding_lstm_gru_mono_class_multi_label'
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             os.makedirs(model_dir)
-            test_model = model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_embedding_lstm_gru.ModelEmbeddingLstmGru(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                                                batch_size=16, epochs=20, patience=20,
                                                                                max_sequence_length=60, max_words=100000,
                                                                                embedding_name="custom.300.pkl",
@@ -1281,7 +1590,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
             test_model_mono_class_multi_label(self, test_model)
         except Exception:
-            self.fail('testModel_EmbeddingLstmGruGpu failed')
+            self.fail('testModel_EmbeddingLstmGru failed')
 
     def test09_Model_EmbeddingCnn(self):
         '''Test of the model Embedding/CNN'''
@@ -1924,7 +2233,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
         except Exception:
             self.fail('testModel_EmbeddingLstmAttention failed')
 
-    def test08_Model_EmbeddingLstmGruGpu(self):
+    def test08_Model_EmbeddingLstmGru(self):
         '''Test of the model Embedding/LSTM/GRU'''
         print('            ------------------ >     Test of the model Embedding/LSTM/GRU     /   Multi-classes & Mono-label')
 
@@ -1937,7 +2246,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             model_name = 'embedding_lstm_gru_multi_class_mono_label'
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             os.makedirs(model_dir)
-            test_model = model_embedding_lstm_gru_gpu.ModelEmbeddingLstmGruGpu(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
+            test_model = model_embedding_lstm_gru.ModelEmbeddingLstmGru(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                                                batch_size=16, epochs=20, patience=20,
                                                                                max_sequence_length=60, max_words=100000,
                                                                                embedding_name="custom.300.pkl",
@@ -1947,7 +2256,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
             test_model_multi_class_mono_label(self, test_model)
         except Exception:
-            self.fail('testModel_EmbeddingLstmGruGpu failed')
+            self.fail('testModel_EmbeddingLstmGru failed')
 
     def test09_Model_EmbeddingCnn(self):
         '''Test of the model Embedding/CNN'''

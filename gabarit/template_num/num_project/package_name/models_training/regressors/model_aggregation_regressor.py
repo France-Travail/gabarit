@@ -91,7 +91,7 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
 
         # Error: The classifier and regressor models cannot be combined in list_models
         if False in [isinstance(sub_model['model'], ModelRegressorMixin) for sub_model in self.sub_models]:
-            raise ValueError(f"model_aggregation_classifier only accepts classifier models")
+            raise ValueError(f"model_aggregation_regressor only accepts regressor models")
 
         self.trained = self._check_trained()
 
