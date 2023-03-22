@@ -80,6 +80,9 @@ def generate(project_name: str, project_path: str, config_path: str,
     if dvc_config_path is not None and not os.path.exists(dvc_config_path):
         raise FileNotFoundError(f"Filepath {dvc_config_path} does not exist")
 
+    # Python package names can not have : "-"
+    project_name = project_name.replace("-", "_")
+    
     # Start by creating the output directory:
     output_dir = os.path.abspath(project_path)
     if not os.path.exists(output_dir):
