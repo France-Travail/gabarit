@@ -135,7 +135,7 @@ class ModelHuggingFace(ModelClass):
                 This should be used if y is not shuffled as the split_validation takes the lines in order.
                 Thus, the validation set might get classes which are not in the train set ...
         Raises:
-            AssertionError: If different classes when comparing an already fitted model and a new dataset
+            ValueError: If different classes when comparing an already fitted model and a new dataset
         '''
         ##############################################
         # Manage retrain
@@ -208,10 +208,10 @@ class ModelHuggingFace(ModelClass):
 
         # Validate classes if already trained, else set them
         if self.trained:
-            assert self.list_classes == list_classes, \
-                "Error: the new dataset does not match with the already fitted model"
-            assert self.dict_classes == dict_classes, \
-                "Error: the new dataset does not match with the already fitted model"
+            if self.list_classes != list_classes:
+                raise ValueError("Error: the new dataset does not match with the already fitted model")
+            if self.dict_classes != dict_classes:
+                raise ValueError("Error: the new dataset does not match with the already fitted model")
         else:
             self.list_classes = list_classes
             self.dict_classes = dict_classes

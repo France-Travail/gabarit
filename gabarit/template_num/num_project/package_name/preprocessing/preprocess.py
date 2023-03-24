@@ -161,9 +161,9 @@ def retrieve_columns_from_pipeline(df: pd.DataFrame, pipeline: ColumnTransformer
         # Backup on old custom method
         except:
             new_columns = get_ct_feature_names(pipeline)
-        assert len(new_columns) == new_df.shape[1], "There is a discrepancy in the number of columns" +\
-                                                f" between the preprocessed DataFrame ({new_df.shape[1]})" +\
-                                                f" and the pipeline ({len(new_columns)})."
+        if len(new_columns) != new_df.shape[1]:
+            raise ValueError(f"There is a discrepancy in the number of columns between the preprocessed DataFrame ({new_df.shape[1]}) and the pipeline ({len(new_columns)}).")
+
     # No solution
     except Exception as e:
         logger.error("Can't get the names of the columns. Backup on ['x0', 'x1', ...]")
