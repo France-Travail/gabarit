@@ -1071,11 +1071,11 @@ class ModelKerasFasterRcnnObjectDetectorTests(unittest.TestCase):
         # Assertion errors (bad classes)
         old_dict_classes = model.dict_classes.copy()
         model.dict_classes = {'a': 0, 'b': 1}
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             model.fit(df_data, df_valid=df_data, with_shuffle=True)
         model.dict_classes = old_dict_classes
         model.list_classes = ['a', 'b']
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             model.fit(df_data, df_valid=df_data, with_shuffle=True)
         remove_dir(model_dir)
         remove_dir(model_dir_2)

@@ -209,69 +209,69 @@ class UtilsObjectDetectorTests(unittest.TestCase):
         utils_object_detectors.check_coordinates_validity(fonction_support_mix)(0, 0, 0, 1, x2=1, y2=1, y=0, h=1)
 
         # Check errors - args
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_args)(-1, 1, 0, 1, 0, 0, 1, 1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_args)(0, -1, 0, 1, 0, 0, 1, 1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_args)(0, 1, -1, 1, 0, 0, 1, 1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_args)(0, 1, 0, -1, 0, 0, 1, 1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_args)(0, 1, 0, 1, -1, 0, 1, 1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_args)(0, 1, 0, 1, 0, -1, 1, 1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_args)(0, 1, 0, 1, 0, 1, -1, 1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_args)(0, 1, 0, 1, 0, 1, 1, -1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_args)(2, 1, 0, 1, 0, 0, 1, 1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_args)(0, 1, 2, 1, 0, 0, 1, 1)
 
         # Check errors - kwargs
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_kwargs)(x1=-1, y1=0, x=0, y=0, x2=1, w=1, h=1, y2=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_kwargs)(x1=0, y1=-1, x=0, y=0, x2=1, w=1, h=1, y2=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_kwargs)(x1=0, y1=0, x=-1, y=0, x2=1, w=1, h=1, y2=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_kwargs)(x1=0, y1=0, x=0, y=-1, x2=1, w=1, h=1, y2=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_kwargs)(x1=0, y1=0, x=0, y=0, x2=-1, w=1, h=1, y2=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_kwargs)(x1=0, y1=0, x=0, y=0, x2=1, w=-1, h=1, y2=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_kwargs)(x1=0, y1=0, x=0, y=0, x2=1, w=1, h=-1, y2=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_kwargs)(x1=0, y1=0, x=0, y=0, x2=1, w=1, h=1, y2=-1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_kwargs)(x1=2, y1=0, x=0, y=0, x2=1, w=1, h=1, y2=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_kwargs)(x1=0, y1=2, x=0, y=0, x2=1, w=1, h=1, y2=1)
 
         # Check errors - mix
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_mix)(-1, 0, 0, 1, x2=1, y2=1, y=0, h=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_mix)(0, -1, 0, 1, x2=1, y2=1, y=0, h=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_mix)(0, 0, -1, 1, x2=1, y2=1, y=0, h=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_mix)(0, 0, 0, -1, x2=1, y2=1, y=0, h=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_mix)(0, 0, 0, 1, x2=-1, y2=1, y=0, h=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_mix)(0, 0, 0, 1, x2=1, y2=-1, y=0, h=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_mix)(0, 0, 0, 1, x2=1, y2=1, y=-1, h=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_mix)(0, 0, 0, 1, x2=1, y2=1, y=0, h=-1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_mix)(2, 0, 0, 1, x2=1, y2=1, y=0, h=1)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             utils_object_detectors.check_coordinates_validity(fonction_support_mix)(0, 2, 0, 1, x2=1, y2=1, y=0, h=1)
 
     def test05_xyxy_to_xyhw(self):
