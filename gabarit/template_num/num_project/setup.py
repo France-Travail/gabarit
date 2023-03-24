@@ -19,11 +19,11 @@ from setuptools import setup, find_packages
 # Get package directory
 package_directory = os.path.dirname(os.path.abspath(__file__))
 
-# Get package version (env variable or version file + -local)
+# Get package version (env variable or version file + +local)
 version_path = os.path.join(package_directory, 'version.txt')
 with open(version_path, 'r') as version_file:
     version = version_file.read().strip()
-version = os.getenv('VERSION') or f"{version}-local"
+version = os.getenv('VERSION') or f"{version}+local"
 
 # Get package description
 readme_path = os.path.join(package_directory, 'README.md')
