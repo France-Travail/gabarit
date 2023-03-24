@@ -118,7 +118,7 @@ def main(filename: str, x_col: Union[str, int], model_dir: str, y_col: Union[Lis
         if len(y_col) > 1:
             y_true = df[y_col].astype(int)  # Need to cast OHE var into integers
             for col in y_col:
-                if sorted(df_train[col].unique()) != [0, 1]:
+                if sorted(y_true[col].unique()) != [0, 1]:
                     raise ValueError("You provided several target columns, but at least one of them does not seem to be in a correct OHE format.")
         else:
             y_true = df[y_col[0]]
