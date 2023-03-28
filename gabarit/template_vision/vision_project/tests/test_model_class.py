@@ -171,26 +171,26 @@ class ModelClassTests(unittest.TestCase):
         with open(os.path.join(model.model_dir, 'model_upload_instructions.md'), 'r', encoding='{{default_encoding}}') as f:
             instructions = f.read()
         self.assertTrue(os.path.abspath(model.model_dir) in instructions)
-        # Checks the presence of a file proprietes.json
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'proprietes.json')))
-        with open(os.path.join(model.model_dir, 'proprietes.json'), 'r', encoding='{{default_encoding}}') as f:
-            proprietes = json.load(f)
-        self.assertTrue('maintainers' in proprietes.keys())
-        self.assertEqual(proprietes['maintainers'], "c'est nous")
-        self.assertTrue('date' in proprietes.keys())
-        self.assertEqual(proprietes['date'], "01/01/1970 - 00:00:00")
-        self.assertTrue('package_version' in proprietes.keys())
-        self.assertEqual(proprietes['package_version'], "0.0.8")
-        self.assertTrue('model_name' in proprietes.keys())
-        self.assertEqual(proprietes['model_name'], "hello_model")
-        self.assertTrue('list_classes' in proprietes.keys())
-        self.assertEqual(proprietes['list_classes'], ["c1", "c2", 9, "c3", 3])
-        self.assertTrue('librairie' in proprietes.keys())
-        self.assertEqual(proprietes['librairie'], "ma_lib")
-        self.assertTrue('fit_time' in proprietes.keys())
-        self.assertEqual(proprietes['fit_time'], "7895s")
-        self.assertFalse('bruit' in proprietes.keys())
-        self.assertFalse('autre_bruit' in proprietes.keys())
+        # Checks the presence of a file properties.json
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'properties.json')))
+        with open(os.path.join(model.model_dir, 'properties.json'), 'r', encoding='{{default_encoding}}') as f:
+            properties = json.load(f)
+        self.assertTrue('maintainers' in properties.keys())
+        self.assertEqual(properties['maintainers'], "c'est nous")
+        self.assertTrue('date' in properties.keys())
+        self.assertEqual(properties['date'], "01/01/1970 - 00:00:00")
+        self.assertTrue('package_version' in properties.keys())
+        self.assertEqual(properties['package_version'], "0.0.8")
+        self.assertTrue('model_name' in properties.keys())
+        self.assertEqual(properties['model_name'], "hello_model")
+        self.assertTrue('list_classes' in properties.keys())
+        self.assertEqual(properties['list_classes'], ["c1", "c2", 9, "c3", 3])
+        self.assertTrue('librairie' in properties.keys())
+        self.assertEqual(properties['librairie'], "ma_lib")
+        self.assertTrue('fit_time' in properties.keys())
+        self.assertEqual(properties['fit_time'], "7895s")
+        self.assertFalse('bruit' in properties.keys())
+        self.assertFalse('autre_bruit' in properties.keys())
         remove_dir(model_dir)
 
         # Same, but via the save function
@@ -212,26 +212,26 @@ class ModelClassTests(unittest.TestCase):
         with open(os.path.join(model.model_dir, 'model_upload_instructions.md'), 'r', encoding='{{default_encoding}}') as f:
             instructions = f.read()
         self.assertTrue(os.path.abspath(model.model_dir) in instructions)
-        # Checks the presence of a file proprietes.json
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'proprietes.json')))
-        with open(os.path.join(model.model_dir, 'proprietes.json'), 'r', encoding='{{default_encoding}}') as f:
-            proprietes = json.load(f)
-        self.assertTrue('maintainers' in proprietes.keys())
-        self.assertEqual(proprietes['maintainers'], "c'est nous")
-        self.assertTrue('date' in proprietes.keys())
-        self.assertEqual(proprietes['date'], "01/01/1970 - 00:00:00")
-        self.assertTrue('package_version' in proprietes.keys())
-        self.assertEqual(proprietes['package_version'], "0.0.8")
-        self.assertTrue('model_name' in proprietes.keys())
-        self.assertEqual(proprietes['model_name'], "hello_model")
-        self.assertTrue('list_classes' in proprietes.keys())
-        self.assertEqual(proprietes['list_classes'], ["c1", "c2", "c8", "c3"])
-        self.assertTrue('librairie' in proprietes.keys())
-        self.assertEqual(proprietes['librairie'], "ma_lib")
-        self.assertTrue('fit_time' in proprietes.keys())
-        self.assertEqual(proprietes['fit_time'], "7895s")
-        self.assertFalse('bruit' in proprietes.keys())
-        self.assertFalse('autre_bruit' in proprietes.keys())
+        # Checks the presence of a file properties.json
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'properties.json')))
+        with open(os.path.join(model.model_dir, 'properties.json'), 'r', encoding='{{default_encoding}}') as f:
+            properties = json.load(f)
+        self.assertTrue('maintainers' in properties.keys())
+        self.assertEqual(properties['maintainers'], "c'est nous")
+        self.assertTrue('date' in properties.keys())
+        self.assertEqual(properties['date'], "01/01/1970 - 00:00:00")
+        self.assertTrue('package_version' in properties.keys())
+        self.assertEqual(properties['package_version'], "0.0.8")
+        self.assertTrue('model_name' in properties.keys())
+        self.assertEqual(properties['model_name'], "hello_model")
+        self.assertTrue('list_classes' in properties.keys())
+        self.assertEqual(properties['list_classes'], ["c1", "c2", "c8", "c3"])
+        self.assertTrue('librairie' in properties.keys())
+        self.assertEqual(properties['librairie'], "ma_lib")
+        self.assertTrue('fit_time' in properties.keys())
+        self.assertEqual(properties['fit_time'], "7895s")
+        self.assertFalse('bruit' in properties.keys())
+        self.assertFalse('autre_bruit' in properties.keys())
         remove_dir(model_dir)
 
         # Empty case
@@ -243,23 +243,23 @@ class ModelClassTests(unittest.TestCase):
         with open(os.path.join(model.model_dir, 'model_upload_instructions.md'), 'r', encoding='{{default_encoding}}') as f:
             instructions = f.read()
         self.assertTrue(os.path.abspath(model.model_dir) in instructions)
-        # Checks the presence of a file proprietes.json
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'proprietes.json')))
-        with open(os.path.join(model.model_dir, 'proprietes.json'), 'r', encoding='{{default_encoding}}') as f:
-            proprietes = json.load(f)
-        self.assertFalse('maintainers' in proprietes.keys())
-        self.assertFalse('date' in proprietes.keys())
-        self.assertFalse('package_version' in proprietes.keys())
-        self.assertFalse('model_name' in proprietes.keys())
-        self.assertFalse('list_classes' in proprietes.keys())
-        self.assertFalse('librairie' in proprietes.keys())
-        self.assertFalse('fit_time' in proprietes.keys())
-        self.assertFalse('bruit' in proprietes.keys())
-        self.assertFalse('autre_bruit' in proprietes.keys())
+        # Checks the presence of a file properties.json
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'properties.json')))
+        with open(os.path.join(model.model_dir, 'properties.json'), 'r', encoding='{{default_encoding}}') as f:
+            properties = json.load(f)
+        self.assertFalse('maintainers' in properties.keys())
+        self.assertFalse('date' in properties.keys())
+        self.assertFalse('package_version' in properties.keys())
+        self.assertFalse('model_name' in properties.keys())
+        self.assertFalse('list_classes' in properties.keys())
+        self.assertFalse('librairie' in properties.keys())
+        self.assertFalse('fit_time' in properties.keys())
+        self.assertFalse('bruit' in properties.keys())
+        self.assertFalse('autre_bruit' in properties.keys())
         remove_dir(model_dir)
 
-    def test04_model_class_get_model_dir(self):
-        '''Test of the method {{package_name}}.models_training.model_class.ModelClass._get_model_dir'''
+    def test04_model_class_get_new_model_dir(self):
+        '''Test of the method {{package_name}}.models_training.model_class.ModelClass._get_new_model_dir'''
 
         # Model creation
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -269,7 +269,7 @@ class ModelClassTests(unittest.TestCase):
         # Nominal case
         model = ModelClass(model_dir=model_dir, model_name=model_name)
         expected_dir = os.path.join(utils.get_models_path(), model_name, f"{model_name}_")
-        res_dir = model._get_model_dir()
+        res_dir = model._get_new_model_dir()
         self.assertTrue(res_dir.startswith(expected_dir))
         remove_dir(model_dir)
 

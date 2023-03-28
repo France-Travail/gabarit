@@ -26,7 +26,6 @@ import shutil
 import numpy as np
 import pandas as pd
 
-from sklearn.svm import LinearSVC
 from sklearn.pipeline import Pipeline
 from sklearn.multiclass import OneVsRestClassifier
 from sklearn.ensemble import RandomForestClassifier
@@ -113,38 +112,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.level_save, 'LOW')
         remove_dir(model_dir)
 
-    def test02_model_class_get_classes_from_proba(self):
-        '''Test of the method {{package_name}}.models_training.model_class.ModelClass.get_classes_from_proba'''
-        # TODO: same as test05 ?
-
-        # Model creation
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-        model_name = 'test'
-        x_col = 'test_x'
-
-        # Test mono-label
-        multi_label = False
-        y_col = 'test_y'
-        model = ModelClass(model_dir=model_dir, model_name=model_name, x_col=x_col, y_col=y_col, multi_label=multi_label)
-        model.list_classes = ['a', 'b']
-        model.dict_classes = {0: 'a', 1: 'b'}
-        probas = np.array([[0.2, 0.8], [0.6, 0.4]])
-        self.assertEqual(list(model.get_classes_from_proba(probas)), ['b', 'a'])
-        remove_dir(model_dir)
-
-        # Test multi-labels
-        multi_label = True
-        y_col = ['test_y1', 'test_y2']
-        model = ModelClass(model_dir=model_dir, model_name=model_name, x_col=x_col, y_col=y_col, multi_label=multi_label)
-        model.list_classes = ['a', 'b', 'c']
-        model.dict_classes = {0: 'a', 1: 'b', 2: 'c'}
-        probas = np.array([[0.2, 0.8, 0.6], [0.6, 0.4, 0.8], [0.6, 0.9, 0.8], [0.3, 0.4, 0.4]])
-        self.assertEqual([list(_) for _ in model.get_classes_from_proba(probas)], [[0, 1, 1], [1, 0, 1], [1, 1, 1], [0, 0, 0]])
-        remove_dir(model_dir)
-
-
-    def test03_model_class_predict_with_proba(self):
+    def test02_model_class_predict_with_proba(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass.predict_with_proba'''
         # /!\ We must use a sub-class for the tests because the class ModelClass does not implement predict / predict_proba
 
@@ -185,8 +153,7 @@ class ModelClassTests(unittest.TestCase):
             model.predict_with_proba(x_train)
         remove_dir(model_dir)
 
-
-    def test04_model_class_get_predict_position(self):
+    def test03_model_class_get_predict_position(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass.get_predict_position'''
         # /!\ We must use a sub-class for the tests because the class ModelClass does not implement predict / predict_proba
 
@@ -226,6 +193,35 @@ class ModelClassTests(unittest.TestCase):
             model.get_predict_position(x_train, y_train_mono)
         remove_dir(model_dir)
 
+    def test04_model_class_get_classes_from_proba(self):
+        '''Test of the method {{package_name}}.models_training.model_class.ModelClass.get_classes_from_proba'''
+        # TODO: same as test05 ?
+
+        # Model creation
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_name = 'test'
+        x_col = 'test_x'
+
+        # Test mono-label
+        multi_label = False
+        y_col = 'test_y'
+        model = ModelClass(model_dir=model_dir, model_name=model_name, x_col=x_col, y_col=y_col, multi_label=multi_label)
+        model.list_classes = ['a', 'b']
+        model.dict_classes = {0: 'a', 1: 'b'}
+        probas = np.array([[0.2, 0.8], [0.6, 0.4]])
+        self.assertEqual(list(model.get_classes_from_proba(probas)), ['b', 'a'])
+        remove_dir(model_dir)
+
+        # Test multi-labels
+        multi_label = True
+        y_col = ['test_y1', 'test_y2']
+        model = ModelClass(model_dir=model_dir, model_name=model_name, x_col=x_col, y_col=y_col, multi_label=multi_label)
+        model.list_classes = ['a', 'b', 'c']
+        model.dict_classes = {0: 'a', 1: 'b', 2: 'c'}
+        probas = np.array([[0.2, 0.8, 0.6], [0.6, 0.4, 0.8], [0.6, 0.9, 0.8], [0.3, 0.4, 0.4]])
+        self.assertEqual([list(_) for _ in model.get_classes_from_proba(probas)], [[0, 1, 1], [1, 0, 1], [1, 1, 1], [0, 0, 0]])
+        remove_dir(model_dir)
 
     def test05_model_class_get_classes_from_proba(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass.get_classes_from_proba'''
@@ -238,7 +234,6 @@ class ModelClassTests(unittest.TestCase):
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
         y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
         y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0], 'test2': [1, 0, 0, 0, 0]})
-        cols = ['test1', 'test2']
 
         # Mono-label
         tfidf = TfidfVectorizer()
@@ -315,10 +310,7 @@ class ModelClassTests(unittest.TestCase):
         # Model creation
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
-        model_name = 'test'
-        x_col = 'test_x'
         y_col = 'test_y'
-        multi_label = True
 
         # inverse_transform - mono-label
         model = ModelClass(model_dir=model_dir, y_col=y_col, multi_label=False)
@@ -467,7 +459,6 @@ class ModelClassTests(unittest.TestCase):
         # Model creation
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
-        model_name = 'test'
         model = ModelClass(model_dir=model_dir)
         c_mat = [[10, 5], [8, 1]]
         expected_result = {'Accuracy': (10 + 1) / (10 + 5 + 8 + 1),
@@ -490,16 +481,28 @@ class ModelClassTests(unittest.TestCase):
         info_dict = model._update_info_from_c_mat(c_mat, label='toto', log_info=False)
         self.assertEqual(info_dict, expected_result)
 
-    def test12_model_class_save(self):
+    def test12_model_class_get_new_model_dir(self):
+        '''Test of the method {{package_name}}.models_training.model_class.ModelClass._get_new_model_dir'''
+
+        # Model creation
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_name = 'test'
+
+        # Nominal case
+        model = ModelClass(model_dir=model_dir, model_name=model_name)
+        expected_dir = os.path.join(utils.get_models_path(), model_name, f"{model_name}_")
+        res_dir = model._get_new_model_dir()
+        self.assertTrue(res_dir.startswith(expected_dir))
+        remove_dir(model_dir)
+
+    def test13_model_class_save(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass.save'''
 
         # Model creation
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
         model_name = 'test'
-        x_col = 'test_x'
-        y_col = 'test_y'
-        multi_label = True
 
         # test save
         model = ModelClass(model_dir=model_dir, model_name=model_name)
@@ -541,7 +544,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(configs['test'], 8)
         remove_dir(model_dir)
 
-    def test13_model_class_save_upload_properties(self):
+    def test14_model_class_save_upload_properties(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass._save_upload_properties'''
 
         # Model creation
@@ -568,26 +571,26 @@ class ModelClassTests(unittest.TestCase):
         with open(os.path.join(model.model_dir, 'model_upload_instructions.md'), 'r', encoding='{{default_encoding}}') as f:
             instructions = f.read()
         self.assertTrue(os.path.abspath(model.model_dir) in instructions)
-        # Checks the presence of a file proprietes.json
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'proprietes.json')))
-        with open(os.path.join(model.model_dir, 'proprietes.json'), 'r', encoding='{{default_encoding}}') as f:
-            proprietes = json.load(f)
-        self.assertTrue('maintainers' in proprietes.keys())
-        self.assertEqual(proprietes['maintainers'], "c'est nous")
-        self.assertTrue('date' in proprietes.keys())
-        self.assertEqual(proprietes['date'], "01/01/1970 - 00:00:00")
-        self.assertTrue('package_version' in proprietes.keys())
-        self.assertEqual(proprietes['package_version'], "0.0.8")
-        self.assertTrue('model_name' in proprietes.keys())
-        self.assertEqual(proprietes['model_name'], "hello_model")
-        self.assertTrue('list_classes' in proprietes.keys())
-        self.assertEqual(proprietes['list_classes'], ["c1", "c2", 9, "c3", 3])
-        self.assertTrue('librairie' in proprietes.keys())
-        self.assertEqual(proprietes['librairie'], "ma_lib")
-        self.assertTrue('fit_time' in proprietes.keys())
-        self.assertEqual(proprietes['fit_time'], "7895s")
-        self.assertFalse('bruit' in proprietes.keys())
-        self.assertFalse('autre_bruit' in proprietes.keys())
+        # Checks the presence of a file properties.json
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'properties.json')))
+        with open(os.path.join(model.model_dir, 'properties.json'), 'r', encoding='{{default_encoding}}') as f:
+            properties = json.load(f)
+        self.assertTrue('maintainers' in properties.keys())
+        self.assertEqual(properties['maintainers'], "c'est nous")
+        self.assertTrue('date' in properties.keys())
+        self.assertEqual(properties['date'], "01/01/1970 - 00:00:00")
+        self.assertTrue('package_version' in properties.keys())
+        self.assertEqual(properties['package_version'], "0.0.8")
+        self.assertTrue('model_name' in properties.keys())
+        self.assertEqual(properties['model_name'], "hello_model")
+        self.assertTrue('list_classes' in properties.keys())
+        self.assertEqual(properties['list_classes'], ["c1", "c2", 9, "c3", 3])
+        self.assertTrue('librairie' in properties.keys())
+        self.assertEqual(properties['librairie'], "ma_lib")
+        self.assertTrue('fit_time' in properties.keys())
+        self.assertEqual(properties['fit_time'], "7895s")
+        self.assertFalse('bruit' in properties.keys())
+        self.assertFalse('autre_bruit' in properties.keys())
         remove_dir(model_dir)
 
         # Same, mais via la fonction save
@@ -609,26 +612,26 @@ class ModelClassTests(unittest.TestCase):
         with open(os.path.join(model.model_dir, 'model_upload_instructions.md'), 'r', encoding='{{default_encoding}}') as f:
             instructions = f.read()
         self.assertTrue(os.path.abspath(model.model_dir) in instructions)
-        # Checks the presence of a file proprietes.json
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'proprietes.json')))
-        with open(os.path.join(model.model_dir, 'proprietes.json'), 'r', encoding='{{default_encoding}}') as f:
-            proprietes = json.load(f)
-        self.assertTrue('maintainers' in proprietes.keys())
-        self.assertEqual(proprietes['maintainers'], "c'est nous")
-        self.assertTrue('date' in proprietes.keys())
-        self.assertEqual(proprietes['date'], "01/01/1970 - 00:00:00")
-        self.assertTrue('package_version' in proprietes.keys())
-        self.assertEqual(proprietes['package_version'], "0.0.8")
-        self.assertTrue('model_name' in proprietes.keys())
-        self.assertEqual(proprietes['model_name'], "hello_model")
-        self.assertTrue('list_classes' in proprietes.keys())
-        self.assertEqual(proprietes['list_classes'], ["c1", "c2", "c8", "c3"])
-        self.assertTrue('librairie' in proprietes.keys())
-        self.assertEqual(proprietes['librairie'], "ma_lib")
-        self.assertTrue('fit_time' in proprietes.keys())
-        self.assertEqual(proprietes['fit_time'], "7895s")
-        self.assertFalse('bruit' in proprietes.keys())
-        self.assertFalse('autre_bruit' in proprietes.keys())
+        # Checks the presence of a file properties.json
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'properties.json')))
+        with open(os.path.join(model.model_dir, 'properties.json'), 'r', encoding='{{default_encoding}}') as f:
+            properties = json.load(f)
+        self.assertTrue('maintainers' in properties.keys())
+        self.assertEqual(properties['maintainers'], "c'est nous")
+        self.assertTrue('date' in properties.keys())
+        self.assertEqual(properties['date'], "01/01/1970 - 00:00:00")
+        self.assertTrue('package_version' in properties.keys())
+        self.assertEqual(properties['package_version'], "0.0.8")
+        self.assertTrue('model_name' in properties.keys())
+        self.assertEqual(properties['model_name'], "hello_model")
+        self.assertTrue('list_classes' in properties.keys())
+        self.assertEqual(properties['list_classes'], ["c1", "c2", "c8", "c3"])
+        self.assertTrue('librairie' in properties.keys())
+        self.assertEqual(properties['librairie'], "ma_lib")
+        self.assertTrue('fit_time' in properties.keys())
+        self.assertEqual(properties['fit_time'], "7895s")
+        self.assertFalse('bruit' in properties.keys())
+        self.assertFalse('autre_bruit' in properties.keys())
         remove_dir(model_dir)
 
         # Empty case
@@ -640,35 +643,173 @@ class ModelClassTests(unittest.TestCase):
         with open(os.path.join(model.model_dir, 'model_upload_instructions.md'), 'r', encoding='{{default_encoding}}') as f:
             instructions = f.read()
         self.assertTrue(os.path.abspath(model.model_dir) in instructions)
-        # Checks the presence of a file proprietes.json
-        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'proprietes.json')))
-        with open(os.path.join(model.model_dir, 'proprietes.json'), 'r', encoding='{{default_encoding}}') as f:
-            proprietes = json.load(f)
-        self.assertFalse('maintainers' in proprietes.keys())
-        self.assertFalse('date' in proprietes.keys())
-        self.assertFalse('package_version' in proprietes.keys())
-        self.assertFalse('model_name' in proprietes.keys())
-        self.assertFalse('list_classes' in proprietes.keys())
-        self.assertFalse('librairie' in proprietes.keys())
-        self.assertFalse('fit_time' in proprietes.keys())
-        self.assertFalse('bruit' in proprietes.keys())
-        self.assertFalse('autre_bruit' in proprietes.keys())
+        # Checks the presence of a file properties.json
+        self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'properties.json')))
+        with open(os.path.join(model.model_dir, 'properties.json'), 'r', encoding='{{default_encoding}}') as f:
+            properties = json.load(f)
+        self.assertFalse('maintainers' in properties.keys())
+        self.assertFalse('date' in properties.keys())
+        self.assertFalse('package_version' in properties.keys())
+        self.assertFalse('model_name' in properties.keys())
+        self.assertFalse('list_classes' in properties.keys())
+        self.assertFalse('librairie' in properties.keys())
+        self.assertFalse('fit_time' in properties.keys())
+        self.assertFalse('bruit' in properties.keys())
+        self.assertFalse('autre_bruit' in properties.keys())
         remove_dir(model_dir)
 
-    def test14_model_class_get_model_dir(self):
-        '''Test of the method {{package_name}}.models_training.model_class.ModelClass._get_model_dir'''
+    def test15_model_class_load_model(self):
+        '''Test of the method {{package_name}}.models_training.model_class.ModelClass.load_model'''
 
         # Model creation
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
         model_name = 'test'
 
-        # Nominal case
+        # Create and save a model
         model = ModelClass(model_dir=model_dir, model_name=model_name)
-        expected_dir = os.path.join(utils.get_models_path(), model_name, f"{model_name}_")
-        res_dir = model._get_model_dir()
-        self.assertTrue(res_dir.startswith(expected_dir))
+        configuration_path = os.path.join(model.model_dir, 'configurations.json')
+        model.toto = 'titi'
+        model.save(json_data={'test': 8})
+
+        # Load it back
+        new_model, new_conf = ModelClass.load_model(model_dir)
+        self.assertEqual(new_model.toto, 'titi')
+        self.assertEqual(new_conf['test'], 8)
+
+        # Load it with != config_path
+        new_conf_dir = os.path.join(os.getcwd(), 'model_test_123456789', 'subdir')
+        new_conf_path = os.path.join(new_conf_dir, 'configurations.json')
+        os.makedirs(new_conf_dir)
+        shutil.move(configuration_path, new_conf_path)
+        new_model_2, new_conf_2 = ModelClass.load_model(model_dir, config_path=new_conf_path)
+        self.assertEqual(new_model_2.toto, 'titi')
+        self.assertEqual(new_conf_2['test'], 8)
+
+        # Clean
         remove_dir(model_dir)
+
+    def test16_model_class_load_configs(self):
+        '''Test of the method {{package_name}}.models_training.model_class.ModelClass.load_configs'''
+
+        # Model creation
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_name = 'test'
+
+        # Create and save a model
+        model = ModelClass(model_dir=model_dir, model_name=model_name)
+        model.dict_classes = {0: 'tata', 1: 'toto'}
+        model.list_classes = ['tata', 'toto']
+        configuration_path = os.path.join(model.model_dir, 'configurations.json')
+        model.save(json_data={'test': 8})
+
+        # Load configuration from model_dir
+        confs = ModelClass.load_configs(model_dir=model_dir)
+        self.assertEqual(confs['test'], 8)
+        self.assertEqual(confs['dict_classes'], model.dict_classes)
+        self.assertEqual(confs['list_classes'], model.list_classes)
+
+        # Load configuration from configuration path
+        confs = ModelClass.load_configs(config_path=configuration_path)
+        self.assertEqual(confs['test'], 8)
+        self.assertEqual(confs['dict_classes'], model.dict_classes)
+        self.assertEqual(confs['list_classes'], model.list_classes)
+
+        # Load conf, but with dict_classes & list_classes empty
+        model.dict_classes = None
+        model.list_classes = None
+        model.save(json_data={'test': 8})
+        confs = ModelClass.load_configs(model_dir=model_dir)
+        self.assertEqual(confs['test'], 8)
+        self.assertEqual(confs['dict_classes'], None)
+        self.assertEqual(confs['list_classes'], None)
+
+        # Manage errors
+        with self.assertRaises(ValueError):
+            ModelClass.load_configs()
+
+        # Clean
+        remove_dir(model_dir)
+
+    def test17_model_class_init_from_standalone_files(self):
+        '''Test of the method {{package_name}}.models_training.model_class.ModelClass.init_from_standalone_files'''
+
+        # Model creation
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_name = 'test'
+
+        # Create and save a model
+        model = ModelClass(model_dir=model_dir, model_name=model_name)
+        model.x_col = 'coucou_x_col'
+        model.dict_classes = {0: 'tata', 1: 'toto'}
+        model.list_classes = ['tata', 'toto']
+        model.trained = True
+        model.nb_fit = 3
+        model.save(json_data={'test': 8})
+
+        with patch.object(ModelClass, '_load_standalone_files', return_value=None):
+            new_model, confs = ModelClass.init_from_standalone_files(model_dir=model_dir)
+            self.assertEqual(new_model.x_col, 'coucou_x_col')
+            self.assertEqual(confs['test'], 8)
+            self.assertEqual(confs['dict_classes'], model.dict_classes)
+            self.assertEqual(confs['list_classes'], model.list_classes)
+            self.assertEqual(new_model.dict_classes, model.dict_classes)
+            self.assertEqual(new_model.list_classes, model.list_classes)
+            self.assertEqual(new_model.nb_fit, 3)
+            self.assertTrue(new_model.trained)
+
+        # Manage errors
+        with self.assertRaises(ValueError):
+            ModelClass.init_from_standalone_files()
+        with self.assertRaises(NotImplementedError):
+            ModelClass.init_from_standalone_files(model_dir=model_dir)
+
+        # Clean
+        remove_dir(model_dir)
+
+    def test18_model_class_init_new_instance_from_configs(self):
+        '''Test of the method {{package_name}}.models_training.model_class.ModelClass._init_new_instance_from_configs'''
+        # Create a set of configurations
+        configs = {
+            'model_name': 'toto',
+            'model_dir': os.getcwd(),
+            'nb_fit': '25',
+            'trained': True,
+            'x_col': 'titi',
+            'y_col': 'tata',
+            'list_classes': ['tata', 'toto'],
+            'dict_classes': {0: 'tata', 1: 'toto'},
+            'multi_label': True,
+            'level_save': 'HIGH',
+        }
+
+        # Init new class from configuration path
+        model = ModelClass._init_new_instance_from_configs(configs=configs)
+        self.assertNotEqual(model.model_name, configs['model_name'])
+        self.assertNotEqual(model.model_dir, configs['model_dir'])
+        self.assertEqual(model.nb_fit, configs['nb_fit'])
+        self.assertEqual(model.trained, configs['trained'])
+        self.assertEqual(model.x_col, configs['x_col'])
+        self.assertEqual(model.y_col, configs['y_col'])
+        self.assertEqual(model.list_classes, configs['list_classes'])
+        self.assertEqual(model.dict_classes, configs['dict_classes'])
+        self.assertEqual(model.multi_label, configs['multi_label'])
+        self.assertEqual(model.level_save, configs['level_save'])
+
+        # Load from empty configuration
+        model = ModelClass._init_new_instance_from_configs(configs={})
+        self.assertNotEqual(model.model_name, None)
+        self.assertNotEqual(model.model_dir, None)
+        self.assertEqual(model.nb_fit, 1)
+        self.assertEqual(model.trained, True)
+        self.assertEqual(model.x_col, None)
+        self.assertEqual(model.y_col, None)
+        self.assertEqual(model.list_classes, None)
+        self.assertEqual(model.dict_classes, None)
+        self.assertNotEqual(model.multi_label, None)
+        self.assertNotEqual(model.level_save, None)
 
 
 # Perform tests

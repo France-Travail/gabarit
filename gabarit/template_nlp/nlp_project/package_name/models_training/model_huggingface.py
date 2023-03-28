@@ -21,7 +21,6 @@
 
 
 import os
-import json
 import shutil
 import logging
 import numpy as np
@@ -56,7 +55,6 @@ class ModelHuggingFace(ModelClass):
     '''Generic model for Huggingface NN'''
 
     _default_name = 'model_huggingface'
-
 
     # TODO: perhaps it would be smarter to have this class behaving as the abstract class for all the model types
     # implemented on the HF hub and to create model specific subclasses.
@@ -152,7 +150,7 @@ class ModelHuggingFace(ModelClass):
                 for i in range(1, self.nb_fit):
                     src_files.append(os.path.join(self.model_dir, f"configurations_fit_{i}.json"))
             # Change model dir
-            self.model_dir = self._get_model_dir()
+            self.model_dir = self._get_new_model_dir()
             # Get dst files
             dst_files = [os.path.join(self.model_dir, f"configurations_fit_{self.nb_fit}.json")]
             if self.nb_fit > 1:
@@ -620,109 +618,94 @@ class ModelHuggingFace(ModelClass):
         #   will be reloaded automatically at first call to predict functions
         hf_model = self.model
         hf_tokenizer = self.tokenizer
+        pipe = self.pipe
         self.model = None
         self.tokenizer = None
-        if self.pipe is not None:
-            self.pipe = None
+        self.pipe = None
         super().save(json_data=json_data)
         self.model = hf_model
         self.tokenizer = hf_tokenizer
+        self.pipe = pipe
 
-    def reload_model(self, model_path: str) -> Any:
-        '''Loads a HF model from a directory
+    def _hook_post_load_model_pkl(self):
+        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)
 
-        Args:
-            model_path (str): Path to the directory containing both the model.bin and its conf
-        Returns:
-            ?: HF model
+        Raises:
+            FileNotFoundError: If the HF model directory does not exist
+            FileNotFoundError: If the HF tokenizer directory does not exist
         '''
+        # Paths
+        hf_model_dir = os.path.join(self.model_dir, 'hf_model')
+        hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
+
+        # Manage errors
+        if not os.path.isdir(hf_model_dir):
+            raise FileNotFoundError(f"Can't find HF model directory ({hf_model_dir})")
+        if not os.path.isdir(hf_tokenizer_dir):
+            raise FileNotFoundError(f"Can't find HF tokenizer directory ({hf_tokenizer_dir})")
+
         # Loading the model
-        hf_model = self._get_model(model_path)
+        self.model = self._get_model(hf_model_dir)
+        # Loading the tokenizer
+        self.tokenizer = self._get_tokenizer(hf_tokenizer_dir)
 
-        # Set trained to true if not already true
-        # TODO: check if we really need this
-        if not self.trained:
-            self.trained = True
-            self.nb_fit = 1
-
-        # Return
-        return hf_model
-
-    def reload_tokenizer(self, tokenizer_path: str) -> Any:
-        '''Loads a HF model from a directory
+    @classmethod
+    def _init_new_instance_from_configs(cls, configs):
+        '''Inits a new instance from a set of configurations
 
         Args:
-            tokenizer_path (str): Path to the directory containing the tokenizer files
+            configs: a set of configurations of a model to be reloaded
         Returns:
-            ?: HF tokenizer
+            ModelClass: the newly generated class
         '''
-        # Loading the tokenizer
-        hf_tokenizer = self._get_tokenizer(tokenizer_path)
+        # Call parent
+        model = super()._init_new_instance_from_configs(configs)
 
-        # Return
-        return hf_tokenizer
+        # Try to read the following attributes from configs and, if absent, keep the current one
+        for attribute in ['batch_size', 'epochs', 'validation_split', 'patience',
+                          'transformer_name', 'transformer_params', 'trainer_params', 'model_max_length']:
+            setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
 
-    def reload_from_standalone(self, **kwargs) -> None:
-        '''Reloads a model from its configuration and "standalones" files
-        - /!\\ Experimental /!\\ -
+        # Return the new model
+        return model
+
+    def _load_standalone_files(self, default_model_dir: Union[str, None] = None, hf_model_dir_path: Union[str, None] = None,
+                               hf_tokenizer_dir_path: Union[str, None] = None, *args, **kwargs):
+        '''Loads standalone files for a newly created model via _init_new_instance_from_configs
 
         Kwargs:
-            configuration_path (str): Path to configuration file
-            hf_model_dir (str): Path to HuggingFace model directory
-            hf_tokenizer_dir (str): Path to HuggingFace tokenizer directory
+            default_model_dir (str): a path to look for default file paths
+                                     If None, standalone files path should all be provided
+            hf_model_dir_path (str): path to HF model directory.
+                                If None, we'll use the default path if default_model_dir is not None
+            hf_tokenizer_dir_path (str): path to HF tokenizer directory.
+                                    If None, we'll use the default path if default_model_dir is not None
         Raises:
-            ValueError: If configuration_path is None
-            ValueError: If hf_model_dir is None
-            ValueError: If hf_tokenizer_dir is None
-            FileNotFoundError: If the object configuration_path is not an existing file
-            FileNotFoundError: If the object hf_model_dir is not an existing file
-            FileNotFoundError: If the object hf_tokenizer_dir is not an existing file
+            ValueError: If at least one path is not specified and can't be inferred
+            FileNotFoundError: If the HF model directory does not exist
+            FileNotFoundError: If the HF tokenizer directory does not exist
         '''
-        # Retrieve args
-        configuration_path = kwargs.get('configuration_path', None)
-        hf_model_dir_path = kwargs.get('hf_model_dir_path', None)
-        hf_tokenizer_dir_path = kwargs.get('hf_tokenizer_dir_path', None)
+        # Check if we are able to get all needed paths
+        if default_model_dir is None and None in [hf_model_dir_path, hf_tokenizer_dir_path]:
+            raise ValueError("At least one path is not specified and can't be inferred")
 
-        # Checks
-        if configuration_path is None:
-            raise ValueError("The argument configuration_path can't be None")
+        # Retrieve file paths
         if hf_model_dir_path is None:
-            raise ValueError("The argument hf_model_dir_path can't be None")
+            hf_model_dir_path = os.path.join(default_model_dir, "hf_model")
         if hf_tokenizer_dir_path is None:
-            raise ValueError("The argument hf_tokenizer_dir_path can't be None")
-        if not os.path.exists(configuration_path):
-            raise FileNotFoundError(f"The file {configuration_path} does not exist")
-        if not os.path.exists(hf_model_dir_path):
-            raise FileNotFoundError(f"The file {hf_model_dir_path} does not exist")
-        if not os.path.exists(hf_tokenizer_dir_path):
-            raise FileNotFoundError(f"The file {hf_tokenizer_dir_path} does not exist")
+            hf_tokenizer_dir_path = os.path.join(default_model_dir, "hf_tokenizer")
 
-        # Load confs
-        with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
-            configs = json.load(f)
-        # Can't set int as keys in json, so need to cast it after reloading
-        # dict_classes keys are always ints
-        if 'dict_classes' in configs.keys():
-            configs['dict_classes'] = {int(k): v for k, v in configs['dict_classes'].items()}
-        elif 'list_classes' in configs.keys():
-            configs['dict_classes'] = {i: col for i, col in enumerate(configs['list_classes'])}
-
-        # Set class vars
-        # self.model_name = # Keep the created name
-        # self.model_dir = # Keep the created folder
-        self.nb_fit = configs.get('nb_fit', 1)  # Consider one unique fit by default
-        self.trained = configs.get('trained', True)  # Consider trained by default
-        # Try to read the following attributes from configs and, if absent, keep the current one
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label',
-                          'level_save', 'batch_size', 'epochs', 'validation_split', 'patience',
-                          'transformer_name', 'transformer_params', 'trainer_params', 'model_max_length']:
-            setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
+        # Check paths exists
+        if not os.path.isdir(hf_model_dir_path):
+            raise FileNotFoundError(f"Can't find HF model directory ({hf_model_dir_path})")
+        if not os.path.isdir(hf_tokenizer_dir_path):
+            raise FileNotFoundError(f"Can't find HF tokenizer directory ({hf_tokenizer_dir_path})")
 
         # Reload model & tokenizer
         self.model = self._get_model(hf_model_dir_path)
         self.tokenizer = self._get_tokenizer(hf_tokenizer_dir_path)
 
-        # Save hf folders in new folder
+        # Save hf folders in new folder (as this is skipped in save function)
         new_hf_model_dir_path = os.path.join(self.model_dir, 'hf_model')
         new_hf_tokenizer_dir_path = os.path.join(self.model_dir, 'hf_tokenizer')
         shutil.copytree(hf_model_dir_path, new_hf_model_dir_path)

@@ -23,7 +23,6 @@ import os
 import ntpath
 import logging
 import argparse
-import pandas as pd
 from typing import List
 
 from {{package_name}} import utils

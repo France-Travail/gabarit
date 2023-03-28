@@ -392,180 +392,128 @@ class ModelTfidfLgbmTests(unittest.TestCase):
         self.assertTrue('lgbm_confs' in configs.keys())
         remove_dir(model_dir)
 
-    def test06_model_tfidf_lgbm_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.models_sklearn.model_tfidf_lgbm.ModelTfidfLgbm.reload_from_standalone'''
-
-        ############################################
-        # mono_label & without multi-classes strategy
-        ############################################
-
-        # Create model
+    def test_06_model_tfidf_lgbm_init_new_instance_from_configs(self):
+        '''Test of the method {{package_name}}.models_training.models_sklearn.model_tfidf_lgbm.ModelTfidfLgbm._init_new_instance_from_configs'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
-        y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
-        model = ModelTfidfLgbm(model_dir=model_dir, multi_label=False, multiclass_strategy=None)
-        tfidf = model.tfidf
-        lgbm = model.lgbm
-        model.fit(x_train, y_train_mono)
-        model.save()
-
-        # Reload
-        pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
-        conf_path = os.path.join(model.model_dir, "configurations.json")
-        new_model = ModelTfidfLgbm(model_dir=model_dir_2)
-        new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
-
-        # Test
-        self.assertEqual(model.model_name, new_model.model_name)
-        self.assertEqual(model.trained, new_model.trained)
-        self.assertEqual(model.nb_fit, new_model.nb_fit)
-        self.assertEqual(model.x_col, new_model.x_col)
-        self.assertEqual(model.y_col, new_model.y_col)
-        self.assertEqual(model.list_classes, new_model.list_classes)
-        self.assertEqual(model.dict_classes, new_model.dict_classes)
-        self.assertEqual(model.multi_label, new_model.multi_label)
-        self.assertEqual(model.level_save, new_model.level_save)
-        self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
-        self.assertEqual(model.tfidf.get_params(), tfidf.get_params())
-        self.assertEqual(model.lgbm.get_params(), lgbm.get_params())
-        # We can't really test the pipeline so we test predictions
-        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
         remove_dir(model_dir)
-        remove_dir(new_model.model_dir)
 
-        ############################################
-        # mono_label & with multi-classes strategy
-        ############################################
-
-        # Create model
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
-        y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
+        # Nominal case
         model = ModelTfidfLgbm(model_dir=model_dir, multi_label=False, multiclass_strategy='ovr')
-        tfidf = model.tfidf
-        lgbm = model.lgbm
-        model.fit(x_train, y_train_mono)
-        model.save()
-
-        # Reload
-        pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
-        conf_path = os.path.join(model.model_dir, "configurations.json")
-        new_model = ModelTfidfLgbm(model_dir=model_dir_2)
-        new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
-
-        # Test
-        self.assertEqual(model.model_name, new_model.model_name)
-        self.assertEqual(model.trained, new_model.trained)
-        self.assertEqual(model.nb_fit, new_model.nb_fit)
-        self.assertEqual(model.x_col, new_model.x_col)
-        self.assertEqual(model.y_col, new_model.y_col)
-        self.assertEqual(model.list_classes, new_model.list_classes)
-        self.assertEqual(model.dict_classes, new_model.dict_classes)
-        self.assertEqual(model.multi_label, new_model.multi_label)
-        self.assertEqual(model.level_save, new_model.level_save)
-        self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
-        self.assertEqual(model.tfidf.get_params(), tfidf.get_params())
-        self.assertEqual(model.lgbm.get_params(), lgbm.get_params())
-        # We can't really test the pipeline so we test predictions
-        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
+        model.save(json_data={'test': 8})
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelTfidfLgbm._init_new_instance_from_configs(configs=configs)
+        self.assertTrue(isinstance(new_model, ModelTfidfLgbm))
+        self.assertEqual(new_model.nb_fit, 0)
+        self.assertFalse(new_model.trained)
+        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+            self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
-        ############################################
-        # multi_labels & without multi-classes strategy
-        ############################################
+        # Check by changing some attributes
+        model = ModelTfidfLgbm(model_dir=model_dir, multi_label=False, multiclass_strategy='ovo')
+        model.nb_fit = 2
+        model.trained = True
+        model.x_col = 'coucou'
+        model.y_col = 'coucou_2'
+        model.list_classes = ['class_1', 'class_2', 'class_3']
+        model.dict_classes = {0: 'class_1', 1: 'class_2', 2: 'class_3'}
+        model.multi_label = True
+        model.level_save = 'MEDIUM'
+        model.save(json_data={'test': 8})
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelTfidfLgbm._init_new_instance_from_configs(configs=configs)
+        self.assertTrue(isinstance(new_model, ModelTfidfLgbm))
+        self.assertEqual(new_model.nb_fit, 2)
+        self.assertTrue(new_model.trained)
+        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+            self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
 
-        # Create model
+    def test_07_model_tfidf_lgbm__load_standalone_files(self):
+        '''Test of the method {{package_name}}.models_training.models_sklearn.model_tfidf_lgbm.ModelTfidfLgbm._load_standalone_files'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
-        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0], 'test2': [1, 0, 0, 0, 0], 'test3': [0, 0, 0, 1, 0]})
-        cols = ['test1', 'test2', 'test3']
-        model = ModelTfidfLgbm(model_dir=model_dir, multi_label=True, multiclass_strategy=None)
-        tfidf = model.tfidf
-        lgbm = model.lgbm
-        model.fit(x_train, y_train_multi[cols])
-        model.save()
+        remove_dir(model_dir)
+        new_model_dir = os.path.join(os.getcwd(), 'model_test_987654321')
+        remove_dir(new_model_dir)
+        sklearn_pipeline_path = os.path.join(model_dir, "sklearn_pipeline_standalone.pkl")
 
-        # Reload
-        pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
-        conf_path = os.path.join(model.model_dir, "configurations.json")
-        new_model = ModelTfidfLgbm(model_dir=model_dir_2)
-        new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
+        
+        # Multi label False
+        model = ModelTfidfLgbm(model_dir=model_dir, multi_label=False, multiclass_strategy=None,
+                             tfidf_params={'ngram_range': (2, 2), 'max_df': 0.9, 'min_df': 2},
+                             lgbm_params={'num_leaves': 32, 'max_depth': 5})
+        # Save model
+        model.save(json_data={'test': 8})
 
-        # Test
-        self.assertEqual(model.model_name, new_model.model_name)
-        self.assertEqual(model.trained, new_model.trained)
-        self.assertEqual(model.nb_fit, new_model.nb_fit)
-        self.assertEqual(model.x_col, new_model.x_col)
-        self.assertEqual(model.y_col, new_model.y_col)
-        self.assertEqual(model.list_classes, new_model.list_classes)
-        self.assertEqual(model.dict_classes, new_model.dict_classes)
-        self.assertEqual(model.multi_label, new_model.multi_label)
-        self.assertEqual(model.level_save, new_model.level_save)
-        self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
-        self.assertEqual(model.tfidf.get_params(), tfidf.get_params())
-        self.assertEqual(model.lgbm.get_params(), lgbm.get_params())
-        # We can't really test the pipeline so we test predictions
-        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
+        new_model = ModelTfidfLgbm(model_dir=new_model_dir)
+        tfidf = new_model.tfidf
+        lgbm = new_model.lgbm
+        self.assertEqual(tfidf.ngram_range, (1, 1))
+        self.assertAlmostEqual(tfidf.max_df, 1.0)
+        self.assertEqual(tfidf.min_df, 1)
+        self.assertAlmostEqual(lgbm.num_leaves, 31)
+        self.assertEqual(lgbm.max_depth, -1)
+        # First load the model configurations
+        configs = ModelTfidfLgbm.load_configs(model_dir=model_dir)
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'multiclass_strategy']:
+            setattr(new_model, attribute, configs.get(attribute, getattr(new_model, attribute)))
+        new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
+        tfidf = new_model.tfidf
+        lgbm = new_model.lgbm
+        self.assertEqual(tfidf.ngram_range, (2, 2))
+        self.assertAlmostEqual(tfidf.max_df, 0.9)
+        self.assertEqual(tfidf.min_df, 2)
+        self.assertAlmostEqual(lgbm.num_leaves, 32)
+        self.assertEqual(lgbm.max_depth, 5)
+        
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
-        ############################################
-        # multi_labels & with multi-classes strategy
-        ############################################
+        # Multi label True
+        model = ModelTfidfLgbm(model_dir=model_dir, multi_label=True, multiclass_strategy=None,
+                             tfidf_params={'ngram_range': (2, 2), 'max_df': 0.9, 'min_df': 2},
+                             lgbm_params={'num_leaves': 32, 'max_depth': 5})
+        # Save model
+        model.save(json_data={'test': 8})
 
-        # Create model
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
-        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0], 'test2': [1, 0, 0, 0, 0], 'test3': [0, 0, 0, 1, 0]})
-        cols = ['test1', 'test2', 'test3']
-        model = ModelTfidfLgbm(model_dir=model_dir, multi_label=True, multiclass_strategy='ovr')
-        tfidf = model.tfidf
-        lgbm = model.lgbm
-        model.fit(x_train, y_train_multi[cols])
-        model.save()
-
-        # Reload
-        pkl_path = os.path.join(model.model_dir, f"sklearn_pipeline_standalone.pkl")
-        conf_path = os.path.join(model.model_dir, "configurations.json")
-        new_model = ModelTfidfLgbm(model_dir=model_dir_2)
-        new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path=pkl_path)
-
-        # Test
-        self.assertEqual(model.model_name, new_model.model_name)
-        self.assertEqual(model.trained, new_model.trained)
-        self.assertEqual(model.nb_fit, new_model.nb_fit)
-        self.assertEqual(model.x_col, new_model.x_col)
-        self.assertEqual(model.y_col, new_model.y_col)
-        self.assertEqual(model.list_classes, new_model.list_classes)
-        self.assertEqual(model.dict_classes, new_model.dict_classes)
-        self.assertEqual(model.multi_label, new_model.multi_label)
-        self.assertEqual(model.level_save, new_model.level_save)
-        self.assertEqual(model.nb_fit, new_model.nb_fit)
-        self.assertEqual(model.trained, new_model.trained)
-        self.assertEqual(model.multiclass_strategy, new_model.multiclass_strategy)
-        self.assertEqual(model.tfidf.get_params(), tfidf.get_params())
-        self.assertEqual(model.lgbm.get_params(), lgbm.get_params())
-        # We can't really test the pipeline so we test predictions
-        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
+        new_model = ModelTfidfLgbm(model_dir=new_model_dir)
+        tfidf = new_model.tfidf
+        lgbm = new_model.lgbm
+        self.assertEqual(tfidf.ngram_range, (1, 1))
+        self.assertAlmostEqual(tfidf.max_df, 1.0)
+        self.assertEqual(tfidf.min_df, 1)
+        self.assertAlmostEqual(lgbm.num_leaves, 31)
+        self.assertEqual(lgbm.max_depth, -1)
+        # First load the model configurations
+        configs = ModelTfidfLgbm.load_configs(model_dir=model_dir)
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'multiclass_strategy']:
+            setattr(new_model, attribute, configs.get(attribute, getattr(new_model, attribute)))
+        new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
+        tfidf = new_model.tfidf
+        lgbm = new_model.lgbm
+        self.assertEqual(tfidf.ngram_range, (2, 2))
+        self.assertAlmostEqual(tfidf.max_df, 0.9)
+        self.assertEqual(tfidf.min_df, 2)
+        self.assertAlmostEqual(lgbm.num_leaves, 32)
+        self.assertEqual(lgbm.max_depth, 5)
+        
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
-        ############################################
-        # Errors
-        ############################################
 
+        model = ModelTfidfLgbm(model_dir=model_dir, multi_label=False, multiclass_strategy='ovr',
+                             tfidf_params={'ngram_range': (2, 2), 'max_df': 0.9, 'min_df': 2})
+
+        # Check errors
+        with self.assertRaises(ValueError):
+            model._load_standalone_files()
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfLgbm(model_dir=model_dir_2)
-            new_model.reload_from_standalone(configuration_path='toto.json', sklearn_pipeline_path=pkl_path)
+            model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
         with self.assertRaises(FileNotFoundError):
-            new_model = ModelTfidfLgbm(model_dir=model_dir_2)
-            new_model.reload_from_standalone(configuration_path=conf_path, sklearn_pipeline_path='toto.pkl')
+            model._load_standalone_files(sklearn_pipeline_path=model_dir)
+        remove_dir(model_dir)
 
 
 # Perform tests

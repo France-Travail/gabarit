@@ -24,7 +24,7 @@ import dill as pickle
 import logging
 import numpy as np
 import pandas as pd
-from typing import Union
+from typing import Union, Any
 
 from sklearn.pipeline import Pipeline
 
@@ -37,8 +37,11 @@ class ModelPipeline(ModelClass):
 
     _default_name = 'model_pipeline'
 
-    # Not implemented :
-    # -> reload
+    # Probably need to be overridden, depending on your model :
+    # -> predict_proba (predict on new content - returns probas) -> some pipelines do not provide proba, or may have specificities
+    # -> save (specific save instructions)
+    # -> _init_new_instance_from_configs (loads model attributes - for a newly created model)
+    # -> _load_standalone_files (loads standalone files - for a newly created model) -> add pipeline elements
 
     def __init__(self, pipeline: Union[Pipeline, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelClass for more arguments)
@@ -179,11 +182,34 @@ class ModelPipeline(ModelClass):
             with open(pkl_path, 'wb') as f:
                 pickle.dump(self.pipeline, f)
 
-    def reload_from_standalone(self, **kwargs) -> None:
-        '''Reloads a model from its configuration and "standalones" files
-        - /!\\ Needs to be overridden /!\\ -
+    def _load_standalone_files(self, default_model_dir: Union[str, None] = None,
+                               sklearn_pipeline_path: Union[str, None] = None, *args, **kwargs):
+        '''Loads standalone files for a newly created model via _init_new_instance_from_configs
+
+        Kwargs:
+            default_model_dir (str): a path to look for default file paths
+                                     If None, standalone files path should all be provided
+            sklearn_pipeline_path (str): Path to the sklearn pipeline
+                                         If None, we'll use the default path if default_model_dir is not None
+        Raises:
+            ValueError: If the sklearn pipeline is not specified and can't be inferred
+            FileNotFoundError: If the sklearn pipeline path does not exist
         '''
-        raise NotImplementedError("'reload_from_standalone' needs to be overridden")
+        # Check if we are able to get all needed paths
+        if default_model_dir is None and sklearn_pipeline_path is None:
+            raise ValueError("Sklearn pipeline path is not specified and can't be inferred")
+
+        # Retrieve file paths
+        if sklearn_pipeline_path is None:
+            sklearn_pipeline_path = os.path.join(default_model_dir, "sklearn_pipeline_standalone.pkl")
+
+        # Check paths exists
+        if not os.path.isfile(sklearn_pipeline_path):
+            raise FileNotFoundError(f"Can't find sklearn pipeline path ({sklearn_pipeline_path})")
+
+        # Reload sklearn pipeline
+        with open(sklearn_pipeline_path, 'rb') as f:
+            self.pipeline = pickle.load(f)
 
 
 if __name__ == '__main__':

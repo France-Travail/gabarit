@@ -709,130 +709,151 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test014_model_huggingface_reload_model(self):
-        '''Test of the method reload_model of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
-
+    def test14_model_huggingface_init_new_instance_from_configs(self):
+        '''Test of the method _init_new_instance_from_configs of {{package_name}}.models_training.models_tensorflow.model_huggingface.ModelHuggingFace'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
 
-        # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
-        y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
+        # Nominal case
+        model = ModelHuggingFace(model_dir=model_dir)
+        model.save(json_data={'test': 8})
+        configs = model.load_configs(model_dir=model_dir)
 
-        # Create model & fit it & save
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
-        model.fit(x_train, y_train_mono)
-        probas = model.predict_proba(['test', 'toto', 'titi'])
-        model.save()
-
-        # Reload model
-        hf_model_dir_path = os.path.join(model.model_dir, 'hf_model')
-        reloaded_model = model.reload_model(hf_model_dir_path)
-        # Prepare predictions
-        reloaded_model.eval()
-        device = 0 if model._is_gpu_activated() else -1
-        reloaded_pipe = TextClassificationPipeline(model=reloaded_model, tokenizer=model.tokenizer, return_all_scores=True, device=device)
-        tokenizer_kwargs = {'padding': False, 'truncation': True}
-        reloaded_results = np.array(reloaded_pipe(['test', 'toto', 'titi'], **tokenizer_kwargs))
-        reloaded_probas = np.array([[x['score'] for x in x] for x in reloaded_results])
-        # Assert equals
-        self.assertEqual([list(_) for _ in reloaded_probas], [list(_) for _ in probas])
-
-        # Clean
-        remove_dir(model_dir)
-
-    def test015_model_huggingface_reload_tokenizer(self):
-        '''Test of the method reload_tokenizer of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-
-        # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
-        y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
-
-        # Create model & fit it & save
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
-        model.fit(x_train, y_train_mono)
-        probas = model.predict_proba(['test', 'toto', 'titi'])
-        model.save()
-
-        # Reload tokenizer
-        hf_tokenizer_dir_path = os.path.join(model.model_dir, 'hf_tokenizer')
-        reloaded_tokenizer = model.reload_tokenizer(hf_tokenizer_dir_path)
-        # Prepare predictions
-        model.model.eval()
-        device = 0 if model._is_gpu_activated() else -1
-        reloaded_pipe = TextClassificationPipeline(model=model.model, tokenizer=reloaded_tokenizer, return_all_scores=True, device=device)
-        tokenizer_kwargs = {'padding': False, 'truncation': True}
-        reloaded_results = np.array(reloaded_pipe(['test', 'toto', 'titi'], **tokenizer_kwargs))
-        reloaded_probas = np.array([[x['score'] for x in x] for x in reloaded_results])
-        # Assert equals
-        self.assertEqual([list(_) for _ in reloaded_probas], [list(_) for _ in probas])
-
-        # Clean
-        remove_dir(model_dir)
-
-    def test016_test_model_huggingface_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.model_huggingface.ModelHuggingFace.reload_from_standalone'''
-
-        # Create model
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
-        y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
-        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                 validation_split=0.3, patience=6, transformer_params={'toto': 5}, 
-                                 model_max_length=35)
-        model.fit(x_train, y_train_mono)
-        model.save()
-
-        # Reload
-        conf_path = os.path.join(model.model_dir, "configurations.json")
-        hf_model_dir_path = os.path.join(model.model_dir, 'hf_model')
-        hf_tokenizer_dir_path = os.path.join(model.model_dir, 'hf_tokenizer')
-        new_model = ModelHuggingFace(model_dir=model_dir_2)
-        new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir_path=hf_model_dir_path, hf_tokenizer_dir_path=hf_tokenizer_dir_path)
-
-        # Test
-        self.assertEqual(model.model_name, new_model.model_name)
-        self.assertEqual(model.x_col, new_model.x_col)
-        self.assertEqual(model.y_col, new_model.y_col)
-        self.assertEqual(model.list_classes, new_model.list_classes)
-        self.assertEqual(model.dict_classes, new_model.dict_classes)
-        self.assertEqual(model.multi_label, new_model.multi_label)
-        self.assertEqual(model.level_save, new_model.level_save)
-        self.assertEqual(model.nb_fit, new_model.nb_fit)
-        self.assertEqual(model.trained, new_model.trained)
-        self.assertEqual(model.batch_size, new_model.batch_size)
-        self.assertEqual(model.epochs, new_model.epochs)
-        self.assertEqual(model.validation_split, new_model.validation_split)
-        self.assertEqual(model.patience, new_model.patience)
-        self.assertEqual(model.model_max_length, new_model.model_max_length)
-        self.assertEqual(model.transformer_name, new_model.transformer_name)
-        self.assertEqual(model.transformer_params, new_model.transformer_params)
-        self.assertEqual(model.trainer_params, new_model.trainer_params)
-        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
-        self.assertTrue(os.path.exists(os.path.join(new_model.model_dir, 'hf_model')))
-        self.assertTrue(os.path.exists(os.path.join(new_model.model_dir, 'hf_tokenizer')))
-        self.assertTrue(len(os.listdir(os.path.join(new_model.model_dir, 'hf_model'))) > 0)
-        self.assertTrue(len(os.listdir(os.path.join(new_model.model_dir, 'hf_tokenizer'))) > 0)
+        new_model = ModelHuggingFace._init_new_instance_from_configs(configs=configs)
+        self.assertTrue(isinstance(new_model, ModelHuggingFace))
+        self.assertEqual(new_model.nb_fit, 0)
+        self.assertFalse(new_model.trained)
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs', 'patience',
+                          'transformer_name', 'model_max_length']:
+            self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+        for attribute in ['validation_split']:
+            self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
-        # Check errors
-        with self.assertRaises(FileNotFoundError):
-            new_model = ModelHuggingFace(model_dir=model_dir_2)
-            new_model.reload_from_standalone(configuration_path='toto.json', hf_model_dir_path=hf_model_dir_path, hf_tokenizer_dir_path=hf_tokenizer_dir_path)
-        with self.assertRaises(FileNotFoundError):
-            new_model = ModelHuggingFace(model_dir=model_dir_2)
-            new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir_path='toto_dir', hf_tokenizer_dir_path=hf_tokenizer_dir_path)
-        with self.assertRaises(FileNotFoundError):
-            new_model = ModelHuggingFace(model_dir=model_dir_2)
-            new_model.reload_from_standalone(configuration_path=conf_path, hf_model_dir_path=hf_model_dir_path, hf_tokenizer_dir_path='toto_dir')
+        # Check by changing some attributes
+        model = ModelHuggingFace(model_dir=model_dir)
+        model.nb_fit = 2
+        model.trained = True
+        model.x_col = 'coucou'
+        model.y_col = 'coucou_2'
+        model.list_classes = ['class_1', 'class_2', 'class_3']
+        model.dict_classes = {0: 'class_1', 1: 'class_2', 2: 'class_3'}
+        model.multi_label = True
+        model.level_save = 'MEDIUM'
+        model.batch_size = 13
+        model.epochs = 42
+        model.validation_split = 0.3
+        model.patience = 15
+        model.transformer_name = 'coucou'
+        model.model_max_length = 12
+        model.trainer_params = {
+                'weight_decay': 0.0,
+                'evaluation_strategy': 'epoch',
+                'load_best_model_at_end': True
+            }
+        model.transformer_params = {
+                'weight_decay': 0.0,
+                'evaluation_strategy': 'epoch',
+                'load_best_model_at_end': True
+            }
+        model.save(json_data={'test': 8})
+        configs = model.load_configs(model_dir=model_dir)
 
+        new_model = ModelHuggingFace._init_new_instance_from_configs(configs=configs)
+        self.assertTrue(isinstance(new_model, ModelHuggingFace))
+        self.assertEqual(new_model.nb_fit, 2)
+        self.assertTrue(new_model.trained)
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs', 'patience',
+                          'transformer_name', 'model_max_length']:
+            self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+        for attribute in ['validation_split']:
+            self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
+        self.assertEqual(set(model.trainer_params), set(new_model.trainer_params))
+        self.assertEqual(model.trainer_params['evaluation_strategy'], new_model.trainer_params['evaluation_strategy'])
+        self.assertAlmostEqual(model.trainer_params['weight_decay'], new_model.trainer_params['weight_decay'])
+        self.assertEqual(model.trainer_params['load_best_model_at_end'], new_model.trainer_params['load_best_model_at_end'])
+        self.assertEqual(set(model.transformer_params), set(new_model.transformer_params))
+        self.assertEqual(model.transformer_params['evaluation_strategy'], new_model.transformer_params['evaluation_strategy'])
+        self.assertAlmostEqual(model.transformer_params['weight_decay'], new_model.transformer_params['weight_decay'])
+        self.assertEqual(model.transformer_params['load_best_model_at_end'], new_model.transformer_params['load_best_model_at_end'])
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
 
+    def test14_model_huggingface_load_standalone_files(self):
+        '''Test of the method _load_standalone_files of {{package_name}}.models_training.models_tensorflow.model_huggingface.ModelHuggingFace'''
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Nominal case with default_model_dir
+        model = ModelHuggingFace(model_dir=model_dir, epochs=2)
+        x_train = ['coucou', 'coucou_2', 'coucou_3']
+        y_train = ['class_1', 'class_2', 'class_1']
+        x_valid = ['coucou_4', 'coucou_5', 'coucou_6']
+        y_valid = ['class_1', 'class_2', 'class_1']
+        model.fit(x_train=x_train, y_train=y_train, x_valid=x_valid, y_valid=y_valid)
+        model.save(json_data={'test': 8})
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelHuggingFace._init_new_instance_from_configs(configs=configs)
+        new_model._load_standalone_files(default_model_dir=model_dir)
+        self.assertTrue(isinstance(new_model.model, type(model.model)))
+        self.assertTrue(isinstance(new_model.tokenizer, type(model.tokenizer)))
+        self.assertEqual(model.model.config.n_layers, new_model.model.config.n_layers)
+        self.assertEqual(model.model.config.vocab_size, new_model.model.config.vocab_size)
+        self.assertEqual(model.model.config.model_type, new_model.model.config.model_type)
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        # Nominal case with paths
+        model = ModelHuggingFace(model_dir=model_dir, epochs=2)
+        x_train = ['coucou', 'coucou_2', 'coucou_3']
+        y_train = ['class_1', 'class_2', 'class_1']
+        x_valid = ['coucou_4', 'coucou_5', 'coucou_6']
+        y_valid = ['class_1', 'class_2', 'class_1']
+        model.fit(x_train=x_train, y_train=y_train, x_valid=x_valid, y_valid=y_valid)
+        model.save(json_data={'test': 8})
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelHuggingFace._init_new_instance_from_configs(configs=configs)
+        new_model._load_standalone_files(hf_model_dir_path=os.path.join(model_dir, "hf_model"),
+                                         hf_tokenizer_dir_path=os.path.join(model_dir, "hf_tokenizer"))
+        self.assertTrue(isinstance(new_model.model, type(model.model)))
+        self.assertTrue(isinstance(new_model.tokenizer, type(model.tokenizer)))
+        self.assertEqual(model.model.config.n_layers, new_model.model.config.n_layers)
+        self.assertEqual(model.model.config.vocab_size, new_model.model.config.vocab_size)
+        self.assertEqual(model.model.config.model_type, new_model.model.config.model_type)
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        # Errors
+        model = ModelHuggingFace(model_dir=model_dir, epochs=2)
+        x_train = ['coucou', 'coucou_2', 'coucou_3']
+        y_train = ['class_1', 'class_2', 'class_1']
+        x_valid = ['coucou_4', 'coucou_5', 'coucou_6']
+        y_valid = ['class_1', 'class_2', 'class_1']
+        model.fit(x_train=x_train, y_train=y_train, x_valid=x_valid, y_valid=y_valid)
+        model.save(json_data={'test': 8})
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelHuggingFace._init_new_instance_from_configs(configs=configs)
+        with self.assertRaises(ValueError):
+            new_model._load_standalone_files(hf_tokenizer_dir_path=os.path.join(model_dir, "hf_tokenizer"))
+        with self.assertRaises(ValueError):
+            new_model._load_standalone_files(hf_model_dir_path=os.path.join(model_dir, "hf_model"))
+        with self.assertRaises(FileNotFoundError):
+            new_model._load_standalone_files(hf_model_dir_path=os.path.join(model_dir, "hf_model2"),
+                                         hf_tokenizer_dir_path=os.path.join(model_dir, "hf_tokenizer"))
+        with self.assertRaises(FileNotFoundError):
+            new_model._load_standalone_files(hf_model_dir_path=os.path.join(model_dir, "hf_model"),
+                                         hf_tokenizer_dir_path=os.path.join(model_dir, "hf_tokenizer2"))
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        
 # Perform tests
 if __name__ == '__main__':
     # Start tests

@@ -24,10 +24,10 @@ import os
 import re
 import time
 import json
-import dill as pickle
 import logging
 import numpy as np
 import pandas as pd
+import dill as pickle
 import seaborn as sns
 from datetime import datetime
 import matplotlib.pyplot as plt
@@ -47,9 +47,16 @@ class ModelClass:
     _default_name = 'none'
 
     # Not implemented :
-    # -> fit
-    # -> predict
-    # -> predict_proba
+    # -> fit (fits a model)
+    # -> predict (predict on new content)
+    # -> predict_proba (predict on new content - returns probas)
+    # -> _load_standalone_files (loads standalone files - for a newly created model)
+
+    # Probably need to be overridden, depending on your model :
+    # -> save (specific save instructions)
+    # -> _init_new_instance_from_configs (loads model attributes - for a newly created model)
+    # -> _hook_post_load_model_pkl (post pkl load function, e.g. load weights from an HDF5 file)
+    # -> _is_gpu_activated (specific instruction to know if a gpu is used)
 
     def __init__(self, model_dir: Union[str, None] = None, model_name: Union[str, None] = None, x_col: Union[str, int, None] = None,
                  y_col: Union[str, int, list, None] = None, level_save: str = 'HIGH', multi_label: bool = False, **kwargs) -> None:
@@ -85,7 +92,7 @@ class ModelClass:
 
         # Model folder
         if model_dir is None:
-            self.model_dir = self._get_model_dir()
+            self.model_dir = self._get_new_model_dir()
         else:
             if not os.path.exists(model_dir):
                 os.makedirs(model_dir)
@@ -627,86 +634,6 @@ class ModelClass:
             'Predicted negative': predicted_negative,
         }
 
-    def save(self, json_data: Union[dict, None] = None) -> None:
-        '''Saves the model
-
-        Kwargs:
-            json_data (dict): Additional configurations to be saved
-        '''
-
-        # Manage paths
-        pkl_path = os.path.join(self.model_dir, f"{self.model_name}.pkl")
-        conf_path = os.path.join(self.model_dir, "configurations.json")
-
-        # Save the model if level_save > 'LOW'
-        if self.level_save in ['MEDIUM', 'HIGH']:
-            with open(pkl_path, 'wb') as f:
-                pickle.dump(self, f)
-
-        # Save configuration JSON
-        json_dict = {
-            'maintainers': 'Agence DataServices',
-            'gabarit_version': '{{gabarit_version}}',
-            'date': datetime.now().strftime("%d/%m/%Y - %H:%M:%S"),  # Not the same as the folder's name
-            'package_version': utils.get_package_version(),
-            'model_name': self.model_name,
-            'model_dir': self.model_dir,
-            'trained': self.trained,
-            'nb_fit': self.nb_fit,
-            'list_classes': self.list_classes,
-            'dict_classes': self.dict_classes,
-            'x_col': self.x_col,
-            'y_col': self.y_col,
-            'multi_label': self.multi_label,
-            'level_save': self.level_save,
-            'librairie': None,
-        }
-        # Merge json_data if not None
-        if json_data is not None:
-            # Priority given to json_data !
-            json_dict = {**json_dict, **json_data}
-
-        # Add conf to attributes
-        self.json_dict = json_dict
-
-        # Save conf
-        with open(conf_path, 'w', encoding='{{default_encoding}}') as json_file:
-            json.dump(json_dict, json_file, indent=4, cls=utils.NpEncoder)
-
-        # Now, save a proprietes file for the model upload
-        self._save_upload_properties(json_dict)
-
-    def _save_upload_properties(self, json_dict: Union[dict, None] = None) -> None:
-        '''Prepares a configuration file for a future export (e.g on an artifactory)
-
-        Kwargs:
-            json_dict: Configurations to save
-        '''
-        if json_dict is None:
-            json_dict = {}
-
-        # Manage paths
-        proprietes_path = os.path.join(self.model_dir, "proprietes.json")
-        vanilla_model_upload_instructions = os.path.join(utils.get_ressources_path(), 'model_upload_instructions.md')
-        specific_model_upload_instructions = os.path.join(self.model_dir, "model_upload_instructions.md")
-
-        # First, we define a list of "allowed" properties
-        allowed_properties = ["maintainers", "gabarit_version", "date", "package_version", "model_name", "list_classes",
-                              "librairie", "fit_time"]
-        # Now we filter these properties
-        final_dict = {k: v for k, v in json_dict.items() if k in allowed_properties}
-        # Save
-        with open(proprietes_path, 'w', encoding='{{default_encoding}}') as f:
-            json.dump(final_dict, f, indent=4, cls=utils.NpEncoder)
-
-        # Add instructions to upload a model to a storage solution (e.g. Artifactory)
-        with open(vanilla_model_upload_instructions, 'r', encoding='{{default_encoding}}') as f:
-            content = f.read()
-        # TODO: to be improved
-        new_content = content.replace('model_dir_path_identifier', os.path.abspath(self.model_dir))
-        with open(specific_model_upload_instructions, 'w', encoding='{{default_encoding}}') as f:
-            f.write(new_content)
-
     def _plot_confusion_matrix(self, c_mat: np.ndarray, labels: list, type_data: str = '',
                                normalized: bool = False, subdir: Union[str, None] = None) -> None:
         '''Plots a confusion matrix
@@ -760,7 +687,7 @@ class ModelClass:
         # Close figures
         plt.close('all')
 
-    def _get_model_dir(self) -> str:
+    def _get_new_model_dir(self) -> str:
         '''Gets a folder where to save the model
 
         Returns:
@@ -772,10 +699,248 @@ class ModelClass:
         model_dir = os.path.join(subfolder, folder_name)
         if os.path.isdir(model_dir):
             time.sleep(1)  # Wait 1 second so that the 'date' changes...
-            return self._get_model_dir()  # Get new directory name
+            return self._get_new_model_dir()  # Get new directory name
         else:
             os.makedirs(model_dir)
         return model_dir
+
+    def save(self, json_data: Union[dict, None] = None) -> None:
+        '''Saves the model
+
+        Kwargs:
+            json_data (dict): Additional configurations to be saved
+        '''
+
+        # Manage paths
+        pkl_path = os.path.join(self.model_dir, f"{self.model_name}.pkl")
+        conf_path = os.path.join(self.model_dir, "configurations.json")
+
+        # Save the model if level_save > 'LOW'
+        if self.level_save in ['MEDIUM', 'HIGH']:
+            with open(pkl_path, 'wb') as f:
+                pickle.dump(self, f)
+
+        # Save configuration JSON
+        json_dict = {
+            'maintainers': 'Agence DataServices',
+            'gabarit_version': '{{gabarit_version}}',
+            'date': datetime.now().strftime("%d/%m/%Y - %H:%M:%S"),  # Not the same as the folder's name
+            'package_version': utils.get_package_version(),
+            'model_name': self.model_name,
+            'model_dir': self.model_dir,
+            'trained': self.trained,
+            'nb_fit': self.nb_fit,
+            'list_classes': self.list_classes,
+            'dict_classes': self.dict_classes,
+            'x_col': self.x_col,
+            'y_col': self.y_col,
+            'multi_label': self.multi_label,
+            'level_save': self.level_save,
+            'librairie': None,
+        }
+        # Merge json_data if not None
+        if json_data is not None:
+            # Priority given to json_data !
+            json_dict = {**json_dict, **json_data}
+
+        # Add conf to attributes
+        self.json_dict = json_dict
+
+        # Save conf
+        with open(conf_path, 'w', encoding='{{default_encoding}}') as json_file:
+            json.dump(json_dict, json_file, indent=4, cls=utils.NpEncoder)
+
+        # Now, save a properties file for the model upload
+        self._save_upload_properties(json_dict)
+
+    def _save_upload_properties(self, json_dict: Union[dict, None] = None) -> None:
+        '''Prepares a configuration file for a future export (e.g on an artifactory)
+
+        Kwargs:
+            json_dict: Configurations to save
+        '''
+        if json_dict is None:
+            json_dict = {}
+
+        # Manage paths
+        properties_path = os.path.join(self.model_dir, "properties.json")
+        vanilla_model_upload_instructions = os.path.join(utils.get_ressources_path(), 'model_upload_instructions.md')
+        specific_model_upload_instructions = os.path.join(self.model_dir, "model_upload_instructions.md")
+
+        # First, we define a list of "allowed" properties
+        allowed_properties = ["maintainers", "gabarit_version", "date", "package_version", "model_name", "list_classes",
+                              "librairie", "fit_time"]
+        # Now we filter these properties
+        final_dict = {k: v for k, v in json_dict.items() if k in allowed_properties}
+        # Save
+        with open(properties_path, 'w', encoding='{{default_encoding}}') as f:
+            json.dump(final_dict, f, indent=4, cls=utils.NpEncoder)
+
+        # Add instructions to upload a model to a storage solution (e.g. Artifactory)
+        with open(vanilla_model_upload_instructions, 'r', encoding='{{default_encoding}}') as f:
+            content = f.read()
+        # TODO: to be improved
+        new_content = content.replace('model_dir_path_identifier', os.path.abspath(self.model_dir))
+        with open(specific_model_upload_instructions, 'w', encoding='{{default_encoding}}') as f:
+            f.write(new_content)
+
+    @classmethod
+    def load_model(cls, model_dir: str, config_path: Union[str, None] = None, **kwargs) -> Tuple[Any, dict]:
+        '''Loads a model from a path or a model name
+
+        Args:
+            model_dir (str): Absolute path of the folder containing the model to load
+        Kwargs:
+            config_path (str): Absolute path to a configuration file. Backup on the model_dir defaults configuration file.
+                               Most of the time, you should leave this empty.
+        Returns:
+            ModelClass: The loaded model
+            dict: The model configuration
+        '''
+        # First load the model configurations
+        configs = cls.load_configs(model_dir=model_dir, config_path=config_path)
+
+        # Load the model object from a pickle file
+        pkl_path = os.path.join(model_dir, f"{configs['model_name']}.pkl")
+        with open(pkl_path, 'rb') as f:
+            model = pickle.load(f)
+
+        # Change model_dir to the input model_dir (usually when the model has been trained on another computer)
+        configs['model_dir'] = model_dir
+        model.model_dir = model_dir
+
+        # Post load specificities
+        model._hook_post_load_model_pkl()
+
+        # Display if GPU is being used
+        model.display_if_gpu_activated()
+
+        # Return model
+        return model, configs
+
+    @staticmethod
+    def load_configs(model_dir: Union[str, None] = None, config_path: Union[str, None] = None) -> dict:
+        '''Loads a model's configuration file as a dictionary
+
+        Kwargs:
+            model_dir (str): Absolute path of the model.
+                             Can be None to load a configuration path as it is, but config_path can't also be None.
+            config_path (str): Absolute path to a configuration file. Backup on the model_dir defaults configuration file.
+                               Most of the time, you should leave this empty.
+        Raises:
+            ValueError: If both model_dir and config_path are None.
+        Returns:
+            dict: A model's configurations
+        '''
+        # Manage errors
+        if model_dir is None and config_path is None:
+            raise ValueError("model_dir and config_path can't both be None in load_configs function")
+
+        # Get configurations
+        configuration_path = os.path.join(model_dir, 'configurations.json') if config_path is None else config_path
+        with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
+            configs = json.load(f)
+
+        # Can't set int as keys in json, so need to cast it after reloading
+        # dict_classes keys are always ints
+        if 'dict_classes' in configs.keys() and configs['dict_classes'] is not None:
+            configs['dict_classes'] = {int(i): col for i, col in configs['dict_classes'].items()}
+        elif 'list_classes' in configs.keys() and configs['list_classes'] is not None:
+            configs['dict_classes'] = {i: col for i, col in enumerate(configs['list_classes'])}
+
+        # Return configs
+        return configs
+
+    def _hook_post_load_model_pkl(self):
+        '''Manages a model specificities post load from a pickle file (i.e. not from standalone files)'''
+        pass
+
+    @classmethod
+    def init_from_standalone_files(cls, model_dir: Union[str, None] = None, config_path: Union[str, None] = None, **kwargs) -> Tuple[Any, dict]:
+        '''Init. a new model from a config file and standalone files.
+
+        The main purpose of this function is to be able to use an old model trained with an old version which is not
+        unpicklable anymore.
+        We should be able to recreate a new class object as this library tries to save all infos in a configuration file,
+        and all models / tokenizers / etc. in standalone files.
+
+        The standalone files will be inferred from the model_dir argument, except if specific **kwargs are provided.
+        To see which kwargs are available for your model, checks it's own `_load_standalone_files` function.
+        Of course, the function will raise an error if `model_dir` is None and no **kwargs arguments are provided.
+
+        WARNING : It will create a new folder for the reloaded model and copy many files in this new folder.
+                  That may take some space in your hard disk.
+        WARNING : This function should be called with the class of the model to be reloaded.
+                  e.g. ModelEmbeddingLstm.init_from_standalone_files(...)
+
+        Kwargs:
+            model_dir (str): Absolute path of the folder containing the model to load.
+                             If None, config_path must be set.
+            config_path (str): Absolute path to a configuration file.
+                               If None, backups on the model_dir defaults configuration file.
+                               If None, model_dir must be set.
+        Raises:
+            ValueError: If both model_dir and config_path are None.
+        Returns:
+            ModelClass: The loaded model
+            dict: The model configuration
+        '''
+        if model_dir is None and config_path is None:
+            raise ValueError("Either model_dir or config_path must be set")
+
+        # First load the model configurations
+        configs = cls.load_configs(model_dir=model_dir, config_path=config_path)
+
+        # Init model from configurations
+        model = cls._init_new_instance_from_configs(configs)
+
+        # Load standalone files
+        model._load_standalone_files(default_model_dir=model_dir, **kwargs)
+
+        # Set configs to new model dir
+        configs['model_dir'] = model.model_dir
+
+        # Return model
+        return model, configs
+
+    @classmethod
+    def _init_new_instance_from_configs(cls, configs) -> Any:
+        '''Inits a new instance from a set of configurations
+
+        Args:
+            configs: a set of configurations of a model to be reloaded
+        Returns:
+            ModelClass: the newly generated class
+        '''
+        # Create class
+        model = cls()
+
+        # Set class attributes from config
+        # model.model_name = # Keep the created name
+        # model.model_dir = # Keep the created folder
+        model.nb_fit = configs.get('nb_fit', 1)  # Consider one unique fit by default
+        model.trained = configs.get('trained', True)  # Consider trained by default
+        # Try to read the following attributes from configs and, if absent, keep the current one
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+            setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
+
+        # Return the new model
+        return model
+
+    def _load_standalone_files(self, default_model_dir: Union[str, None] = None, *args, **kwargs):
+        '''Loads standalone files for a newly created model via _init_new_instance_from_configs
+
+        Kwargs:
+            default_model_dir (str): a path to look for default file paths
+                                     If None, standalone files path should all be provided
+        '''
+        raise NotImplementedError("'_load_standalone_files' needs to be overridden")
+
+    @classmethod
+    def reload_from_standalone(cls, *args, **kwargs) -> Any:
+        '''Deprecated'''
+        print("DEPRECATED : use load_model class method instead")
+        return cls.load_model(*args, **kwargs)
 
     def display_if_gpu_activated(self) -> None:
         '''Displays if a GPU is being used'''

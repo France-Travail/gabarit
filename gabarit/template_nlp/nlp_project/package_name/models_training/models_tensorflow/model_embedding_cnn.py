@@ -210,70 +210,51 @@ class ModelEmbeddingCnn(ModelKeras):
         # Save
         super().save(json_data=json_data)
 
-    def reload_from_standalone(self, **kwargs) -> None:
-        '''Reloads a model from its configuration and "standalones" files
-        - /!\\ Experimental /!\\ -
+    @classmethod
+    def _init_new_instance_from_configs(cls, configs):
+        '''Inits a new instance from a set of configurations
+
+        Args:
+            configs: a set of configurations of a model to be reloaded
+        Returns:
+            ModelClass: the newly generated class
+        '''
+        # Call parent
+        model = super()._init_new_instance_from_configs(configs)
+
+        # Try to read the following attributes from configs and, if absent, keep the current one
+        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
+            setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
+
+        # Return the new model
+        return model
+
+    def _load_standalone_files(self, default_model_dir: Union[str, None] = None,  # type: ignore
+                               tokenizer_path: Union[str, None] = None, *args, **kwargs):
+        '''Loads standalone files for a newly created model via _init_new_instance_from_configs
 
         Kwargs:
-            configuration_path (str): Path to configuration file
-            hdf5_path (str): Path to hdf5 file
-            tokenizer_path (str): Path to tokenizer file
+            default_model_dir (str): a path to look for default file paths
+                                     If None, standalone files path should all be provided
+            tokenizer_path (str): Path to the tokenizer file
         Raises:
-            ValueError: If configuration_path is None
-            ValueError: If hdf5_path is None
-            ValueError: If tokenizer_path is None
-            FileNotFoundError: If the object configuration_path is not an existing file
-            FileNotFoundError: If the object hdf5_path is not an existing file
-            FileNotFoundError: If the object tokenizer_path is not an existing file
+            ValueError: If the tokenizer file is not specified and can't be inferred
+            FileNotFoundError: If the tokenizer file does not exist
         '''
-        # Retrieve args
-        configuration_path = kwargs.get('configuration_path', None)
-        hdf5_path = kwargs.get('hdf5_path', None)
-        tokenizer_path = kwargs.get('tokenizer_path', None)
+        # Check if we are able to get all needed paths
+        if default_model_dir is None and tokenizer_path is None:
+            raise ValueError("The tokenizer file is not specified and can't be inferred")
 
-        # Checks
-        if configuration_path is None:
-            raise ValueError("The argument configuration_path can't be None")
-        if hdf5_path is None:
-            raise ValueError("The argument hdf5_path can't be None")
+        # Call parent
+        super()._load_standalone_files(default_model_dir=default_model_dir, **kwargs)
+
+        # Retrieve file paths
         if tokenizer_path is None:
-            raise ValueError("The argument tokenizer_path can't be None")
-        if not os.path.exists(configuration_path):
-            raise FileNotFoundError(f"The file {configuration_path} does not exist")
-        if not os.path.exists(hdf5_path):
-            raise FileNotFoundError(f"The file {hdf5_path} does not exist")
-        if not os.path.exists(tokenizer_path):
-            raise FileNotFoundError(f"The file {tokenizer_path} does not exist")
+            tokenizer_path = os.path.join(default_model_dir, "embedding_tokenizer.pkl")
 
-        # Load confs
-        with open(configuration_path, 'r', encoding='{{default_encoding}}') as f:
-            configs = json.load(f)
-        # Can't set int as keys in json, so need to cast it after reloading
-        # dict_classes keys are always ints
-        if 'dict_classes' in configs.keys():
-            configs['dict_classes'] = {int(k): v for k, v in configs['dict_classes'].items()}
-        elif 'list_classes' in configs.keys():
-            configs['dict_classes'] = {i: col for i, col in enumerate(configs['list_classes'])}
-
-        # Set class vars
-        # self.model_name = # Keep the created name
-        # self.model_dir = # Keep the created folder
-        self.nb_fit = configs.get('nb_fit', 1)  # Consider one unique fit by default
-        self.trained = configs.get('trained', True)  # Consider trained by default
-        # Try to read the following attributes from configs and, if absent, keep the current one
-        for attribute in ['x_col', 'y_col',
-                          'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'batch_size', 'epochs', 'validation_split', 'patience',
-                          'keras_params', 'embedding_name', 'max_sequence_length',
-                          'max_words', 'padding', 'truncating', 'tokenizer_filters']:
-            setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
-
-        # Reload model
-        self.model = load_model_keras(hdf5_path, custom_objects=self.custom_objects)
-
-        # Save best hdf5 in new folder
-        new_hdf5_path = os.path.join(self.model_dir, 'best.hdf5')
-        shutil.copyfile(hdf5_path, new_hdf5_path)
+        # Check paths exists
+        if not os.path.isfile(tokenizer_path):
+            raise FileNotFoundError(f"Can't find tokenizer file ({tokenizer_path})")
 
         # Reload tokenizer
         with open(tokenizer_path, 'rb') as f:

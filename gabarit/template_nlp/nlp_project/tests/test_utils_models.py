@@ -210,6 +210,8 @@ class UtilsModelsTests(unittest.TestCase):
         self.assertEqual(new_config['model_name'], model_name)
         self.assertEqual(new_model.model_name, model_name)
         self.assertEqual(list(new_model.predict(['test', 'toto', 'a'])), list(model.predict(['test', 'toto', 'a'])))
+        self.assertEqual(new_model.list_classes, model.list_classes)
+        self.assertEqual(new_model.dict_classes, model.dict_classes)
 
         # Same thing but with a path
         new_model, new_config = utils_models.load_model(model_dir=model_dir, is_path=True)
@@ -217,6 +219,8 @@ class UtilsModelsTests(unittest.TestCase):
         self.assertEqual(new_config['model_name'], model_name)
         self.assertEqual(new_model.model_name, model_name)
         self.assertEqual(list(new_model.predict(['test', 'toto', 'a'])), list(model.predict(['test', 'toto', 'a'])))
+        self.assertEqual(new_model.list_classes, model.list_classes)
+        self.assertEqual(new_model.dict_classes, model.dict_classes)
         remove_dir(model_dir)
 
         # We do the same thing on a keras model
@@ -243,8 +247,6 @@ class UtilsModelsTests(unittest.TestCase):
                                                         embedding_name=embedding_name)
         model.fit(x_train, y_train)
         model.save()
-
-        # TODO: do the same for an HuggingFace model !
 
         # Reload
         new_model, new_config = utils_models.load_model(model_dir='test_model_dl')

@@ -74,6 +74,13 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         if os.path.exists(fake_path):
             os.remove(fake_path)
 
+    def check_weights_equality(self, model_1, model_2):
+        self.assertEqual(len(model_1.model.weights), len(model_2.model.weights))
+        for layer_nb in range(len(model_1.model.weights)):
+            self.assertEqual(model_1.model.weights[layer_nb].numpy().shape, model_2.model.weights[layer_nb].numpy().shape)
+        for layer_nb, x1, x2, x3 in [(1, 0, 0, 0), (7, 1, 2, 3)]:
+            self.assertAlmostEqual(model_1.model.weights[layer_nb].numpy()[x1, x2, x3], model_2.model.weights[layer_nb].numpy()[x1, x2, x3])
+
     def test01_model_embedding_cnn_init(self):
         '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn.__init__'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -359,90 +366,134 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         self.assertEqual(configs['tokenizer_filters'], tokenizer_filters)
         remove_dir(model_dir)
 
-    def test07_model_embedding_cnn_reload_model(self):
-        '''Test of the method reload_model of {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn'''
-
-        # Create model
+    def test07_model_embedding_cnn_init_new_instance_from_configs(self):
+        '''Test of the method _init_new_instance_from_configs of {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
-        model = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                  max_sequence_length=10, max_words=100,
-                                  padding='post', truncating='pre',
-                                  embedding_name='fake_embedding.pkl')
-        model.fit(x_train, y_train_mono)
-        model.save()
-
-        # Reload keras
-        hdf5_path = os.path.join(model.model_dir, 'best.hdf5')
-        reloaded_model = model.reload_model(hdf5_path)
-        self.assertEqual([list(_) for _ in reloaded_model.predict(model._prepare_x_test(['test', 'toto', 'titi']))], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
-
-        # Test without custom_objects
-        model.custom_objects = None
-        reloaded_model = model.reload_model(hdf5_path)
-        self.assertEqual([list(_) for _ in reloaded_model.predict(model._prepare_x_test(['test', 'toto', 'titi']))], [list(_) for _ in model.predict_proba(['test', 'toto', 'titi'])])
-
         remove_dir(model_dir)
 
-    def test08_test_model_embedding_cnn_reload_from_standalone(self):
-        '''Test of the method {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn.reload_from_standalone'''
+        # Nominal case
+        model = ModelEmbeddingCnn(model_dir=model_dir)
+        model.save(json_data={'test': 8})
+        configs = model.load_configs(model_dir=model_dir)
 
-        # Create model
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        model_dir_2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        x_test = np.array(["ceci est un coucou", "pas lui", "lui non plus", "ici coucou", "là, rien!"])
-        y_train_mono = np.array(['non', 'oui', 'non', 'oui', 'non'])
-        model = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                  max_sequence_length=10, max_words=100,
-                                  padding='post', truncating='pre',
-                                  embedding_name='fake_embedding.pkl')
-        model.fit(x_train, y_train_mono)
-        model.save()
-
-        # Reload
-        conf_path = os.path.join(model.model_dir, "configurations.json")
-        hdf5_path = os.path.join(model.model_dir, "best.hdf5")
-        tokenizer_path = os.path.join(model.model_dir, 'embedding_tokenizer.pkl')
-        new_model = ModelEmbeddingCnn(model_dir=model_dir_2)
-        new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tokenizer_path=tokenizer_path)
-
-        # Test
-        self.assertEqual(model.model_name, new_model.model_name)
-        self.assertEqual(model.x_col, new_model.x_col)
-        self.assertEqual(model.y_col, new_model.y_col)
-        self.assertEqual(model.list_classes, new_model.list_classes)
-        self.assertEqual(model.dict_classes, new_model.dict_classes)
-        self.assertEqual(model.multi_label, new_model.multi_label)
-        self.assertEqual(model.level_save, new_model.level_save)
-        self.assertEqual(model.nb_fit, new_model.nb_fit)
-        self.assertEqual(model.trained, new_model.trained)
-        self.assertEqual(model.batch_size, new_model.batch_size)
-        self.assertEqual(model.epochs, new_model.epochs)
-        self.assertEqual(model.validation_split, new_model.validation_split)
-        self.assertEqual(model.patience, new_model.patience)
-        self.assertEqual(model.embedding_name, new_model.embedding_name)
-        self.assertEqual(model.max_sequence_length, new_model.max_sequence_length)
-        self.assertEqual(model.max_words, new_model.max_words)
-        self.assertEqual(model.padding, new_model.padding)
-        self.assertEqual(model.truncating, new_model.truncating)
-        self.assertEqual(model.tokenizer_filters, new_model.tokenizer_filters)
-        self.assertEqual([list(_) for _ in model.predict_proba(x_test)], [list(_) for _ in new_model.predict_proba(x_test)])
+        new_model = ModelEmbeddingCnn._init_new_instance_from_configs(configs=configs)
+        self.assertTrue(isinstance(new_model, ModelEmbeddingCnn))
+        self.assertEqual(new_model.nb_fit, 0)
+        self.assertFalse(new_model.trained)
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
+                          'patience', 'embedding_name', 'max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
+            self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+        for attribute in ['validation_split']:
+            self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
-        # Check errors
-        with self.assertRaises(FileNotFoundError):
-            new_model = ModelEmbeddingCnn(model_dir=model_dir_2)
-            new_model.reload_from_standalone(configuration_path='toto.json', hdf5_path=hdf5_path, tokenizer_path=tokenizer_path)
-        with self.assertRaises(FileNotFoundError):
-            new_model = ModelEmbeddingCnn(model_dir=model_dir_2)
-            new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path='toto.hdf5', tokenizer_path=tokenizer_path)
-        with self.assertRaises(FileNotFoundError):
-            new_model = ModelEmbeddingCnn(model_dir=model_dir_2)
-            new_model.reload_from_standalone(configuration_path=conf_path, hdf5_path=hdf5_path, tokenizer_path='toto.pkl')
+        # Check by changing some attributes
+        model = ModelEmbeddingCnn(model_dir=model_dir)
+        model.nb_fit = 2
+        model.trained = True
+        model.x_col = 'coucou'
+        model.y_col = 'coucou_2'
+        model.list_classes = ['class_1', 'class_2', 'class_3']
+        model.dict_classes = {0: 'class_1', 1: 'class_2', 2: 'class_3'}
+        model.multi_label = True
+        model.level_save = 'MEDIUM'
+        model.batch_size = 13
+        model.epochs = 42
+        model.validation_split = 0.3
+        model.patience = 15
+        model.embedding_name = 'coucou_embedding'
+        model.keras_params = {'coucou':1, 'coucou2': 0.3, 'coucou3':'coucou4'}
+        model.max_sequence_length = 10
+        model.max_words = 232
+        model.padding = 'post'
+        model.truncating = 'pre'
+        model.tokenizer_filters = 'coucou'
+        model.save(json_data={'test': 8})
+        configs = model.load_configs(model_dir=model_dir)
 
+        new_model = ModelEmbeddingCnn._init_new_instance_from_configs(configs=configs)
+        self.assertTrue(isinstance(new_model, ModelEmbeddingCnn))
+        self.assertEqual(new_model.nb_fit, 2)
+        self.assertTrue(new_model.trained)
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
+                          'patience', 'embedding_name', 'max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
+            self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
+        for attribute in ['validation_split']:
+            self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
+        self.assertEqual(set(model.keras_params), set(new_model.keras_params))
+        self.assertEqual(model.keras_params['coucou'], new_model.keras_params['coucou'])
+        self.assertAlmostEqual(model.keras_params['coucou2'], new_model.keras_params['coucou2'])
+        self.assertEqual(model.keras_params['coucou3'], new_model.keras_params['coucou3'])
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+    def test08_model_embedding_cnn_load_standalone_files(self):
+        '''Test of the method _load_standalone_files of {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn'''
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        new_model_dir = os.path.join(os.getcwd(), 'model_test_987654321')
+        remove_dir(new_model_dir)
+
+        old_hdf5_path = os.path.join(model_dir, 'best.hdf5')
+
+        # Nominal case with default_model_dir
+        model = ModelEmbeddingCnn(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
+        model.list_classes = ['class_1', 'class_2']
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelEmbeddingCnn._init_new_instance_from_configs(configs=configs)
+        new_hdf5_path = os.path.join(new_model.model_dir, 'best.hdf5')
+        new_model._load_standalone_files(default_model_dir=model_dir)
+        self.assertTrue(os.path.exists(new_hdf5_path))
+        self.check_weights_equality(model, new_model)
+        self.assertTrue(isinstance(new_model.tokenizer, Tokenizer))
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        # Nominal case with explicit paths
+        model = ModelEmbeddingCnn(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
+        model.list_classes = ['class_1', 'class_2']
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelEmbeddingCnn._init_new_instance_from_configs(configs=configs)
+        new_hdf5_path = os.path.join(new_model.model_dir, 'best.hdf5')
+        new_model._load_standalone_files(tokenizer_path=os.path.join(model_dir, 'embedding_tokenizer.pkl'),
+                                         hdf5_path=os.path.join(model_dir, 'best.hdf5'))
+        self.assertTrue(os.path.exists(new_hdf5_path))
+        self.check_weights_equality(model, new_model)
+        self.assertTrue(isinstance(new_model.tokenizer, Tokenizer))
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        # Errors
+        model = ModelEmbeddingCnn(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
+        model.list_classes = ['class_1', 'class_2']
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
+        os.remove(os.path.join(model_dir, 'embedding_tokenizer.pkl'))
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelEmbeddingCnn._init_new_instance_from_configs(configs=configs)
+        with self.assertRaises(ValueError):
+            new_model._load_standalone_files()
+        with self.assertRaises(FileNotFoundError):
+            new_model._load_standalone_files(default_model_dir=model_dir)
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
 
 # Perform tests
 if __name__ == '__main__':
