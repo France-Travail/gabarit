@@ -33,7 +33,7 @@
 │   ├─ core                     # global config and utilities
 │   │    ├─ __init__.py
 │   │    ├─ config.py
-│   │    ├─ event_handlers.py   # load your model to your app at startup
+│   │    ├─ resources.py        # load your model to your app at startup
 │   │    └─ logtools.py
 │   │
 │   ├─ model                    # model classes
@@ -188,7 +188,9 @@ It is a great example of how to adapt the base `Model` class to your use case.
 ### Load your model at startup
 
 Your model is loaded into your application at startup thanks to
-`{{package_name}}.core.event_handlers` :
+`{{package_name}}.core.resources` :
+
+See. [Lifespan Events](https://fastapi.tiangolo.com/advanced/events/#use-case)
 
 ```python
 from typing import Callable
@@ -200,20 +202,23 @@ from ..model.model_gabarit import ModelGabarit as Model
 from ..model.model_base import Model
 {%- endif %}
 
-def _startup_model(app: FastAPI) -> None:
-    """Create and Load model"""
+logger = logging.getLogger(__name__)
+
+RESOURCES = {}
+RESOURCE_MODEL = "model"
+
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load the ML model
     model = Model()
     model.loading()
-    app.state.model = model
+    logger.info("Model loaded")
 
-def start_app_handler(app: FastAPI) -> Callable:
-    """Startup handler: invoke init actions"""
+    RESOURCES[RESOURCE_MODEL] = model
+    yield
 
-    def startup() -> None:
-        logger.info("Startup Handler: Load model.")
-        _startup_model(app)
-
-    return startup
+    # Clean up the ML models and release the resources
+    RESOURCES.clear()
 ```
 
 To change the model used by your application, change the model imported here.

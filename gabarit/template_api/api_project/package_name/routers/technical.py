@@ -16,9 +16,9 @@
 
 
 from fastapi import APIRouter
-from starlette.requests import Request
 
 from ..core.config import settings
+from ..core.resources import RESOURCES, RESOURCE_MODEL
 from ..model.model_base import Model
 from .schemas.technical import ReponseInformation, ReponseLiveness, ReponseReadiness
 
@@ -44,11 +44,9 @@ async def get_liveness() -> ReponseLiveness:
     name="readiness",
     tags=["technical"],
 )
-async def get_readiness(request: Request) -> ReponseReadiness:
+async def get_readiness() -> ReponseReadiness:
     """Readiness probe for k8s"""
-    model: Model = (
-        request.app.state.model if hasattr(request.app.state, "model") else None
-    )
+    model: Model = RESOURCES.get(RESOURCE_MODEL)
 
     if model and model.is_model_loaded():
         return ReponseReadiness(ready="ok")
@@ -62,9 +60,9 @@ async def get_readiness(request: Request) -> ReponseReadiness:
     name="information",
     tags=["technical"],
 )
-async def info(request: Request) -> ReponseInformation:
+async def info() -> ReponseInformation:
     """Rest resource for info"""
-    model: Model = request.app.state.model
+    model: Model = RESOURCES.get(RESOURCE_MODEL)
 
     return ReponseInformation(
         application=settings.app_name,
