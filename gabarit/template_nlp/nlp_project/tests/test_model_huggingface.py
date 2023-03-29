@@ -780,7 +780,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
-    def test14_model_huggingface_load_standalone_files(self):
+    def test15_model_huggingface_load_standalone_files(self):
         '''Test of the method _load_standalone_files of {{package_name}}.models_training.models_tensorflow.model_huggingface.ModelHuggingFace'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
