@@ -18,7 +18,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from .create_test_model import TestExplainer
-from template_api.core.resources import RESOURCES, RESOURCE_MODEL
+from {{package_name}}.core.resources import RESOURCES, RESOURCE_MODEL
 
 
 def test_predict(test_complete_client: TestClient):
