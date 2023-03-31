@@ -21,7 +21,7 @@ from starlette_prometheus import metrics, PrometheusMiddleware
 
 from .core.config import settings
 from .routers import main_routeur
-from .core.event_handlers import start_app_handler, stop_app_handler
+from .core.resources import lifespan
 
 
 def declare_application() -> FastAPI:
@@ -33,11 +33,8 @@ def declare_application() -> FastAPI:
     app = FastAPI(
         title=f"REST API form {settings.app_name}",
         description=f"Use {settings.app_name} thanks to FastAPI",
+        lifespan=lifespan
     )
-
-    # Load the model on startup
-    app.add_event_handler("startup", start_app_handler(app))
-    app.add_event_handler("shutdown", stop_app_handler(app))
 
     # Add PrometheusMiddleware
     app.add_middleware(PrometheusMiddleware)
