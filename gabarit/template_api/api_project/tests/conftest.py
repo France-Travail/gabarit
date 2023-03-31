@@ -71,12 +71,13 @@ def test_complete_client(monkeypatch) -> TestClient:
     """Complete TestClient that do run startup and shutdown events to load
     the model
     """
-    from {{package_name}}.application import app
-    from {{package_name}}.core import event_handlers
+    from {{package_name}}.core import resources
     from {{package_name}}.model.model_base import Model
 
     # Use base model for tests
-    monkeypatch.setattr(event_handlers, "Model", Model)
+    monkeypatch.setattr(resources, "Model", Model)
 
+    from {{package_name}}.application import app
+    
     with TestClient(app) as client:
         yield client

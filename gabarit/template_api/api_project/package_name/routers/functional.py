@@ -24,6 +24,7 @@ from starlette.responses import HTMLResponse, Response
 
 from ..model.model_base import Model
 from .schemas.functional import NumpyJSONResponse
+from ..core.resources import RESOURCES, RESOURCE_MODEL
 
 # Functional router
 router = APIRouter()
@@ -51,7 +52,7 @@ async def predict(request: Request):
     responses schemas thanks to pydantic or have a look at the FastAPI documentation :
     https://fastapi.tiangolo.com/tutorial/response-model/
     """
-    model: Model = request.app.state.model
+    model: Model = RESOURCES.get(RESOURCE_MODEL)
 
     body = await request.body()
     body = json.loads(body) if body else {}
@@ -85,7 +86,7 @@ async def explain(request: Request):
     If there is not explainer or the explainer does not implement explain_as_json or explain_as_html
     we return a 501 HTTP error : https://developer.mozilla.org/fr/docs/Web/HTTP/Status/501
     """
-    model: Model = request.app.state.model
+    model: Model = RESOURCES.get(RESOURCE_MODEL)
 
     body = await request.body()
     body = json.loads(body) if body else {}
