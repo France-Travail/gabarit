@@ -117,9 +117,13 @@ def main(filename: str, x_col: Union[str, int], model_dir: str, y_col: Union[Lis
         ### INFO: target data must have a correct format (cf training file)
         if len(y_col) > 1:
             y_true = df[y_col].astype(int)  # Need to cast OHE var into integers
+            col_not_ohe = []
             for col in y_col:
                 if sorted(y_true[col].unique()) != [0, 1]:
-                    raise ValueError("You provided several target columns, but at least one of them does not seem to be in a correct OHE format.")
+                    col_not_ohe.append(col)
+            if len(col_not_ohe):
+                raise ValueError(f"You provided several target columns, but the columns {col_not_ohe} seem not to be in the correct OHE format.")
+
         else:
             y_true = df[y_col[0]]
             # No need to cast target in string, already done by the data loader

@@ -153,9 +153,12 @@ def main(filename: str, y_col: List[Union[str, int]], excluded_cols: Union[List[
             df_train[y_col] = df_train[y_col].astype(int)  # Need to cast OHE var into integers
         except:
             raise ValueError("You provided several target columns, but at least one of them does not seem to be in a correct OHE format.")
+        col_not_ohe = []
         for col in y_col:
             if sorted(df_train[col].unique()) != [0, 1]:
-                raise ValueError("You provided several target columns, but at least one of them does not seem to be in a correct OHE format.")
+                col_not_ohe.append(col)
+        if len(col_not_ohe):
+            raise ValueError(f"You provided several target columns, but the columns {col_not_ohe} seem not to be in the correct OHE format.")
     else:
         multi_label = False
         y_col = y_col[0]

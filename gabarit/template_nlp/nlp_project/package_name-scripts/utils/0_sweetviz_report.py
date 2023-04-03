@@ -136,7 +136,7 @@ def get_paths_and_names(dataset_paths: List[str], dataset_names: List[str]) -> T
         dataset_names (list<str>): List of names to use for each dataset. If no name provided, backup on files names without extension.
     Raises:
         FileNotFoundError: If any provided dataset does not exist
-        ValueError: If a provided list of name does not the correct number of datasets
+        ValueError: If a provided list of name does not match the correct number of datasets
     Returns:
         list<str>: list of all datasets abs path
         list<str>: list of all datasets' names

@@ -112,7 +112,7 @@ def verify_exercice_5():
     
     file_path = DATA_PATH / f"{DATASET_NAME}_preprocess_P2.csv"
     if not file_path.exists():
-        raise AssertionError("Did you run 1_preprocess_data.py with argument '-p preprocess_P2' ?")
+        raise FileNotFoundError("Did you run 1_preprocess_data.py with argument '-p preprocess_P2' ?")
 
 
     df = pd.read_csv(file_path, sep=";", skiprows=1)

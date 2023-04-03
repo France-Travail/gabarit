@@ -143,6 +143,9 @@ def retrieve_columns_from_pipeline(df: pd.DataFrame, pipeline: ColumnTransformer
     Args:
         df (pd.DataFrame): Dataframe after preprocessing (without target)
         pipeline (ColumnTransformer): Used pipeline
+    Raises:
+        AttributeError : The pipeline is not fitted
+        ValueError : The number of columns is not the same between the pipeline and the preprocessed DataFrame
     Returns:
         pd.DataFrame: Dataframe with columns' name
     '''
