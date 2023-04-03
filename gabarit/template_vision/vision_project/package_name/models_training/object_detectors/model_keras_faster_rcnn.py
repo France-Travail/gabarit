@@ -686,7 +686,7 @@ class ModelKerasFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelKeras):
         Raises:
             ValueError: If the type of the model is not object_detector
             ValueError: If the class 'bg' is present in the input data
-            AssertionError: If the same classes are not present when comparing an already trained model
+            ValueError: If the same classes are not present when comparing an already trained model
                 and a new dataset
         '''
         if self.model_type != 'object_detector':
@@ -738,10 +738,10 @@ class ModelKerasFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelKeras):
 
         # Validate classes if already trained, else set them
         if self.trained:
-            assert self.list_classes == list_classes, \
-                "Error: the new dataset does not match with the already fitted model"
-            assert self.dict_classes == dict_classes, \
-                "Error: the new dataset does not match with the already fitted model"
+            if self.list_classes != list_classes:
+                raise ValueError("Error: the new dataset does not match with the already fitted model")
+            if self.dict_classes != dict_classes:
+                raise ValueError("Error: the new dataset does not match with the already fitted model")
         else:
             self.list_classes = list_classes
             self.dict_classes = dict_classes

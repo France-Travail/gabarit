@@ -280,6 +280,8 @@ class ModelObjectDetectorMixin:
         Args:
             coco_eval (COCOeval) : A pycocotools COCOeval which calculated the AP.
                 In this function, we just get them, we do not calculate them
+        Raises:
+            ValueError : The precision has not the right shape (iou, recall, cls, area range, max dets)
         Returns:
             The dictionary containing the AP for each class
         '''
@@ -287,7 +289,8 @@ class ModelObjectDetectorMixin:
         # from https://detectron2.readthedocs.io/en/latest/_modules/detectron2/evaluation/coco_evaluation.html
         precisions = coco_eval.eval["precision"]
         # precision has dims (iou, recall, cls, area range, max dets)
-        assert len(self.dict_classes) == precisions.shape[2]
+        if len(self.dict_classes) != precisions.shape[2]:
+            raise ValueError(f"The precision has not the right shape (iou, recall, cls, area range, max dets): {precisions.shape}")
 
         # Retrieve APs
         dict_ap = {}

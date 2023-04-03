@@ -323,7 +323,8 @@ class AttentionWithContext(Layer):
         return config
 
     def build(self, input_shape) -> None:
-        assert len(input_shape) == 3
+        if len(input_shape) != 3:
+            raise ValueError("input_shape should be 3")
         input_shape_list = input_shape.as_list()
 
         self.W = self.add_weight(shape=((input_shape_list[-1], input_shape_list[-1])),

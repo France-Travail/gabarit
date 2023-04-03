@@ -124,10 +124,14 @@ def main(filename: str, model_dir: str, y_col: Union[List[Union[str, int]], None
             if len(y_col) > 1:
                 try:
                     y_true = df[y_col].astype(int)  # Need to cast OHE var into integers
-                    for col in y_col:
-                        assert sorted(y_true[col].unique()) == [0, 1]
-                except Exception:
+                except:
                     raise ValueError("You provided several target columns, but at least one of them does not seem to be in a correct OHE format.")
+                col_not_ohe = []
+                for col in y_col:
+                    if sorted(y_true[col].unique()) != [0, 1]:
+                        col_not_ohe.append(col)
+                if len(col_not_ohe):
+                    raise ValueError(f"You provided several target columns, but the columns {col_not_ohe} seem not to be in the correct OHE format.")
             else:
                 y_true = df[y_col[0]].astype(str)  # Target needs to be casted in string
         # regressor

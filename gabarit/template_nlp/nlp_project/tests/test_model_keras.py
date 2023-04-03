@@ -362,7 +362,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # Second fit
         y_train_mono_fake = np.array([3, 1, 0, 1, 2] * 100)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             model.fit(x_train[:50], y_train_mono_fake[:50], x_valid=None, y_valid=None, with_shuffle=True)
         remove_dir(model_dir)
 
@@ -428,7 +428,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # Second fit
         y_train_multi_fake = pd.DataFrame({'test3': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test1': [0, 0, 0, 1, 0] * 100})
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             model.fit(x_train[:50], y_train_multi_fake[:50], x_valid=None, y_valid=None, with_shuffle=True)
         remove_dir(model_dir)
 

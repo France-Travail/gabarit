@@ -175,26 +175,27 @@ def check_coordinates_validity(function: Callable) -> Callable:
         w = kwargs['w'] if 'w' in kwargs.keys() else (args[f_args.index('w')] if 'w' in f_args else None)
         h = kwargs['h'] if 'h' in kwargs.keys() else (args[f_args.index('h')] if 'h' in f_args else None)
         # Apply checks
-        if x1 is not None:
-            assert x1 >= 0, 'x1 must be non negative'
-        if y1 is not None:
-            assert y1 >= 0, 'y1 must be non negative'
-        if x2 is not None:
-            assert x2 >= 0, 'x2 must be non negative'
-        if y2 is not None:
-            assert y2 >= 0, 'y2 must be non negative'
-        if x is not None:
-            assert x >= 0, 'x must be non negative'
-        if y is not None:
-            assert y >= 0, 'y must be non negative'
-        if w is not None:
-            assert w > 0, 'w must be positive'
-        if h is not None:
-            assert h > 0, 'h must be positive'
-        if x1 is not None and x2 is not None:
-            assert x2 > x1, 'x2 must be bigger than x1'
-        if y1 is not None and y2 is not None:
-            assert y2 > y1, 'y2 must be bigger than y1'
+        if x1 is not None and x1 <0:
+            raise ValueError('x1 must be non negative')
+        if x2 is not None and x2 <0:
+            raise ValueError('x2 must be non negative')
+        if y1 is not None and y1 <0:
+            raise ValueError('y1 must be non negative')
+        if y2 is not None and y2 <0:
+            raise ValueError('y2 must be non negative')
+        if x is not None and x <0:
+            raise ValueError('x must be non negative')
+        if y is not None and y <0:
+            raise ValueError('y must be non negative')
+        if w is not None and w <= 0:
+            raise ValueError('w must be positive')
+        if h is not None and h <= 0:
+            raise ValueError('h must be positive')
+
+        if x1 is not None and x2 is not None and x1 >= x2:
+            raise ValueError('x2 must be bigger than x1')
+        if y1 is not None and y2 is not None and y1 >= y2:
+            raise ValueError('y2 must be bigger than y1')
         # Return
         return function(*args, **kwargs)
     return wrapper
