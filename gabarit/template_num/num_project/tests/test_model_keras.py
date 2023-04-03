@@ -202,7 +202,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         y_train_mono_2_fake = pd.Series([0, 0, 0, 0, 2, 2, 2] * 10)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             model.fit(x_train, y_train_mono_2_fake, x_valid=x_train, y_valid=y_train_mono_2, with_shuffle=False)
         remove_dir(model_dir)
 
@@ -288,7 +288,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5')))
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         y_train_mono_3_fake = pd.Series([5, 5, 8, 8, 2, 2, 2] * 10)
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             model.fit(x_train, y_train_mono_3_fake, x_valid=x_train, y_valid=y_train_mono_3, with_shuffle=False)
         remove_dir(model_dir)
         # Missing targets in y_valid

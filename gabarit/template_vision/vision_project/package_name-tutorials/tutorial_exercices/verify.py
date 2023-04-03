@@ -26,9 +26,8 @@ def verify_exercice_1():
         dataset_valid_path,
         dataset_test_path,
     ):
-        assert (
-            path.exists()
-        ), f"{path} not found. Did you run 0_split_train_valid_test.py ?"
+        if not path.exists():
+            raise FileNotFoundError(f"{path} not found. Did you run 0_split_train_valid_test.py ?")
 
     # Verify folders content by checking ratios
     expected_ratios = {
@@ -39,17 +38,11 @@ def verify_exercice_1():
 
     img_counts = {path: sum(1 for _ in path.glob("*/*")) for path in expected_ratios}
     img_ratios = {path: n / sum(img_counts.values()) for path, n in img_counts.items()}
-
-    try:
-        for path, expected_ratio in expected_ratios.items():
-            assert abs(expected_ratio - img_ratios[path]) < 1e-2
-
-    except AssertionError:
-        raise AssertionError(
-            f"{path} contains {img_ratios[path]:.0%} of images whereas it "
-            f"should contains {expected_ratio:.0%}. Did you use '--perc_train 0.6' "
-            f"'--perc_valid 0.2' and '--perc_test 0.2' ?"
-        )
+    for path, expected_ratio in expected_ratios.items():
+        if abs(expected_ratio - img_ratios[path]) >= 1e-2:
+            raise ValueError(f"{path} contains {img_ratios[path]:.0%} of images whereas it "
+                             f"should contains {expected_ratio:.0%}. Did you use '--perc_train 0.6' "
+                             f"'--perc_valid 0.2' and '--perc_test 0.2' ?")
 
     print("Exercice 1 : OK ✔")
 
@@ -60,13 +53,14 @@ def verify_exercice_2():
     dataset_test_sample_path = DATA_PATH / (DATASET_CLASSIF + "_test_3_samples")
 
     for path in (dataset_train_sample_path, dataset_test_sample_path):
-        assert path.exists(), f"{path} not found. Did you run 0_create_samples.py ?"
+        if not path.exists():
+            raise FileNotFoundError(f"{path} not found. Did you run 0_create_samples.py ?")
 
     print("Exercice 2 : OK ✔")
 
 
 def verify_exercice_3():
-    """Verify second exercice"""
+    """Verify third exercice"""
     dataset_train_sample_path = DATA_PATH / (
         DATASET_CLASSIF + "_train_preprocess_convert_rgb"
     )
@@ -78,13 +72,14 @@ def verify_exercice_3():
         dataset_train_sample_path,
         dataset_valid_sample_path,
     ):
-        assert path.exists(), f"{path} not found. Did you run 1_preprocess_data.py ?"
+        if not path.exists():
+            raise FileNotFoundError(f"{path} not found. Did you run 1_preprocess_data.py ?")
 
     print("Exercice 3 : OK ✔")
 
 
 def verify_exercice_4():
-    """Verify second exercice"""
+    """Verify fourth exercice"""
     models_folders = sorted(
         MODELS_PATH.glob("model_cnn_classifier/model_cnn_classifier_*")
     )
@@ -123,7 +118,7 @@ def verify_exercice_4():
 
 
 def verify_exercice_5():
-    """Verify second exercice"""
+    """Verify fifth exercice"""
     models_folders = sorted(
         MODELS_PATH.glob(
             "model_transfer_learning_classifier/model_transfer_learning_classifier_*"
@@ -222,9 +217,8 @@ def verify_exercice_7():
     test_path = DATA_PATH / (DATASET_OBJ_DETECT + "_test")
 
     for path in (train_path, valid_path, test_path):
-        assert (
-            path.exists()
-        ), f"{path} not found. Did you run 0_split_train_valid_test.py ?"
+        if not path.exists():
+            raise FileNotFoundError(f"{path} not found. Did you run 0_split_train_valid_test.py ?")
 
     # Training
     models_folders = sorted(

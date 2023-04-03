@@ -195,7 +195,7 @@ class ModelKeras(ModelClass):
                 Thus, the validation set might get classes which are not in the train set ...
         Raises:
             ValueError: If the model is not of type `classifier`
-            AssertionError: If already trained and new dataset does not match model's classes
+            ValueError: If already trained and new dataset does not match model's classes
         Returns:
             dict: Fit arguments, to be used with transfer learning fine-tuning
         '''
@@ -242,10 +242,10 @@ class ModelKeras(ModelClass):
 
         # Validate classes if already trained, else set them
         if self.trained:
-            assert self.list_classes == list_classes, \
-                "Error: the new dataset does not match with the already fitted model"
-            assert self.dict_classes == dict_classes, \
-                "Error: the new dataset does not match with the already fitted model"
+            if self.list_classes != list_classes:
+                raise ValueError("Error: the new dataset does not match with the already fitted model")
+            if self.dict_classes != dict_classes:
+                raise ValueError("Error: the new dataset does not match with the already fitted model")
         else:
             self.list_classes = list_classes
             self.dict_classes = dict_classes

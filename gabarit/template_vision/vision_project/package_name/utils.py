@@ -309,11 +309,12 @@ def rebuild_metadata_object_detection(filenames_list: list, bboxes_list: list) -
         filenames_list (list): List of files names (actually a path relative to files parent directory)
         bboxes_list (list): List of bboxes
     Raises:
-        AssertionError: Both list must be of same length
+        ValueError: Both list must be of same length
     Returns:
         pd.DataFrame: The new metadata dataframe
     '''
-    assert len(filenames_list) == len(bboxes_list), "Both list 'filenames_list' & 'bboxes_list' must be of same length"
+    if len(filenames_list) != len(bboxes_list):
+        raise ValueError("Both list 'filenames_list' & 'bboxes_list' must be of same length") 
 
     rows = []
     for filename, bboxes in zip(filenames_list, bboxes_list):
@@ -331,11 +332,12 @@ def rebuild_metadata_classification(filenames_list: list, classes_list: list) ->
         filenames_list (list): List of files names (actually a path relative to files parent directory)
         classes_list (list): List of classes
     Raises:
-        AssertionError: Both list must be of same length
+        ValueError: Both list must be of same length
     Returns:
         pd.DataFrame: The new metadata dataframe
     '''
-    assert len(filenames_list) == len(classes_list), "Both list 'filenames_list' & 'classes_list' must be of same length"
+    if len(filenames_list) != len(classes_list):
+        raise ValueError("Both list 'filenames_list' & 'classes_list' must be of same length")
     return pd.DataFrame({'filename': filenames_list, 'class': classes_list})
 
 

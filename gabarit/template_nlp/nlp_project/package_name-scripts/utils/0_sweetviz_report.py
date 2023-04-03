@@ -135,8 +135,8 @@ def get_paths_and_names(dataset_paths: List[str], dataset_names: List[str]) -> T
         dataset_paths (list<str>): List of datasets filenames (actually paths relative to {{package_name}}-data)
         dataset_names (list<str>): List of names to use for each dataset. If no name provided, backup on files names without extension.
     Raises:
-        AssertionError: If any provided dataset does not exist
-        AssertionError: If a provided list of name does not the correct number of datasets
+        FileNotFoundError: If any provided dataset does not exist
+        ValueError: If a provided list of name does not match the correct number of datasets
     Returns:
         list<str>: list of all datasets abs path
         list<str>: list of all datasets' names
@@ -147,13 +147,13 @@ def get_paths_and_names(dataset_paths: List[str], dataset_names: List[str]) -> T
     dataset_paths = [os.path.join(data_path, dataset_path) for dataset_path in dataset_paths or []]
     # Check all paths exist
     for dataset_path in dataset_paths:
-        assert os.path.exists(dataset_path), f"{dataset_path} doest not exist"
+        if not os.path.exists(dataset_path):
+            raise FileNotFoundError(f"{dataset_path} does not exist")
     # If dataset names are provided, check lists length match number of paths
     if dataset_names is not None:
-        assert len(dataset_paths) == len(dataset_names), (
-            f"There is {len(dataset_paths)} path in dataset_paths, "
-            f"but {len(dataset_names)} in dataset_names"
-        )
+        if len(dataset_paths) != len(dataset_names):
+            raise ValueError(f"There is {len(dataset_paths)} path in dataset_paths, but {len(dataset_names)} in dataset_names")
+
     # Else set them as the files stem
     else:
         dataset_names = [Path(dataset_path).stem for dataset_path in dataset_paths]

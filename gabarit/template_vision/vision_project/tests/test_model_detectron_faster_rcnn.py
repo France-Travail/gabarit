@@ -509,7 +509,7 @@ class ModelDetectronRCNNTests(unittest.TestCase):
         error_directory = os.path.join(os.getcwd(), 'test_data', 'test_data_object_detection', 'error_fruits')
         error_path_list, error_bboxes_list, _ = utils.read_folder_object_detection(error_directory, images_ext=('.jpg', '.jpeg', '.png'))
         error_df_data = pd.DataFrame({'file_path': error_path_list, 'bboxes': error_bboxes_list}).copy()
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             model.fit(error_df_data, df_valid=None, with_shuffle=True)
 
         # Clean
