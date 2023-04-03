@@ -68,10 +68,13 @@ def verify_exercice_2():
 
 def verify_exercice_3():
     """Verify third exercice"""
-    report_path = DATA_PATH / "reports" / "report_wine_train_wine_test.html"
-    assert report_path.exists(), f"{report_path} not found"
+    report_path = DATA_PATH / "reports" / "sweetviz"
+    reports = list(os.walk(report_path))[0][2]
+    assert len(reports), f"No report found in {report_path}"
 
-    with report_path.open("r") as f:
+    full_report_path = report_path / reports[-1]
+
+    with full_report_path.open("r") as f:
         report_content = f.read()
 
     report_html = html.escape(report_content)
