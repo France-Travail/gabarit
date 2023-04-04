@@ -18,6 +18,7 @@
 import pytest
 from fastapi.testclient import TestClient
 from .create_test_model import TestExplainer
+from {{package_name}}.core.resources import RESOURCES, RESOURCE_MODEL
 
 
 def test_predict(test_complete_client: TestClient):
@@ -49,7 +50,7 @@ def test_explain(test_complete_client: TestClient):
     assert response.status_code == 501
 
     # Now add a TestExplainer to test the explanations
-    test_complete_client.app.state.model._model_explainer = TestExplainer()
+    RESOURCES[RESOURCE_MODEL]._model_explainer = TestExplainer()
 
     # HTML response
     response = test_complete_client.post(

@@ -470,7 +470,7 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
             'file_class': ['toto', 'toto', 'tata', 'tata', 'tata', 'toto', 'toto', 'toto', 'tata', 'toto', 'toto', 'toto'],
             'file_path': [os.path.join(data_path, _) for _ in filenames],
         })
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             fit_arguments = model.fit(df_train_mono_fake, df_valid=df_train_mono, with_shuffle=True)
         remove_dir(model_dir)
 
@@ -735,7 +735,7 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
             'file_class': ['toto', 'toto', 'tata', 'tata', 'tata', 'toto', 'toto', 'toto', 'tata', 'toto', 'toto', 'toto'],
             'file_path': [os.path.join(data_path, _) for _ in filenames],
         })
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             fit_arguments = model.fit(df_train_mono_fake, df_valid=df_train_mono, with_shuffle=True)
         remove_dir(model_dir)
 
@@ -1000,7 +1000,7 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
             'file_class': ['toto', 'toto', 'tata', 'tata', 'tata', 'toto', 'toto', 'toto', 'tata', 'toto', 'toto', 'toto'],
             'file_path': [os.path.join(data_path, _) for _ in filenames],
         })
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             fit_arguments = model.fit(df_train_multi_fake, df_valid=df_train_multi, with_shuffle=True)
         remove_dir(model_dir)
         # Missing targets in df_valid
@@ -1292,7 +1292,7 @@ class ModelTransferLearningClassifierTests(unittest.TestCase):
             'file_class': ['toto', 'toto', 'tata', 'tata', 'tata', 'toto', 'toto', 'toto', 'tata', 'toto', 'toto', 'toto'],
             'file_path': [os.path.join(data_path, _) for _ in filenames],
         })
-        with self.assertRaises(AssertionError):
+        with self.assertRaises(ValueError):
             fit_arguments = model.fit(df_train_multi_fake, df_valid=df_train_multi, with_shuffle=True)
         remove_dir(model_dir)
         # Missing targets in df_valid

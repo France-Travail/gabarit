@@ -360,7 +360,7 @@ class ModelDetectronFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelClas
                 This should be used if the target is not shuffled as the split_validation takes the lines in order.
                 Thus, the validation set might get classes which are not in the train set ...
         Raises:
-            AssertionError: If the same classes are not present when comparing an already trained model
+            ValueError: If the same classes are not present when comparing an already trained model
                 and a new dataset
         '''
 
@@ -414,10 +414,10 @@ class ModelDetectronFasterRcnnObjectDetector(ModelObjectDetectorMixin, ModelClas
 
         # Validate classes if already trained, else set them
         if self.trained:
-            assert self.list_classes == list_classes, \
-                "Error: the new dataset does not match with the already fitted model"
-            assert self.dict_classes == dict_classes, \
-                "Error: the new dataset does not match with the already fitted model"
+            if self.list_classes != list_classes:
+                raise ValueError("Error: the new dataset does not match with the already fitted model")
+            if self.dict_classes != dict_classes:
+                raise ValueError("Error: the new dataset does not match with the already fitted model")
         else:
             self.list_classes = list_classes
             self.dict_classes = dict_classes
@@ -795,6 +795,8 @@ class TrainerRCNN(DefaultTrainer):
     def train(self):
         '''Run training.
 
+        Raises:
+            AttributeError : No evaluation results obtained during training!
         Returns:
             OrderedDict of results, if evaluation is enabled. Otherwise None.
         '''
@@ -833,9 +835,8 @@ class TrainerRCNN(DefaultTrainer):
 
         # From https://detectron2.readthedocs.io/en/latest/_modules/detectron2/engine/defaults.html#DefaultTrainer
         if len(self.cfg.TEST.EXPECTED_RESULTS) and comm.is_main_process():
-            assert hasattr(
-                self, "_last_eval_results"
-            ), "No evaluation results obtained during training!"
+            if not hasattr(self, "_last_eval_results"):
+                raise AttributeError("No evaluation results obtained during training!")
             verify_results(self.cfg, self._last_eval_results)
             return self._last_eval_results
 

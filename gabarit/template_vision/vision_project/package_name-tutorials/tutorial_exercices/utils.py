@@ -125,7 +125,8 @@ def download_file(
 
 def get_relative_path(path: str, base_path: str):
     """Get path relative to a base_path"""
-    assert path.startswith(base_path)
+    if not path.startswith(base_path):
+        raise ValueError(f"{path} doesn't begin by {base_path}")
     relative_path = path[len(base_path) :]
     return relative_path if relative_path[:1] != "/" else relative_path[1:]
 
@@ -136,7 +137,9 @@ def verify_github_api_url(github_api_url: str) -> tuple:
 
     Args:
         github_api_url (str): github api url
-
+    Raises:
+        ValueError: if parsed_url.netloc is not equal to api.github.com
+        ValueError: if the url is not a proper url for this function
     Returns:
         tuple: (user, repo, repo_path)
     """
@@ -144,16 +147,12 @@ def verify_github_api_url(github_api_url: str) -> tuple:
 
     # Verify that the given url is a api.github.com url using contents endpoint
     # of repositories api
-    assert (
-        parsed_url.netloc == "api.github.com"
-    ), "This function is meant to be used with api.github.com"
+    if parsed_url.netloc != "api.github.com":
+        raise ValueError("This function is meant to be used with api.github.com")
 
     _, api, user, repo, api_endpoint, repo_path = parsed_url.path.split("/", 5)
-
-    assert api == "repos" and api_endpoint == "contents", (
-        "This function is meant to be used with : "
-        "https://docs.github.com/en/rest/repos/contents#get-repository-content"
-    )
+    if api != "repos" or api_endpoint != "contents":
+        raise ValueError("This function is meant to be used with : https://docs.github.com/en/rest/repos/contents#get-repository-content")
 
     return user, repo, repo_path
 

@@ -30,27 +30,18 @@ def verify_exercice_1():
 
     # Verify that files exist
     for file_path in files.values():
-        try:
-            assert os.path.exists(file_path)
-        except AssertionError:
-            raise FileNotFoundError(
-                f"{file_path} not found. "
-                f"Did you use {{package_name}}-scripts/utils/0_split_train_valid_test.py ?"
-            )
+        if not file_path.exists():
+            raise FileNotFoundError(f"{file_path} not found. Did you use {{package_name}}-scripts/utils/0_split_train_valid_test.py ?")
 
     # Verify files content
     for file, file_path in files.items():
         df = pd.read_csv(file_path, sep=";")
-        try:
-            assert df.shape[0] == expected_results[file]["length"]
-        except AssertionError:
+        if df.shape[0] != expected_results[file]["length"]:
             raise ValueError(
                 f"Unexpected length for {file_path}.  "
                 f"Did you correctly use a 0.6 / 0.2 / 0.2 split ?"
             )
-        try:
-            assert df["alcohol"].iloc[0] == expected_results[file]["alcohol"]
-        except AssertionError:
+        if df["alcohol"].iloc[0] != expected_results[file]["alcohol"]:
             raise ValueError(
                 f"Unexpected value in {file_path}.  "
                 f"Did you correctly use 42 as seed ?"
@@ -61,17 +52,21 @@ def verify_exercice_1():
 
 def verify_exercice_2():
     """Verify second exercice"""
-    assert os.path.exists(DATA_PATH / f"{DATASET_NAME}_10_samples.csv")
-
-    print("Exercice 2 : OK ✔")
+    if os.path.exists(DATA_PATH / f"{DATASET_NAME}_10_samples.csv"):
+        print("Exercice 2 : OK ✔")
+    else:
+        print("Exercice 2 : NOT OK")
 
 
 def verify_exercice_3():
     """Verify third exercice"""
-    report_path = DATA_PATH / "reports" / "report_wine_train_wine_test.html"
-    assert report_path.exists(), f"{report_path} not found"
+    report_path = DATA_PATH / "reports" / "sweetviz"
+    reports = list(os.walk(report_path))[0][2]
+    assert len(reports), f"No report found in {report_path}"
 
-    with report_path.open("r") as f:
+    full_report_path = report_path / reports[-1]
+
+    with full_report_path.open("r") as f:
         report_content = f.read()
 
     report_html = html.escape(report_content)
@@ -88,12 +83,11 @@ def verify_exercice_3():
 def verify_exercice_4():
     """Verify fourth exercice"""
     file_path = DATA_PATH / f"{DATASET_NAME}_preprocess_P1.csv"
-    assert os.path.exists(file_path), "Did you run 1_preprocess_data.py ?"
+    if not os.path.exists(file_path):
+        raise FileNotFoundError("Did you run 1_preprocess_data.py ?")
 
     df = pd.read_csv(file_path, sep=";", skiprows=1)
-    try:
-        assert df["target"].apply(lambda x: x % 1 == 0).all()
-    except AssertionError:
+    if not df["target"].apply(lambda x: x % 1 == 0).all():
         raise ValueError(
             "target should only contain int. Did you use '--target_cols target' ?"
         )
@@ -113,26 +107,18 @@ def verify_exercice_5():
     from {{package_name}}.preprocessing.preprocess import get_pipelines_dict
 
     try:
-        assert isinstance(get_pipelines_dict()["preprocess_P2"], ColumnTransformer)
+        if not isinstance(get_pipelines_dict()["preprocess_P2"], ColumnTransformer):
+            raise ValueError("Value associated to 'preprocess_P2' in get_pipelines_dict should be 'preprocess_P2()'")
     except KeyError:
         raise KeyError("Did you add 'preprocess_P2' to get_pipelines_dict ?")
-    except AssertionError:
-        raise AssertionError(
-            "Value associated to 'preprocess_P2' in get_pipelines_dict should be 'preprocess_P2()'"
-        )
-
+    
     file_path = DATA_PATH / f"{DATASET_NAME}_preprocess_P2.csv"
-    try:
-        assert os.path.exists(file_path)
-    except AssertionError:
-        raise AssertionError(
-            "Did you run 1_preprocess_data.py with argument '-p preprocess_P2' ?"
-        )
+    if not file_path.exists():
+        raise FileNotFoundError("Did you run 1_preprocess_data.py with argument '-p preprocess_P2' ?")
+
 
     df = pd.read_csv(file_path, sep=";", skiprows=1)
-    try:
-        assert df["target"].apply(lambda x: x % 1 == 0).all()
-    except AssertionError:
+    if not df["target"].apply(lambda x: x % 1 == 0).all():
         raise ValueError(
             "target should only contain int. Did you use '--target_cols target' ?"
         )
@@ -149,10 +135,8 @@ def verify_exercice_6():
         (train_P1, "Did you run 1_preprocess_data.py on wine_train.csv ? "),
         (valid_P1, "Did you run 2_apply_existing_pipeline.py on wine_valid.csv ? "),
     ):
-        try:
-            assert os.path.exists(file)
-        except AssertionError:
-            raise FileNotFoundError(error_msg)
+        if not file.exists():
+            raise FileNotFoundError(error_msg)        
 
     expected_results = {
         train_P1: 0.858,
@@ -161,19 +145,15 @@ def verify_exercice_6():
 
     for file, alcohol_first_value in expected_results.items():
         df = pd.read_csv(file, sep=";", skiprows=1)
-
-        try:
-            assert abs(df["num__alcohol"].iloc[0] - alcohol_first_value) < 1e-3
-        except AssertionError:
+        
+        if not abs(df["num__alcohol"].iloc[0] - alcohol_first_value) < 1e-3:
             raise ValueError(
                 f"Unexpected value in {file}. Did you use 1_preprocess_data.py on "
                 f"{DATASET_NAME}_train.csv and 2_apply_existing_pipeline.py on "
                 f"{DATASET_NAME}_valid.csv and {DATASET_NAME}_test.csv ?"
             )
-
-        try:
-            assert df["target"].apply(lambda x: x % 1 == 0).all()
-        except AssertionError:
+            
+        if not df["target"].apply(lambda x: x % 1 == 0).all():
             raise ValueError(
                 f"Target column in {file} should only contain int. "
                 f"Did you use '--target_cols target' ?"

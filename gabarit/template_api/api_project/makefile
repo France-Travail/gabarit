@@ -27,11 +27,11 @@ help: ## This help
 NAME_VENV=.venv
 
 create-virtualenv:
-	python -m venv .venv
+	python -m venv $(NAME_VENV)
 
 init-local-env:
 ifndef VIRTUAL_ENV
-	$(error Please activate your virutalenv : source .venv/bin/activate)
+	$(error Please activate your virtualenv : source $(NAME_VENV)/bin/activate)
 endif
 	pip install -e .[dev]
 
@@ -41,7 +41,7 @@ endif
 
 test: ## Launch python tests
 ifndef VIRTUAL_ENV
-	$(error Please activate your virutalenv : source .venv/bin/activate)
+	$(error Please activate your virtualenv : source $(NAME_VENV)/bin/activate)
 endif
 	pytest --cov-report term-missing
 
@@ -53,14 +53,14 @@ quality: black isort
 
 black: ## Formatter
 ifndef VIRTUAL_ENV
-	$(error Please activate your virutalenv : source .venv/bin/activate)
+	$(error Please activate your virtualenv : source $(NAME_VENV)/bin/activate)
 endif
 	@echo 'Black formatting'
 	black {{package_name}}
 
 isort: ## Import formatter
 ifndef VIRTUAL_ENV
-	$(error Please activate your virutalenv : source .venv/bin/activate)
+	$(error Please activate your virtualenv : source $(NAME_VENV)/bin/activate)
 endif
 	@echo 'Isort formatting'
 	isort {{package_name}}
@@ -74,7 +74,7 @@ ifeq ($(OS),Windows_NT)
 	$(error launch.sh is meant to be used on linux)
 endif
 ifndef VIRTUAL_ENV
-	$(error Please activate your virutalenv : source .venv/bin/activate)
+	$(error Please activate your virtualenv : source $(NAME_VENV)/bin/activate)
 endif
 	./launch.sh
 

@@ -15,18 +15,21 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-"""Startup and Stop handlers for FastAPI application
+"""Resources for the FastAPI application
 
-This module define event handlers and n particular startup and stop handlers that
-are used to instantiate your model when the API first start.
+This module define resources that need to be instantiated at startup in a global
+variable resources that can be used in routes.
+
+This is the way your machine learning models can be loaded in memory at startup
+so they can handle requests.
 
 To use your own model instead of the base model, create a module in {{package_name}}.model
 such as model_awesome.py and import it as Model instead of the one used here.
 """
 
-
 import logging
-from typing import Callable
+from contextlib import asynccontextmanager
+
 from fastapi import FastAPI
 
 {%- if gabarit_package_spec %}
@@ -37,34 +40,19 @@ from ..model.model_base import Model
 
 logger = logging.getLogger(__name__)
 
+RESOURCES = {}
+RESOURCE_MODEL = "model"
 
-def _startup_model(app: FastAPI) -> None:
-    """Create and Load model"""
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    # Load the ML model
     model = Model()
     model.loading()
-    app.state.model = model
+    logger.info("Model loaded")
 
+    RESOURCES[RESOURCE_MODEL] = model
+    yield
 
-def _shutdown_model(app: FastAPI) -> None:
-    """Clean the model state"""
-    app.state.model = None
+    # Clean up the ML models and release the resources
+    RESOURCES.clear()
 
-
-def start_app_handler(app: FastAPI) -> Callable:
-    """Startup handler: invoke init actions"""
-
-    def startup() -> None:
-        logger.info("Startup Handler: Load model.")
-        _startup_model(app)
-
-    return startup
-
-
-def stop_app_handler(app: FastAPI) -> Callable:
-    """Stop handler: invoke shutdown actions"""
-
-    def shutdown() -> None:
-        logger.info("Shutdown handler : Clean model.")
-        _shutdown_model(app)
-
-    return shutdown
