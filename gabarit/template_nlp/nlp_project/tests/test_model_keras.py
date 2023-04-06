@@ -615,7 +615,33 @@ class ModelKerasTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test08_model_keras_save(self):
+    def test08_model_keras_plot_metrics_and_loss(self):
+        '''Test of the method _plot_metrics_and_loss of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Nominal case
+        model = ModelKeras(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+
+        class FitHistory(object):
+
+            def __init__(self):
+                self.history = {}
+                for metric in ['acc', 'loss', 'categorical_accuracy', 'f1', 'precision', 'recall']:
+                    self.history[metric] = [0.1, 0.2, 0.3, 0.5, 0.4]
+                    self.history[f'val_{metric}'] = [0.05, 0.1, 0.2, 0.4, 0.4]
+
+        fit_history = FitHistory()
+        model._plot_metrics_and_loss(fit_history)
+        plots_path = os.path.join(model.model_dir, 'plots')
+        for filename in ['accuracy', 'loss', 'categorical_accuracy', 'f1_score', 'precision', 'recall']:
+            self.assertTrue(os.path.exists(os.path.join(plots_path, f"{filename}.jpeg")))
+
+        # Clean
+        remove_dir(model_dir)
+
+    def test09_model_keras_save(self):
         '''Test of the method save of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -693,7 +719,7 @@ class ModelKerasTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test09_model_keras_hook_post_load_model_pkl(self):
+    def test10_model_keras_hook_post_load_model_pkl(self):
         '''Test of the method _hook_post_load_model_pkl of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -727,7 +753,7 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(new_model_dir)
         remove_dir(model_dir)
 
-    def test10_model_keras_init_new_instance_from_configs(self):
+    def test11_model_keras_init_new_instance_from_configs(self):
         '''Test of the method _init_new_instance_from_configs of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -785,7 +811,7 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
     
-    def test11_model_keras_load_standalone_files(self):
+    def test12_model_keras_load_standalone_files(self):
         '''Test of the method _load_standalone_files of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -848,7 +874,7 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
-    def test12_model_keras_reload_weights(self):
+    def test13_model_keras_reload_weights(self):
         '''Test of the method _reload_weights of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')

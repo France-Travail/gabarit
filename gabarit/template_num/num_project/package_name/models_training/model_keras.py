@@ -559,7 +559,7 @@ class ModelKeras(ModelClass):
                 plt.xlabel('Epoch')
                 plt.legend(['Train', 'Validation'], loc='upper left')
                 # Save
-                filename == f"{filename}.jpeg"
+                filename = f"{filename}.jpeg"
                 plt.savefig(os.path.join(plots_path, filename))
 
                 # Close figures

@@ -650,7 +650,35 @@ class ModelKerasTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test07_model_keras_save(self):
+    def test07_model_keras_plot_metrics_and_loss(self):
+        '''Test of the method _plot_metrics_and_loss of {{package_name}}.models_training.model_keras.ModelKeras'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Nominal case
+        model = ModelKeras(model_dir=model_dir)
+
+        class FitHistory(object):
+
+            def __init__(self):
+                self.history = {}
+                for metric in ['acc', 'loss', 'categorical_accuracy', 'f1', 'precision', 'recall','mean_absolute_error',
+                               'mae', 'mean_squared_error', 'mse', 'root_mean_squared_error', 'rmse']:
+                    self.history[metric] = [0.1, 0.2, 0.3, 0.5, 0.4]
+                    self.history[f'val_{metric}'] = [0.05, 0.1, 0.2, 0.4, 0.4]
+
+        fit_history = FitHistory()
+        model._plot_metrics_and_loss(fit_history)
+        plots_path = os.path.join(model.model_dir, 'plots')
+        for filename in ['accuracy', 'loss', 'categorical_accuracy', 'f1_score', 'precision', 'recall', 'mae',
+                         'mse', 'rmse']:
+            self.assertTrue(os.path.exists(os.path.join(plots_path, f"{filename}.jpeg")))
+
+        # Clean
+        remove_dir(model_dir)
+
+    def test08_model_keras_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_keras.ModelKeras'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -739,7 +767,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue('multi_label' not in configs.keys())  # not in because we do not use the Classifier mixin
         remove_dir(model_dir)
 
-    def test08_model_keras_reload_model(self):
+    def test09_model_keras_reload_model(self):
         '''Test of the method reload_model of {{package_name}}.models_training.model_keras.ModelKeras'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
