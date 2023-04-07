@@ -667,7 +667,28 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test13_model_huggingface_save(self):
+    def test13_model_plot_metrics_and_loss(self):
+        '''Test of the method _plot_metrics_and_loss of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Nominal case
+        model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
+
+        list_metrics = ['loss', 'accuracy', 'weighted_f1', 'weighted_precision', 'weighted_recall']
+        fit_history_train = [{f'train_metrics_{metric}':[0.1, 0.2, 0.3, 0.5, 0.4]} for metric in list_metrics]
+        fit_history_val = [{f'eval_{metric}':[0.05, 0.1, 0.2, 0.4, 0.4]} for metric in list_metrics]
+        fit_history = fit_history_train+fit_history_val
+
+        model._plot_metrics_and_loss(fit_history)
+        plots_path = os.path.join(model.model_dir, 'plots')
+        for filename in ['accuracy', 'loss', 'weighted_f1_score', 'weighted_precision', 'weighted_recall']:
+            self.assertTrue(os.path.exists(os.path.join(plots_path, f"{filename}.jpeg")))
+
+        # Clean
+        remove_dir(model_dir)
+
+    def test14_model_huggingface_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -709,7 +730,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test14_model_huggingface_init_new_instance_from_configs(self):
+    def test15_model_huggingface_init_new_instance_from_configs(self):
         '''Test of the method _init_new_instance_from_configs of {{package_name}}.models_training.models_tensorflow.model_huggingface.ModelHuggingFace'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
@@ -780,7 +801,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
-    def test15_model_huggingface_load_standalone_files(self):
+    def test16_model_huggingface_load_standalone_files(self):
         '''Test of the method _load_standalone_files of {{package_name}}.models_training.models_tensorflow.model_huggingface.ModelHuggingFace'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)

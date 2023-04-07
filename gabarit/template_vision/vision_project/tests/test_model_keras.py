@@ -848,7 +848,33 @@ class ModelKerasTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test09_model_keras_save(self):
+    def test09_model_keras_plot_metrics_and_loss(self):
+        '''Test of the method _plot_metrics_and_loss of {{package_name}}.models_training.model_keras.ModelKeras'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Nominal case
+        model = ModelKeras(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+
+        class FitHistory(object):
+
+            def __init__(self):
+                self.history = {}
+                for metric in ['acc', 'loss', 'categorical_accuracy', 'f1', 'precision', 'recall']:
+                    self.history[metric] = [0.1, 0.2, 0.3, 0.5, 0.4]
+                    self.history[f'val_{metric}'] = [0.05, 0.1, 0.2, 0.4, 0.4]
+
+        fit_history = FitHistory()
+        model._plot_metrics_and_loss(fit_history)
+        plots_path = os.path.join(model.model_dir, 'plots')
+        for filename in ['accuracy', 'loss', 'categorical_accuracy', 'f1_score', 'precision', 'recall']:
+            self.assertTrue(os.path.exists(os.path.join(plots_path, f"{filename}.jpeg")))
+
+        # Clean
+        remove_dir(model_dir)
+
+    def test10_model_keras_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_keras.ModelKeras'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -941,7 +967,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue('dict_classes' not in configs.keys()) # not in because we do not use the Classifier mixin
         remove_dir(model_dir)
 
-    def test10_model_keras_reload_model(self):
+    def test11_model_keras_reload_model(self):
         '''Test of the method reload_model of {{package_name}}.models_training.model_keras.ModelKeras'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
