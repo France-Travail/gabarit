@@ -58,7 +58,7 @@ class ModelKeras(ModelClass):
     # -> reload_from_standalone
 
     def __init__(self, batch_size: int = 64, epochs: int = 99, validation_split: float = 0.2,
-                 patience: int = 5, keras_params: Union[dict, None] = None, **kwargs) -> None:
+                 patience: int = 5, keras_params: Union[dict, None] = None, seed: Union[int, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelClass for more arguments)
 
         Kwargs:
@@ -71,6 +71,7 @@ class ModelKeras(ModelClass):
                 e.g. learning_rate, nb_lstm_units, etc...
                 The purpose of this dictionary is for the user to use it as they wants in the _get_model function
                 This parameter was initially added in order to do an hyperparameters search
+            seed (int): Random seed used for layers randomness and weight initializers
         '''
         # TODO: learning rate should be an attribute !
         # Init.
@@ -89,6 +90,7 @@ class ModelKeras(ModelClass):
         self.epochs = epochs
         self.validation_split = validation_split
         self.patience = patience
+        self.seed = seed
 
         # Model set on fit
         self.model: Any = None

@@ -31,6 +31,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout, Input
+from tensorflow.keras.initializers import HeUniform, GlorotUniform
 
 from ... import utils_deep_keras
 from ...model_keras import ModelKeras
@@ -64,22 +65,26 @@ class ModelDenseClassifier(ModelClassifierMixin, ModelKeras):
         input_dim = len(self.x_col)
         num_classes = len(self.list_classes)
 
+        # Get kernel initializers
+        heUniform_ini = HeUniform(self.seed)
+        glorotUniform_ini = GlorotUniform(self.seed)
+
         # Process
         input_layer = Input(shape=(input_dim,))
 
-        x = Dense(64, activation=None, kernel_initializer="he_uniform")(input_layer)
+        x = Dense(64, activation=None, kernel_initializer=heUniform_ini)(input_layer)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.2)(x)
+        x = Dropout(0.2, seed=self.seed)(x)
 
-        x = Dense(64, activation=None, kernel_initializer="he_uniform")(x)
+        x = Dense(64, activation=None, kernel_initializer=heUniform_ini)(x)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.2)(x)
+        x = Dropout(0.2, seed=self.seed)(x)
 
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        out = Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform')(x)
+        out = Dense(num_classes, activation=activation, kernel_initializer=glorotUniform_ini)(x)
 
         # Set model
         model = Model(inputs=input_layer, outputs=[out])
@@ -173,7 +178,7 @@ class ModelDenseClassifier(ModelClassifierMixin, ModelKeras):
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['model_type', 'x_col', 'y_col', 'columns_in', 'mandatory_columns',
                           'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'batch_size', 'epochs', 'validation_split', 'patience', 'keras_params']:
+                          'batch_size', 'epochs', 'validation_split', 'patience', 'keras_params', 'seed']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload model

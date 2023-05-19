@@ -79,6 +79,9 @@ class ModelRFClassifier(ModelClassifierMixin, ModelPipeline):
         if self.multi_label:
             self.pipeline = Pipeline([('rf', self.rf)])
 
+    def get_estimators(self):
+        return self.rf.estimators_
+
     @utils.trained_needed
     def predict_proba(self, x_test: pd.DataFrame, **kwargs) -> np.ndarray:
         '''Predicts the probabilities on the test set

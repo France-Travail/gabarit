@@ -99,6 +99,12 @@ class ModelRFClassifierTests(unittest.TestCase):
         self.assertEqual(model.pipeline['rf'].n_estimators, 10)
         self.assertEqual(model.multi_label, True)
         remove_dir(model_dir)
+        model = ModelRFClassifier(model_dir=model_dir, multi_label=True, multiclass_strategy='ovo', rf_params={'max_depth': 8, 'random_state': 42})
+        self.assertEqual(model.multiclass_strategy, 'ovo')
+        self.assertEqual(model.pipeline['rf'].max_depth, 8)
+        self.assertEqual(model.pipeline['rf'].random_state, 42)
+        self.assertEqual(model.multi_label, True)
+        remove_dir(model_dir)
 
         # Error
         with self.assertRaises(ValueError):
@@ -669,6 +675,47 @@ class ModelRFClassifierTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
+    def test07_model_rf_classifier_fit_with_seed(self):
+        '''Test random seed for {{package_name}}.models_training.classifiers.models_sklearn.model_rf_classifier.ModelRClassifier'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Set vars
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
+        y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
+        y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
+        x_col = ['col_1', 'col_2']
+        y_col_mono = ['toto']
+        y_col_multi = ['y1', 'y2', 'y3']
+
+        # Classification - Mono-label - Mono-Class
+        model1 = ModelRFClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, rf_params={'random_state': 42})
+        model1.fit(x_train, y_train_mono_2)
+        model2 = ModelRFClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, rf_params={'random_state': 42})
+        model2.fit(x_train, y_train_mono_2)
+        self.assertEqual(model1.rf.get_params(),  model2.rf.get_params())
+        # Checks if both models subtrees are equal
+        self.assertTrue(all(utils.compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.rf.estimators_, model2.rf.estimators_)))
+
+        # Classification - Mono-label - Multi-Class
+        model1 = ModelRFClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, rf_params={'random_state': 42})
+        model1.fit(x_train, y_train_mono_3)
+        model2 = ModelRFClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, rf_params={'random_state': 42})
+        model2.fit(x_train, y_train_mono_3)
+        self.assertEqual(model1.rf.get_params(),  model2.rf.get_params())
+        # Checks if both models subtrees are equal
+        self.assertTrue(all(utils.compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.rf.estimators_, model2.rf.estimators_)))
+ 
+        # Classification - Multi-label - Multi-Class
+        model1 = ModelRFClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, rf_params={'random_state': 42})
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelRFClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, rf_params={'random_state': 42})
+        model2.fit(x_train, y_train_multi)
+        self.assertEqual(model1.rf.get_params(),  model2.rf.get_params())
+        # Checks if both models subtrees are equal
+        self.assertTrue(all(utils.compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.rf.estimators_, model2.rf.estimators_)))
 
 # Perform tests
 if __name__ == '__main__':
