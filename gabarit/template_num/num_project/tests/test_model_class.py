@@ -123,6 +123,10 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.level_save, 'LOW')
         remove_dir(model_dir)
 
+        model = ModelClass(model_dir=model_dir, random_seed=42)
+        self.assertEqual(model.random_seed, 42)
+        remove_dir(model_dir)
+
         # Check the input(s) type(s)
         with self.assertRaises(ValueError):
             ModelClass(model_dir=model_dir, level_save='toto')

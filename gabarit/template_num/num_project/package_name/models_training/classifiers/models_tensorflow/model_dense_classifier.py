@@ -66,8 +66,8 @@ class ModelDenseClassifier(ModelClassifierMixin, ModelKeras):
         num_classes = len(self.list_classes)
 
         # Get kernel initializers
-        heUniform_ini = HeUniform(self.seed)
-        glorotUniform_ini = GlorotUniform(self.seed)
+        heUniform_ini = HeUniform(self.random_seed)
+        glorotUniform_ini = GlorotUniform(self.random_seed)
 
         # Process
         input_layer = Input(shape=(input_dim,))
@@ -75,12 +75,12 @@ class ModelDenseClassifier(ModelClassifierMixin, ModelKeras):
         x = Dense(64, activation=None, kernel_initializer=heUniform_ini)(input_layer)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.2, seed=self.seed)(x)
+        x = Dropout(0.2, seed=self.random_seed)(x)
 
         x = Dense(64, activation=None, kernel_initializer=heUniform_ini)(x)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.2, seed=self.seed)(x)
+        x = Dropout(0.2, seed=self.random_seed)(x)
 
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
@@ -178,7 +178,7 @@ class ModelDenseClassifier(ModelClassifierMixin, ModelKeras):
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['model_type', 'x_col', 'y_col', 'columns_in', 'mandatory_columns',
                           'list_classes', 'dict_classes', 'multi_label', 'level_save',
-                          'batch_size', 'epochs', 'validation_split', 'patience', 'keras_params', 'seed']:
+                          'batch_size', 'epochs', 'validation_split', 'patience', 'keras_params']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload model

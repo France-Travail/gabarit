@@ -27,6 +27,7 @@ import tensorflow
 import numpy as np
 import pandas as pd
 import tensorflow.keras as keras
+from tensorflow.keras.models import Model
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
@@ -40,6 +41,15 @@ logging.disable(logging.CRITICAL)
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
+def compare_keras_models(model1: Model, model2: Model) -> bool:
+    ''' Checks if all weights of each keras model layer are the same
+    '''
+    for layer1, layer2 in zip(model1.layers, model2.layers):
+        l1 = layer1.get_weights()
+        l2 = layer2.get_weights()
+        if not all(np.array_equal(weights1, weights2) for weights1, weights2 in zip(l1, l2)):
+            return False
+    return True
 
 class ModelDenseRegressorTests(unittest.TestCase):
     '''Main class to test model_dense_regressor'''
@@ -85,7 +95,13 @@ class ModelDenseRegressorTests(unittest.TestCase):
 
         #
         model = ModelDenseRegressor(model_dir=model_dir, patience=65)
+        self.assertEqual(model.random_seed, None)
         self.assertEqual(model.patience, 65)
+        remove_dir(model_dir)
+
+        #
+        model = ModelDenseRegressor(model_dir=model_dir, random_seed=42)
+        self.assertEqual(model.random_seed, 42)
         remove_dir(model_dir)
 
         # keras_params must accept anything !
@@ -333,6 +349,36 @@ class ModelDenseRegressorTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
+
+    def test07_model_dense_regressor_fit_with_seed(self):
+        '''Test random seed for {{package_name}}.models_training.regressors.models_tensorflow.model_dense_regressor.ModelDenseRegressor'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_1234567892')
+        remove_dir(model_dir2)
+
+        # Set vars
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
+        x_col = ['col_1', 'col_2']
+        y_col_mono = ['toto']
+
+        # Regression with same random_seed
+        model1 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model1.fit(x_train, y_train_regressor)
+        model2 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2)
+        model2.fit(x_train, y_train_regressor)
+        self.assertTrue(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Regression with different random_seed
+        model1 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model1.fit(x_train, y_train_regressor)
+        model2 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
+        model2.fit(x_train, y_train_regressor)
+        self.assertFalse(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
 
 
 # Perform tests

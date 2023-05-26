@@ -67,8 +67,8 @@ class ModelXgboostClassifierTests(unittest.TestCase):
 
         #
         model = ModelXgboostClassifier(model_dir=model_dir, xgboost_params={'toto': 5})
-        # Add auto objective when not given
-        self.assertEqual(model.xgboost_params, {'objective': 'binary:logistic', 'toto': 5})
+        # Add auto objective and seed None when not given
+        self.assertEqual(model.xgboost_params, {'objective': 'binary:logistic', 'toto': 5, 'random_state': None})
         remove_dir(model_dir)
 
         #
@@ -79,6 +79,11 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         #
         model = ModelXgboostClassifier(model_dir=model_dir, validation_split=0.3)
         self.assertEqual(model.validation_split, 0.3)
+        remove_dir(model_dir)
+
+        #
+        model = ModelXgboostClassifier(model_dir=model_dir, random_seed=42)
+        self.assertEqual(model.random_seed, 42)
         remove_dir(model_dir)
 
     def test02_model_xgboost_classifier_fit(self):
@@ -658,6 +663,78 @@ class ModelXgboostClassifierTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
+
+    def test08_model_xgboost_classifier_fit_with_seed(self):
+        '''Test random seed for {{package_name}}.models_training.classifiers.model_xgboost_classifier.ModelXgboostClassifier'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_1234567892')
+        remove_dir(model_dir2)
+        # Set vars
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
+        y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
+        y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
+        x_col = ['col_1', 'col_2']
+        y_col_mono = ['toto']
+        y_col_multi = ['y1', 'y2', 'y3']
+
+        # Classification - Mono-label - Mono-Class with same random_seed
+        model1 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
+        model1.fit(x_train, y_train_mono_2)
+        model2 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, xgboost_params={'n_estimators': 5, 'booster': 'gbtree' })
+        model2.fit(x_train, y_train_mono_2)
+        self.assertEqual(model1.model.get_params(),  model2.model.get_params())
+        self.assertEqual(model1.model.get_booster().get_dump(), model2.model.get_booster().get_dump())
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Mono-label - Multi-Class with same random_seed
+        model1 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
+        model1.fit(x_train, y_train_mono_3)
+        model2 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, xgboost_params={'n_estimators': 5, 'booster': 'gbtree' })
+        model2.fit(x_train, y_train_mono_3)
+        self.assertEqual(model1.model.get_params(),  model2.model.get_params())
+        self.assertEqual(model1.model.get_booster().get_dump(), model2.model.get_booster().get_dump())
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Multi-label - Multi-Class with same random_seed
+        model1 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
+        model2.fit(x_train, y_train_multi)
+        models1, models2 = model1.model.estimators_, model2.model.estimators_
+        self.assertTrue(all(np.array_equal(xgb1.get_params(), xgb2.get_params()) for xgb1, xgb2 in zip(models1, models2)))
+        self.assertTrue(all(np.array_equal(xgb1.get_booster().get_dump(), xgb2.get_booster().get_dump()) for xgb1, xgb2 in zip(models1, models2)))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Mono-label - Mono-Class with different random_seed
+        model1 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
+        model1.fit(x_train, y_train_mono_2)
+        model2 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=41, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
+        model2.fit(x_train, y_train_mono_2)
+        self.assertNotEqual(model1.model.get_params(),  model2.model.get_params())
+        self.assertNotEqual(model1.model.get_booster().get_dump(), model2.model.get_booster().get_dump())
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Mono-label - Multi-Class with different random_seed
+        model1 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
+        model1.fit(x_train, y_train_mono_3)
+        model2 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=41, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
+        model2.fit(x_train, y_train_mono_3)
+        self.assertNotEqual(model1.model.get_params(),  model2.model.get_params())
+        self.assertNotEqual(model1.model.get_booster().get_dump(), model2.model.get_booster().get_dump())
+        remove_dir(model_dir), remove_dir(model_dir2)
+        
+        # Classification - Multi-label - Multi-Class with different random_seed
+        model1 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=41, multi_label=True, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
+        model2.fit(x_train, y_train_multi)
+        models1, models2 = model1.model.estimators_, model2.model.estimators_
+        self.assertFalse(all(np.array_equal(xgb1.get_params(), xgb2.get_params()) for xgb1, xgb2 in zip(models1, models2)))
+        self.assertFalse(all(np.array_equal(xgb1.get_booster().get_dump(), xgb2.get_booster().get_dump()) for xgb1, xgb2 in zip(models1, models2)))
+        remove_dir(model_dir), remove_dir(model_dir2)
 
 
 # Perform tests

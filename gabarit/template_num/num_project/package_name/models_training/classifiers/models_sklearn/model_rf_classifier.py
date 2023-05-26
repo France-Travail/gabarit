@@ -62,6 +62,7 @@ class ModelRFClassifier(ModelClassifierMixin, ModelPipeline):
         # Manage model
         if rf_params is None:
             rf_params = {}
+        rf_params["random_state"] = self.random_seed
         self.rf = RandomForestClassifier(**rf_params)
         self.multiclass_strategy = multiclass_strategy
 
@@ -78,9 +79,6 @@ class ModelRFClassifier(ModelClassifierMixin, ModelPipeline):
         # RandomForest natively supports multi_labels
         if self.multi_label:
             self.pipeline = Pipeline([('rf', self.rf)])
-
-    def get_estimators(self):
-        return self.rf.estimators_
 
     @utils.trained_needed
     def predict_proba(self, x_test: pd.DataFrame, **kwargs) -> np.ndarray:

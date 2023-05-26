@@ -53,6 +53,7 @@ class ModelLGBMRegressor(ModelRegressorMixin, ModelPipeline):
         # Manage model
         if lgbm_params is None:
             lgbm_params = {}
+        lgbm_params["random_state"] = self.random_seed
         self.lgbm = LGBMRegressor(**lgbm_params)
         # We define a pipeline in order to be compatible with other models
         self.pipeline = Pipeline([('lgbm', self.lgbm)])

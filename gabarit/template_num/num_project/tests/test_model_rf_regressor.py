@@ -28,6 +28,7 @@ import pandas as pd
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.regressors.models_sklearn.model_rf_regressor import ModelRFRegressor
+from sklearn.tree import DecisionTreeClassifier
 
 # Disable logging
 import logging
@@ -37,6 +38,21 @@ logging.disable(logging.CRITICAL)
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
+def compare_trees(tree1: DecisionTreeClassifier, tree2: DecisionTreeClassifier) -> bool:
+    '''Checks if two DecisionTreeClassifiers are equal
+    Args:
+        tree1 (DecisionTreeClassifier): First tree to consider
+        tree2 (DecisionTreeClassifier): Second tree to consider
+    Results:
+        bool: True if all trees nodes and values are equal, else False
+    '''
+    state1 = tree1.tree_.__getstate__()
+    state2 = tree2.tree_.__getstate__()
+    if not np.array_equal(state1["nodes"], state2["nodes"]):
+        return False
+    if not np.array_equal(state1["values"], state2["values"]):
+        return False
+    return True   
 
 class ModelRFRegressorTests(unittest.TestCase):
     '''Main class to test model_rf_regressor'''
@@ -60,15 +76,17 @@ class ModelRFRegressorTests(unittest.TestCase):
         self.assertTrue(os.path.isdir(model_dir))
         self.assertTrue(model.pipeline is not None)
         self.assertEqual(model.model_type, 'regressor')
+        self.assertEqual(model.random_seed, None)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
         self.assertTrue(type(model._is_gpu_activated()) == bool)
         model.display_if_gpu_activated()
         remove_dir(model_dir)
 
         # Check RF parameters
-        model = ModelRFRegressor(model_dir=model_dir, rf_params={'n_estimators': 51, 'max_depth': 6})
+        model = ModelRFRegressor(model_dir=model_dir, rf_params={'n_estimators': 51, 'max_depth': 6}, random_seed=42)
         self.assertEqual(model.pipeline['rf'].n_estimators, 51)
         self.assertEqual(model.pipeline['rf'].max_depth, 6)
+        self.assertEqual(model.random_seed, 42)
         remove_dir(model_dir)
 
     def test02_model_rf_regressor_predict(self):
@@ -204,6 +222,39 @@ class ModelRFRegressorTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
+
+    def test05_model_rf_classifier_fit_with_seed(self):
+        '''Test random seed for {{package_name}}.models_training.regressors.models_sklearn.model_rf_regressor.ModelRClassifier'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_1234567892')
+        remove_dir(model_dir2)
+
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
+        x_col = ['col_1', 'col_2']
+        y_col_mono = ['toto']
+
+        # Regression with same random_seed
+        model1 = ModelRFRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
+        model1.fit(x_train, y_train_regressor)
+        model2 = ModelRFRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42)
+        model2.fit(x_train, y_train_regressor)
+        self.assertEqual(model1.rf.get_params(),  model2.rf.get_params())
+        # Checks if both models subtrees are equal
+        self.assertTrue(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.rf.estimators_, model2.rf.estimators_)))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Regression with different random_seed
+        model1 = ModelRFRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
+        model1.fit(x_train, y_train_regressor)
+        model2 = ModelRFRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41)
+        model2.fit(x_train, y_train_regressor)
+        self.assertNotEqual(model1.rf.get_params(),  model2.rf.get_params())
+        # Checks if both models subtrees are equal
+        self.assertFalse(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.rf.estimators_, model2.rf.estimators_)))
+        remove_dir(model_dir), remove_dir(model_dir2)
 
 
 # Perform tests

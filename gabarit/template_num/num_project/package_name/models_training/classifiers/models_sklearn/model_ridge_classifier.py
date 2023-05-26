@@ -63,6 +63,7 @@ class ModelRidgeClassifier(ModelClassifierMixin, ModelPipeline):
         # Manage model
         if ridge_params is None:
             ridge_params = {}
+        ridge_params["random_state"] = self.random_seed
         self.ridge = RidgeClassifier(**ridge_params)
         self.multiclass_strategy = multiclass_strategy
 

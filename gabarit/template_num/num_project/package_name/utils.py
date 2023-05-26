@@ -337,23 +337,7 @@ def flatten(my_list: Iterable) -> Generator:
         if isinstance(el, Iterable) and not isinstance(el, (str, bytes)):
             yield from flatten(el)
         else:
-            yield el
-
-def compare_trees(tree1: DecisionTreeClassifier, tree2: DecisionTreeClassifier) -> bool:
-    '''Checks if two DecisionTreeClassifiers are equal
-    Args:
-        tree1 (DecisionTreeClassifier): First tree to consider
-        tree2 (DecisionTreeClassifier): Second tree to consider
-    Results:
-        bool: True if all trees nodes and values are equal, else False
-    '''
-    state1 = tree1.tree_.__getstate__()
-    state2 = tree2.tree_.__getstate__()
-    if not np.array_equal(state1["nodes"], state2["nodes"]):
-        return False
-    if not np.array_equal(state1["values"], state2["values"]):
-        return False
-    return True    
+            yield el 
 
 # JSON encoder to manage numpy objects
 class NpEncoder(json.JSONEncoder):

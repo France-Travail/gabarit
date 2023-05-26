@@ -53,6 +53,7 @@ class ModelSGDRegressor(ModelRegressorMixin, ModelPipeline):
         # Manage model
         if sgd_params is None:
             sgd_params = {}
+        sgd_params["random_state"] = self.random_seed
         self.sgd = SGDRegressor(**sgd_params)
         # We define a pipeline in order to be compatible with other models
         self.pipeline = Pipeline([('sgd', self.sgd)])
