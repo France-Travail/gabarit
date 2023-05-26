@@ -72,7 +72,7 @@ logger = logging.getLogger('{{package_name}}.3_training_regression')
 def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[str, int]], None] = None,
          filename_valid: Union[str, None] = None, level_save: str = 'HIGH',
          sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}',
-         model: Union[Type[ModelClass], None] = None,
+         model: Union[Type[ModelClass], None] = None, random_seed: Union[int, None] = None,
          mlflow_experiment: Union[str, None] = None) -> None:
     '''Trains a model
 
@@ -94,6 +94,7 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
         sep (str): Separator to use with the .csv files
         encoding (str): Encoding to use with the .csv files
         model (ModelClass): A model to be fitted. This should only be used for testing purposes.
+        random_seed (int): Seed to use for packages randomness
         mlflow_experiment (str): Name of the current experiment. If None, no experiment will be saved.
     Raises:
         ValueError: If level_save value is not a valid option (['LOW', 'MEDIUM', 'HIGH'])
@@ -210,7 +211,8 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
         #                                               svr_params={'kernel': 'linear'})
         # model = model_sgd_regressor.ModelSGDRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                               preprocess_pipeline=preprocess_pipeline,
-        #                                               sgd_params={'loss': 'squared_loss', 'penalty': 'elasticnet', 'l1_ratio': 0.5})
+        #                                               sgd_params={'loss': 'squared_loss', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
+        #                                               random_seed=random_seed)
         # model = model_knn_regressor.ModelKNNRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                               preprocess_pipeline=preprocess_pipeline,
         #                                               knn_params={'n_neighbors': 7, 'weights': 'distance'})
@@ -219,24 +221,28 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
         #                                                pls_params={'n_components': 5, 'max_iter': 500})
         # model = model_rf_regressor.ModelRFRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                             preprocess_pipeline=preprocess_pipeline,
-        #                                             rf_params={'n_estimators': 50, 'max_depth': 5})
+        #                                             rf_params={'n_estimators': 50, 'max_depth': 5},
+        #                                             random_seed=random_seed)
         # model = model_gbt_regressor.ModelGBTRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                            preprocess_pipeline=preprocess_pipeline,
         #                                                            gbt_params={'loss': 'ls', 'learning_rate': 0.1,
         #                                                                        'n_estimators': 100, 'subsample': 1.0,
-        #                                                                        'criterion': 'friedman_mse'})
+        #                                                                        'criterion': 'friedman_mse'},
+        #                                               random_seed=random_seed)
         # model = model_xgboost_regressor.ModelXgboostRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                       preprocess_pipeline=preprocess_pipeline,
         #                                                       xgboost_params={'n_estimators': 20, 'booster': 'gbtree',
         #                                                                       'eta': 0.3, 'gamma': 0, 'max_depth': 6},
-        #                                                       early_stopping_rounds=5)
+        #                                                       early_stopping_rounds=5, random_seed=random_seed)
         # model = model_lgbm_regressor.ModelLGBMRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                 preprocess_pipeline=preprocess_pipeline,
         #                                                 lgbm_params={'num_leaves': 31, 'max_depth': -1,
-        #                                                              'learning_rate': 0.1, 'n_estimators': 100})
+        #                                                              'learning_rate': 0.1, 'n_estimators': 100},
+        #                                                 random_seed=random_seed)
         # model = model_dense_regressor.ModelDenseRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                   preprocess_pipeline=preprocess_pipeline,
-        #                                                   batch_size=64, epochs=99, patience=5)
+        #                                                   batch_size=64, epochs=99, patience=5,
+        #                                                   random_seed=random_seed)
         # modle = model_aggregation_regressor.ModelAggregationRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                               list_models=[model_sgd_regressor.ModelSGDRegressor(), model_sgd_regressor.ModelSGDRegressor()],
         #                                                               multi_label=multi_label, preprocess_pipeline=preprocess_pipeline,)
@@ -447,6 +453,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filename', default='dataset_preprocess_P1.csv', help="Name of the training dataset (actually a path relative to {{package_name}}-data)")
     parser.add_argument('-y', '--y_col', required=True, help="Name of the model's target column - y")
+    parser.add_argument('-s', '--random_seed', type=int, default=None,  help="Seed to use for packages randomness")
     parser.add_argument('--excluded_cols', nargs='+', default=None, help="List of columns NOT to use as model's input")
     parser.add_argument('--filename_valid', default=None, help="Name of the validation dataset (actually a path relative to {{package_name}}-data)")
     parser.add_argument('-l', '--level_save', default='HIGH', help="Save level -> ['LOW', 'MEDIUM', 'HIGH']")
@@ -464,5 +471,5 @@ if __name__ == '__main__':
         logger.info("----------------------------")
     # Main
     main(filename=args.filename, y_col=args.y_col, excluded_cols=args.excluded_cols,
-         filename_valid=args.filename_valid, level_save=args.level_save,
+         filename_valid=args.filename_valid, level_save=args.level_save, random_seed=args.random_seed,
          sep=args.sep, encoding=args.encoding, mlflow_experiment=args.mlflow_experiment)

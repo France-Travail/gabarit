@@ -60,15 +60,17 @@ class ModelSGDRegressorTests(unittest.TestCase):
         self.assertTrue(os.path.isdir(model_dir))
         self.assertTrue(model.pipeline is not None)
         self.assertEqual(model.model_type, 'regressor')
+        self.assertEqual(model.random_seed, None)
         # We test display_if_gpu_activated and _is_gpu_activated just by calling them
         self.assertTrue(type(model._is_gpu_activated()) == bool)
         model.display_if_gpu_activated()
         remove_dir(model_dir)
 
         # Check SGD parameters
-        model = ModelSGDRegressor(model_dir=model_dir, sgd_params={'loss': 'squared_loss', 'l1_ratio': 0.2})
+        model = ModelSGDRegressor(model_dir=model_dir, sgd_params={'loss': 'squared_loss', 'l1_ratio': 0.2}, random_seed=42)
         self.assertEqual(model.pipeline['sgd'].loss, 'squared_loss')
         self.assertEqual(model.pipeline['sgd'].l1_ratio, 0.2)
+        self.assertEqual(model.random_seed, 42)
         remove_dir(model_dir)
 
     def test02_model_sgd_regressor_predict(self):
@@ -205,6 +207,39 @@ class ModelSGDRegressorTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
+    def test05_model_sgd_regressor_fit_with_seed(self):
+        '''Test random seed for {{package_name}}.models_training.regressors.models_sklearn.model_sgd_regressor.ModelSGDRegressor'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_1234567892')
+        remove_dir(model_dir2)
+
+        # Set vars
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
+        x_col = ['col_1', 'col_2']
+        y_col_mono = ['toto']
+
+        # Regression with same random_seed
+        model1 = ModelSGDRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
+        model1.fit(x_train, y_train_regressor)
+        model2 = ModelSGDRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42)
+        model2.fit(x_train, y_train_regressor)
+        self.assertEqual(model1.sgd.get_params(),  model2.sgd.get_params())
+        self.assertTrue(np.array_equal(model1.sgd.coef_, model2.sgd.coef_))
+        self.assertTrue(np.array_equal(model1.sgd.intercept_, model2.sgd.intercept_))
+        remove_dir(model_dir), remove_dir(model_dir2) 
+
+        # Regression with different random_seed
+        model1 = ModelSGDRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
+        model1.fit(x_train, y_train_regressor)
+        model2 = ModelSGDRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41)
+        model2.fit(x_train, y_train_regressor)
+        self.assertNotEqual(model1.sgd.get_params(),  model2.sgd.get_params())
+        self.assertFalse(np.array_equal(model1.sgd.coef_, model2.sgd.coef_))
+        self.assertFalse(np.array_equal(model1.sgd.intercept_, model2.sgd.intercept_))
+        remove_dir(model_dir), remove_dir(model_dir2)
 
 # Perform tests
 if __name__ == '__main__':

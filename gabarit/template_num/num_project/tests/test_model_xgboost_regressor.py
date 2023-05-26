@@ -68,7 +68,7 @@ class ModelXgboostRegressorTests(unittest.TestCase):
         #
         model = ModelXgboostRegressor(model_dir=model_dir, xgboost_params={'toto': 5})
         # Add auto objective when not given
-        self.assertEqual(model.xgboost_params, {'objective': 'reg:squarederror', 'toto': 5})
+        self.assertEqual(model.xgboost_params, {'objective': 'reg:squarederror', 'toto': 5, 'random_state': None})
         remove_dir(model_dir)
 
         #
@@ -78,7 +78,13 @@ class ModelXgboostRegressorTests(unittest.TestCase):
 
         #
         model = ModelXgboostRegressor(model_dir=model_dir, validation_split=0.3)
+        self.assertEqual(model.random_seed, None)
         self.assertEqual(model.validation_split, 0.3)
+        remove_dir(model_dir)
+
+        #
+        model = ModelXgboostRegressor(model_dir=model_dir, random_seed=42)
+        self.assertEqual(model.random_seed, 42)
         remove_dir(model_dir)
 
     def test02_model_xgboost_regressor_fit(self):
@@ -357,6 +363,37 @@ class ModelXgboostRegressorTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
+    def test06_model_xgboost_regressor_fit_with_seed(self):
+        '''Test random seed for {{package_name}}.models_training.regressors.model_xgboost_regressor.ModelXgboostRegressor'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_1234567892')
+        remove_dir(model_dir2)
+
+        # Set vars
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
+        x_col = ['col_1', 'col_2']
+        y_col_mono = ['toto']
+
+        # Regression with same random_seed
+        model1 = ModelXgboostRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
+        model1.fit(x_train, y_train_regressor)
+        model2 = ModelXgboostRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, xgboost_params={'n_estimators': 5, 'booster': 'gbtree' })
+        model2.fit(x_train, y_train_regressor)
+        self.assertEqual(model1.model.get_params(),  model2.model.get_params())
+        self.assertEqual(model1.model.get_booster().get_dump(), model2.model.get_booster().get_dump())
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Regression with different random_seed
+        model1 = ModelXgboostRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
+        model1.fit(x_train, y_train_regressor)
+        model2 = ModelXgboostRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, xgboost_params={'n_estimators': 5, 'booster': 'gbtree' })
+        model2.fit(x_train, y_train_regressor)
+        self.assertNotEqual(model1.model.get_params(),  model2.model.get_params())
+        self.assertNotEqual(model1.model.get_booster().get_dump(), model2.model.get_booster().get_dump())
+        remove_dir(model_dir), remove_dir(model_dir2)
 
 # Perform tests
 if __name__ == '__main__':

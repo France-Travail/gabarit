@@ -70,7 +70,7 @@ logger = logging.getLogger('{{package_name}}.3_training_classification')
 def main(filename: str, y_col: List[Union[str, int]], excluded_cols: Union[List[Union[str, int]], None] = None,
          filename_valid: Union[str, None] = None, min_rows: Union[int, None] = None, level_save: str = 'HIGH',
          sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}',
-         model: Union[Type[ModelClass], None] = None, seed: Union[str, None] = None,
+         model: Union[Type[ModelClass], None] = None, random_seed: Union[int, None] = None,
          mlflow_experiment: Union[str, None] = None) -> None:
     '''Trains a model
 
@@ -94,7 +94,7 @@ def main(filename: str, y_col: List[Union[str, int]], excluded_cols: Union[List[
         sep (str): Separator to use with the .csv files
         encoding (str): Encoding to use with the .csv files
         model (ModelClass): A model to be fitted. This should only be used for testing purposes.
-        seed (str): Seed to use for packages randomness
+        random_seed (int): Seed to use for packages randomness
         mlflow_experiment (str): Name of the current experiment. If None, no experiment will be saved.
     Raises:
         ValueError: If level_save value is not a valid option (['LOW', 'MEDIUM', 'HIGH'])
@@ -264,14 +264,10 @@ def main(filename: str, y_col: List[Union[str, int]], excluded_cols: Union[List[
 
 
     if model is None: 
-        if seed is not None :
-            random_state = int(seed)
-        else:
-            random_state = seed
         model = model_ridge_classifier.ModelRidgeClassifier(x_col=x_col, y_col=y_col, level_save=level_save,
                                                             preprocess_pipeline=preprocess_pipeline,
-                                                            ridge_params={'alpha': 1.0, 'random_state': random_state},
-                                                            multi_label=multi_label)
+                                                            ridge_params={'alpha': 1.0},
+                                                            random_seed=random_seed, multi_label=multi_label)
         # model = model_logistic_regression_classifier.ModelLogisticRegressionClassifier(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                                                preprocess_pipeline=preprocess_pipeline,
         #                                                                                lr_params={'penalty': 'l2', 'C': 1.0, 'max_iter': 100},
@@ -282,40 +278,38 @@ def main(filename: str, y_col: List[Union[str, int]], excluded_cols: Union[List[
         #                                                 multi_label=multi_label)
         # model = model_sgd_classifier.ModelSGDClassifier(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                 preprocess_pipeline=preprocess_pipeline,
-        #                                                 sgd_params={'loss': 'hinge', 'penalty': 'elasticnet', 'l1_ratio': 0.5, 'random_state': random_state},
-        #                                                 multi_label=multi_label)
+        #                                                 sgd_params={'loss': 'hinge', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
+        #                                                 random_seed=random_seed, multi_label=multi_label)
         # model = model_knn_classifier.ModelKNNClassifier(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                 preprocess_pipeline=preprocess_pipeline,
         #                                                 knn_params={'n_neighbors': 7, 'weights': 'distance'},
         #                                                 multi_label=multi_label)
         # model = model_rf_classifier.ModelRFClassifier(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                               preprocess_pipeline=preprocess_pipeline,
-        #                                               rf_params={'n_estimators': 50, 'max_depth': 5, 'random_state': random_state},
-        #                                               multi_label=multi_label)
+        #                                               rf_params={'n_estimators': 50, 'max_depth': 5},
+        #                                               random_seed=random_seed, multi_label=multi_label)
         # model = model_gbt_classifier.ModelGBTClassifier(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                 preprocess_pipeline=preprocess_pipeline,
         #                                                 gbt_params={'loss': 'deviance', 'learning_rate': 0.1,
         #                                                             'n_estimators': 100, 'subsample': 1.0,
-        #                                                             'criterion': 'friedman_mse', 'random_state': random_state},
-        #                                                 multi_label=multi_label)
+        #                                                             'criterion': 'friedman_mse'},
+        #                                                 random_seed=random_seed, multi_label=multi_label)
         # model = model_xgboost_classifier.ModelXgboostClassifier(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                         preprocess_pipeline=preprocess_pipeline,
         #                                                         xgboost_params={'n_estimators': 20, 'booster': 'gbtree',
-        #                                                                         'eta': 0.3, 'gamma': 0, 'max_depth': 6,
-        #                                                                         'random_state': random_state},
+        #                                                                         'eta': 0.3, 'gamma': 0, 'max_depth': 6},
         #                                                         early_stopping_rounds=5,
-        #                                                         multi_label=multi_label)
+        #                                                         random_seed=random_seed, multi_label=multi_label)
         # model = model_lgbm_classifier.ModelLGBMClassifier(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                   preprocess_pipeline=preprocess_pipeline,
         #                                                   lgbm_params={'num_leaves': 31, 'max_depth': -1,
-        #                                                                'learning_rate': 0.1, 'n_estimators': 100,
-        #                                                                'random_state': random_state},
-        #                                                   multi_label=multi_label)
+        #                                                                'learning_rate': 0.1, 'n_estimators': 100},
+        #                                                   random_seed=random_seed, multi_label=multi_label)
         # model = model_dense_classifier.ModelDenseClassifier(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                     preprocess_pipeline=preprocess_pipeline,
         #                                                     batch_size=64, epochs=99, patience=5,
-        #                                                     multi_label=multi_label, seed=random_state)
-        # modle = model_aggregation_classifier.ModelAggregationClassifier(x_col=x_col, y_col=y_col, level_save=level_save,
+        #                                                     multi_label=multi_label, random_seed=random_seed)
+        # model = model_aggregation_classifier.ModelAggregationClassifier(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                                 list_models=[model_svm_classifier.ModelSVMClassifier(), model_svm_classifier.ModelSVMClassifier()],
         #                                                                 multi_label=multi_label)
 
@@ -542,7 +536,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filename', default='dataset_preprocess_P1.csv', help="Name of the training dataset (actually a path relative to {{package_name}}-data)")
     parser.add_argument('-y', '--y_col', nargs='+', required=True, help="Name of the model's target column(s) - y")
-    parser.add_argument('-s', '--seed', default=None,  help="Seed to use for packages randomness")
+    parser.add_argument('-s', '--random_seed', type=int, default=None,  help="Seed to use for packages randomness")
     parser.add_argument('--excluded_cols', nargs='+', default=None, help="List of columns NOT to use as model's input")
     parser.add_argument('-m', '--min_rows', type=int, default=None, help="Minimal number of occurrences for a class to be considered by the model")
     parser.add_argument('--filename_valid', default=None, help="Name of the validation dataset (actually a path relative to {{package_name}}-data)")
@@ -562,5 +556,5 @@ if __name__ == '__main__':
     # Main
     main(filename=args.filename, y_col=args.y_col, excluded_cols=args.excluded_cols,
          min_rows=args.min_rows, filename_valid=args.filename_valid,
-         level_save=args.level_save, sep=args.sep, encoding=args.encoding, seed=args.seed,
+         level_save=args.level_save, sep=args.sep, encoding=args.encoding, random_seed=args.random_seed,
          mlflow_experiment=args.mlflow_experiment)

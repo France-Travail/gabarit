@@ -60,6 +60,7 @@ class ModelXgboostRegressor(ModelRegressorMixin, ModelClass):
         # Set parameters
         if xgboost_params is None:
             xgboost_params = {}
+        xgboost_params["random_state"] = self.random_seed
         self.xgboost_params = xgboost_params
         self.early_stopping_rounds = early_stopping_rounds
         self.validation_split = validation_split
@@ -98,7 +99,7 @@ class ModelXgboostRegressor(ModelRegressorMixin, ModelClass):
         # Otherwise, we do a random split
         else:
             self.logger.warning(f"Warning, no validation dataset. We split the training set (fraction valid = {self.validation_split})")
-            x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, test_size=self.validation_split)
+            x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, test_size=self.validation_split, random_state=self.random_seed)
 
         # Shuffle x, y if wanted
         if with_shuffle:

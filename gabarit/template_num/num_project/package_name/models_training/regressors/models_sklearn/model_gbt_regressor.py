@@ -53,6 +53,7 @@ class ModelGBTRegressor(ModelRegressorMixin, ModelPipeline):
         # Manage model
         if gbt_params is None:
             gbt_params = {}
+        gbt_params["random_state"] = self.random_seed
         self.gbt = GradientBoostingRegressor(**gbt_params)
         # We define a pipeline in order to be compatible with other models
         self.pipeline = Pipeline([('gbt', self.gbt)])

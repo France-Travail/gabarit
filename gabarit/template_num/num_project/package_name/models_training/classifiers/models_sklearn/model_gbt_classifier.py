@@ -64,6 +64,7 @@ class ModelGBTClassifier(ModelClassifierMixin, ModelPipeline):
         # Manage model
         if gbt_params is None:
             gbt_params = {}
+        gbt_params["random_state"] = self.random_seed
         self.gbt = GradientBoostingClassifier(**gbt_params)
         self.multiclass_strategy = multiclass_strategy
 

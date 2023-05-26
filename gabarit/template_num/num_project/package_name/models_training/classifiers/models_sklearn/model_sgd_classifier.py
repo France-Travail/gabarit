@@ -63,6 +63,7 @@ class ModelSGDClassifier(ModelClassifierMixin, ModelPipeline):
         # Manage model
         if sgd_params is None:
             sgd_params = {}
+        sgd_params["random_state"] = self.random_seed
         self.sgd = SGDClassifier(**sgd_params)
         self.multiclass_strategy = multiclass_strategy
 

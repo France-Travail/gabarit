@@ -93,6 +93,11 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(model.patience, 65)
         remove_dir(model_dir)
 
+        #
+        model = ModelKeras(model_dir=model_dir, random_seed=42)
+        self.assertEqual(model.random_seed, 42)
+        remove_dir(model_dir)
+
         # keras_params must accept anything !
         model = ModelKeras(model_dir=model_dir, keras_params={'toto': 5})
         self.assertEqual(model.keras_params, {'toto': 5})

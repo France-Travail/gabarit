@@ -98,6 +98,15 @@ class ModelSGDClassifierTests(unittest.TestCase):
         self.assertEqual(model.pipeline['sgd'].estimator.penalty, 'elasticnet')
         self.assertEqual(model.pipeline['sgd'].estimator.l1_ratio, 0.4)
         self.assertEqual(model.multi_label, True)
+        self.assertEqual(model.random_seed, None)
+        remove_dir(model_dir)
+        model = ModelSGDClassifier(model_dir=model_dir, multi_label=True, multiclass_strategy='ovo', sgd_params={'penalty': 'elasticnet', 'l1_ratio': 0.4}, random_seed=42)
+        self.assertEqual(model.multiclass_strategy, 'ovo')
+        self.assertEqual(model.pipeline['sgd'].estimator.penalty, 'elasticnet')
+        self.assertEqual(model.pipeline['sgd'].estimator.l1_ratio, 0.4)
+        self.assertEqual(model.multi_label, True)
+        self.assertEqual(model.random_seed, 42)
+
         remove_dir(model_dir)
 
         # Error
@@ -742,6 +751,84 @@ class ModelSGDClassifierTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
+    def test07_model_sgd_classifier_fit_with_seed(self):
+        '''Test random seed for {{package_name}}.models_training.classifiers.models_sklearn.model_sgd_classifier.ModelSGDClassifier'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_1234567892')
+        remove_dir(model_dir2)
+
+        # Set vars
+        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
+        y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
+        y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
+        y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
+        x_col = ['col_1', 'col_2']
+        y_col_mono = ['toto']
+        y_col_multi = ['y1', 'y2', 'y3']
+
+        # Classification - Mono-label - Mono-Class with same random_seed
+        model1 = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
+        model1.fit(x_train, y_train_mono_2)
+        model2 = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42)
+        model2.fit(x_train, y_train_mono_2)
+        self.assertEqual(model1.sgd.get_params(),  model2.sgd.get_params())
+        self.assertTrue(np.array_equal(model1.sgd.coef_, model2.sgd.coef_))
+        self.assertTrue(np.array_equal(model1.sgd.intercept_, model2.sgd.intercept_))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Mono-label - Multi-Class with same random_seed
+        model1 = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
+        model1.fit(x_train, y_train_mono_3)
+        model2 = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42)
+        model2.fit(x_train, y_train_mono_3)
+        self.assertEqual(model1.sgd.get_params(),  model2.sgd.get_params())
+        self.assertTrue(np.array_equal(model1.sgd.coef_, model2.sgd.coef_))
+        self.assertTrue(np.array_equal(model1.sgd.intercept_, model2.sgd.intercept_))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Multi-label - Multi-Class with same random_seed
+        model1 = ModelSGDClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True)
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelSGDClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=42, multi_label=True)
+        model2.fit(x_train, y_train_multi)
+        models1, models2 = model1.pipeline['sgd'].estimators_, model2.pipeline['sgd'].estimators_
+        self.assertEqual(model1.sgd.get_params(),  model2.sgd.get_params())
+        self.assertTrue(all(np.array_equal(sgd1.coef_, sgd2.coef_) for sgd1, sgd2 in zip(models1, models2)))
+        self.assertTrue(all(np.array_equal(sgd1.intercept_, sgd2.intercept_) for sgd1, sgd2 in zip(models1, models2)))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Mono-label - Mono-Class with different random_seed
+        model1 = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
+        model1.fit(x_train, y_train_mono_2)
+        model2 = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41)
+        model2.fit(x_train, y_train_mono_2)
+        self.assertNotEqual(model1.sgd.get_params(),  model2.sgd.get_params())
+        self.assertFalse(np.array_equal(model1.sgd.coef_, model2.sgd.coef_))
+        self.assertFalse(np.array_equal(model1.sgd.intercept_, model2.sgd.intercept_))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Mono-label - Multi-Class with different random_seed
+        model1 = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
+        model1.fit(x_train, y_train_mono_3)
+        model2 = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41)
+        model2.fit(x_train, y_train_mono_3)
+        self.assertNotEqual(model1.sgd.get_params(),  model2.sgd.get_params())
+        self.assertFalse(np.array_equal(model1.sgd.coef_, model2.sgd.coef_))
+        self.assertFalse(np.array_equal(model1.sgd.intercept_, model2.sgd.intercept_))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Multi-label - Multi-Class with different random_seed
+        model1 = ModelSGDClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True)
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelSGDClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=41, multi_label=True)
+        model2.fit(x_train, y_train_multi)
+        models1, models2 = model1.pipeline['sgd'].estimators_, model2.pipeline['sgd'].estimators_
+        self.assertNotEqual(model1.sgd.get_params(),  model2.sgd.get_params())
+        self.assertFalse(all(np.array_equal(sgd1.coef_, sgd2.coef_) for sgd1, sgd2 in zip(models1, models2)))
+        self.assertFalse(all(np.array_equal(sgd1.intercept_, sgd2.intercept_) for sgd1, sgd2 in zip(models1, models2)))
+        remove_dir(model_dir), remove_dir(model_dir2)
 
 # Perform tests
 if __name__ == '__main__':

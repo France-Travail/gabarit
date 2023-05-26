@@ -31,6 +31,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout, Input
+from tensorflow.keras.initializers import HeUniform, GlorotUniform
 
 from ... import utils_deep_keras
 from ...model_keras import ModelKeras
@@ -63,22 +64,26 @@ class ModelDenseRegressor(ModelRegressorMixin, ModelKeras):
         # Get input/output dimensions
         input_dim = len(self.x_col)
 
+        # Get kernel initializers
+        heUniform_ini = HeUniform(self.random_seed)
+        glorotUniform_ini = GlorotUniform(self.random_seed)
+
         # Process
         input_layer = Input(shape=(input_dim,))
 
-        x = Dense(64, activation=None, kernel_initializer="he_uniform")(input_layer)
+        x = Dense(64, activation=None, kernel_initializer=heUniform_ini)(input_layer)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.2)(x)
+        x = Dropout(0.2, seed=self.random_seed)(x)
 
-        x = Dense(64, activation=None, kernel_initializer="he_uniform")(x)
+        x = Dense(64, activation=None, kernel_initializer=heUniform_ini)(x)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.2)(x)
+        x = Dropout(0.2, seed=self.random_seed)(x)
 
         # Last layer
         activation = None  # 'relu' if result should be > 0
-        out = Dense(1, activation=activation, kernel_initializer='glorot_uniform')(x)
+        out = Dense(1, activation=activation, kernel_initializer=glorotUniform_ini)(x)
 
         # Set model
         model = Model(inputs=input_layer, outputs=[out])
