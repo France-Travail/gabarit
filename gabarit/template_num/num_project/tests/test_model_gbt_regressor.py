@@ -28,7 +28,6 @@ import pandas as pd
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.regressors.models_sklearn.model_gbt_regressor import ModelGBTRegressor
-from sklearn.tree import DecisionTreeClassifier
 
 # Disable logging
 import logging
@@ -38,7 +37,7 @@ logging.disable(logging.CRITICAL)
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
-def compare_trees(tree1: DecisionTreeClassifier, tree2: DecisionTreeClassifier) -> bool:
+def compare_trees(tree1, tree2):
     '''Checks if two DecisionTreeClassifiers are equal
     Args:
         tree1 (DecisionTreeClassifier): First tree to consider
@@ -195,6 +194,7 @@ class ModelGBTRegressorTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.gbt.get_params(), gbt.get_params())
         self.assertTrue(new_model.preprocess_pipeline is not None)

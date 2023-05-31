@@ -332,6 +332,7 @@ class ModelXgboostRegressorTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.xgboost_params, new_model.xgboost_params)
         self.assertEqual(model.early_stopping_rounds, new_model.early_stopping_rounds)

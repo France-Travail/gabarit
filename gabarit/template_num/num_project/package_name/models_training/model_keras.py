@@ -32,10 +32,10 @@ import pandas as pd
 import dill as pickle
 import seaborn as sns
 import matplotlib.pyplot as plt
-from tensorflow.keras.utils import Sequence
 from sklearn.utils import shuffle
-from typing import no_type_check, Optional, Union, Callable, Any
+from tensorflow.keras.utils import Sequence
 from sklearn.model_selection import train_test_split
+from typing import no_type_check, Optional, Union, Callable, Any
 
 import tensorflow as tf
 from tensorflow.keras.models import Model
@@ -52,7 +52,7 @@ sns.set(style="darkgrid")
 
 class RandomStateDataGenerator(Sequence):
     '''Custom data generator to control batch randomness with random_state'''
-    def __init__(self, x_train: np.ndarray, y_train: np.ndarray, batch_size: int, random_state: np.random.RandomState):
+    def __init__(self, x_train: np.ndarray, y_train: np.ndarray, batch_size: int, random_state: np.random.RandomState, shuffle_batches: bool):
         '''Initialization of the class
 
         Args:
@@ -60,15 +60,22 @@ class RandomStateDataGenerator(Sequence):
             y_train (ndarray): training outputs
             batch_size (int): Batch size
             random_state (np.random.RandomState): RandomState to control shuffle randomness
+            shuffle_batches (bool): Shuffle batches between epochs
         '''
         self.x = x_train
         self.y = y_train
         self.batch_size = batch_size
         self.random_state = random_state
-        self.indices = shuffle(np.arange(len(self.x)), random_state=self.random_state)
+        self.shuffle_batches = shuffle_batches
+        if self.shuffle_batches:
+            self.indices = shuffle(np.arange(len(self.x)), random_state=self.random_state)
+        else:
+            self.indices = np.arange(len(self.x))
+
 
     def __len__(self):
         return int(np.ceil(len(self.x) / self.batch_size))
+    
 
     def __getitem__(self, index):
         batch_indices = self.indices[index * self.batch_size:(index + 1) * self.batch_size]
@@ -76,8 +83,11 @@ class RandomStateDataGenerator(Sequence):
         batch_y = self.y[batch_indices]
         return np.array(batch_x), np.array(batch_y)
     
+    
     def on_epoch_end(self):
-        self.indices = shuffle(np.arange(len(self.x)), random_state=self.random_state)
+        if self.shuffle_batches: 
+            self.indices = shuffle(np.arange(len(self.x)), random_state=self.random_state)
+
 
 class ModelKeras(ModelClass):
     '''Generic model for Keras NN'''
@@ -132,7 +142,8 @@ class ModelKeras(ModelClass):
         # Keras custom objects : we get the ones specified in utils_deep_keras
         self.custom_objects = utils_deep_keras.custom_objects
 
-    def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:        '''Fits the model
+    def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, shuffle_batches: bool = True, **kwargs) -> None:
+        '''Fits the model
 
         Args:
             x_train (?): Array-like, shape = [n_samples, n_features]
@@ -143,6 +154,7 @@ class ModelKeras(ModelClass):
             with_shuffle (bool): If x, y must be shuffled before fitting
                 This should be used if y is not shuffled as the split_validation takes the lines in order.
                 Thus, the validation set might get classes which are not in the train set ...
+            shuffle_batches (bool): If batches must be shuffled between epochs
         Raises:
             ValueError: If different classes when comparing an already fitted model and a new dataset
         '''
@@ -273,8 +285,8 @@ class ModelKeras(ModelClass):
 
         # Create data generator
         random_state = np.random.RandomState(self.random_seed)
-        data_train_generator = RandomStateDataGenerator(x_train, y_train, self.batch_size, random_state)
-        data_val_generator = RandomStateDataGenerator(x_valid, y_valid, self.batch_size, random_state)
+        data_train_generator = RandomStateDataGenerator(x_train, y_train, self.batch_size, random_state, shuffle_batches)
+        data_val_generator = RandomStateDataGenerator(x_valid, y_valid, self.batch_size, random_state, shuffle_batches)
         # Fit
         # We use a try...except in order to save the model if an error arises
         # after more than a minute into training

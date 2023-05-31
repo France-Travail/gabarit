@@ -70,9 +70,9 @@ logger = logging.getLogger('{{package_name}}.3_training_regression')
 
 
 def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[str, int]], None] = None,
-         filename_valid: Union[str, None] = None, level_save: str = 'HIGH',
-         sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}',
-         model: Union[Type[ModelClass], None] = None, random_seed: Union[int, None] = None,
+         filename_valid: Union[str, None] = None, random_seed: Union[int, None] = None,
+         level_save: str = 'HIGH', sep: str = '{{default_sep}}', 
+         encoding: str = '{{default_encoding}}', model: Union[Type[ModelClass], None] = None,
          mlflow_experiment: Union[str, None] = None) -> None:
     '''Trains a model
 
@@ -453,7 +453,7 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filename', default='dataset_preprocess_P1.csv', help="Name of the training dataset (actually a path relative to {{package_name}}-data)")
     parser.add_argument('-y', '--y_col', required=True, help="Name of the model's target column - y")
-    parser.add_argument('-s', '--random_seed', type=int, default=None,  help="Seed to use for packages randomness")
+    parser.add_argument('-s', '--random_seed', type=int, default=None, help="Seed to use for packages randomness")
     parser.add_argument('--excluded_cols', nargs='+', default=None, help="List of columns NOT to use as model's input")
     parser.add_argument('--filename_valid', default=None, help="Name of the validation dataset (actually a path relative to {{package_name}}-data)")
     parser.add_argument('-l', '--level_save', default='HIGH', help="Save level -> ['LOW', 'MEDIUM', 'HIGH']")

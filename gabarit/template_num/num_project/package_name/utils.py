@@ -40,7 +40,6 @@ import json
 import logging
 import numpy as np
 import pandas as pd
-from sklearn.tree import DecisionTreeClassifier
 import pkg_resources
 from collections.abc import Iterable
 from typing import Tuple, Union, Callable, Generator, List, Any
@@ -338,6 +337,7 @@ def flatten(my_list: Iterable) -> Generator:
             yield from flatten(el)
         else:
             yield el 
+
 
 # JSON encoder to manage numpy objects
 class NpEncoder(json.JSONEncoder):

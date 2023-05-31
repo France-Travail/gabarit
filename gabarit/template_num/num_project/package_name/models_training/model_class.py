@@ -233,6 +233,7 @@ class ModelClass:
             'y_col': self.y_col,
             'columns_in': self.columns_in,
             'mandatory_columns': self.mandatory_columns,
+            'random_seed': self.random_seed,
             'level_save': self.level_save,
             'librairie': None,
         }

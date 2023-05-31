@@ -30,8 +30,9 @@ from typing import Union, List, Callable
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model as load_model_keras
-from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout, Input
 from tensorflow.keras.initializers import HeUniform, GlorotUniform
+from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout, Input
+
 
 from ... import utils_deep_keras
 from ...model_keras import ModelKeras
@@ -177,7 +178,7 @@ class ModelDenseClassifier(ModelClassifierMixin, ModelKeras):
         self.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['model_type', 'x_col', 'y_col', 'columns_in', 'mandatory_columns',
-                          'list_classes', 'dict_classes', 'multi_label', 'level_save',
+                          'list_classes', 'dict_classes', 'multi_label', 'random_seed', 'level_save',
                           'batch_size', 'epochs', 'validation_split', 'patience', 'keras_params']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
