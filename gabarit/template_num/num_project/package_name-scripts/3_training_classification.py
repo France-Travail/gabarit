@@ -68,9 +68,10 @@ logger = logging.getLogger('{{package_name}}.3_training_classification')
 
 
 def main(filename: str, y_col: List[Union[str, int]], excluded_cols: Union[List[Union[str, int]], None] = None,
-         filename_valid: Union[str, None] = None, min_rows: Union[int, None] = None, level_save: str = 'HIGH',
+         filename_valid: Union[str, None] = None, random_seed: Union[int, None] = None,
+         min_rows: Union[int, None] = None, level_save: str = 'HIGH',
          sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}',
-         model: Union[Type[ModelClass], None] = None, random_seed: Union[int, None] = None,
+         model: Union[Type[ModelClass], None] = None,
          mlflow_experiment: Union[str, None] = None) -> None:
     '''Trains a model
 

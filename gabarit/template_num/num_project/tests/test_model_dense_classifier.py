@@ -27,7 +27,6 @@ import tensorflow
 import numpy as np
 import pandas as pd
 import tensorflow.keras as keras
-from tensorflow.keras.models import Model
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
@@ -41,7 +40,7 @@ logging.disable(logging.CRITICAL)
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
-def compare_keras_models(model1: Model, model2: Model) -> bool:
+def compare_keras_models(model1, model2):
     ''' Checks if all weights of each keras model layer are the same
     '''
     for layer1, layer2 in zip(model1.layers, model2.layers):
@@ -532,6 +531,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)
@@ -572,6 +572,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)

@@ -28,7 +28,7 @@ import pandas as pd
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.classifiers.models_sklearn.model_rf_classifier import ModelRFClassifier
-from sklearn.tree import DecisionTreeClassifier
+
 # Disable logging
 import logging
 logging.disable(logging.CRITICAL)
@@ -37,7 +37,7 @@ logging.disable(logging.CRITICAL)
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
-def compare_trees(tree1: DecisionTreeClassifier, tree2: DecisionTreeClassifier) -> bool:
+def compare_trees(tree1, tree2):
     '''Checks if two DecisionTreeClassifiers are equal
     Args:
         tree1 (DecisionTreeClassifier): First tree to consider
@@ -480,6 +480,7 @@ class ModelRFClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)
@@ -515,6 +516,7 @@ class ModelRFClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)
@@ -550,6 +552,7 @@ class ModelRFClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)
@@ -588,6 +591,7 @@ class ModelRFClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)
@@ -623,6 +627,7 @@ class ModelRFClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)
@@ -658,6 +663,7 @@ class ModelRFClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)

@@ -169,6 +169,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertTrue('y_col' in configs.keys())
         self.assertTrue('columns_in' in configs.keys())
         self.assertTrue('mandatory_columns' in configs.keys())
+        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())
         self.assertEqual(configs['librairie'], None)

@@ -121,7 +121,8 @@ class ModelXgboostClassifier(ModelClassifierMixin, ModelClass):
 
         # Shuffle x, y if wanted
         if with_shuffle:
-            p = np.random.permutation(len(x_train))
+            random_state = np.random.RandomState(self.random_seed)
+            p = random_state.permutation(len(x_train))
             x_train = np.array(x_train)[p]
             y_train = np.array(y_train)[p]
         # Else still transform to numpy array
@@ -303,7 +304,7 @@ class ModelXgboostClassifier(ModelClassifierMixin, ModelClass):
         self.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['model_type', 'x_col', 'y_col', 'columns_in', 'mandatory_columns',
-                          'list_classes', 'dict_classes', 'multi_label', 'level_save',
+                          'list_classes', 'dict_classes', 'multi_label', 'random_seed', 'level_save',
                           'xgboost_params', 'early_stopping_rounds', 'validation_split']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
