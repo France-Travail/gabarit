@@ -423,11 +423,18 @@ class ModelKeras(ModelClass):
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        @tf.function
-        def serve(x):
-            return self.model(x, training=False)
+        return self._serve(x_test).numpy()
 
-        return serve(x_test).numpy()
+    @tf.function
+    def _serve(self, x: pd.DataFrame):
+        '''Improves predict function using tf.function (cf. https://www.tensorflow.org/guide/function)
+
+        Args:
+            x (pd.DataFrame): input data
+        Returns:
+            tf.tensor: model's output
+        '''
+        return self.model(x, training=False)
 
     def _get_model(self) -> Model:
         '''Gets a model structure - returns the instance model instead if already defined

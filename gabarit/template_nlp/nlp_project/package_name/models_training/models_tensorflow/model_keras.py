@@ -367,11 +367,18 @@ class ModelKeras(ModelClass):
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        @tf.function
-        def serve(x):
-            return self.model(x, training=False)
+        return self._serve(x_test).numpy()
 
-        return serve(x_test).numpy()
+    @tf.function
+    def _serve(self, x: np.ndarray):
+        '''Improves predict function using tf.function (cf. https://www.tensorflow.org/guide/function)
+
+        Args:
+            x (np.ndarray): input data
+        Returns:
+            tf.tensor: model's output
+        '''
+        return self.model(x, training=False)
 
     def _prepare_x_train(self, x_train) -> np.ndarray:
         '''Prepares the input data for the model
