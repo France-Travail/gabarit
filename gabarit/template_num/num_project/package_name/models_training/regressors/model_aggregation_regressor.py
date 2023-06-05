@@ -194,12 +194,14 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
         self.trained = self._check_trained()
 
     @utils.trained_needed
-    def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
+    def predict(self, x_test, return_proba: bool = False, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Prediction
 
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
             return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
+        Kwargs:
+            alternative_version (bool): If an alternative version must be used for keras models. Should be faster with low nb of inputs.
         Returns:
             (np.ndarray): Array of shape = [n_samples]
         Raises:
@@ -207,7 +209,7 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
         '''
         if return_proba:
             raise ValueError(f"Models of the type {self.model_type} can't handle probabilities")
-        preds = self._predict_sub_models(x_test, **kwargs)
+        preds = self._predict_sub_models(x_test, alternative_version=alternative_version, **kwargs)
         return np.array([self.aggregation_function(array) for array in preds]) # type: ignore
 
     @utils.trained_needed
@@ -222,15 +224,17 @@ class ModelAggregationRegressor(ModelRegressorMixin, ModelClass):
         raise ValueError(f"Models of type regressor do not implement the method predict_proba")
 
     @utils.trained_needed
-    def _predict_sub_models(self, x_test, **kwargs) -> np.ndarray:
+    def _predict_sub_models(self, x_test, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Recover the predictions of each model being aggregated
 
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
+        Kwargs:
+            alternative_version (bool): If an alternative version must be used for keras models. Should be faster with low nb of inputs.
         Returns:
             (np.ndarray): array of shape = [n_samples, nb_model]
         '''
-        array_predict = np.array([sub_model['model'].predict(x_test) for sub_model in self.sub_models])
+        array_predict = np.array([sub_model['model'].predict(x_test, alternative_version=alternative_version) for sub_model in self.sub_models])
         array_predict = np.transpose(array_predict, (1, 0))
         return array_predict
 

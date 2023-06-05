@@ -166,6 +166,8 @@ class ModelEmbeddingLstmAttentionTests(unittest.TestCase):
                                             embedding_name='fake_embedding.pkl')
         model.fit(x_train, y_train_mono)
         preds = model.predict_proba(x_train)
+        preds_alt = model.predict_proba(x_train, alternative_version=True)
+        np.testing.assert_almost_equal(preds, preds_alt)
         self.assertEqual(preds.shape, (len(x_train), 3))
         preds = model.predict_proba('test')
         self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'])[0]])
@@ -177,10 +179,10 @@ class ModelEmbeddingLstmAttentionTests(unittest.TestCase):
                                             padding='pre', truncating='post',
                                             embedding_name='fake_embedding.pkl')
         model.fit(x_train, y_train_mono)
-        preds = model.predict_proba(x_train, experimental_version=True)
+        preds = model.predict_proba(x_train, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train), 3))
-        preds = model.predict_proba('test', experimental_version=True)
-        self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'], experimental_version=True)[0]])
+        preds = model.predict_proba('test', alternative_version=True)
+        self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'], alternative_version=True)[0]])
         remove_dir(model_dir)
 
         # Multi-labels
@@ -190,6 +192,8 @@ class ModelEmbeddingLstmAttentionTests(unittest.TestCase):
                                             embedding_name='fake_embedding.pkl')
         model.fit(x_train, y_train_multi[cols])
         preds = model.predict_proba(x_train)
+        preds_alt = model.predict_proba(x_train, alternative_version=True)
+        np.testing.assert_almost_equal(preds, preds_alt)
         self.assertEqual(preds.shape, (len(x_train), len(cols)))
         preds = model.predict_proba('test')
         self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'])[0]])
@@ -201,10 +205,10 @@ class ModelEmbeddingLstmAttentionTests(unittest.TestCase):
                                             padding='pre', truncating='post',
                                             embedding_name='fake_embedding.pkl')
         model.fit(x_train, y_train_multi[cols])
-        preds = model.predict_proba(x_train, experimental_version=True)
+        preds = model.predict_proba(x_train, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train), len(cols)))
-        preds = model.predict_proba('test', experimental_version=True)
-        self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'], experimental_version=True)[0]])
+        preds = model.predict_proba('test', alternative_version=True)
+        self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'], alternative_version=True)[0]])
         remove_dir(model_dir)
 
         # Model needs to be fitted

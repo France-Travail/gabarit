@@ -452,14 +452,26 @@ class ModelKerasTests(unittest.TestCase):
                                    max_sequence_length=10, max_words=100,
                                    embedding_name='fake_embedding.pkl')
         model.fit(x_train, y_train_mono)
+        #
         preds = model.predict(x_train, return_proba=False)
+        preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
+        np.testing.assertAlmostEqual(preds, preds_alt)
+        #
         preds = model.predict('test', return_proba=False)
+        preds_alt = model.predict('test', return_proba=False, alternative_version=True)
         self.assertEqual(preds, model.predict(['test'], return_proba=False)[0])
+        np.testing.assertAlmostEqual(preds, preds_alt)
+        #
         proba = model.predict(x_train, return_proba=True)
+        proba_alt = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(proba.shape, (len(x_train), 3))
+        np.testing.assertAlmostEqual(proba, proba_alt)
+        #
         proba = model.predict('test', return_proba=True)
+        proba_alt = model.predict('test', return_proba=True, alternative_version=True)
         self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
+        np.testing.assertAlmostEqual(proba, proba_alt)
         remove_dir(model_dir)
 
         # Multi-labels
@@ -467,14 +479,26 @@ class ModelKerasTests(unittest.TestCase):
                                    max_sequence_length=10, max_words=100,
                                    embedding_name='fake_embedding.pkl')
         model.fit(x_train, y_train_multi)
+        #
         preds = model.predict(x_train, return_proba=False)
+        preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train), len(cols)))
+        np.testing.assertAlmostEqual(preds, preds_alt)
+        #
         preds = model.predict('test', return_proba=False)
+        preds_alt = model.predict('test', return_proba=False, alternative_version=True)
         self.assertEqual([elem for elem in preds], [elem for elem in model.predict(['test'], return_proba=False)[0]])
+        np.testing.assertAlmostEqual(preds, preds_alt)
+        #
         proba = model.predict(x_train, return_proba=True)
+        proba_alt = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(proba.shape, (len(x_train), len(cols)))
+        np.testing.assertAlmostEqual(proba, proba_alt)
+        #
         proba = model.predict('test', return_proba=True)
+        proba_alt = model.predict('test', return_proba=True, alternative_version=True)
         self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
+        np.testing.assertAlmostEqual(proba, proba_alt)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -484,6 +508,8 @@ class ModelKerasTests(unittest.TestCase):
                                        embedding_name='fake_embedding.pkl')
             model.predict('test')
         remove_dir(model_dir)
+
+    # TODO: add test predict_proba
 
     def test04_model_keras_get_embedding_matrix(self):
         '''Test of the method _get_embedding_matrix of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''

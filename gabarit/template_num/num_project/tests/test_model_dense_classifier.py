@@ -118,9 +118,9 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True)
         self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
-        preds = model.predict(x_train, return_proba=False, experimental_version=True)
+        preds = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
-        probas = model.predict(x_train, return_proba=True, experimental_version=True)
+        probas = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
@@ -136,9 +136,9 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train),))
         probas = model.predict(x_train, return_proba=True)
         self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
-        preds = model.predict(x_train, return_proba=False, experimental_version=True)
+        preds = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
-        probas = model.predict(x_train, return_proba=True, experimental_version=True)
+        probas = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
@@ -154,9 +154,9 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
         probas = model.predict(x_train, return_proba=True)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
-        preds = model.predict(x_train, return_proba=False, experimental_version=True)
+        preds = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        probas = model.predict(x_train, return_proba=True, experimental_version=True)
+        probas = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)

@@ -113,10 +113,10 @@ class ModelDenseRegressorTests(unittest.TestCase):
         self.assertEqual(preds.shape, (len(x_train),))
         with self.assertRaises(ValueError):
             probas = model.predict(x_train, return_proba=True)
-        preds = model.predict(x_train, return_proba=False, experimental_version=True)
+        preds = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
         with self.assertRaises(ValueError):
-            probas = model.predict(x_train, return_proba=True, experimental_version=True)
+            probas = model.predict(x_train, return_proba=True, alternative_version=True)
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)

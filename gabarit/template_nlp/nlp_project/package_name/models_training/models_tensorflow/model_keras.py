@@ -313,13 +313,14 @@ class ModelKeras(ModelClass):
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
+    def predict(self, x_test, return_proba: bool = False, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Predictions on test set
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Kwargs:
             return_proba (bool): If the function should return the probabilities instead of the classes
+            alternative_version (bool): If an alternative predict version must be used. Should be faster with low nb of inputs.
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
@@ -327,7 +328,7 @@ class ModelKeras(ModelClass):
         x_test = pd.Series(x_test)
 
         # Predict
-        predicted_proba = self.predict_proba(x_test)
+        predicted_proba = self.predict_proba(x_test, alternative_version=alternative_version)
 
         # We return the probabilities if wanted
         if return_proba:
@@ -338,29 +339,28 @@ class ModelKeras(ModelClass):
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict_proba(self, x_test, experimental_version: bool = False, **kwargs) -> np.ndarray:
+    def predict_proba(self, x_test, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Predicts probabilities on the test dataset
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
         Kwargs:
-            experimental_version (bool): If an experimental (but faster) version must be used
+            alternative_version (bool): If an alternative predict version must be used. Should be faster with low nb of inputs.
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
         # Prepare input
         x_test = self._prepare_x_test(x_test)
         # Process
-        if experimental_version:
-            return self.experimental_predict_proba(x_test)
+        if alternative_version:
+            return self._alternative_predict_proba(x_test)
         else:
             return self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
     @utils.trained_needed
-    def experimental_predict_proba(self, x_test, **kwargs) -> np.ndarray:
-        '''Predicts probabilities on the test dataset - Experimental function
-        Preprocessings must be done before (in predict_proba)
-        Here we only do the prediction and return the result
+    def _alternative_predict_proba(self, x_test, **kwargs) -> np.ndarray:
+        '''Predicts probabilities on the test dataset - Alternative version
+        Should be faster with low nb of inputs.
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
