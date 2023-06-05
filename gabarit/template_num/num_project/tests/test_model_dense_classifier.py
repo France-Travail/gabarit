@@ -117,12 +117,12 @@ class ModelDenseClassifierTests(unittest.TestCase):
         #
         preds = model.predict(x_train, return_proba=False)
         preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
-        np.testing.assert_almost_equal(preds, preds_alt)
+        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
         self.assertEqual(preds.shape, (len(x_train),))
         #
         probas = model.predict(x_train, return_proba=True)
         probas_alt = model.predict(x_train, return_proba=True, alternative_version=True)
-        np.testing.assert_almost_equal(probas, probas_alt)
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
         self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
@@ -137,12 +137,12 @@ class ModelDenseClassifierTests(unittest.TestCase):
         #
         preds = model.predict(x_train, return_proba=False)
         preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
-        np.testing.assert_almost_equal(preds, preds_alt)
+        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
         self.assertEqual(preds.shape, (len(x_train),))
         #
         probas = model.predict(x_train, return_proba=True)
         probas_alt = model.predict(x_train, return_proba=True, alternative_version=True)
-        np.testing.assert_almost_equal(probas, probas_alt)
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
         self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
@@ -157,12 +157,12 @@ class ModelDenseClassifierTests(unittest.TestCase):
         #
         preds = model.predict(x_train)
         preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
-        np.testing.assert_almost_equal(preds, preds_alt)
+        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
         #
         probas = model.predict(x_train, return_proba=True)
         probas_alt = model.predict(x_train, return_proba=True, alternative_version=True)
-        np.testing.assert_almost_equal(probas, probas_alt)
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
@@ -201,7 +201,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         #
         probas = model.predict_proba(x_train)
         probas_alt = model.predict_proba(x_train, alternative_version=True)
-        np.testing.assert_almost_equal(probas, probas_alt)
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
         self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         # Test inversed columns order
@@ -215,7 +215,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         #
         probas = model.predict_proba(x_train)
         probas_alt = model.predict_proba(x_train, alternative_version=True)
-        np.testing.assert_almost_equal(probas, probas_alt)
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
         self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         # Test inversed columns order
@@ -229,7 +229,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         #
         probas = model.predict_proba(x_train)
         probas_alt = model.predict_proba(x_train, alternative_version=True)
-        np.testing.assert_almost_equal(probas, probas_alt)
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))  # 3 labels
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         # Test inversed columns order

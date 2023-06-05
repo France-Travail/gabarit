@@ -420,14 +420,14 @@ def predict_with_proba(content: pd.DataFrame, model, alternative_version: bool =
 
     # Rework format
     if not model.multi_label:
-        prediction = model.inverse_transform(predictions)
-        proba = list(probas.max(axis=1))
+        predictions = model.inverse_transform(predictions)
+        probas = list(probas.max(axis=1))
     else:
-        prediction = [tuple(np.array(model.list_classes).compress(indicators)) for indicators in predictions]
-        proba = [tuple(np.array(probas[i]).compress(indicators)) for i, indicators in enumerate(predictions)]
+        probas = [tuple(np.array(probas[i]).compress(indicators)) for i, indicators in enumerate(predictions)]
+        predictions = [tuple(np.array(model.list_classes).compress(indicators)) for indicators in predictions]
 
-    # Return prediction & proba
-    return prediction, proba
+    # Return predictions & probas
+    return predictions, probas
 
 
 def search_hp_cv(model_cls, model_params: dict, hp_params: dict, scoring_fn: Union[str, Callable],

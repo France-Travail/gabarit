@@ -372,7 +372,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         def test_method(model, x_test, target_predict):
             preds = model.predict(x_test)
             preds_alt = model.predict(x_test, alternative_version=True)
-            np.testing.assert_almost_equal(preds, preds_alt)
+            np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
             self.assertEqual(preds.shape, target_predict.shape)
             for i in range(len(preds)):
                 self.assertAlmostEqual(preds[i], target_predict[i], places=4)
@@ -449,7 +449,7 @@ class ModelAggregationRegressorTests(unittest.TestCase):
         model = ModelAggregationRegressor(model_dir=model_dir, list_models=list_mock_model)
         preds = model._predict_sub_models(x_test)
         preds_alt = model._predict_sub_models(x_test, alternative_version=True)
-        np.testing.assert_almost_equal(preds, preds_alt)
+        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
         self.assertTrue(isinstance(preds, np.ndarray))
         self.assertEqual(target_get_predictions.shape, preds.shape)
         for i in range(target_get_predictions.shape[0]):

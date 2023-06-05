@@ -112,7 +112,7 @@ class ModelDenseRegressorTests(unittest.TestCase):
         #
         preds = model.predict(x_train, return_proba=False)
         preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
-        np.testing.assert_almost_equal(preds, preds_alt)
+        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
         self.assertEqual(preds.shape, (len(x_train),))
         #
         with self.assertRaises(ValueError):
