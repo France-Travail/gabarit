@@ -687,7 +687,7 @@ class UtilsModelsTests(unittest.TestCase):
         model, model_conf = utils_models.load_model(model_dir='test_model')
         preds, probas = utils_models.predict_with_proba(x_test_1, model)
         preds_alt, probas_alt = utils_models.predict_with_proba(x_test_1, model, alternative_version=True)
-        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
+        self.assertEqual(preds, preds_alt)  # List of tuples of strings
         np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
         self.assertEqual(preds, y_test_classification_multi)
         self.assertEqual(len(probas), len(y_test_classification_multi))
@@ -710,7 +710,7 @@ class UtilsModelsTests(unittest.TestCase):
         model, model_conf = utils_models.load_model(model_dir='test_model')
         preds, probas = utils_models.predict_with_proba(x_test_2, model)
         preds_alt, probas_alt = utils_models.predict_with_proba(x_test_2, model, alternative_version=True)
-        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
+        self.assertEqual(preds, preds_alt)  # List of tuples of strings
         np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
         self.assertEqual(preds, y_test_classification_multi)
         self.assertEqual(len(probas), len(y_test_classification_multi))
