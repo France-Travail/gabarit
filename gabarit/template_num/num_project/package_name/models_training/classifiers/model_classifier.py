@@ -78,7 +78,7 @@ class ModelClassifierMixin:
         self.level_save = level_save
 
     @utils.trained_needed
-    def predict_with_proba(self, x_test: pd.DataFrame) -> Tuple[np.ndarray, np.ndarray]:
+    def predict_with_proba(self, x_test: pd.DataFrame, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
         '''Predictions on test with probabilities
 
         Args:
