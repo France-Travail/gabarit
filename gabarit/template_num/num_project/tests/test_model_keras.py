@@ -471,12 +471,12 @@ class ModelKerasTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
-        np.testing.assertAlmostEqual(preds, preds_alt)
+        np.testing.assert_almost_equal(preds, preds_alt)
         #
         probas = model.predict(x_train, return_proba=True)
         probas_alt = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
-        np.testing.assertAlmostEqual(probas, probas_alt)
+        np.testing.assert_almost_equal(probas, probas_alt)
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
@@ -491,12 +491,12 @@ class ModelKerasTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
-        np.testing.assertAlmostEqual(preds, preds_alt)
+        np.testing.assert_almost_equal(preds, preds_alt)
         #
         probas = model.predict(x_train, return_proba=True)
         probas_alt = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
-        np.testing.assertAlmostEqual(probas, probas_alt)
+        np.testing.assert_almost_equal(probas, probas_alt)
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
@@ -511,12 +511,12 @@ class ModelKerasTests(unittest.TestCase):
         preds = model.predict(x_train)
         preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        np.testing.assertAlmostEqual(preds, preds_alt)
+        np.testing.assert_almost_equal(preds, preds_alt)
         #
         probas = model.predict(x_train, return_proba=True)
         probas_alt = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
-        np.testing.assertAlmostEqual(probas, probas_alt)
+        np.testing.assert_almost_equal(probas, probas_alt)
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
@@ -531,7 +531,7 @@ class ModelKerasTests(unittest.TestCase):
         preds = model.predict(x_train)
         preds_alt = model.predict(x_train, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
-        np.testing.assertAlmostEqual(preds, preds_alt)
+        np.testing.assert_almost_equal(preds, preds_alt)
         #
         with self.assertRaises(ValueError):
             probas = model.predict(x_train, return_proba=True)

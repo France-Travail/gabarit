@@ -633,6 +633,10 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         def test_predict(model, x_test, target_predict, target_probas):
             preds = model.predict(x_test)
             probas = model.predict(x_test, return_proba=True)
+            preds_alt = model.predict(x_test, alternative_version=True)
+            probas_alt = model.predict(x_test, return_proba=True, alternative_version=True)
+            np.testing.assert_almost_equal(preds, preds_alt)
+            np.testing.assert_almost_equal(probas, probas_alt)
             self.assertEqual(preds.shape, target_predict.shape)
             self.assertEqual(probas.shape, target_probas.shape)
             # Check the predictions
@@ -692,6 +696,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         model = ModelAggregationClassifier(model_dir=model_dir, list_models=list_models_mono)
         probas = model._predict_probas_sub_models(x_test)
+        probas_alt = model._predict_probas_sub_models(x_test, alternative_version=True)
+        np.testing.assert_almost_equal(probas, probas_alt)
         self.assertTrue(isinstance(probas, np.ndarray))
         self.assertEqual(target_get_proba_mono.shape, probas.shape)
         for i in range(len(x_test)):
@@ -704,6 +710,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         model = ModelAggregationClassifier(model_dir=model_dir)
         with self.assertRaises(AttributeError):
             model._predict_probas_sub_models('test')
+        with self.assertRaises(AttributeError):
+            model._predict_probas_sub_models('test', alternative_version=True)
         remove_dir(model_dir)
 
     def test08_model_aggregation_classifier__predict_sub_models(self):
@@ -715,6 +723,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         # mono_label
         model = ModelAggregationClassifier(model_dir=model_dir, list_models=list_models_mono)
         preds = model._predict_sub_models(x_test)
+        preds_alt = model._predict_sub_models(x_test, alternative_version=True)
+        np.testing.assert_almost_equal(preds, preds_alt)
         self.assertTrue(isinstance(preds, np.ndarray))
         self.assertEqual(target_get_predictions_mono.shape, preds.shape)
         for i in range(len(x_test)):
@@ -725,6 +735,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         # multi_label
         model = ModelAggregationClassifier(model_dir=model_dir, list_models=list_models_multi, aggregation_function='all_predictions', multi_label=True)
         preds = model._predict_sub_models(x_test)
+        preds_alt = model._predict_sub_models(x_test, alternative_version=True)
+        np.testing.assert_almost_equal(preds, preds_alt)
         self.assertTrue(isinstance(preds, np.ndarray))
         self.assertEqual(target_get_predictions_multi.shape, preds.shape)
         for i in range(len(x_test)):
@@ -737,6 +749,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         model = ModelAggregationClassifier(model_dir=model_dir)
         with self.assertRaises(AttributeError):
             model._predict_sub_models('test')
+        with self.assertRaises(AttributeError):
+            model._predict_sub_models('test', alternative_version=True)
         remove_dir(model_dir)
 
     def test09_model_aggregation_classifier_predict_proba(self):
@@ -747,6 +761,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         model = ModelAggregationClassifier(model_dir=model_dir, list_models=list_models_mono)
         probas = model.predict_proba(x_test)
+        probas_alt = model.predict_proba(x_test, alternative_version=True)
+        np.testing.assert_almost_equal(probas, probas_alt)
         self.assertEqual(target_predict_mono_proba.shape, probas.shape)
         for i in range(len(x_test)):
             for truth, pred in zip(target_predict_mono_proba[i], probas[i]):
@@ -757,6 +773,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
         model = ModelAggregationClassifier(model_dir=model_dir)
         with self.assertRaises(AttributeError):
             model.predict_proba('test')
+        with self.assertRaises(AttributeError):
+            model.predict_proba('test', alternative_version=True)
         remove_dir(model_dir)
 
     def test10_model_aggregation_classifier_predict_full_list_classes(self):
@@ -780,6 +798,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         # mono_label, no return_proba
         preds = model._predict_full_list_classes(mock_model_mono, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=False)
+        preds_alt = model._predict_full_list_classes(mock_model_mono, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=False, alternative_version=True)
+        np.testing.assert_almost_equal(preds, preds_alt)
         target_mono = np.array(['2', '1', '4'])
         self.assertEqual(target_mono.shape, preds.shape)
         for truth, pred in zip(target_mono, preds):
@@ -787,6 +807,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         # mono_label, return_proba
         preds = model._predict_full_list_classes(mock_model_mono, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=True)
+        preds_alt = model._predict_full_list_classes(mock_model_mono, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=True, alternative_version=True)
+        np.testing.assert_almost_equal(preds, preds_alt)
         target_mono_return_proba = np.array([[0.0, 0.2, 0.8, 0.0, 0.0, 0.0], [0.0, 0.9, 0.0, 0.0, 0.1, 0.0], [0.0, 0.2, 0.1, 0.0, 0.7, 0.0]])
         self.assertEqual(target_mono_return_proba.shape, preds.shape)
         for truth, pred in zip(target_mono_return_proba, preds):
@@ -811,6 +833,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         # multi_label, no return_proba
         preds = model._predict_full_list_classes(mock_model_multi, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=False)
+        preds_alt = model._predict_full_list_classes(mock_model_multi, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=False, alternative_version=True)
+        np.testing.assert_almost_equal(preds, preds_alt)
         target_multi = np.array([[0, 1, 1, 0, 0, 0], [0, 1, 0, 0, 1, 0], [0, 0, 0, 0, 0, 0]])
         self.assertEqual(target_multi.shape, preds.shape)
         for truth, pred in zip(target_multi, preds):
@@ -819,6 +843,8 @@ class ModelAggregationClassifierTests(unittest.TestCase):
 
         # multi_label, return_proba
         preds = model._predict_full_list_classes(mock_model_multi, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=True)
+        preds_alt = model._predict_full_list_classes(mock_model_multi, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=True, alternative_version=True)
+        np.testing.assert_almost_equal(preds, preds_alt)
         target_mono_return_proba = np.array([[0.0, 0.2, 0.8, 0.0, 0.0, 0.0], [0.0, 0.9, 0.0, 0.0, 0.1, 0.0], [0.0, 0.2, 0.1, 0.0, 0.7, 0.0]])
         self.assertEqual(target_mono_return_proba.shape, preds.shape)
         for truth, pred in zip(target_mono_return_proba, preds):

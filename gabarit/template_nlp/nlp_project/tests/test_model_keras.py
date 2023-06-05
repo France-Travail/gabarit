@@ -456,22 +456,22 @@ class ModelKerasTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
-        np.testing.assertAlmostEqual(preds, preds_alt)
+        np.testing.assert_almost_equal(preds, preds_alt)
         #
         preds = model.predict('test', return_proba=False)
         preds_alt = model.predict('test', return_proba=False, alternative_version=True)
         self.assertEqual(preds, model.predict(['test'], return_proba=False)[0])
-        np.testing.assertAlmostEqual(preds, preds_alt)
+        np.testing.assert_almost_equal(preds, preds_alt)
         #
         proba = model.predict(x_train, return_proba=True)
         proba_alt = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(proba.shape, (len(x_train), 3))
-        np.testing.assertAlmostEqual(proba, proba_alt)
+        np.testing.assert_almost_equal(proba, proba_alt)
         #
         proba = model.predict('test', return_proba=True)
         proba_alt = model.predict('test', return_proba=True, alternative_version=True)
         self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
-        np.testing.assertAlmostEqual(proba, proba_alt)
+        np.testing.assert_almost_equal(proba, proba_alt)
         remove_dir(model_dir)
 
         # Multi-labels
@@ -483,22 +483,22 @@ class ModelKerasTests(unittest.TestCase):
         preds = model.predict(x_train, return_proba=False)
         preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train), len(cols)))
-        np.testing.assertAlmostEqual(preds, preds_alt)
+        np.testing.assert_almost_equal(preds, preds_alt)
         #
         preds = model.predict('test', return_proba=False)
         preds_alt = model.predict('test', return_proba=False, alternative_version=True)
         self.assertEqual([elem for elem in preds], [elem for elem in model.predict(['test'], return_proba=False)[0]])
-        np.testing.assertAlmostEqual(preds, preds_alt)
+        np.testing.assert_almost_equal(preds, preds_alt)
         #
         proba = model.predict(x_train, return_proba=True)
         proba_alt = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(proba.shape, (len(x_train), len(cols)))
-        np.testing.assertAlmostEqual(proba, proba_alt)
+        np.testing.assert_almost_equal(proba, proba_alt)
         #
         proba = model.predict('test', return_proba=True)
         proba_alt = model.predict('test', return_proba=True, alternative_version=True)
         self.assertEqual([elem for elem in proba], [elem for elem in model.predict(['test'], return_proba=True)[0]])
-        np.testing.assertAlmostEqual(proba, proba_alt)
+        np.testing.assert_almost_equal(proba, proba_alt)
         remove_dir(model_dir)
 
         # Model needs to be fitted
