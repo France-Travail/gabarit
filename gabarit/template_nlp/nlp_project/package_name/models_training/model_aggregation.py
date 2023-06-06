@@ -252,72 +252,82 @@ class ModelAggregation(ModelClass):
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
+    def predict(self, x_test, return_proba: bool = False, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Prediction
 
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
             return_proba (bool): If the function should return the probabilities instead of the classes
+        Kwargs:
+            alternative_version (bool): If an alternative version must be used for keras models. Should be faster with low nb of inputs.
         Returns:
             np.ndarray: array of shape = [n_samples]
         '''
         # We decide whether to rely on each model's probas or their predictions
         if return_proba:
-            return self.predict_proba(x_test)
+            return self.predict_proba(x_test, alternative_version=alternative_version)
         else:
             # Get what we want (probas or preds) and use the aggregation function
             if self.using_proba:
-                preds_or_probas = self._predict_probas_sub_models(x_test, **kwargs)
+                preds_or_probas = self._predict_probas_sub_models(x_test, alternative_version=alternative_version, **kwargs)
             else:
-                preds_or_probas = self._predict_sub_models(x_test, **kwargs)
+                preds_or_probas = self._predict_sub_models(x_test, alternative_version=alternative_version, **kwargs)
             return np.array([self.aggregation_function(array, list_classes=self.list_classes) for array in preds_or_probas])  # type: ignore
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict_proba(self, x_test, **kwargs) -> np.ndarray:
+    def predict_proba(self, x_test, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Predicts the probabilities on the test set
 
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
+        Kwargs:
+            alternative_version (bool): If an alternative version must be used for keras models. Should be faster with low nb of inputs.
         Returns:
             np.ndarray: array of shape = [n_samples, n_classes]
         '''
-        probas_sub_models = self._predict_probas_sub_models(x_test, **kwargs)
+        probas_sub_models = self._predict_probas_sub_models(x_test, alternative_version=alternative_version, **kwargs)
         # The probas of all models are averaged
         return np.sum(probas_sub_models, axis=1) / probas_sub_models.shape[1]
 
     @utils.trained_needed
-    def _predict_probas_sub_models(self, x_test, **kwargs) -> np.ndarray:
+    def _predict_probas_sub_models(self, x_test, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Recover the probabilities of each model being aggregated
 
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
+        Kwargs:
+            alternative_version (bool): If an alternative version must be used for keras models. Should be faster with low nb of inputs.
         Returns:
             np.ndarray: array of shape = [n_samples, nb_model, nb_classes]
         '''
-        array_probas = np.array([self._predict_full_list_classes(sub_model['model'], x_test, return_proba=True) for sub_model in self.sub_models])
+        array_probas = np.array([self._predict_full_list_classes(sub_model['model'], x_test, return_proba=True, alternative_version=alternative_version)
+                                 for sub_model in self.sub_models])
         array_probas = np.transpose(array_probas, (1, 0, 2))
         return array_probas
 
     @utils.trained_needed
-    def _predict_sub_models(self, x_test, **kwargs) -> np.ndarray:
+    def _predict_sub_models(self, x_test, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Recover the predictions of each model being aggregated
 
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
+        Kwargs:
+            alternative_version (bool): If an alternative version must be used for keras models. Should be faster with low nb of inputs.
         Returns:
             np.ndarray: not multi_label : array of shape = [n_samples, nb_model]
                         multi_label : array of shape = [n_samples, nb_model, n_classes]
         '''
         if self.multi_label:
-            array_predict = np.array([self._predict_full_list_classes(sub_model['model'], x_test, return_proba=False) for sub_model in self.sub_models])
+            array_predict = np.array([self._predict_full_list_classes(sub_model['model'], x_test, return_proba=False, alternative_version=alternative_version)
+                                      for sub_model in self.sub_models])
             array_predict = np.transpose(array_predict, (1, 0, 2))
         else:
-            array_predict = np.array([sub_model['model'].predict(x_test) for sub_model in self.sub_models])
+            array_predict = np.array([sub_model['model'].predict(x_test, alternative_version=alternative_version) for sub_model in self.sub_models])
             array_predict = np.transpose(array_predict, (1, 0))
         return array_predict
 
-    def _predict_full_list_classes(self, model: Type[ModelClass], x_test, return_proba: bool = False) -> np.ndarray:
+    def _predict_full_list_classes(self, model: Type[ModelClass], x_test, return_proba: bool = False, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''For multi_label: adds missing columns in the prediction of model (class missing in their list_classes)
         Or, if return_proba, adds a proba of zero to the missing classes in their list_classes
 
@@ -325,11 +335,13 @@ class ModelAggregation(ModelClass):
             model (ModelClass): Model to use
             x_test (?): Array-like or sparse matrix of shape = [n_samples, n_features]
             return_proba (bool): If the function should return the probabilities instead of the classes
+        Kwargs:
+            alternative_version (bool): If an alternative version must be used for keras models. Should be faster with low nb of inputs.
         Returns:
             np.ndarray: The array with the missing columns added
         '''
         # Get predictions or probas
-        preds_or_probas = model.predict(x_test, return_proba=return_proba)
+        preds_or_probas = model.predict(x_test, return_proba=return_proba, alternative_version=alternative_version)
 
         # Manage each cases. Reorder predictions or probas according to aggregation model list_classes
         # Multi label, proba = True
