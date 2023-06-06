@@ -270,7 +270,7 @@ def get_weighted_binary_crossentropy(pos_weight: float = 10.0) -> Callable:
 # ** EXPERIMENTAL **
 # ** EXPERIMENTAL **
 
-# From Gaëlle JOUIS Thesis
+# From Gaëlle JOUIS' PhD Thesis
 
 class AttentionAverage(Layer):
     def __init__(self, attention_hops, **kwargs) -> None:
