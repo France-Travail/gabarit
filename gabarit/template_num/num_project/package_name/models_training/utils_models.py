@@ -356,7 +356,7 @@ def predict(content: pd.DataFrame, model, alternative_version: bool = False, **k
         model (ModelClass): Model to use
     Kwargs:
         alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
-                                    Only available for keras models.
+                                    Only available for Keras models.
     Returns:
         REGRESSION :
             float: prediction
@@ -393,7 +393,7 @@ def predict_with_proba(content: pd.DataFrame, model, alternative_version: bool =
         model (ModelClass): Model to use
     Kwargs:
         alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
-                                    Only available for keras models.
+                                    Only available for Keras models.
     Raises:
         ValueError: If the model type is not classifier
     Returns:

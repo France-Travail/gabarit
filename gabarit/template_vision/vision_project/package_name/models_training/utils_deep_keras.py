@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Utils - tools-functions for deep_learning keras models
+## Utils - tools-functions for deep_learning Keras models
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify

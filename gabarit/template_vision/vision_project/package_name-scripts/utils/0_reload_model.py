@@ -48,9 +48,9 @@ def main(model_dir: str, config_file: str = 'configurations.json', weights_file:
         model_dir (str): Name of the model to reload (not a path, just the directory name)
     Kwargs:
         config_file (str): Name of the configuration file
-        weights_file (str): Neural Network weights file name (keras models)
+        weights_file (str): Neural Network weights file name (Keras models)
         detectron_file (str): Detectron best model file name (detectron models)
-        preprocess_input_file (str): Model's internal preprocessing file (keras models)
+        preprocess_input_file (str): Model's internal preprocessing file (Keras models)
     Raises:
         FileNotFoundError: If model can't be found
         FileNotFoundError: If model's configuration does not exist
@@ -138,9 +138,9 @@ if __name__ == '__main__':
     # model_X should be the model's directory name: e.g. model_preprocess_pipeline_svm_2019_12_05-12_57_18
     parser.add_argument('-m', '--model_dir', required=True, help="Name of the model to reload (not a path, just the directory name)")
     parser.add_argument('-c', '--config_file', default='configurations.json', help="Name of the configuration file")
-    parser.add_argument('-w', '--weights_file', default='best.hdf5', help="Neural Network weights file name (keras models)")
+    parser.add_argument('-w', '--weights_file', default='best.hdf5', help="Neural Network weights file name (Keras models)")
     parser.add_argument('-d', '--detectron_file', default='best.pth', help="Detectron best model file name (detectron models)")
-    parser.add_argument('-p', '--preprocess_input_file', default='preprocess_input.pkl', help="Model's internal preprocessing file (keras models)")
+    parser.add_argument('-p', '--preprocess_input_file', default='preprocess_input.pkl', help="Model's internal preprocessing file (Keras models)")
     args = parser.parse_args()
     main(model_dir=args.model_dir, config_file=args.config_file, weights_file=args.weights_file,
          detectron_file=args.detectron_file, preprocess_input_file=args.preprocess_input_file)

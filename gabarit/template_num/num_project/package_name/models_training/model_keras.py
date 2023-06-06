@@ -67,7 +67,7 @@ class ModelKeras(ModelClass):
             validation_split (float): Percentage for the validation set split
                 Only used if no input validation set when fitting
             patience (int): Early stopping patience
-            keras_params (dict): Parameters used by keras models.
+            keras_params (dict): Parameters used by Keras models.
                 e.g. learning_rate, nb_lstm_units, etc...
                 The purpose of this dictionary is for the user to use it as they wants in the _get_model function
                 This parameter was initially added in order to do an hyperparameters search

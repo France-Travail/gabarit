@@ -287,7 +287,7 @@ def predict(content: Union[str, list], model, model_conf: dict, alternative_vers
         model_conf (dict): Model configurations
     Kwargs:
         alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
-                                    Only available for keras models.
+                                    Only available for Keras models.
     Returns:
         list: a list of strings (resp. tuples) in case of mono-label (resp. multi-labels) classification predictions
     '''
@@ -321,7 +321,7 @@ def predict_with_proba(content: Union[str, list], model, model_conf: dict, alter
         model_conf (dict): Model configurations
     Kwargs:
         alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
-                                    Only available for keras models.
+                                    Only available for Keras models.
     Returns:
         MONO-LABEL CLASSIFICATION:
             List[str]: predictions
