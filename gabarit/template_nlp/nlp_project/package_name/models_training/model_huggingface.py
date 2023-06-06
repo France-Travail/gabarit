@@ -25,6 +25,8 @@ import shutil
 import logging
 import numpy as np
 import pandas as pd
+import torch
+import math
 import dill as pickle
 import seaborn as sns
 from copy import deepcopy
@@ -109,9 +111,12 @@ class ModelHuggingFace(ModelClass):
                 'save_strategy': 'epoch',
                 'logging_strategy': 'epoch',
                 'save_total_limit': 1,
-                'load_best_model_at_end': True
+                'load_best_model_at_end': True,
+                'optim': 'adamw_torch'
             }
         # TODO: maybe we should keep the default dict & only add/replace keys in provided dict ?
+        if 'seed' not in trainer_params:
+            trainer_params['seed'] = self.random_seed if self.random_seed is not None else 42
         self.trainer_params = trainer_params
 
         # Model set on fit or on reload
@@ -219,8 +224,9 @@ class ModelHuggingFace(ModelClass):
         # Shuffle x, y if wanted
         # It is advised as validation_split from keras does not shufle the data
         # Hence we might have classes in the validation data that we never met in the training data
+        rng = np.random.RandomState(self.random_seed)
         if with_shuffle:
-            p = np.random.permutation(len(x_train))
+            p = rng.permutation(len(x_train))
             x_train = np.array(x_train)[p]
             y_train_dummies = np.array(y_train_dummies)[p]
         # Else still transform to numpy array
@@ -234,8 +240,8 @@ class ModelHuggingFace(ModelClass):
         # If no valid set, split train set according to validation_split
         if y_valid is None:
             self.logger.warning(f"Warning, no validation set. The training set will be splitted (validation fraction = {self.validation_split})")
-            p = np.random.permutation(len(x_train))
-            cutoff = int(len(p) * self.validation_split)
+            p = rng.permutation(len(x_train))
+            cutoff = int(len(x_train) * self.validation_split)
             x_valid = x_train[p[0:cutoff]]
             x_train = x_train[p[cutoff:]]
             y_valid_dummies = y_train_dummies[p[0:cutoff]]
@@ -244,10 +250,10 @@ class ModelHuggingFace(ModelClass):
         ##############################################
         # Get model & prepare datasets
         ##############################################
-
+        
         # Get model (if already fitted, _get_model returns instance model)
         self.model = self._get_model(num_labels=y_train_dummies.shape[1])
-
+        
         # Get tokenizer (if already fitted, _get_tokenizer returns instance tokenizer)
         self.tokenizer = self._get_tokenizer()
 
@@ -283,6 +289,7 @@ class ModelHuggingFace(ModelClass):
             hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
             trainer.model.save_pretrained(save_directory=hf_model_dir)
             self.tokenizer.save_pretrained(save_directory=hf_tokenizer_dir)
+            self.trainer_model = trainer.model
             # Remove checkpoint dir if save total limit is set to 1 (no need to keep this as we resave the model)
             if self.trainer_params.get('save_total_limit', None) == 1:
                 checkpoint_dirs = [_ for _ in os.listdir(self.model_dir) if _.startswith('checkpoint-')]
@@ -439,9 +446,25 @@ class ModelHuggingFace(ModelClass):
                 problem_type="multi_label_classification" if self.multi_label else "single_label_classification",
                 {% if huggingface_proxies is not none %}proxies={{huggingface_proxies}},
                 {% endif %}cache_dir=HF_CACHE_DIR)
+        
+        # Manually initialize weights if random_seed is not None
+        if self.random_seed is not None:
+            generator = torch.Generator()
+            generator.manual_seed(self.random_seed)
+            for name, module in model.named_modules():
+                if isinstance(module, torch.nn.Linear):
+                    utils.init_kaiming_uniform_generator(module.weight, generator)
+                    fan_in, _ = torch.nn.init._calculate_fan_in_and_fan_out(module.weight)
+                    bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
+                    utils.init_uniform_generator(module.bias, bound, generator)
+                if isinstance(module, torch.nn.Embedding):
+                        utils.init_normal_generator(module.weight, generator)
+
         # Set model on gpu if available
         model = model.to('cuda') if self._is_gpu_activated() else model.to('cpu')
+        
         return model
+
 
     def _get_tokenizer(self, model_path: str = None) -> PreTrainedTokenizer:
         '''Gets a tokenizer

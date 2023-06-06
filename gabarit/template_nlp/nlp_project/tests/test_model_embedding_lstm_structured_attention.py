@@ -48,6 +48,19 @@ def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
 
+def compare_keras_models(model1, model2):
+    ''' Checks if all weights of each keras model layer are the same
+    '''
+    for layer1, layer2 in zip(model1.layers, model2.layers):
+        if layer1.__class__.__name__!=layer2.__class__.__name__:
+            return False
+        l1 = layer1.get_weights()
+        l2 = layer2.get_weights()
+        if not all(np.array_equal(weights1, weights2) for weights1, weights2 in zip(l1, l2)):
+            return False
+    return True
+
+
 class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
     '''Main class to test model_embedding_lstm_structured_attention'''
 
@@ -491,7 +504,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
                                             max_sequence_length=max_sequence_length, max_words=100,
                                             padding=padding, truncating=truncating,
                                             oov_token=oov_token, tokenizer_filters=tokenizer_filters,
-                                            embedding_name='fake_embedding.pkl')
+                                            embedding_name='fake_embedding.pkl', random_seed=42)
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5'))) -> no model trained
@@ -506,6 +519,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
         self.assertEqual(configs['truncating'], truncating)
         self.assertEqual(configs['oov_token'], oov_token)
         self.assertEqual(configs['tokenizer_filters'], tokenizer_filters)
+        self.assertEqual(configs['random_seed'], 42)
         remove_dir(model_dir)
 
         # Nominal case - with tokenizer
@@ -515,7 +529,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
                                             max_sequence_length=max_sequence_length, max_words=100,
                                             padding=padding, truncating=truncating,
                                             oov_token=oov_token, tokenizer_filters=tokenizer_filters,
-                                            embedding_name='fake_embedding.pkl')
+                                            embedding_name='fake_embedding.pkl', random_seed=42)
         model.tokenizer = tokenizer
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
@@ -531,6 +545,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
         self.assertEqual(configs['truncating'], truncating)
         self.assertEqual(configs['oov_token'], oov_token)
         self.assertEqual(configs['tokenizer_filters'], tokenizer_filters)
+        self.assertEqual(configs['random_seed'], 42)
         remove_dir(model_dir)
 
         # Nominal case - with tokenizer, but level_save = 'LOW'
@@ -540,7 +555,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
                                             max_sequence_length=max_sequence_length, max_words=100,
                                             padding=padding, truncating=truncating,
                                             oov_token=oov_token, tokenizer_filters=tokenizer_filters,
-                                            embedding_name='fake_embedding.pkl', level_save='LOW')
+                                            embedding_name='fake_embedding.pkl', level_save='LOW', random_seed=42)
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5'))) -> no model trained
@@ -555,6 +570,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
         self.assertEqual(configs['truncating'], truncating)
         self.assertEqual(configs['oov_token'], oov_token)
         self.assertEqual(configs['tokenizer_filters'], tokenizer_filters)
+        self.assertEqual(configs['random_seed'], 42)
         remove_dir(model_dir)
 
     def test09_model_embedding_lstm_structured_attention_init_new_instance_from_configs(self):
@@ -572,7 +588,8 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
         self.assertEqual(new_model.nb_fit, 0)
         self.assertFalse(new_model.trained)
         for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
-                          'patience', 'embedding_name', 'max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
+                          'patience', 'embedding_name', 'max_sequence_length', 'max_words', 'padding', 
+                          'random_seed', 'truncating', 'tokenizer_filters']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         for attribute in ['validation_split']:
             self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
@@ -600,6 +617,7 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
         model.padding = 'post'
         model.truncating = 'pre'
         model.tokenizer_filters = 'coucou'
+        model.random_seed = 42
         model.save(json_data={'test': 8})
         configs = model.load_configs(model_dir=model_dir)
 
@@ -608,7 +626,8 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
         self.assertEqual(new_model.nb_fit, 2)
         self.assertTrue(new_model.trained)
         for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
-                          'patience', 'embedding_name', 'max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
+                          'patience', 'embedding_name', 'max_sequence_length', 'max_words', 'padding', 
+                          'random_seed', 'truncating', 'tokenizer_filters']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         for attribute in ['validation_split']:
             self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
@@ -685,6 +704,76 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
 
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
+
+    def test11_model_embedding_lstm_gru_fit_with_seed(self):
+        '''Test random seed for {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
+        remove_dir(model_dir2)
+
+        # Set vars
+        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
+        y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
+        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
+
+        # Mono-label same random_seed
+        model1 = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_mono)
+        model2 = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir2, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_mono)
+        self.assertTrue(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+                # Multi-label same random_seed
+        model1 = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir2, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_multi)
+        self.assertTrue(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Mono-label different random_seed
+        model1 = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_mono)
+        model2 = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir2, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=41,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_mono)
+        self.assertFalse(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label different random_seed
+        model1 = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir2, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=41,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_multi)
+        self.assertFalse(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
 # Perform tests
 if __name__ == '__main__':
     # Start tests

@@ -33,6 +33,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
+from tensorflow.keras.initializers import HeUniform, GlorotUniform, Orthogonal
 from tensorflow.keras.layers import (Dense, Input, Embedding, GlobalMaxPooling1D,
                                      GlobalAveragePooling1D, ELU, BatchNormalization, LSTM,
                                      SpatialDropout1D, Bidirectional, Concatenate, GRU)
@@ -128,6 +129,10 @@ class ModelEmbeddingLstmGru(ModelKeras):
         # Get input dim
         input_dim = embedding_matrix.shape[0]
 
+        # Get kernel initializer
+        glorot_uniform_ini = GlorotUniform(self.random_seed)
+        he_uniform_ini = HeUniform(self.random_seed)
+        orthogonal_ini = Orthogonal(seed=self.random_seed)
         # Get model
         num_classes = len(self.list_classes)
         # Process
@@ -135,7 +140,7 @@ class ModelEmbeddingLstmGru(ModelKeras):
         GRU_UNITS = 120
         words = Input(shape=(self.max_sequence_length,))
         x = Embedding(input_dim, embedding_size, weights=[embedding_matrix], trainable=False)(words)
-        x = SpatialDropout1D(0.5)(x)
+        x = SpatialDropout1D(0.5, seed=self.random_seed)(x)
         # LSTM and GRU will default to CuDNNLSTM and CuDNNGRU if all conditions are met:
         # - activation = 'tanh'
         # - recurrent_activation = 'sigmoid'
@@ -145,9 +150,11 @@ class ModelEmbeddingLstmGru(ModelKeras):
         # - Inputs, if masked, are strictly right-padded
         # - reset_after = True (GRU only)
         # /!\ https://stackoverflow.com/questions/60468385/is-there-cudnnlstm-or-cudnngru-alternative-in-tensorflow-2-0
-        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True))(x)
+        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True, kernel_initializer=glorot_uniform_ini, 
+                               recurrent_initializer=orthogonal_ini))(x)
         x = BatchNormalization(momentum=0.9)(x)
-        x, state_h, state_c = Bidirectional(GRU(GRU_UNITS, return_sequences=True, return_state=True))(x)
+        x, state_h, state_c = Bidirectional(GRU(GRU_UNITS, return_sequences=True, return_state=True, 
+                                                kernel_initializer=glorot_uniform_ini, recurrent_initializer=orthogonal_ini))(x)
         x = BatchNormalization(momentum=0.9)(x)
         state_h = BatchNormalization(momentum=0.9)(state_h)
         state_c = BatchNormalization(momentum=0.9)(state_c)
@@ -159,13 +166,13 @@ class ModelEmbeddingLstmGru(ModelKeras):
         pools.append(GlobalMaxPooling1D()(x))
         x = Concatenate()(pools)
 
-        x = Dense(128, activation=None, kernel_initializer="he_uniform")(x)
+        x = Dense(128, activation=None, kernel_initializer=he_uniform_ini)(x)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
 
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        out = Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform')(x)
+        out = Dense(num_classes, activation=activation, kernel_initializer=glorot_uniform_ini)(x)
 
         # Compile model
         model = Model(inputs=words, outputs=[out])
@@ -203,6 +210,7 @@ class ModelEmbeddingLstmGru(ModelKeras):
         json_data['padding'] = self.padding
         json_data['truncating'] = self.truncating
         json_data['tokenizer_filters'] = self.tokenizer_filters
+        json_data['random_seed'] = self.random_seed
 
         # Save tokenizer if not None & level_save > LOW
         if (self.tokenizer is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
@@ -228,7 +236,7 @@ class ModelEmbeddingLstmGru(ModelKeras):
         model = super()._init_new_instance_from_configs(configs)
 
         # Try to read the following attributes from configs and, if absent, keep the current one
-        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
+        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters', 'random_seed']:
             setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
 
         # Return the new model

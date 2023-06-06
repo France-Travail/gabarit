@@ -43,6 +43,19 @@ def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
 
+def compare_keras_models(model1, model2):
+    ''' Checks if all weights of each keras model layer are the same
+    '''
+    for layer1, layer2 in zip(model1.layers, model2.layers):
+        if layer1.__class__.__name__!=layer2.__class__.__name__:
+            return False
+        l1 = layer1.get_weights()
+        l2 = layer2.get_weights()
+        if not all(np.array_equal(weights1, weights2) for weights1, weights2 in zip(l1, l2)):
+            return False
+    return True
+
+
 class ModelEmbeddingLstmGruTests(unittest.TestCase):
     '''Main class to test model_embedding_lstm_gru'''
 
@@ -291,7 +304,7 @@ class ModelEmbeddingLstmGruTests(unittest.TestCase):
         model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                          max_sequence_length=max_sequence_length, max_words=100,
                                          padding=padding, truncating=truncating, tokenizer_filters=tokenizer_filters,
-                                         embedding_name='fake_embedding.pkl')
+                                         embedding_name='fake_embedding.pkl', random_seed=42)
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5'))) -> no model trained
@@ -305,6 +318,7 @@ class ModelEmbeddingLstmGruTests(unittest.TestCase):
         self.assertEqual(configs['padding'], padding)
         self.assertEqual(configs['truncating'], truncating)
         self.assertEqual(configs['tokenizer_filters'], tokenizer_filters)
+        self.assertEqual(configs['random_seed'], 42)
         remove_dir(model_dir)
 
         # Nominal case - with tokenizer
@@ -313,7 +327,7 @@ class ModelEmbeddingLstmGruTests(unittest.TestCase):
         model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                          max_sequence_length=max_sequence_length, max_words=100,
                                          padding=padding, truncating=truncating, tokenizer_filters=tokenizer_filters,
-                                         embedding_name='fake_embedding.pkl')
+                                         embedding_name='fake_embedding.pkl', random_seed=42)
         model.tokenizer = tokenizer
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
@@ -328,6 +342,7 @@ class ModelEmbeddingLstmGruTests(unittest.TestCase):
         self.assertEqual(configs['padding'], padding)
         self.assertEqual(configs['truncating'], truncating)
         self.assertEqual(configs['tokenizer_filters'], tokenizer_filters)
+        self.assertEqual(configs['random_seed'], 42)
         remove_dir(model_dir)
 
         # Nominal case - with tokenizer, but level_save = 'LOW'
@@ -336,7 +351,7 @@ class ModelEmbeddingLstmGruTests(unittest.TestCase):
         model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                          max_sequence_length=max_sequence_length, max_words=100,
                                          padding=padding, truncating=truncating, tokenizer_filters=tokenizer_filters,
-                                         embedding_name='fake_embedding.pkl', level_save='LOW')
+                                         random_seed=42, embedding_name='fake_embedding.pkl', level_save='LOW')
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
         # self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'best.hdf5'))) -> no model trained
@@ -350,6 +365,7 @@ class ModelEmbeddingLstmGruTests(unittest.TestCase):
         self.assertEqual(configs['padding'], padding)
         self.assertEqual(configs['truncating'], truncating)
         self.assertEqual(configs['tokenizer_filters'], tokenizer_filters)
+        self.assertEqual(configs['random_seed'], 42)
         remove_dir(model_dir)
 
     def test07_model_embedding_lstm_gru_init_new_instance_from_configs(self):
@@ -367,7 +383,8 @@ class ModelEmbeddingLstmGruTests(unittest.TestCase):
         self.assertEqual(new_model.nb_fit, 0)
         self.assertFalse(new_model.trained)
         for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
-                          'patience', 'embedding_name', 'max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
+                          'patience', 'embedding_name', 'max_sequence_length', 'max_words', 'padding', 
+                          'random_seed', 'truncating', 'tokenizer_filters']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         for attribute in ['validation_split']:
             self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
@@ -395,6 +412,7 @@ class ModelEmbeddingLstmGruTests(unittest.TestCase):
         model.padding = 'post'
         model.truncating = 'pre'
         model.tokenizer_filters = 'coucou'
+        model.random_seed = 42
         model.save(json_data={'test': 8})
         configs = model.load_configs(model_dir=model_dir)
 
@@ -403,7 +421,8 @@ class ModelEmbeddingLstmGruTests(unittest.TestCase):
         self.assertEqual(new_model.nb_fit, 2)
         self.assertTrue(new_model.trained)
         for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
-                          'patience', 'embedding_name', 'max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
+                          'patience', 'embedding_name', 'max_sequence_length', 'max_words', 'padding', 
+                          'random_seed', 'truncating', 'tokenizer_filters']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         for attribute in ['validation_split']:
             self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))

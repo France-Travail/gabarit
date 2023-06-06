@@ -43,6 +43,19 @@ def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
 
+def compare_keras_models(model1, model2):
+    ''' Checks if all weights of each keras model layer are the same
+    '''
+    for layer1, layer2 in zip(model1.layers, model2.layers):
+        if layer1.__class__.__name__!=layer2.__class__.__name__:
+            return False
+        l1 = layer1.get_weights()
+        l2 = layer2.get_weights()
+        if not all(np.array_equal(weights1, weights2) for weights1, weights2 in zip(l1, l2)):
+            return False
+    return True
+
+
 class ModelTfidfDenseTests(unittest.TestCase):
     '''Main class to test model_tfidf_dense'''
 
@@ -257,7 +270,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         old_hdf5_path = os.path.join(model_dir, 'best.hdf5')
 
         # Nominal case with default_model_dir
-        model = ModelTfidfDense(model_dir=model_dir)
+        model = ModelTfidfDense(model_dir=model_dir, random_seed=42)
         model.list_classes = ['class_1', 'class_2']
         x_train = ['test titi toto', 'toto', 'titi test test toto']
         model._prepare_x_train(x_train)  # We force the creation of the tokenizer
@@ -277,7 +290,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         remove_dir(new_model.model_dir)
 
         # Nominal case with explicit paths
-        model = ModelTfidfDense(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model = ModelTfidfDense(model_dir=model_dir, embedding_name='fake_embedding.pkl', random_seed=42)
         model.list_classes = ['class_1', 'class_2']
         x_train = ['test titi toto', 'toto', 'titi test test toto']
         model._prepare_x_train(x_train)  # We force the creation of the tokenizer
@@ -317,7 +330,74 @@ class ModelTfidfDenseTests(unittest.TestCase):
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
+    def test09_model_lgbm_classifier_fit_with_seed(self):
+        '''Test random seed for {{package_name}}.models_training.models_tensorflow.model_tfidf_dense.ModelTfidfDense'''
 
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_1234567892')
+        remove_dir(model_dir2)
+
+         # Set vars
+        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
+        y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
+        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
+
+        # Mono-label same random_seed
+        model1 = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_mono)
+        model2 = ModelTfidfDense(model_dir=model_dir2, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_mono)
+        self.assertTrue(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label same random_seed
+        model1 = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelTfidfDense(model_dir=model_dir2, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_multi)
+        self.assertTrue(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Mono-label different random_seed
+        model1 = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_mono)
+        model2 = ModelTfidfDense(model_dir=model_dir2, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=41,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_mono)
+        self.assertFalse(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label different random_seed
+        model1 = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelTfidfDense(model_dir=model_dir2, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=41,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_multi)
+        self.assertFalse(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
 # Perform tests
 if __name__ == '__main__':
     # Start tests

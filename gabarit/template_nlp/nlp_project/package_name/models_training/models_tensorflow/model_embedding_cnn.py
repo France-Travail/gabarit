@@ -33,6 +33,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
+from tensorflow.keras.initializers import HeUniform, GlorotUniform
 from tensorflow.keras.layers import (ELU, AveragePooling1D, BatchNormalization, Conv1D, Dense,
                                      Dropout, Embedding, GlobalMaxPooling1D)
 
@@ -130,6 +131,10 @@ class ModelEmbeddingCnn(ModelKeras):
         # Get model
         num_classes = len(self.list_classes)
 
+        # Get kernel initializers
+        he_uniform_ini = HeUniform(self.random_seed)
+        glorot_uniform_ini = GlorotUniform(self.random_seed)
+
         # Process
         model = Sequential()
 
@@ -138,29 +143,29 @@ class ModelEmbeddingCnn(ModelKeras):
                             input_length=self.max_sequence_length,
                             trainable=False))
 
-        model.add(Conv1D(128, 3, activation=None, kernel_initializer='he_uniform'))
+        model.add(Conv1D(128, 3, activation=None, kernel_initializer=he_uniform_ini))
         model.add(BatchNormalization(momentum=0.9))
         model.add(ELU(alpha=1.0))
         model.add(AveragePooling1D(2))
 
-        model.add(Conv1D(128, 3, activation=None, kernel_initializer='he_uniform'))
+        model.add(Conv1D(128, 3, activation=None, kernel_initializer=he_uniform_ini))
         model.add(BatchNormalization(momentum=0.9))
         model.add(ELU(alpha=1.0))
         model.add(GlobalMaxPooling1D())
 
-        model.add(Dense(512, activation=None, kernel_initializer='he_uniform'))
+        model.add(Dense(512, activation=None, kernel_initializer=he_uniform_ini))
         model.add(BatchNormalization(momentum=0.9))
         model.add(ELU(alpha=1.0))
-        model.add(Dropout(0.5))
+        model.add(Dropout(0.5, seed=self.random_seed))
 
-        model.add(Dense(512, activation=None, kernel_initializer='he_uniform'))
+        model.add(Dense(512, activation=None, kernel_initializer=he_uniform_ini))
         model.add(BatchNormalization(momentum=0.9))
         model.add(ELU(alpha=1.0))
-        model.add(Dropout(0.5))
+        model.add(Dropout(0.5, seed=None if self.random_seed is None else self.random_seed + 1))
 
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        model.add(Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform'))
+        model.add(Dense(num_classes, activation=activation, kernel_initializer=glorot_uniform_ini))
 
         # Compile model
         lr = self.keras_params.get('learning_rate', 0.002)
@@ -198,6 +203,7 @@ class ModelEmbeddingCnn(ModelKeras):
         json_data['padding'] = self.padding
         json_data['truncating'] = self.truncating
         json_data['tokenizer_filters'] = self.tokenizer_filters
+        json_data['random_seed'] = self.random_seed
 
         # Save tokenizer if not None & level_save > LOW
         if (self.tokenizer is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
@@ -223,7 +229,7 @@ class ModelEmbeddingCnn(ModelKeras):
         model = super()._init_new_instance_from_configs(configs)
 
         # Try to read the following attributes from configs and, if absent, keep the current one
-        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
+        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters', 'random_seed']:
             setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
 
         # Return the new model

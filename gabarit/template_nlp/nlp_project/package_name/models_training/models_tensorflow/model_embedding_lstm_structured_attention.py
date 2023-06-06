@@ -40,6 +40,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
+from tensorflow.keras.initializers import HeUniform, GlorotUniform, Orthogonal
 from tensorflow.keras.layers import Lambda, Dense, Input, Embedding, LSTM, Bidirectional
 
 from ... import utils
@@ -157,12 +158,17 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
         # Get model
         num_classes = len(self.list_classes)
 
+        # Get kernel initializer
+        glorot_uniform_ini = GlorotUniform(self.random_seed)
+        orthogonal_ini = Orthogonal(seed=self.random_seed)
+
         # Process
         words = Input(shape=(self.max_sequence_length,))
         x = Embedding(input_dim, embedding_size, weights=[embedding_matrix], trainable=False)(words)
-        h = Bidirectional(LSTM(lstm_units, return_sequences=True))(x)
-        x = Dense(dense_size, activation='tanh')(h)  # tanh(W_{S1}*H^T) , H^T = x (LSTM output), dim = d_a*2u
-        a = Dense(attention_hops, activation=utils_deep_keras.softmax_axis)(x)  # softmax(W_{s2}*X) = A
+        h = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_initializer=glorot_uniform_ini, 
+                               recurrent_initializer=orthogonal_ini))(x)
+        x = Dense(dense_size, activation='tanh', kernel_initializer=glorot_uniform_ini)(h)  # tanh(W_{S1}*H^T) , H^T = x (LSTM output), dim = d_a*2u
+        a = Dense(attention_hops, activation=utils_deep_keras.softmax_axis, kernel_initializer=glorot_uniform_ini)(x)  # softmax(W_{s2}*X) = A
         at = tf.transpose(a, perm=[0, 2, 1], name="attention_layer")  # At, used in Kaushalshetty project, output dim = (r,n)
         # Trick to name the attention layer (does not work with TensorFlow layers)
         # https://github.com/keras-team/keras/issues/6194#issuecomment-416365112
@@ -172,7 +178,7 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
 
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        out = Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform')(x)
+        out = Dense(num_classes, activation=activation, kernel_initializer=glorot_uniform_ini)(x)
 
         # Compile model
         model = Model(inputs=words, outputs=[out])
@@ -313,6 +319,7 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
         json_data['truncating'] = self.truncating
         json_data['oov_token'] = self.oov_token
         json_data['tokenizer_filters'] = self.tokenizer_filters
+        json_data['random_seed'] = self.random_seed
 
         # Save tokenizer if not None & level_save > LOW
         if (self.tokenizer is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
@@ -338,7 +345,7 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
         model = super()._init_new_instance_from_configs(configs)
 
         # Try to read the following attributes from configs and, if absent, keep the current one
-        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'oov_token', 'tokenizer_filters']:
+        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'oov_token', 'tokenizer_filters', 'random_seed']:
             setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
 
         # Return the new model

@@ -309,9 +309,10 @@ class AttentionWithContext(Layer):
     '''
     def __init__(self, W_regularizer=None, u_regularizer=None, b_regularizer=None,
                  W_constraint=None, u_constraint=None, b_constraint=None, bias=True,
-                 return_attention=False, **kwargs):
+                 return_attention=False, initializer="glorot_uniform", **kwargs):
         self.return_attention = return_attention
         self.bias = bias
+        self.initializer = initializer
         super(AttentionWithContext, self).__init__(**kwargs)
 
     def get_config(self) -> Any:
@@ -328,13 +329,13 @@ class AttentionWithContext(Layer):
         input_shape_list = input_shape.as_list()
 
         self.W = self.add_weight(shape=((input_shape_list[-1], input_shape_list[-1])),
-                                 name='{}_W'.format(self.name))
+                                 name='{}_W'.format(self.name), initializer=self.initializer)
         if self.bias:
             self.b = self.add_weight(shape=(input_shape_list[-1],),
-                                     name='{}_b'.format(self.name))
+                                     name='{}_b'.format(self.name), initializer=self.initializer)
 
         self.u = self.add_weight(shape=(input_shape_list[-1],),
-                                 name='{}_u'.format(self.name))
+                                 name='{}_u'.format(self.name), initializer=self.initializer)
 
         super(AttentionWithContext, self).build(input_shape.as_list())
 

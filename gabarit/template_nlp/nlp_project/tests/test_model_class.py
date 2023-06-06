@@ -526,6 +526,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertTrue('dict_classes' in configs.keys())
         self.assertTrue('x_col' in configs.keys())
         self.assertTrue('y_col' in configs.keys())
+        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('multi_label' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())
