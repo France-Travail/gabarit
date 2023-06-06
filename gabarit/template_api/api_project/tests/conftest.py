@@ -34,7 +34,7 @@ We use it to :
 > We can fire thoses events by using TestClient as a context manager so we use two TestClient in
 > our tests : a test_base_client that does not load the model and test_complete_client that does
 > load the model thanks to a context manager. It allows us to test the behavior of our application
-> when a model is not loaded (which should not happend).
+> when a model is not loaded (which should not happen).
 
 """
 
