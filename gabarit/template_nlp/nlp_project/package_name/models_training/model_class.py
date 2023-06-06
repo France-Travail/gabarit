@@ -59,7 +59,8 @@ class ModelClass:
     # -> _is_gpu_activated (specific instruction to know if a gpu is used)
 
     def __init__(self, model_dir: Union[str, None] = None, model_name: Union[str, None] = None, x_col: Union[str, int, None] = None,
-                 y_col: Union[str, int, list, None] = None, level_save: str = 'HIGH', multi_label: bool = False, **kwargs) -> None:
+                 y_col: Union[str, int, list, None] = None, random_seed: Union[int, None] = None,
+                 level_save: str = 'HIGH', multi_label: bool = False, **kwargs) -> None:
         '''Initialization of the parent class.
 
         Kwargs:
@@ -68,6 +69,7 @@ class ModelClass:
             model_name (str): The name of the model
             x_col (str | int): Name of the columns used for the training - x
             y_col (str | int | list if multi-labels): Name of the model's target column(s) - y
+            random_seed (int): Seed to use for packages randomness
             level_save (str): Level of saving
                 LOW: stats + configurations + logger keras - /!\\ The model can't be reused /!\\ -
                 MEDIUM: LOW + hdf5 + pkl + plots
@@ -89,6 +91,9 @@ class ModelClass:
         # Names of the columns used
         self.x_col = x_col
         self.y_col = y_col
+
+        # Random seed
+        self.random_seed = random_seed
 
         # Model folder
         if model_dir is None:
@@ -734,6 +739,7 @@ class ModelClass:
             'dict_classes': self.dict_classes,
             'x_col': self.x_col,
             'y_col': self.y_col,
+            'random_seed': self.random_seed,
             'multi_label': self.multi_label,
             'level_save': self.level_save,
             'librairie': None,

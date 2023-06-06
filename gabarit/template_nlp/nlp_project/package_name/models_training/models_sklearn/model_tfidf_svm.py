@@ -65,6 +65,7 @@ class ModelTfidfSvm(ModelPipeline):
         self.tfidf = TfidfVectorizer(**tfidf_params)
         if svc_params is None:
             svc_params = {}
+        svc_params['random_state'] = self.random_seed
         self.svc = LinearSVC(**svc_params)
         self.multiclass_strategy = multiclass_strategy
 

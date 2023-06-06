@@ -692,6 +692,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue('dict_classes' in configs.keys())
         self.assertTrue('x_col' in configs.keys())
         self.assertTrue('y_col' in configs.keys())
+        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('multi_label' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())
@@ -728,6 +729,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue('dict_classes' in configs.keys())
         self.assertTrue('x_col' in configs.keys())
         self.assertTrue('y_col' in configs.keys())
+        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('multi_label' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())
@@ -795,7 +797,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(new_model.nb_fit, 0)
         self.assertFalse(new_model.trained)
         for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
-                          'patience', 'embedding_name']:
+                          'patience', 'embedding_name', 'random_seed']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         for attribute in ['validation_split']:
             self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
@@ -817,6 +819,7 @@ class ModelKerasTests(unittest.TestCase):
         model.validation_split = 0.3
         model.patience = 15
         model.embedding_name = 'coucou_embedding'
+        model.random_seed = 42
         model.keras_params = {'coucou':1, 'coucou2': 0.3, 'coucou3':'coucou4'}
         model.save(json_data={'test': 8})
         configs = model.load_configs(model_dir=model_dir)
@@ -826,7 +829,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(new_model.nb_fit, 2)
         self.assertTrue(new_model.trained)
         for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
-                          'patience', 'embedding_name']:
+                          'patience', 'embedding_name', 'random_seed']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         for attribute in ['validation_split']:
             self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))

@@ -399,6 +399,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertTrue('dict_classes' in configs.keys())
         self.assertTrue('x_col' in configs.keys())
         self.assertTrue('y_col' in configs.keys())
+        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('multi_label' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())
@@ -428,6 +429,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertTrue('dict_classes' in configs.keys())
         self.assertTrue('x_col' in configs.keys())
         self.assertTrue('y_col' in configs.keys())
+        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('multi_label' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())
@@ -489,7 +491,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         # Multi label False
         model = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy=None,
                              tfidf_params={'ngram_range': (2, 2), 'max_df': 0.9, 'min_df': 2},
-                             svc_params={'penalty': 'l1', 'C': 0.9})
+                             svc_params={'penalty': 'l1', 'C': 0.9}, random_seed=42)
         # Save model
         model.save(json_data={'test': 8})
 
@@ -501,9 +503,11 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 1)
         self.assertAlmostEqual(svm.C, 1.0)
         self.assertEqual(svm.penalty, 'l2')
+        self.assertEqual(new_model.random_seed, None)
         # First load the model configurations
         configs = ModelTfidfSvm.load_configs(model_dir=model_dir)
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'multiclass_strategy']:
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label',
+                          'level_save', 'multiclass_strategy', 'random_seed']:
             setattr(new_model, attribute, configs.get(attribute, getattr(new_model, attribute)))
         new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
         tfidf = new_model.tfidf
@@ -513,6 +517,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 2)
         self.assertAlmostEqual(svm.C, 0.9)
         self.assertEqual(svm.penalty, 'l1')
+        self.assertEqual(new_model.random_seed, 42)
         
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -520,7 +525,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         # Multi label True
         model = ModelTfidfSvm(model_dir=model_dir, multi_label=True, multiclass_strategy=None,
                              tfidf_params={'ngram_range': (2, 2), 'max_df': 0.9, 'min_df': 2},
-                             svc_params={'penalty': 'l1', 'C': 0.9})
+                             svc_params={'penalty': 'l1', 'C': 0.9}, random_seed=42)
         # Save model
         model.save(json_data={'test': 8})
 
@@ -532,9 +537,11 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 1)
         self.assertAlmostEqual(svm.C, 1.0)
         self.assertEqual(svm.penalty, 'l2')
+        self.assertEqual(new_model.random_seed, None)
         # First load the model configurations
         configs = ModelTfidfSvm.load_configs(model_dir=model_dir)
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'multiclass_strategy']:
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label',
+                          'random_seed', 'level_save', 'multiclass_strategy']:
             setattr(new_model, attribute, configs.get(attribute, getattr(new_model, attribute)))
         new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
         tfidf = new_model.tfidf
@@ -544,6 +551,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 2)
         self.assertAlmostEqual(svm.C, 0.9)
         self.assertEqual(svm.penalty, 'l1')
+        self.assertEqual(new_model.random_seed, 42)
         
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -560,6 +568,152 @@ class ModelTfidfSvmTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             model._load_standalone_files(sklearn_pipeline_path=model_dir)
         remove_dir(model_dir)
+
+
+    def test09_model_tfidf_svm_classifier_fit_with_seed(self):
+        '''Test random seed for {{package_name}}.models_training.models_sklearn.model_tfidf_svm.ModelTfidfSvm'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
+        remove_dir(model_dir2)
+
+        # Set vars
+        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
+        y_train_mono = np.array([0, 1, 0, 1, 2])
+        n_classes = 3
+        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0], 'test2': [1, 0, 0, 0, 0], 'test3': [0, 0, 0, 1, 0]})
+        cols = ['test1', 'test2', 'test3']
+
+        # Mono-label - no strategy - same random_seed
+        model1 = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy=None, random_seed=42)
+        model1.fit(x_train, y_train_mono)
+        model2 = ModelTfidfSvm(model_dir=model_dir2, multi_label=False, multiclass_strategy=None, random_seed=42)
+        model2.fit(x_train, y_train_mono)
+        self.assertEqual(model1.svc.get_params(),  model2.svc.get_params())
+        self.assertTrue(np.array_equal(model1.svc.coef_, model2.svc.coef_))
+        self.assertTrue(np.array_equal(model1.svc.intercept_, model2.svc.intercept_))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Mono-label - ovr strategy - same random_seed
+        model1 = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy='ovr', random_seed=42)
+        model1.fit(x_train, y_train_mono)
+        model2 = ModelTfidfSvm(model_dir=model_dir2, multi_label=False, multiclass_strategy='ovr', random_seed=42)
+        model2.fit(x_train, y_train_mono)
+        models1, models2 = model1.pipeline['svc'].estimators_, model2.pipeline['svc'].estimators_
+        self.assertEqual(model1.svc.get_params(),  model2.svc.get_params())
+        self.assertTrue(all(np.array_equal(svc1.coef_, svc2.coef_) for svc1, svc2 in zip(models1, models2)))
+        self.assertTrue(all(np.array_equal(svc1.intercept_, svc2.intercept_) for svc1, svc2 in zip(models1, models2)))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Mono-label - ovo strategy - same random_seed
+        model1 = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy='ovo', random_seed=42)
+        model1.fit(x_train, y_train_mono)
+        model2 = ModelTfidfSvm(model_dir=model_dir2, multi_label=False, multiclass_strategy='ovo', random_seed=42)
+        model2.fit(x_train, y_train_mono)
+        models1, models2 = model1.pipeline['svc'].estimators_, model2.pipeline['svc'].estimators_
+        self.assertEqual(model1.svc.get_params(),  model2.svc.get_params())
+        self.assertTrue(all(np.array_equal(svc1.coef_, svc2.coef_) for svc1, svc2 in zip(models1, models2)))
+        self.assertTrue(all(np.array_equal(svc1.intercept_, svc2.intercept_) for svc1, svc2 in zip(models1, models2)))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label - no strategy - same random_seed
+        model1 = ModelTfidfSvm(model_dir=model_dir, multi_label=True, multiclass_strategy=None, random_seed=42)
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelTfidfSvm(model_dir=model_dir2, multi_label=True, multiclass_strategy=None, random_seed=42)
+        model2.fit(x_train, y_train_multi)
+        models1, models2 = model1.pipeline['svc'].estimators_, model2.pipeline['svc'].estimators_
+        self.assertEqual(model1.svc.get_params(),  model2.svc.get_params())
+        self.assertTrue(all(np.array_equal(svc1.coef_, svc2.coef_) for svc1, svc2 in zip(models1, models2)))
+        self.assertTrue(all(np.array_equal(svc1.intercept_, svc2.intercept_) for svc1, svc2 in zip(models1, models2)))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label - ovr strategy - same random_seed
+        model1 = ModelTfidfSvm(model_dir=model_dir, multi_label=True, multiclass_strategy='ovr', random_seed=42)
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelTfidfSvm(model_dir=model_dir2, multi_label=True, multiclass_strategy='ovr', random_seed=42)
+        model2.fit(x_train, y_train_multi)
+        models1, models2 = model1.pipeline['svc'].estimators_, model2.pipeline['svc'].estimators_
+        self.assertEqual(model1.svc.get_params(),  model2.svc.get_params())
+        self.assertTrue(all(np.array_equal(svc1.coef_, svc2.coef_) for svc1, svc2 in zip(models1, models2)))
+        self.assertTrue(all(np.array_equal(svc1.intercept_, svc2.intercept_) for svc1, svc2 in zip(models1, models2)))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label - ovo strategy - same random_seed
+        model1 = ModelTfidfSvm(model_dir=model_dir, multi_label=True, multiclass_strategy='ovo', random_seed=42)
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelTfidfSvm(model_dir=model_dir2, multi_label=True, multiclass_strategy='ovo', random_seed=42)
+        model2.fit(x_train, y_train_multi)
+        models1, models2 = model1.pipeline['svc'].estimators_, model2.pipeline['svc'].estimators_
+        self.assertEqual(model1.svc.get_params(),  model2.svc.get_params())
+        self.assertTrue(all(np.array_equal(svc1.coef_, svc2.coef_) for svc1, svc2 in zip(models1, models2)))
+        self.assertTrue(all(np.array_equal(svc1.intercept_, svc2.intercept_) for svc1, svc2 in zip(models1, models2)))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Mono-label - no strategy - different random_seed
+        model1 = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy=None, random_seed=42)
+        model1.fit(x_train, y_train_mono)
+        model2 = ModelTfidfSvm(model_dir=model_dir2, multi_label=False, multiclass_strategy=None, random_seed=41)
+        model2.fit(x_train, y_train_mono)
+        self.assertNotEqual(model1.svc.get_params(),  model2.svc.get_params())
+        self.assertFalse(np.array_equal(model1.svc.coef_, model2.svc.coef_))
+        self.assertFalse(np.array_equal(model1.svc.intercept_, model2.svc.intercept_))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Mono-label - ovr strategy - different random_seed
+        model1 = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy='ovr', random_seed=42)
+        model1.fit(x_train, y_train_mono)
+        model2 = ModelTfidfSvm(model_dir=model_dir2, multi_label=False, multiclass_strategy='ovr', random_seed=41)
+        model2.fit(x_train, y_train_mono)
+        models1, models2 = model1.pipeline['svc'].estimators_, model2.pipeline['svc'].estimators_
+        self.assertNotEqual(model1.svc.get_params(),  model2.svc.get_params())
+        self.assertFalse(all(np.array_equal(svc1.coef_, svc2.coef_) for svc1, svc2 in zip(models1, models2)))
+        self.assertFalse(all(np.array_equal(svc1.intercept_, svc2.intercept_) for svc1, svc2 in zip(models1, models2)))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Mono-label - ovo strategy - different random_seed
+        model1 = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy='ovo', random_seed=42)
+        model1.fit(x_train, y_train_mono)
+        model2 = ModelTfidfSvm(model_dir=model_dir2, multi_label=False, multiclass_strategy='ovo', random_seed=41)
+        model2.fit(x_train, y_train_mono)
+        models1, models2 = model1.pipeline['svc'].estimators_, model2.pipeline['svc'].estimators_
+        self.assertNotEqual(model1.svc.get_params(),  model2.svc.get_params())
+        self.assertFalse(all(np.array_equal(svc1.coef_, svc2.coef_) for svc1, svc2 in zip(models1, models2)))
+        self.assertFalse(all(np.array_equal(svc1.intercept_, svc2.intercept_) for svc1, svc2 in zip(models1, models2)))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label - no strategy - different random_seed
+        model1 = ModelTfidfSvm(model_dir=model_dir, multi_label=True, multiclass_strategy=None, random_seed=42)
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelTfidfSvm(model_dir=model_dir2, multi_label=True, multiclass_strategy=None, random_seed=41)
+        model2.fit(x_train, y_train_multi)
+        models1, models2 = model1.pipeline['svc'].estimators_, model2.pipeline['svc'].estimators_
+        self.assertNotEqual(model1.svc.get_params(),  model2.svc.get_params())
+        self.assertFalse(all(np.array_equal(svc1.coef_, svc2.coef_) for svc1, svc2 in zip(models1, models2)))
+        self.assertFalse(all(np.array_equal(svc1.intercept_, svc2.intercept_) for svc1, svc2 in zip(models1, models2)))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label - ovr strategy - different random_seed
+        model1 = ModelTfidfSvm(model_dir=model_dir, multi_label=True, multiclass_strategy='ovr', random_seed=42)
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelTfidfSvm(model_dir=model_dir2, multi_label=True, multiclass_strategy='ovr', random_seed=41)
+        model2.fit(x_train, y_train_multi)
+        models1, models2 = model1.pipeline['svc'].estimators_, model2.pipeline['svc'].estimators_
+        self.assertNotEqual(model1.svc.get_params(),  model2.svc.get_params())
+        self.assertFalse(all(np.array_equal(svc1.coef_, svc2.coef_) for svc1, svc2 in zip(models1, models2)))
+        self.assertFalse(all(np.array_equal(svc1.intercept_, svc2.intercept_) for svc1, svc2 in zip(models1, models2)))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label - ovo strategy - different random_seed
+        model1 = ModelTfidfSvm(model_dir=model_dir, multi_label=True, multiclass_strategy='ovo', random_seed=42)
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelTfidfSvm(model_dir=model_dir2, multi_label=True, multiclass_strategy='ovo', random_seed=41)
+        model2.fit(x_train, y_train_multi)
+        models1, models2 = model1.pipeline['svc'].estimators_, model2.pipeline['svc'].estimators_
+        self.assertNotEqual(model1.svc.get_params(),  model2.svc.get_params())
+        self.assertFalse(all(np.array_equal(svc1.coef_, svc2.coef_) for svc1, svc2 in zip(models1, models2)))
+        self.assertFalse(all(np.array_equal(svc1.intercept_, svc2.intercept_) for svc1, svc2 in zip(models1, models2)))
+        remove_dir(model_dir), remove_dir(model_dir2)
 
 
 # Perform tests

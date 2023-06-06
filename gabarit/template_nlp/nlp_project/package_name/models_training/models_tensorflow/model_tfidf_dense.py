@@ -31,6 +31,7 @@ from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Model, Sequential
 from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout
+from tensorflow.keras.initializers import HeUniform, GlorotUniform, Orthogonal
 
 from . import utils_deep_keras
 from .model_keras import ModelKeras
@@ -99,27 +100,31 @@ class ModelTfidfDense(ModelKeras):
         input_dim = len(self.tfidf.get_feature_names())
         num_classes = len(self.list_classes)
 
+        # Get kernel initializer
+        glorot_uniform_ini = GlorotUniform(self.random_seed)
+        he_uniform_ini = HeUniform(self.random_seed)
+
         # Process
         model = Sequential()
 
-        model.add(Dense(128, activation=None, kernel_initializer='he_uniform', input_shape=(input_dim,)))
+        model.add(Dense(128, activation=None, kernel_initializer=he_uniform_ini, input_shape=(input_dim,)))
         model.add(BatchNormalization(momentum=0.9))
         model.add(ELU(alpha=1.0))
-        model.add(Dropout(0.5))
+        model.add(Dropout(0.5, seed=self.random_seed))
 
-        model.add(Dense(64, activation=None, kernel_initializer='he_uniform'))
+        model.add(Dense(64, activation=None, kernel_initializer=he_uniform_ini))
         model.add(BatchNormalization(momentum=0.9))
         model.add(ELU(alpha=1.0))
-        model.add(Dropout(0.5))
+        model.add(Dropout(0.5, seed=self.random_seed + 1 if self.random_seed is not None else None))
 
-        model.add(Dense(32, activation=None, kernel_initializer='he_uniform'))
+        model.add(Dense(32, activation=None, kernel_initializer=he_uniform_ini))
         model.add(BatchNormalization(momentum=0.9))
         model.add(ELU(alpha=1.0))
-        model.add(Dropout(0.5))
+        model.add(Dropout(0.5, seed=self.random_seed + 2 if self.random_seed is not None else None))
 
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        model.add(Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform'))
+        model.add(Dense(num_classes, activation=activation, kernel_initializer=glorot_uniform_ini))
 
         # Compile model
         lr = self.keras_params.get('learning_rate', 0.002)
@@ -150,6 +155,9 @@ class ModelTfidfDense(ModelKeras):
         # Save configuration JSON
         if json_data is None:
             json_data = {}
+
+        # Add specific params
+        json_data['random_seed'] = self.random_seed
 
         # Add tfidf params
         confs = self.tfidf.get_params()

@@ -38,6 +38,8 @@ import os
 import uuid
 import json
 import logging
+import torch
+import math
 import numpy as np
 import pandas as pd
 import pkg_resources
@@ -345,6 +347,33 @@ def find_folder_path(folder_name: str, base_folder: Union[str, None] = None) -> 
         if not os.path.exists(folder_path):
             raise FileNotFoundError(f"Can't find folder {folder_path} (considered as a path)")
     return folder_path
+
+
+def init_kaiming_uniform_generator(weight, generator):
+    with torch.random.fork_rng():
+        # Use specific generator
+        torch.random.set_rng_state(generator.get_state())
+        
+        # Initialise with kaiming_uniform_
+        torch.nn.init.kaiming_uniform_(weight, a=math.sqrt(5))
+
+
+def init_normal_generator(weight, generator):
+    with torch.random.fork_rng():
+        # Use specific generator
+        torch.random.set_rng_state(generator.get_state())
+        
+        # Initialise with normal_
+        torch.nn.init.normal_(weight)
+
+
+def init_uniform_generator(bias, bound, generator):
+    with torch.random.fork_rng():
+        # Use specific generator
+        torch.random.set_rng_state(generator.get_state())
+        
+        # Initialise with uniform_
+        torch.nn.init.uniform_(bias, -bound, bound)
 
 
 # JSON encoder to manage numpy objects

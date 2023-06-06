@@ -52,7 +52,8 @@ sns.set(style="darkgrid")
 
 class RandomStateDataGenerator(Sequence):
     '''Custom data generator to control batch randomness with random_state'''
-    def __init__(self, x_train: np.ndarray, y_train: np.ndarray, batch_size: int, random_state: np.random.RandomState, shuffle_batches: bool):
+    def __init__(self, x_train: np.ndarray, y_train: np.ndarray, batch_size: int,
+                  random_state: np.random.RandomState, shuffle_batches: bool):
         '''Initialization of the class
 
         Args:
@@ -142,7 +143,8 @@ class ModelKeras(ModelClass):
         # Keras custom objects : we get the ones specified in utils_deep_keras
         self.custom_objects = utils_deep_keras.custom_objects
 
-    def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, shuffle_batches: bool = True, **kwargs) -> None:
+    def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True,
+            shuffle_batches: bool = True, **kwargs) -> None:
         '''Fits the model
 
         Args:
@@ -268,7 +270,8 @@ class ModelKeras(ModelClass):
             validation_data = (x_valid, y_valid)
 
         else:
-            x_train, x_valid,  y_train, y_valid = train_test_split(x_train, y_train, test_size=self.validation_split, random_state=self.random_seed)
+            x_train, x_valid,  y_train, y_valid = train_test_split(x_train, y_train, test_size=self.validation_split, 
+                                                                   random_state=self.random_seed)
             validation_data = (x_valid, y_valid)
 
         if validation_data is None:
@@ -287,6 +290,7 @@ class ModelKeras(ModelClass):
         random_state = np.random.RandomState(self.random_seed)
         data_train_generator = RandomStateDataGenerator(x_train, y_train, self.batch_size, random_state, shuffle_batches)
         data_val_generator = RandomStateDataGenerator(x_valid, y_valid, self.batch_size, random_state, shuffle_batches)
+        
         # Fit
         # We use a try...except in order to save the model if an error arises
         # after more than a minute into training

@@ -23,6 +23,7 @@
 import os
 import time
 import json
+import random
 import ntpath
 import shutil
 import logging
@@ -32,13 +33,15 @@ import pandas as pd
 import dill as pickle
 import seaborn as sns
 import matplotlib.pyplot as plt
+from sklearn.utils import shuffle
+from sklearn.model_selection import train_test_split
 from typing import Optional, no_type_check, Union, Tuple, Callable, Any
 
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras.utils import plot_model
-from tensorflow.keras.models import load_model as load_model_keras
+from tensorflow.keras.utils import plot_model, Sequence
 from tensorflow.keras.preprocessing.sequence import pad_sequences
+from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.callbacks import (CSVLogger, EarlyStopping, ModelCheckpoint,
                                         TerminateOnNaN, LearningRateScheduler)
 
@@ -49,6 +52,44 @@ from .. import utils_models
 
 sns.set(style="darkgrid")
 
+class RandomStateDataGenerator(Sequence):
+    '''Custom data generator to control batch randomness with random_state'''
+    def __init__(self, x_train: np.ndarray, y_train: np.ndarray, batch_size: int,
+                  random_state: np.random.RandomState, shuffle_batches: bool):
+        '''Initialization of the class
+        Args:
+            x_train (ndarray): training features
+            y_train (ndarray): training outputs
+            batch_size (int): Batch size
+            random_state (np.random.RandomState): RandomState to control shuffle randomness
+            shuffle_batches (bool): Shuffle batches between epochs
+        '''
+        self.x = x_train
+        self.y = y_train
+        self.batch_size = batch_size
+        self.random_state = random_state
+        self.shuffle_batches = shuffle_batches
+        if self.shuffle_batches:
+            self.indices = shuffle(np.arange(len(self.x)), random_state=self.random_state)
+        else:
+            self.indices = np.arange(len(self.x))
+
+
+    def __len__(self):
+        return int(np.ceil(len(self.x) / self.batch_size))
+    
+
+    def __getitem__(self, index):
+        batch_indices = self.indices[index * self.batch_size:(index + 1) * self.batch_size]
+        batch_x = self.x[batch_indices]
+        batch_y = self.y[batch_indices]
+        return np.array(batch_x), np.array(batch_y)
+    
+    
+    def on_epoch_end(self):
+        if self.shuffle_batches: 
+            self.indices = shuffle(np.arange(len(self.x)), random_state=self.random_state)
+            
 
 class ModelKeras(ModelClass):
     '''Generic model for Keras NN'''
@@ -114,7 +155,8 @@ class ModelKeras(ModelClass):
         # Keras custom objects : we get the ones specified in utils_deep_keras
         self.custom_objects = utils_deep_keras.custom_objects
 
-    def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:
+    def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True,
+            shuffle_batches: bool = True, **kwargs) -> None:
         '''Fits the model
 
         Args:
@@ -133,7 +175,8 @@ class ModelKeras(ModelClass):
         ##############################################
         # Manage retrain
         ##############################################
-
+        # tf.keras.utils.set_random_seed(self.random_seed)
+        # random.seed(self.random_seed)
         # If a model has already been fitted, we make a new folder in order not to overwrite the existing one !
         # And we save the old conf
         if self.trained:
@@ -213,7 +256,8 @@ class ModelKeras(ModelClass):
         # It is advised as validation_split from keras does not shufle the data
         # Hence we might have classes in the validation data that we never met in the training data
         if with_shuffle:
-            p = np.random.permutation(len(x_train))
+            rng = np.random.RandomState(self.random_seed)
+            p = rng.permutation(len(x_train))
             x_train = np.array(x_train)[p]
             y_train_dummies = np.array(y_train_dummies)[p]
         # Else still transform to numpy array
@@ -232,6 +276,11 @@ class ModelKeras(ModelClass):
         if y_valid is not None:
             x_valid = self._prepare_x_test(x_valid)
             validation_data = (x_valid, y_valid_dummies)
+        else:
+            x_train, x_valid,  y_train_dummies, y_valid_dummies = train_test_split(x_train, y_train_dummies, 
+                                                                                   test_size=self.validation_split,
+                                                                                   random_state=self.random_seed)
+            validation_data = (x_valid, y_valid_dummies)
 
         if validation_data is None:
             self.logger.warning(f"Warning, no validation set. The training set will be splitted (validation fraction = {self.validation_split})")
@@ -246,20 +295,23 @@ class ModelKeras(ModelClass):
         # Get callbacks (early stopping & checkpoint)
         callbacks = self._get_callbacks()
 
+        # Create data generator
+        random_state = np.random.RandomState(self.random_seed)
+        data_train_generator = RandomStateDataGenerator(x_train, y_train_dummies, self.batch_size, random_state, shuffle_batches)
+        data_val_generator = RandomStateDataGenerator(x_valid, y_valid_dummies, self.batch_size, random_state, shuffle_batches)
+
         # Fit
         # We use a try...except in order to save the model if an error arises
         # after more than a minute into training
         start_time = time.time()
         try:
             fit_history = self.model.fit(  # type: ignore
-                x_train,
-                y_train_dummies,
-                batch_size=self.batch_size,
+                data_train_generator,
                 epochs=self.epochs,
-                validation_split=self.validation_split if validation_data is None else None,
-                validation_data=validation_data,
+                validation_data=data_val_generator,
                 callbacks=callbacks,
                 verbose=1,
+                shuffle=False
             )
         except (RuntimeError, SystemError, SystemExit, EnvironmentError, KeyboardInterrupt, tf.errors.ResourceExhaustedError, tf.errors.InternalError,
                 tf.errors.UnavailableError, tf.errors.UnimplementedError, tf.errors.UnknownError, Exception) as e:
@@ -622,6 +674,8 @@ class ModelKeras(ModelClass):
         json_data['patience'] = self.patience
         json_data['embedding_name'] = self.embedding_name
         json_data['keras_params'] = self.keras_params
+        json_data['random_seed'] = self.random_seed
+
         if self.model is not None:
             json_data['keras_model'] = json.loads(self.model.to_json())
         else:
@@ -688,7 +742,7 @@ class ModelKeras(ModelClass):
 
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['batch_size', 'epochs', 'validation_split', 'patience',
-                          'embedding_name', 'keras_params']:
+                          'embedding_name', 'keras_params', 'random_seed']:
             setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
 
         # Return the new model

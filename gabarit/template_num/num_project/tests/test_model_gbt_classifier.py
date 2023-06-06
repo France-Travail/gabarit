@@ -36,6 +36,7 @@ logging.disable(logging.CRITICAL)
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
+    
 
 def compare_trees(tree1, tree2):
     '''Checks if two DecisionTreeClassifiers are equal
@@ -744,7 +745,6 @@ class ModelGBTClassifierTests(unittest.TestCase):
         self.assertEqual(model1.gbt.get_params(),  model2.gbt.get_params())
         self.assertTrue(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(models1.flatten(), models2.flatten()))) 
         remove_dir(model_dir), remove_dir(model_dir2)
-
 
         # Classification - Mono-label - Mono-Class with different random_seed
         model1 = ModelGBTClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)

@@ -699,59 +699,74 @@ class ModelLGBMClassifierTests(unittest.TestCase):
         y_col_multi = ['y1', 'y2', 'y3']
 
         # Classification - Mono-label - Mono-Class with same random_seed
-        model1 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
+        model1 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42,
+                                      lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
         model1.fit(x_train, y_train_mono_2)
-        model2 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
+        model2 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42,
+                                      lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
         model2.fit(x_train, y_train_mono_2)
+        print(model1.lgbm.booster_.trees_to_dataframe())
         self.assertEqual(model1.lgbm.get_params(),  model2.lgbm.get_params())
         self.assertTrue(model1.lgbm.booster_.trees_to_dataframe().equals(model2.lgbm.booster_.trees_to_dataframe()))
         remove_dir(model_dir), remove_dir(model_dir2)
 
         # Classification - Mono-label - Multi-Class with same random_seed
-        model1 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
+        model1 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42,
+                                      lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
         model1.fit(x_train, y_train_mono_3)
-        model2 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
+        model2 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42,
+                                      lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
         model2.fit(x_train, y_train_mono_3)
         self.assertEqual(model1.lgbm.get_params(),  model2.lgbm.get_params())
         self.assertTrue(model1.lgbm.booster_.trees_to_dataframe().equals(model2.lgbm.booster_.trees_to_dataframe()))
         remove_dir(model_dir), remove_dir(model_dir2)
 
         # Classification - Multi-label - Multi-Class with same random_seed
-        model1 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
+        model1 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True,
+                                      lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
         model1.fit(x_train, y_train_multi)
-        model2 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
+        model2 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True,
+                                      lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
         model2.fit(x_train, y_train_multi)
         models1, models2 = model1.pipeline['lgbm'].estimators_, model2.pipeline['lgbm'].estimators_
         self.assertTrue(all(np.array_equal(lgbm1.get_params(), lgbm2.get_params()) for lgbm1, lgbm2 in zip(models1, models2)))
-        self.assertTrue(all(lgbm1.booster_.trees_to_dataframe().equals(lgbm2.booster_.trees_to_dataframe()) for lgbm1, lgbm2 in zip(models1, models2)))
+        self.assertTrue(all(lgbm1.booster_.trees_to_dataframe().equals(lgbm2.booster_.trees_to_dataframe())
+                            for lgbm1, lgbm2 in zip(models1, models2)))
         remove_dir(model_dir), remove_dir(model_dir2)
 
         # Classification - Mono-label - Mono-Class with different random_seed
-        model1 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
+        model1 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42,
+                                      lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
         model1.fit(x_train, y_train_mono_2)
-        model2 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
+        model2 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41,
+                                      lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
         model2.fit(x_train, y_train_mono_2)
         self.assertNotEqual(model1.lgbm.get_params(),  model2.lgbm.get_params())
         self.assertFalse(model1.lgbm.booster_.trees_to_dataframe().equals(model2.lgbm.booster_.trees_to_dataframe()))
         remove_dir(model_dir), remove_dir(model_dir2)
 
         # Classification - Mono-label - Multi-Class with different random_seed
-        model1 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
+        model1 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42,
+                                      lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
         model1.fit(x_train, y_train_mono_3)
-        model2 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
+        model2 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41,
+                                      lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
         model2.fit(x_train, y_train_mono_3)
         self.assertNotEqual(model1.lgbm.get_params(),  model2.lgbm.get_params())
         self.assertFalse(model1.lgbm.booster_.trees_to_dataframe().equals(model2.lgbm.booster_.trees_to_dataframe()))
         remove_dir(model_dir), remove_dir(model_dir2)
 
         # Classification - Multi-label - Multi-Class with different random_seed
-        model1 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
+        model1 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True,
+                                      lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
         model1.fit(x_train, y_train_multi)
-        model2 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=41, multi_label=True, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
+        model2 = ModelLGBMClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=41, multi_label=True,
+                                      lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
         model2.fit(x_train, y_train_multi)
         models1, models2 = model1.pipeline['lgbm'].estimators_, model2.pipeline['lgbm'].estimators_
         self.assertFalse(all(np.array_equal(lgbm1.get_params(), lgbm2.get_params()) for lgbm1, lgbm2 in zip(models1, models2)))
-        self.assertFalse(all(lgbm1.booster_.trees_to_dataframe().equals(lgbm2.booster_.trees_to_dataframe()) for lgbm1, lgbm2 in zip(models1, models2)))
+        self.assertFalse(all(lgbm1.booster_.trees_to_dataframe().equals(lgbm2.booster_.trees_to_dataframe())
+                            for lgbm1, lgbm2 in zip(models1, models2)))
         remove_dir(model_dir), remove_dir(model_dir2)
 
 

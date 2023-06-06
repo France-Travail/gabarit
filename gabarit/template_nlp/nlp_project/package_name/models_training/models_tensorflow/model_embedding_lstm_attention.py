@@ -34,8 +34,10 @@ import numpy as np
 import seaborn as sns
 from typing import Union, Any, List, Callable
 
+import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.initializers import GlorotUniform, Orthogonal
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.layers import (Dense, Input, Embedding, GlobalMaxPooling1D,
@@ -136,6 +138,11 @@ class ModelEmbeddingLstmAttention(ModelKeras):
 
         # Get model
         num_classes = len(self.list_classes)
+
+        # Get kernel initializer
+        glorot_uniform_ini = GlorotUniform(seed=self.random_seed)
+        orthogonal_ini = Orthogonal(seed=self.random_seed)
+
         # Process
         LSTM_UNITS = 100
         words = Input(shape=(self.max_sequence_length,))
@@ -144,7 +151,7 @@ class ModelEmbeddingLstmAttention(ModelKeras):
         # x = Embedding(*embedding_matrix.shape, weights=[embedding_matrix], trainable=False)(words)
         x = Embedding(input_dim, embedding_size, weights=[embedding_matrix], trainable=False)(words)
         x = BatchNormalization(momentum=0.9)(x)
-        x = SpatialDropout1D(0.5)(x)
+        x = SpatialDropout1D(0.5, seed=self.random_seed)(x)
         # LSTM and GRU will default to CuDNNLSTM and CuDNNGRU if all conditions are met:
         # - activation = 'tanh'
         # - recurrent_activation = 'sigmoid'
@@ -154,17 +161,19 @@ class ModelEmbeddingLstmAttention(ModelKeras):
         # - Inputs, if masked, are strictly right-padded
         # - reset_after = True (GRU only)
         # /!\ https://stackoverflow.com/questions/60468385/is-there-cudnnlstm-or-cudnngru-alternative-in-tensorflow-2-0
-        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True))(x)  # returns a sequence of vectors of dimension 32
-        x = Bidirectional(GRU(LSTM_UNITS, return_sequences=True))(x)  # returns a sequence of vectors of dimension 32
+        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True, kernel_initializer=glorot_uniform_ini, 
+                               recurrent_initializer=orthogonal_ini))(x)  # returns a sequence of vectors of dimension 32
+        x = Bidirectional(GRU(LSTM_UNITS, return_sequences=True, kernel_initializer=glorot_uniform_ini, 
+                               recurrent_initializer=orthogonal_ini))(x)  # returns a sequence of vectors of dimension 32
 
-        att = AttentionWithContext()(x)
+        att = AttentionWithContext(initializer=glorot_uniform_ini)(x)
         avg_pool1 = GlobalAveragePooling1D()(x)
         max_pool1 = GlobalMaxPooling1D()(x)
 
         x = concatenate([att, avg_pool1, max_pool1])
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        out = Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform')(x)
+        out = Dense(num_classes, activation=activation, kernel_initializer=glorot_uniform_ini)(x)
 
         # Compile model
         model = Model(inputs=words, outputs=[out])
@@ -203,6 +212,7 @@ class ModelEmbeddingLstmAttention(ModelKeras):
         json_data['padding'] = self.padding
         json_data['truncating'] = self.truncating
         json_data['tokenizer_filters'] = self.tokenizer_filters
+        json_data['random_seed'] = self.random_seed
 
         # Save tokenizer if not None & level_save > LOW
         if (self.tokenizer is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
@@ -228,7 +238,7 @@ class ModelEmbeddingLstmAttention(ModelKeras):
         model = super()._init_new_instance_from_configs(configs)
 
         # Try to read the following attributes from configs and, if absent, keep the current one
-        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
+        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters', 'random_seed']:
             setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
 
         # Return the new model
