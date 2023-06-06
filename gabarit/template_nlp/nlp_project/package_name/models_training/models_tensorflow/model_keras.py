@@ -77,7 +77,7 @@ class ModelKeras(ModelClass):
                 Only used if no input validation set when fitting
             patience (int): Early stopping patience
             embedding_name (str) : The name of the embedding matrix to use
-            keras_params (dict): Parameters used by keras models.
+            keras_params (dict): Parameters used by Keras models.
                 e.g. learning_rate, nb_lstm_units, etc...
                 The purpose of this dictionary is for the user to use it as they wants in the _get_model function
                 This parameter was initially added in order to do an hyperparameters search
@@ -313,13 +313,14 @@ class ModelKeras(ModelClass):
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict(self, x_test, return_proba: bool = False, **kwargs) -> np.ndarray:
+    def predict(self, x_test, return_proba: bool = False, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Predictions on test set
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Kwargs:
             return_proba (bool): If the function should return the probabilities instead of the classes
+            alternative_version (bool): If an alternative predict version must be used. Should be faster with low nb of inputs.
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
@@ -327,7 +328,7 @@ class ModelKeras(ModelClass):
         x_test = pd.Series(x_test)
 
         # Predict
-        predicted_proba = self.predict_proba(x_test)
+        predicted_proba = self.predict_proba(x_test, alternative_version=alternative_version)
 
         # We return the probabilities if wanted
         if return_proba:
@@ -338,40 +339,46 @@ class ModelKeras(ModelClass):
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict_proba(self, x_test, experimental_version: bool = False, **kwargs) -> np.ndarray:
+    def predict_proba(self, x_test, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Predicts probabilities on the test dataset
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
         Kwargs:
-            experimental_version (bool): If an experimental (but faster) version must be used
+            alternative_version (bool): If an alternative predict version must be used. Should be faster with low nb of inputs.
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
         # Prepare input
         x_test = self._prepare_x_test(x_test)
         # Process
-        if experimental_version:
-            return self.experimental_predict_proba(x_test)
+        if alternative_version:
+            return self._alternative_predict_proba(x_test)
         else:
             return self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
     @utils.trained_needed
-    def experimental_predict_proba(self, x_test, **kwargs) -> np.ndarray:
-        '''Predicts probabilities on the test dataset - Experimental function
-        Preprocessings must be done before (in predict_proba)
-        Here we only do the prediction and return the result
+    def _alternative_predict_proba(self, x_test, **kwargs) -> np.ndarray:
+        '''Predicts probabilities on the test dataset - Alternative version
+        Should be faster with low nb of inputs.
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        @tf.function
-        def serve(x):
-            return self.model(x, training=False)
+        return self._serve(x_test).numpy()
 
-        return serve(x_test).numpy()
+    @tf.function
+    def _serve(self, x: np.ndarray):
+        '''Improves predict function using tf.function (cf. https://www.tensorflow.org/guide/function)
+
+        Args:
+            x (np.ndarray): input data
+        Returns:
+            tf.tensor: model's output
+        '''
+        return self.model(x, training=False)
 
     def _prepare_x_train(self, x_train) -> np.ndarray:
         '''Prepares the input data for the model
@@ -576,7 +583,7 @@ class ModelKeras(ModelClass):
                 plt.xlabel('Epoch')
                 plt.legend(['Train', 'Validation'], loc='upper left')
                 # Save
-                filename == f"{filename}.jpeg"
+                filename = f"{filename}.jpeg"
                 plt.savefig(os.path.join(plots_path, filename))
 
                 # Close figures

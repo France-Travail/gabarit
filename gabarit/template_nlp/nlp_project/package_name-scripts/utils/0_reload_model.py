@@ -64,7 +64,7 @@ def main(model_dir: str, config_file: str = 'configurations.json',
     Kwargs:
         config_file (str): Name of the configuration file
         sklearn_pipeline_file (str): Standalone sklearn pipeline file name (pipeline models)
-        weights_file (str): Neural Network weights file name (keras models)
+        weights_file (str): Neural Network weights file name (Keras models)
         tokenizer_file (str): Tokenizer file name (models with embeddings)
         tfidf_file (str): TFIDF file name (models with tfidf)
         hf_model_dir (str): HuggingFace model folder
@@ -171,7 +171,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model_dir', required=True, help="Name of the model to reload (not a path, just the directory name)")
     parser.add_argument('-c', '--config_file', default='configurations.json', help="Name of the configuration file")
     parser.add_argument('--sklearn_pipeline_file', default='sklearn_pipeline_standalone.pkl', help="Standalone sklearn pipeline file name (pipeline models)")
-    parser.add_argument('-w', '--weights_file', default='best.hdf5', help="Neural Network weights file name (keras models)")
+    parser.add_argument('-w', '--weights_file', default='best.hdf5', help="Neural Network weights file name (Keras models)")
     parser.add_argument('--tokenizer_file', default='embedding_tokenizer.pkl', help="Tokenizer file name (models with embeddings)")
     parser.add_argument('--tfidf_file', default='tfidf_standalone.pkl', help="TFIDF file name (models with tfidf)")
     parser.add_argument('--hf_model_dir', default='hf_model', help="HuggingFace model folder name")

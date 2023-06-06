@@ -73,7 +73,7 @@ def main(model_dir: str, config_file: str = 'configurations.json',
     Kwargs:
         config_file (str): Name of the configuration file
         sklearn_pipeline_file (str): Standalone sklearn pipeline file name (pipeline models)
-        weights_file (str): Neural Network weights file name (keras models)
+        weights_file (str): Neural Network weights file name (Keras models)
         xgboost_file (str): Standalone XGBoost file name (xgboost models)
         preprocess_pipeline_file (str): Name of the preprocessing pipeline file (all models)
         aggregation_function_path (str): aggregation_function file name (model aggregation)
@@ -188,7 +188,7 @@ if __name__ == '__main__':
     parser.add_argument('-m', '--model_dir', required=True, help="Name of the model to reload (not a path, just the directory name)")
     parser.add_argument('-c', '--config_file', default='configurations.json', help="Name of the configuration file")
     parser.add_argument('--sklearn_pipeline_file', default='sklearn_pipeline_standalone.pkl', help="Standalone sklearn pipeline file name (pipeline models)")
-    parser.add_argument('-w', '--weights_file', default='best.hdf5', help="Neural Network weights file name (keras models)")
+    parser.add_argument('-w', '--weights_file', default='best.hdf5', help="Neural Network weights file name (Keras models)")
     parser.add_argument('--xgboost_file', default='xbgoost_standalone.model', help="Standalone XGBoost file name (xgboost models)")
     parser.add_argument('-p', '--preprocess_pipeline_file', default='preprocess_pipeline.pkl', help="Name of the preprocessing pipeline file (all models)")
     parser.add_argument('--aggregation_function_file', default='aggregation_function.pkl', help="aggregation_function_file file name (models aggregation)")

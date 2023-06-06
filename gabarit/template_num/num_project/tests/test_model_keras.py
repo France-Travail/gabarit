@@ -467,14 +467,16 @@ class ModelKerasTests(unittest.TestCase):
         # Classification - Mono-label - Mono-Class
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono_2)
+        #
         preds = model.predict(x_train, return_proba=False)
+        preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
+        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
+        #
         probas = model.predict(x_train, return_proba=True)
+        probas_alt = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
-        preds = model.predict(x_train, return_proba=False, experimental_version=True)
-        self.assertEqual(preds.shape, (len(x_train),))
-        probas = model.predict(x_train, return_proba=True, experimental_version=True)
-        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
@@ -485,14 +487,16 @@ class ModelKerasTests(unittest.TestCase):
         # Classification - Mono-label - Multi-Classes
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono_3)
+        #
         preds = model.predict(x_train, return_proba=False)
+        preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
+        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
+        #
         probas = model.predict(x_train, return_proba=True)
+        probas_alt = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
-        preds = model.predict(x_train, return_proba=False, experimental_version=True)
-        self.assertEqual(preds.shape, (len(x_train),))
-        probas = model.predict(x_train, return_proba=True, experimental_version=True)
-        self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
@@ -503,14 +507,16 @@ class ModelKerasTests(unittest.TestCase):
         # Classification - Multi-labels
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         model.fit(x_train, y_train_multi)
+        #
         preds = model.predict(x_train)
+        preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
+        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
+        #
         probas = model.predict(x_train, return_proba=True)
+        probas_alt = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
-        preds = model.predict(x_train, return_proba=False, experimental_version=True)
-        self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        probas = model.predict(x_train, return_proba=True, experimental_version=True)
-        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
@@ -521,14 +527,16 @@ class ModelKerasTests(unittest.TestCase):
         # Regressor
         model = ModelDenseRegressor(model_dir=model_dir, batch_size=8, epochs=2)
         model.fit(x_train, y_train_regressor)
+        #
         preds = model.predict(x_train)
+        preds_alt = model.predict(x_train, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
+        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
+        #
         with self.assertRaises(ValueError):
             probas = model.predict(x_train, return_proba=True)
-        preds = model.predict(x_train, experimental_version=True)
-        self.assertEqual(preds.shape, (len(x_train),))
         with self.assertRaises(ValueError):
-            probas = model.predict(x_train, return_proba=True, experimental_version=True)
+            probas = model.predict(x_train, return_proba=True, alternative_version=True)
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
@@ -561,6 +569,8 @@ class ModelKerasTests(unittest.TestCase):
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono_2)
         probas = model.predict_proba(x_train)
+        probas_alt = model.predict_proba(x_train, alternative_version=True)
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
         self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         # Test inversed columns order
@@ -572,6 +582,8 @@ class ModelKerasTests(unittest.TestCase):
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono_3)
         probas = model.predict_proba(x_train)
+        probas_alt = model.predict_proba(x_train, alternative_version=True)
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
         self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         # Test inversed columns order
@@ -583,6 +595,8 @@ class ModelKerasTests(unittest.TestCase):
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         model.fit(x_train, y_train_multi)
         probas = model.predict_proba(x_train)
+        probas_alt = model.predict_proba(x_train, alternative_version=True)
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))  # 3 labels
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         # Test inversed columns order
@@ -595,6 +609,8 @@ class ModelKerasTests(unittest.TestCase):
         model.fit(x_train, y_train_regressor)
         with self.assertRaises(ValueError):
             proba = model.predict_proba(x_train)
+        with self.assertRaises(ValueError):
+            proba = model.predict_proba(x_train, alternative_version=True)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -650,7 +666,35 @@ class ModelKerasTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test07_model_keras_save(self):
+    def test07_model_keras_plot_metrics_and_loss(self):
+        '''Test of the method _plot_metrics_and_loss of {{package_name}}.models_training.model_keras.ModelKeras'''
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+
+        # Nominal case
+        model = ModelKeras(model_dir=model_dir)
+
+        class FitHistory(object):
+
+            def __init__(self):
+                self.history = {}
+                for metric in ['acc', 'loss', 'categorical_accuracy', 'f1', 'precision', 'recall','mean_absolute_error',
+                               'mae', 'mean_squared_error', 'mse', 'root_mean_squared_error', 'rmse']:
+                    self.history[metric] = [0.1, 0.2, 0.3, 0.5, 0.4]
+                    self.history[f'val_{metric}'] = [0.05, 0.1, 0.2, 0.4, 0.4]
+
+        fit_history = FitHistory()
+        model._plot_metrics_and_loss(fit_history)
+        plots_path = os.path.join(model.model_dir, 'plots')
+        for filename in ['accuracy', 'loss', 'categorical_accuracy', 'f1_score', 'precision', 'recall', 'mae',
+                         'mse', 'rmse']:
+            self.assertTrue(os.path.exists(os.path.join(plots_path, f"{filename}.jpeg")))
+
+        # Clean
+        remove_dir(model_dir)
+
+    def test08_model_keras_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_keras.ModelKeras'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -739,7 +783,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue('multi_label' not in configs.keys())  # not in because we do not use the Classifier mixin
         remove_dir(model_dir)
 
-    def test08_model_keras_reload_model(self):
+    def test09_model_keras_reload_model(self):
         '''Test of the method reload_model of {{package_name}}.models_training.model_keras.ModelKeras'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')

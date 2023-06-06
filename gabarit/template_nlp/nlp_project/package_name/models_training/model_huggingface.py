@@ -93,7 +93,7 @@ class ModelHuggingFace(ModelClass):
         self.model_max_length = model_max_length
 
         # transformer_params has no use as of 14/12/2022
-        # we still leave it for compatibility with keras models and future usage
+        # we still leave it for compatibility with Keras models and future usage
         self.transformer_params = transformer_params
 
         # Trainer params
@@ -575,7 +575,7 @@ class ModelHuggingFace(ModelClass):
                 plt.xlabel('Epoch')
                 plt.legend(legend, loc='upper left')
                 # Save
-                filename == f"{filename}.jpeg"
+                filename = f"{filename}.jpeg"
                 plt.savefig(os.path.join(plots_path, filename))
 
                 # Close figures

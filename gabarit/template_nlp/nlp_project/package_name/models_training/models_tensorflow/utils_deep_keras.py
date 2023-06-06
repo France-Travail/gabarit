@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 
-## Utils - tools-functions for deep_learning keras models
+## Utils - tools-functions for deep_learning Keras models
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -270,7 +270,7 @@ def get_weighted_binary_crossentropy(pos_weight: float = 10.0) -> Callable:
 # ** EXPERIMENTAL **
 # ** EXPERIMENTAL **
 
-# From Gaëlle JOUIS Thesis
+# From Gaëlle JOUIS' PhD Thesis
 
 class AttentionAverage(Layer):
     def __init__(self, attention_hops, **kwargs) -> None:

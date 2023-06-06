@@ -81,7 +81,7 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
             Corresponding entries are removed from both training & validation dataset - mono-label only
         filename_valid (str): Name of the validation dataset (actually a path relative to {{package_name}}-data)
             If None, we do not use a validation dataset.
-                -> for keras models (i.e. Neural Networks), we'll use a portion of the training dataset as the validation.
+                -> for Keras models (i.e. Neural Networks), we'll use a portion of the training dataset as the validation.
         level_save (str): Save level
             LOW: statistics + configurations + logger keras - /!\\ the model won't be reusable /!\\ -
             MEDIUM: LOW + hdf5 + pkl + plots

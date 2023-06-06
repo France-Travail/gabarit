@@ -348,12 +348,15 @@ def apply_pipeline(df: pd.DataFrame, preprocess_pipeline: ColumnTransformer) -> 
     return preprocessed_df
 
 
-def predict(content: pd.DataFrame, model, **kwargs) -> list:
+def predict(content: pd.DataFrame, model, alternative_version: bool = False, **kwargs) -> list:
     '''Gets predictions of a model on a dataset
 
     Args:
         content (pd.DataFrame): New dataset to be predicted
         model (ModelClass): Model to use
+    Kwargs:
+        alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
+                                    Only available for Keras models.
     Returns:
         REGRESSION :
             float: prediction
@@ -372,7 +375,7 @@ def predict(content: pd.DataFrame, model, **kwargs) -> list:
         logger.warning("No preprocessing pipeline found - we consider no preprocessing, but it should not be so !")
 
     # Get predictions
-    predictions = model.predict(df_prep)
+    predictions = model.predict(df_prep, alternative_version=alternative_version)
 
     # Inverse transform (needed for classification)
     predictions = model.inverse_transform(predictions)
@@ -381,12 +384,16 @@ def predict(content: pd.DataFrame, model, **kwargs) -> list:
     return predictions
 
 
-def predict_with_proba(content: pd.DataFrame, model) -> Union[Tuple[List[str], List[float]], Tuple[List[tuple], List[tuple]]]:
+def predict_with_proba(content: pd.DataFrame, model, alternative_version: bool = False,
+                       **kwargs) -> Union[Tuple[List[str], List[float]], Tuple[List[tuple], List[tuple]]]:
     '''Gets probabilities predictions of a model on a dataset
 
     Args:
         content (pd.DataFrame): New dataset to be predicted
         model (ModelClass): Model to use
+    Kwargs:
+        alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
+                                    Only available for Keras models.
     Raises:
         ValueError: If the model type is not classifier
     Returns:
@@ -409,18 +416,18 @@ def predict_with_proba(content: pd.DataFrame, model) -> Union[Tuple[List[str], L
         logger.warning("No preprocessing pipeline found - we consider no preprocessing, but it should not be so !")
 
     # Get predictions
-    predictions, probas = model.predict_with_proba(df_prep)
+    predictions, probas = model.predict_with_proba(df_prep, alternative_version=alternative_version)
 
     # Rework format
     if not model.multi_label:
-        prediction = model.inverse_transform(predictions)
-        proba = list(probas.max(axis=1))
+        predictions = model.inverse_transform(predictions)
+        probas = list(probas.max(axis=1))
     else:
-        prediction = [tuple(np.array(model.list_classes).compress(indicators)) for indicators in predictions]
-        proba = [tuple(np.array(probas[i]).compress(indicators)) for i, indicators in enumerate(predictions)]
+        probas = [tuple(np.array(probas[i]).compress(indicators)) for i, indicators in enumerate(predictions)]
+        predictions = [tuple(np.array(model.list_classes).compress(indicators)) for indicators in predictions]
 
-    # Return prediction & proba
-    return prediction, proba
+    # Return predictions & probas
+    return predictions, probas
 
 
 def search_hp_cv(model_cls, model_params: dict, hp_params: dict, scoring_fn: Union[str, Callable],

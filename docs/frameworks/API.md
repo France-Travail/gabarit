@@ -35,7 +35,7 @@ Here is the structure of a project generated with `generate_api_project` command
 .
 ├─ .env                         # environement variables for settings
 ├─ makefile
-├─ Dockerfile.svc
+├─ Dockerfile
 ├─ pyproject.toml               # your package dependencies and infos
 ├─ setup.py
 ├─ launch.sh                    # start your application
@@ -213,5 +213,5 @@ requests and responses schemas thanks to pydantic or have a look at the
 
 ### Dockerfile
 
-A minimal `Dockerfile.svc` is provided by the template. You should have a look a it, especially
+A minimal `Dockerfile` is provided by the template. You should have a look a it, especially
 if you have to download your model in your containers.
