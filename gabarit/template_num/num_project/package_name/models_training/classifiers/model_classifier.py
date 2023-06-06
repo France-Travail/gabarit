@@ -88,7 +88,7 @@ class ModelClassifierMixin:
             predicted_proba (np.ndarray): The predicted probabilities for each class, shape = [n_samples, n_classes]
         '''
         # Process
-        predicted_proba = self.predict(x_test, return_proba=True)
+        predicted_proba = self.predict(x_test, return_proba=True, **kwargs)
         predicted_class = self.get_classes_from_proba(predicted_proba)
         return predicted_class, predicted_proba
 
