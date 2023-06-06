@@ -808,7 +808,7 @@ class ModelAggregationTests(unittest.TestCase):
 
         # mono_label, no return_proba
         preds = model._predict_full_list_classes(mock_model_mono, np.array(['test_1', 'test_2', 'test_3']), return_proba=False)
-        preds_alt = model._predict_full_list_classes(mock_model_mono, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=False, alternative_version=True)
+        preds_alt = model._predict_full_list_classes(mock_model_mono, np.array(['test_1', 'test_2', 'test_3']), return_proba=False, alternative_version=True)
         # TODO: the folowing test should be included once issue 160 is fixed (https://github.com/OSS-Pole-Emploi/gabarit/issues/160)
         # np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
         target_mono = np.array(['2', '1', '4'])
@@ -818,7 +818,7 @@ class ModelAggregationTests(unittest.TestCase):
 
         # mono_label, return_proba
         preds = model._predict_full_list_classes(mock_model_mono, np.array(['test_1', 'test_2', 'test_3']), return_proba=True)
-        preds_alt = model._predict_full_list_classes(mock_model_mono, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=True, alternative_version=True)
+        preds_alt = model._predict_full_list_classes(mock_model_mono, np.array(['test_1', 'test_2', 'test_3']), return_proba=True, alternative_version=True)
         # TODO: the folowing test should be included once issue 160 is fixed (https://github.com/OSS-Pole-Emploi/gabarit/issues/160)
         # np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
         target_mono_return_proba = np.array([[0.0, 0.2, 0.8, 0.0, 0.0, 0.0], [0.0, 0.9, 0.0, 0.0, 0.1, 0.0], [0.0, 0.2, 0.1, 0.0, 0.7, 0.0]])
@@ -845,7 +845,7 @@ class ModelAggregationTests(unittest.TestCase):
 
         # multi_label, no return_proba
         preds = model._predict_full_list_classes(mock_model_multi, np.array(['test_1', 'test_2', 'test_3']), return_proba=False)
-        preds_alt = model._predict_full_list_classes(mock_model_multi, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=False, alternative_version=True)
+        preds_alt = model._predict_full_list_classes(mock_model_multi, np.array(['test_1', 'test_2', 'test_3']), return_proba=False, alternative_version=True)
         # TODO: the folowing test should be included once issue 160 is fixed (https://github.com/OSS-Pole-Emploi/gabarit/issues/160)
         # np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
         target_multi = np.array([[0, 1, 1, 0, 0, 0], [0, 1, 0, 0, 1, 0], [0, 0, 0, 0, 0, 0]])
@@ -856,7 +856,7 @@ class ModelAggregationTests(unittest.TestCase):
 
         # multi_label, return_proba
         preds = model._predict_full_list_classes(mock_model_multi, np.array(['test_1', 'test_2', 'test_3']), return_proba=True)
-        preds_alt = model._predict_full_list_classes(mock_model_multi, np.array([(1, 2), (1, 3), (2, 1)]), return_proba=True, alternative_version=True)
+        preds_alt = model._predict_full_list_classes(mock_model_multi, np.array(['test_1', 'test_2', 'test_3']), return_proba=True, alternative_version=True)
         # TODO: the folowing test should be included once issue 160 is fixed (https://github.com/OSS-Pole-Emploi/gabarit/issues/160)
         # np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
         target_mono_return_proba = np.array([[0.0, 0.2, 0.8, 0.0, 0.0, 0.0], [0.0, 0.9, 0.0, 0.0, 0.1, 0.0], [0.0, 0.2, 0.1, 0.0, 0.7, 0.0]])
