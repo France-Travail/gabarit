@@ -83,7 +83,7 @@ endif
 ####################################################
 
 build-d:
-	docker build -t {{package_name}}_api -f Dockerfile.svc .
+	docker build -t {{package_name}}_api -f Dockerfile .
 
 run-d:
 	docker container run --rm -p 5000:5000 {{package_name}}_api

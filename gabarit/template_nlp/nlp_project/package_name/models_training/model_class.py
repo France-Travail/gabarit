@@ -149,7 +149,7 @@ class ModelClass:
         raise NotImplementedError("'predict_proba' needs to be overridden")
 
     @utils.trained_needed
-    def predict_with_proba(self, x_test) -> Tuple[np.ndarray, np.ndarray]:
+    def predict_with_proba(self, x_test, **kwargs) -> Tuple[np.ndarray, np.ndarray]:
         '''Predicts on the test set with probabilities
 
         Args:

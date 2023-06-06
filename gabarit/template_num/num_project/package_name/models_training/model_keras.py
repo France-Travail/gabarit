@@ -67,7 +67,7 @@ class ModelKeras(ModelClass):
             validation_split (float): Percentage for the validation set split
                 Only used if no input validation set when fitting
             patience (int): Early stopping patience
-            keras_params (dict): Parameters used by keras models.
+            keras_params (dict): Parameters used by Keras models.
                 e.g. learning_rate, nb_lstm_units, etc...
                 The purpose of this dictionary is for the user to use it as they wants in the _get_model function
                 This parameter was initially added in order to do an hyperparameters search
@@ -304,14 +304,14 @@ class ModelKeras(ModelClass):
         self.nb_fit += 1
 
     @utils.trained_needed
-    def predict(self, x_test: pd.DataFrame, return_proba: bool = False, experimental_version: bool = False, **kwargs) -> np.ndarray:
+    def predict(self, x_test: pd.DataFrame, return_proba: bool = False, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Predictions on test set
 
         Args:
             x_test (pd.DataFrame): DataFrame with the test data to be predicted
         Kwargs:
             return_proba (bool): If the function should return the probabilities instead of the classes
-            experimental_version (bool): If an experimental (but faster) version must be used
+            alternative_version (bool): If an alternative predict version must be used. Should be faster with low nb of inputs.
         Raises:
             ValueError: If the model is not classifier and return_proba=True
             ValueError: If the model is neither a classifier nor a regressor
@@ -330,21 +330,21 @@ class ModelKeras(ModelClass):
         # Predict depends on model type
         if self.model_type == 'classifier':
             return self._predict_classifier(x_test, return_proba=return_proba,
-                                            experimental_version=experimental_version)
+                                            alternative_version=alternative_version)
         elif self.model_type == 'regressor':
-            return self._predict_regressor(x_test, experimental_version=experimental_version)
+            return self._predict_regressor(x_test, alternative_version=alternative_version)
         else:
             raise ValueError(f"The model type ({self.model_type}) must be 'classifier' or 'regressor'")
 
     @utils.trained_needed
     def _predict_classifier(self, x_test: pd.DataFrame, return_proba: bool = False,
-                            experimental_version: bool = False) -> np.ndarray:
+                            alternative_version: bool = False) -> np.ndarray:
         '''Predictions on test
         Args:
             x_test (pd.DataFrame): DataFrame with the test data to be predicted
         Kwargs:
             return_proba (boolean): If the function should return the probabilities instead of the classes
-            experimental_version (bool): If an experimental (but faster) version must be used
+            alternative_version (bool): If an alternative predict version must be used. Should be faster with low nb of inputs.
         Raises:
             ValueError: If the model is not of classifier type
         Returns:
@@ -356,8 +356,8 @@ class ModelKeras(ModelClass):
             raise ValueError(f"Models of type {self.model_type} do not implement the method predict_classifier")
 
         # Getting the predictions
-        if experimental_version:
-            predicted_proba = self.experimental_predict_proba(x_test)
+        if alternative_version:
+            predicted_proba = self._alternative_predict_proba(x_test)
         else:
             predicted_proba = self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
@@ -369,12 +369,12 @@ class ModelKeras(ModelClass):
         return self.get_classes_from_proba(predicted_proba)  # type: ignore
 
     @utils.trained_needed
-    def _predict_regressor(self, x_test, experimental_version: bool = False) -> np.ndarray:
+    def _predict_regressor(self, x_test, alternative_version: bool = False) -> np.ndarray:
         '''Predictions on test
         Args:
             x_test (pd.DataFrame): DataFrame with the test data to be predicted
         Kwargs:
-            experimental_version (bool): If an experimental (but faster) version must be used
+            alternative_version (bool): If an alternative predict version must be used. Should be faster with low nb of inputs.
         Raises:
             ValueError: If the model is not of regressor type
         Returns:
@@ -384,8 +384,8 @@ class ModelKeras(ModelClass):
             raise ValueError(f"Models of type {self.model_type} do not implement the method predict_regressor")
 
         # Getting the predictions
-        if experimental_version:
-            predictions = self.experimental_predict_proba(x_test)
+        if alternative_version:
+            predictions = self._alternative_predict_proba(x_test)
         else:
             predictions = self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
@@ -395,11 +395,13 @@ class ModelKeras(ModelClass):
         return np.array([pred[0] for pred in predictions])
 
     @utils.trained_needed
-    def predict_proba(self, x_test: pd.DataFrame, **kwargs) -> np.ndarray:
+    def predict_proba(self, x_test: pd.DataFrame, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Predicts the probabilities on the test set
 
         Args:
             x_test (pd.DataFrame): Array-like, shape = [n_samples, n_features]
+        Kwargs:
+            alternative_version (bool): If an alternative predict version must be used. Should be faster with low nb of inputs.
         Raises:
             ValueError: If model not classifier
         Returns:
@@ -412,22 +414,30 @@ class ModelKeras(ModelClass):
         x_test, _ = self._check_input_format(x_test)
 
         # We use predict again
-        return self.predict(x_test, return_proba=True)
+        return self.predict(x_test, return_proba=True, alternative_version=alternative_version)
 
     @utils.trained_needed
-    def experimental_predict_proba(self, x_test: pd.DataFrame) -> np.ndarray:
-        '''Predictions on test set - simple pass forward - experimental
+    def _alternative_predict_proba(self, x_test: pd.DataFrame) -> np.ndarray:
+        '''Predicts probabilities on the test dataset - Alternative version
+        Should be faster with low nb of inputs.
 
         Args:
             x_test (pd.DataFrame): Array-like, shape = [n_samples]
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        @tf.function
-        def serve(x):
-            return self.model(x, training=False)
+        return self._serve(x_test).numpy()
 
-        return serve(x_test).numpy()
+    @tf.function
+    def _serve(self, x: pd.DataFrame):
+        '''Improves predict function using tf.function (cf. https://www.tensorflow.org/guide/function)
+
+        Args:
+            x (pd.DataFrame): input data
+        Returns:
+            tf.tensor: model's output
+        '''
+        return self.model(x, training=False)
 
     def _get_model(self) -> Model:
         '''Gets a model structure - returns the instance model instead if already defined

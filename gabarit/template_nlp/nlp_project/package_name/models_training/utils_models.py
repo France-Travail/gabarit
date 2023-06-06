@@ -278,13 +278,16 @@ def load_model(model_dir: str, is_path: bool = False, **kwargs) -> Tuple[Any, di
     return model, model_conf
 
 
-def predict(content: Union[str, list], model, model_conf: dict, **kwargs) -> list:
+def predict(content: Union[str, list], model, model_conf: dict, alternative_version: bool = False, **kwargs) -> list:
     '''Gets predictions of a model on a content
 
     Args:
         content (Union[str, list]): New content to be predicted
         model (ModelClass): Model to use
         model_conf (dict): Model configurations
+    Kwargs:
+        alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
+                                    Only available for Keras models.
     Returns:
         list: a list of strings (resp. tuples) in case of mono-label (resp. multi-labels) classification predictions
     '''
@@ -302,19 +305,23 @@ def predict(content: Union[str, list], model, model_conf: dict, **kwargs) -> lis
     content = preprocessor(content)
 
     # Get prediction (some models need an iterable)
-    predictions = model.predict(content)
+    predictions = model.predict(content, alternative_version=alternative_version)
 
     # Return predictions with inverse transform when relevant
     return model.inverse_transform(predictions)
 
 
-def predict_with_proba(content: Union[str, list], model, model_conf: dict) -> Union[Tuple[List[str], List[float]], Tuple[List[tuple], List[tuple]]]:
+def predict_with_proba(content: Union[str, list], model, model_conf: dict, alternative_version: bool = False,
+                       **kwargs) -> Union[Tuple[List[str], List[float]], Tuple[List[tuple], List[tuple]]]:
     '''Gets predictions of a model on a content, with probabilities
 
     Args:
         content (Union[str, list]): New content to be predicted
         model (ModelClass): Model to use
         model_conf (dict): Model configurations
+    Kwargs:
+        alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
+                                    Only available for Keras models.
     Returns:
         MONO-LABEL CLASSIFICATION:
             List[str]: predictions
@@ -339,14 +346,13 @@ def predict_with_proba(content: Union[str, list], model, model_conf: dict) -> Un
     # Get prediction (some models need an iterable)
     # predictions is a ndarray of shape (n_samples, n_classes)
     # probas is a ndarray of shape (n_samples, n_classes)
-    predictions, probas = model.predict_with_proba(content)
+    predictions, probas = model.predict_with_proba(content, alternative_version=alternative_version)
 
     # Rework format :
     if model.multi_label:
         model_labels = np.array(model.list_classes)
         all_preds = [tuple(np.compress(content_pred, model_labels)) for content_pred in predictions]
         all_probs = [tuple(np.compress(content_pred, content_prob)) for content_pred, content_prob in zip(predictions, probas)]
-
     else:
         all_preds = model.inverse_transform(predictions)
         all_probs = probas.max(axis=1)

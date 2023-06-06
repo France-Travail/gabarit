@@ -514,6 +514,8 @@ class UtilsModelsTests(unittest.TestCase):
         model, model_conf = utils_models.load_model(model_dir='test_model')
         self.assertEqual(utils_models.predict(x_test_1, model), y_test_classification)
         self.assertEqual(utils_models.predict(x_test_1_solo, model), y_test_1_classification_solo)
+        self.assertEqual(utils_models.predict(x_test_1, model, alternative_version=True), y_test_classification)
+        self.assertEqual(utils_models.predict(x_test_1_solo, model, alternative_version=True), y_test_1_classification_solo)
         remove_dir(model_dir)
 
         ################
@@ -529,6 +531,8 @@ class UtilsModelsTests(unittest.TestCase):
         model, model_conf = utils_models.load_model(model_dir='test_model')
         self.assertEqual(utils_models.predict(x_test_2, model), y_test_classification)
         self.assertEqual(utils_models.predict(x_test_2_solo, model), y_test_2_classification_solo)
+        self.assertEqual(utils_models.predict(x_test_2, model, alternative_version=True), y_test_classification)
+        self.assertEqual(utils_models.predict(x_test_2_solo, model, alternative_version=True), y_test_2_classification_solo)
         remove_dir(model_dir)
 
         ################
@@ -544,6 +548,8 @@ class UtilsModelsTests(unittest.TestCase):
         model, model_conf = utils_models.load_model(model_dir='test_model')
         self.assertEqual(utils_models.predict(x_test_1, model), y_test_classification_multi)
         self.assertEqual(utils_models.predict(x_test_1_solo, model), y_test_1_classification_multi_solo)
+        self.assertEqual(utils_models.predict(x_test_1, model, alternative_version=True), y_test_classification_multi)
+        self.assertEqual(utils_models.predict(x_test_1_solo, model, alternative_version=True), y_test_1_classification_multi_solo)
         remove_dir(model_dir)
 
         ################
@@ -559,6 +565,8 @@ class UtilsModelsTests(unittest.TestCase):
         model, model_conf = utils_models.load_model(model_dir='test_model')
         self.assertEqual(utils_models.predict(x_test_2, model), y_test_classification_multi)
         self.assertEqual(utils_models.predict(x_test_2_solo, model), y_test_2_classification_multi_solo)
+        self.assertEqual(utils_models.predict(x_test_2, model, alternative_version=True), y_test_classification_multi)
+        self.assertEqual(utils_models.predict(x_test_2_solo, model, alternative_version=True), y_test_2_classification_multi_solo)
         remove_dir(model_dir)
 
         ################
@@ -575,6 +583,7 @@ class UtilsModelsTests(unittest.TestCase):
         # Check just the type, regression is complicated...
         self.assertEqual(type(utils_models.predict(x_test_1, model)), list)
         self.assertTrue(isinstance(utils_models.predict(x_test_1_solo, model), list))
+        np.testing.assert_almost_equal(utils_models.predict(x_test_1, model), utils_models.predict(x_test_1, model, alternative_version=True))
         remove_dir(model_dir)
 
         ################
@@ -591,6 +600,7 @@ class UtilsModelsTests(unittest.TestCase):
         # Check just the type, regression is complicated...
         self.assertEqual(type(utils_models.predict(x_test_2, model)), list)
         self.assertTrue(isinstance(utils_models.predict(x_test_2_solo, model), list))
+        np.testing.assert_almost_equal(utils_models.predict(x_test_2, model), utils_models.predict(x_test_2, model, alternative_version=True))
         remove_dir(model_dir)
 
 
@@ -627,13 +637,18 @@ class UtilsModelsTests(unittest.TestCase):
 
         # Nominal case
         model, model_conf = utils_models.load_model(model_dir='test_model')
-        pred, proba = utils_models.predict_with_proba(x_test_1, model)
-        self.assertEqual(pred, y_test_classification)
-        self.assertEqual(len(proba), len(y_test_classification))
-        self.assertEqual(sum([round(p) for p in proba]), len(y_test_classification))
-        pred, proba = utils_models.predict_with_proba(x_test_1_solo, model)
-        self.assertEqual(pred, y_test_1_classification_solo)
-        self.assertTrue(proba[0] >= 0.5)
+        #
+        preds, probas = utils_models.predict_with_proba(x_test_1, model)
+        preds_alt, probas_alt = utils_models.predict_with_proba(x_test_1, model, alternative_version=True)
+        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
+        self.assertEqual(preds, y_test_classification)
+        self.assertEqual(len(probas), len(y_test_classification))
+        self.assertEqual(sum([round(p) for p in probas]), len(y_test_classification))
+        #
+        preds, probas = utils_models.predict_with_proba(x_test_1_solo, model)
+        self.assertEqual(preds, y_test_1_classification_solo)
+        self.assertTrue(probas[0] >= 0.5)
         remove_dir(model_dir)
 
         ################
@@ -647,13 +662,16 @@ class UtilsModelsTests(unittest.TestCase):
 
         # Nominal case
         model, model_conf = utils_models.load_model(model_dir='test_model')
-        pred, proba = utils_models.predict_with_proba(x_test_2, model)
-        self.assertEqual(pred, y_test_classification)
-        self.assertEqual(len(proba), len(y_test_classification))
-        self.assertEqual(sum([round(p) for p in proba]), len(y_test_classification))
-        pred, proba = utils_models.predict_with_proba(x_test_2_solo, model)
-        self.assertEqual(pred, y_test_2_classification_solo)
-        self.assertTrue(proba[0] >= 0.5)
+        preds, probas = utils_models.predict_with_proba(x_test_2, model)
+        preds_alt, probas_alt = utils_models.predict_with_proba(x_test_2, model, alternative_version=True)
+        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
+        self.assertEqual(preds, y_test_classification)
+        self.assertEqual(len(probas), len(y_test_classification))
+        self.assertEqual(sum([round(p) for p in probas]), len(y_test_classification))
+        preds, probas = utils_models.predict_with_proba(x_test_2_solo, model)
+        self.assertEqual(preds, y_test_2_classification_solo)
+        self.assertTrue(probas[0] >= 0.5)
         remove_dir(model_dir)
 
         ################
@@ -667,13 +685,16 @@ class UtilsModelsTests(unittest.TestCase):
 
         # Nominal case
         model, model_conf = utils_models.load_model(model_dir='test_model')
-        pred, proba = utils_models.predict_with_proba(x_test_1, model)
-        self.assertEqual(pred, y_test_classification_multi)
-        self.assertEqual(len(proba), len(y_test_classification_multi))
-        self.assertEqual(sum([round(p[0]) for p in proba]), sum([len(_) for _ in y_test_classification_multi]))
-        pred, proba = utils_models.predict_with_proba(x_test_1_solo, model)
-        self.assertEqual(pred, y_test_1_classification_multi_solo)
-        self.assertTrue(proba[0][0] >= 0.5)
+        preds, probas = utils_models.predict_with_proba(x_test_1, model)
+        preds_alt, probas_alt = utils_models.predict_with_proba(x_test_1, model, alternative_version=True)
+        self.assertEqual(preds, preds_alt)  # List of tuples of strings
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
+        self.assertEqual(preds, y_test_classification_multi)
+        self.assertEqual(len(probas), len(y_test_classification_multi))
+        self.assertEqual(sum([round(p[0]) for p in probas]), sum([len(_) for _ in y_test_classification_multi]))
+        preds, probas = utils_models.predict_with_proba(x_test_1_solo, model)
+        self.assertEqual(preds, y_test_1_classification_multi_solo)
+        self.assertTrue(probas[0][0] >= 0.5)
         remove_dir(model_dir)
 
         ################
@@ -687,13 +708,16 @@ class UtilsModelsTests(unittest.TestCase):
 
         # Nominal case
         model, model_conf = utils_models.load_model(model_dir='test_model')
-        pred, proba = utils_models.predict_with_proba(x_test_2, model)
-        self.assertEqual(pred, y_test_classification_multi)
-        self.assertEqual(len(proba), len(y_test_classification_multi))
-        self.assertEqual(sum([round(p[0]) for p in proba]), sum([len(_) for _ in y_test_classification_multi]))
-        pred, proba = utils_models.predict_with_proba(x_test_2_solo, model)
-        self.assertEqual(pred, y_test_2_classification_multi_solo)
-        self.assertTrue(proba[0][0] >= 0.5)
+        preds, probas = utils_models.predict_with_proba(x_test_2, model)
+        preds_alt, probas_alt = utils_models.predict_with_proba(x_test_2, model, alternative_version=True)
+        self.assertEqual(preds, preds_alt)  # List of tuples of strings
+        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
+        self.assertEqual(preds, y_test_classification_multi)
+        self.assertEqual(len(probas), len(y_test_classification_multi))
+        self.assertEqual(sum([round(p[0]) for p in probas]), sum([len(_) for _ in y_test_classification_multi]))
+        preds, probas = utils_models.predict_with_proba(x_test_2_solo, model)
+        self.assertEqual(preds, y_test_2_classification_multi_solo)
+        self.assertTrue(probas[0][0] >= 0.5)
         remove_dir(model_dir)
 
         ################
@@ -707,6 +731,8 @@ class UtilsModelsTests(unittest.TestCase):
 
         with self.assertRaises(ValueError):
             pred, proba = utils_models.predict_with_proba(x_test_1, model)
+        with self.assertRaises(ValueError):
+            pred, proba = utils_models.predict_with_proba(x_test_1, model, alternative_version=True)
 
         remove_dir(model_dir)
 

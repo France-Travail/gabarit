@@ -109,23 +109,27 @@ class ModelDenseRegressorTests(unittest.TestCase):
         # Regressor
         model = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, batch_size=8, epochs=2)
         model.fit(x_train, y_train_regressor)
+        #
         preds = model.predict(x_train, return_proba=False)
+        preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
+        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
         self.assertEqual(preds.shape, (len(x_train),))
+        #
         with self.assertRaises(ValueError):
             probas = model.predict(x_train, return_proba=True)
-        preds = model.predict(x_train, return_proba=False, experimental_version=True)
-        self.assertEqual(preds.shape, (len(x_train),))
         with self.assertRaises(ValueError):
-            probas = model.predict(x_train, return_proba=True, experimental_version=True)
+            probas = model.predict(x_train, return_proba=True, alternative_version=True)
         # Test inversed columns order
         preds_inv = model.predict(x_train_inv, return_proba=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted
+        model = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, batch_size=8, epochs=2)
         with self.assertRaises(AttributeError):
-            model = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, batch_size=8, epochs=2)
             model.predict(x_train)
+        with self.assertRaises(AttributeError):
+            model.predict(x_train, alternative_version=True)
         remove_dir(model_dir)
 
     def test03_model_dense_regressor_get_model(self):

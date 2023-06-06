@@ -92,7 +92,7 @@ class ModelKeras(ModelClass):
                 /!\\ Not used if `in_memory` is set to True
             nb_train_generator_images_to_save (int): If > 0, save some input generated images
                 If helps with to understand what goes in your NN
-            keras_params (dict): Parameters used by keras models.
+            keras_params (dict): Parameters used by Keras models.
                 e.g. learning_rate, nb_lstm_units, etc...
                 The purpose of this dictionary is for the user to use it as they wants in the _get_model function
                 This parameter was initially added in order to do an hyperparameters search
