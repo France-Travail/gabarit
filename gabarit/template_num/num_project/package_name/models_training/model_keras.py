@@ -428,7 +428,7 @@ class ModelKeras(ModelClass):
         '''
         return self._serve(x_test).numpy()
 
-    @tf.function
+    @tf.function(reduce_retracing=True)  # reduce_retracing must be set to avoid retracing (tensors with different shapes)
     def _serve(self, x: pd.DataFrame):
         '''Improves predict function using tf.function (cf. https://www.tensorflow.org/guide/function)
 
