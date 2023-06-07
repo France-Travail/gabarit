@@ -111,8 +111,7 @@ class ModelHuggingFace(ModelClass):
                 'save_strategy': 'epoch',
                 'logging_strategy': 'epoch',
                 'save_total_limit': 1,
-                'load_best_model_at_end': True,
-                'optim': 'adamw_torch'
+                'load_best_model_at_end': True
             }
         # TODO: maybe we should keep the default dict & only add/replace keys in provided dict ?
         if 'seed' not in trainer_params:

@@ -50,8 +50,10 @@ from .model_class import ModelClass
 
 sns.set(style="darkgrid")
 
+
 class RandomStateDataGenerator(Sequence):
     '''Custom data generator to control batch randomness with random_state'''
+
     def __init__(self, x_train: np.ndarray, y_train: np.ndarray, batch_size: int,
                   random_state: np.random.RandomState, shuffle_batches: bool):
         '''Initialization of the class
@@ -68,6 +70,7 @@ class RandomStateDataGenerator(Sequence):
         self.batch_size = batch_size
         self.random_state = random_state
         self.shuffle_batches = shuffle_batches
+
         if self.shuffle_batches:
             self.indices = shuffle(np.arange(len(self.x)), random_state=self.random_state)
         else:

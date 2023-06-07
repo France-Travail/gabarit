@@ -65,7 +65,9 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 logger = logging.getLogger('{{package_name}}.2_training')
 
 
-def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], filename_valid: Union[str, None] = None,
+def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], 
+         random_seed: Union[int, None] = None, 
+         filename_valid: Union[str, None] = None,
          min_rows: Union[int, None] = None, level_save: str = 'HIGH',
          sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}',
          model: Union[Type[ModelClass], None] = None,
@@ -238,50 +240,50 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], fi
         model = model_tfidf_svm.ModelTfidfSvm(x_col=x_col, y_col=y_col, level_save=level_save,
                                               tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
                                               svc_params={'C': 1.0, 'max_iter': 10000},
-                                              multi_label=multi_label)
+                                              multi_label=multi_label, random_seed=random_seed)
         # model = model_tfidf_gbt.ModelTfidfGbt(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                       tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
         #                                       gbt_params={'learning_rate': 0.1, 'n_estimators': 100, 'max_depth': 10, 'subsample': 1.0, 'max_features': 'auto'},
-        #                                       multi_label=multi_label)
+        #                                       multi_label=multi_label, random_seed=random_seed)
         # model = model_tfidf_lgbm.ModelTfidfLgbm(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                         tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
         #                                         lgbm_params={'learning_rate': 0.1, 'n_estimators': 100, 'max_depth': 5, 'subsample': 1.0, 'num_leaves': 127},
-        #                                         multi_label=multi_label)
+        #                                         multi_label=multi_label, random_seed=random_seed)
         # model = model_tfidf_sgdc.ModelTfidfSgdc(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                         tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
         #                                         sgdc_params={'loss': 'hinge', 'max_iter': 1000},
-        #                                         multi_label=multi_label)
+        #                                         multi_label=multi_label, random_seed=random_seed)
         # model = model_embedding_lstm.ModelEmbeddingLstm(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                 batch_size=64, epochs=99, patience=5,
         #                                                 max_sequence_length=200, max_words=100000,
-        #                                                 multi_label=multi_label)
+        #                                                 multi_label=multi_label, random_seed=random_seed)
         # model = model_embedding_lstm_attention.ModelEmbeddingLstmAttention(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                                    batch_size=64, epochs=99, patience=5,
         #                                                                    max_sequence_length=200, max_words=100000,
-        #                                                                    multi_label=multi_label)
+        #                                                                    multi_label=multi_label, random_seed=random_seed)
         # model = model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                                                         batch_size=64, epochs=99, patience=5,
         #                                                                                         max_sequence_length=200, max_words=100000,
-        #                                                                                         multi_label=multi_label)
+        #                                                                                         multi_label=multi_label, random_seed=random_seed)
         # model = model_embedding_lstm_gru.ModelEmbeddingLstmGru(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                               batch_size=64, epochs=99, patience=5,
         #                                                               max_sequence_length=60, max_words=100000,
-        #                                                               multi_label=multi_label)
+        #                                                               multi_label=multi_label, random_seed=random_seed)
         # model = model_embedding_cnn.ModelEmbeddingCnn(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                               batch_size=64, epochs=99, patience=5,
         #                                               max_sequence_length=200, max_words=100000,
-        #                                               multi_label=multi_label)
+        #                                               multi_label=multi_label, random_seed=random_seed)
         # model = model_tfidf_dense.ModelTfidfDense(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                           batch_size=64, epochs=99, patience=5,
         #                                           tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-        #                                           multi_label=multi_label)
+        #                                           multi_label=multi_label, random_seed=random_seed)
         # model = model_huggingface.ModelHuggingFace(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                            batch_size=64, epochs=99, patience=5,
         #                                            transformer_name='Geotrend/distilbert-base-fr-cased',
-        #                                            multi_label=multi_label)
+        #                                            multi_label=multi_label, random_seed=random_seed)
         # model = model_aggregation.ModelAggregation(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                            list_models=[model_tfidf_svm.ModelTfidfSvm(), model_tfidf_svm.ModelTfidfSvm()],
-        #                                            multi_label=multi_label)
+        #                                            multi_label=multi_label, random_seed=random_seed)
 
     # Display if GPU is being used
     model.display_if_gpu_activated()
@@ -482,6 +484,7 @@ if __name__ == '__main__':
     parser.add_argument('-f', '--filename', default='dataset_preprocess_P1.csv', help="Name of the training dataset (actually a path relative to {{package_name}}-data)")
     parser.add_argument('-x', '--x_col', default='preprocessed_text', help="Name of the model's input column - x")
     parser.add_argument('-y', '--y_col', nargs='+', required=True, help="Name of the model's target column(s) - y")
+    parser.add_argument('-s', '--random_seed', type=int, default=None,  help="Seed to use for packages randomness")
     parser.add_argument('-m', '--min_rows', type=int, default=None, help="Minimal number of occurrences for a class to be considered by the model")
     parser.add_argument('--filename_valid', default=None, help="Name of the validation dataset (actually a path relative to {{package_name}}-data)")
     parser.add_argument('-l', '--level_save', default='HIGH', help="Save level -> ['LOW', 'MEDIUM', 'HIGH']")
@@ -498,7 +501,8 @@ if __name__ == '__main__':
         logger.info("CPU USAGE FORCED BY THE USER")
         logger.info("----------------------------")
     # Main
-    main(filename=args.filename, x_col=args.x_col, y_col=args.y_col,
-         min_rows=args.min_rows, filename_valid=args.filename_valid,
-         level_save=args.level_save, sep=args.sep, encoding=args.encoding,
+    main(filename=args.filename, x_col=args.x_col, y_col=args.y_col, 
+         random_seed=args.random_seed, min_rows=args.min_rows, 
+         filename_valid=args.filename_valid, level_save=args.level_save, 
+         sep=args.sep, encoding=args.encoding,
          mlflow_experiment=args.mlflow_experiment)
