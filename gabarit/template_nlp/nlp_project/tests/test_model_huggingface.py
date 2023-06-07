@@ -896,7 +896,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789-2')
         remove_dir(model_dir2)
 
-         # Set vars
+        # Set vars
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
         y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
         y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
