@@ -355,8 +355,11 @@ def predict(content: pd.DataFrame, model, alternative_version: bool = False, **k
         content (pd.DataFrame): New dataset to be predicted
         model (ModelClass): Model to use
     Kwargs:
-        alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
-                                    Only available for Keras models.
+        alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used.
+            Should be faster with low nb of inputs. Only useful for Keras models.
+            We advise you to set `alternative_version` to True for APIs to avoid possible memory leaks with `model.predict` on newest TensorFlow.
+            https://github.com/tensorflow/tensorflow/issues/58676
+            Inferences will probably be way faster too.
     Returns:
         REGRESSION :
             float: prediction
@@ -392,8 +395,11 @@ def predict_with_proba(content: pd.DataFrame, model, alternative_version: bool =
         content (pd.DataFrame): New dataset to be predicted
         model (ModelClass): Model to use
     Kwargs:
-        alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
-                                    Only available for Keras models.
+        alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used.
+            Should be faster with low nb of inputs. Only useful for Keras models.
+            We advise you to set `alternative_version` to True for APIs to avoid possible memory leaks with `model.predict` on newest TensorFlow.
+            https://github.com/tensorflow/tensorflow/issues/58676
+            Inferences will probably be way faster too.
     Raises:
         ValueError: If the model type is not classifier
     Returns:

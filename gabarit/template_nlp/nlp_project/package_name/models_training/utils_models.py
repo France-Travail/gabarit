@@ -286,8 +286,11 @@ def predict(content: Union[str, list], model, model_conf: dict, alternative_vers
         model (ModelClass): Model to use
         model_conf (dict): Model configurations
     Kwargs:
-        alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
-                                    Only available for Keras models.
+        alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used.
+            Should be faster with low nb of inputs. Only useful for Keras models.
+            We advise you to set `alternative_version` to True for APIs to avoid possible memory leaks with `model.predict` on newest TensorFlow.
+            https://github.com/tensorflow/tensorflow/issues/58676
+            Inferences will probably be way faster too.
     Returns:
         list: a list of strings (resp. tuples) in case of mono-label (resp. multi-labels) classification predictions
     '''
@@ -320,8 +323,11 @@ def predict_with_proba(content: Union[str, list], model, model_conf: dict, alter
         model (ModelClass): Model to use
         model_conf (dict): Model configurations
     Kwargs:
-        alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
-                                    Only available for Keras models.
+        alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used.
+            Should be faster with low nb of inputs. Only useful for Keras models.
+            We advise you to set `alternative_version` to True for APIs to avoid possible memory leaks with `model.predict` on newest TensorFlow.
+            https://github.com/tensorflow/tensorflow/issues/58676
+            Inferences will probably be way faster too.
     Returns:
         MONO-LABEL CLASSIFICATION:
             List[str]: predictions

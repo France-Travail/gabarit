@@ -259,7 +259,7 @@ class ModelAggregation(ModelClass):
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
             return_proba (bool): If the function should return the probabilities instead of the classes
         Kwargs:
-            alternative_version (bool): If an alternative version must be used for Keras models. Should be faster with low nb of inputs.
+            alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used for Keras models. Should be faster with low nb of inputs.
         Returns:
             np.ndarray: array of shape = [n_samples]
         '''
@@ -282,7 +282,7 @@ class ModelAggregation(ModelClass):
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
         Kwargs:
-            alternative_version (bool): If an alternative version must be used for Keras models. Should be faster with low nb of inputs.
+            alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used for Keras models. Should be faster with low nb of inputs.
         Returns:
             np.ndarray: array of shape = [n_samples, n_classes]
         '''
@@ -297,7 +297,7 @@ class ModelAggregation(ModelClass):
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
         Kwargs:
-            alternative_version (bool): If an alternative version must be used for Keras models. Should be faster with low nb of inputs.
+            alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used for Keras models. Should be faster with low nb of inputs.
         Returns:
             np.ndarray: array of shape = [n_samples, nb_model, nb_classes]
         '''
@@ -313,7 +313,7 @@ class ModelAggregation(ModelClass):
         Args:
             x_test (?): array-like or sparse matrix of shape = [n_samples, n_features]
         Kwargs:
-            alternative_version (bool): If an alternative version must be used for Keras models. Should be faster with low nb of inputs.
+            alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used for Keras models. Should be faster with low nb of inputs.
         Returns:
             np.ndarray: not multi_label : array of shape = [n_samples, nb_model]
                         multi_label : array of shape = [n_samples, nb_model, n_classes]
@@ -336,7 +336,7 @@ class ModelAggregation(ModelClass):
             x_test (?): Array-like or sparse matrix of shape = [n_samples, n_features]
             return_proba (bool): If the function should return the probabilities instead of the classes
         Kwargs:
-            alternative_version (bool): If an alternative version must be used for Keras models. Should be faster with low nb of inputs.
+            alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used for Keras models. Should be faster with low nb of inputs.
         Returns:
             np.ndarray: The array with the missing columns added
         '''

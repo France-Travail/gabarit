@@ -311,7 +311,7 @@ class ModelKeras(ModelClass):
             x_test (pd.DataFrame): DataFrame with the test data to be predicted
         Kwargs:
             return_proba (bool): If the function should return the probabilities instead of the classes
-            alternative_version (bool): If an alternative predict version must be used. Should be faster with low nb of inputs.
+            alternative_version (bool): If an alternative predict version (`tf.function` + `model.__call__`) must be used. Should be faster with low nb of inputs.
         Raises:
             ValueError: If the model is not classifier and return_proba=True
             ValueError: If the model is neither a classifier nor a regressor
@@ -344,7 +344,7 @@ class ModelKeras(ModelClass):
             x_test (pd.DataFrame): DataFrame with the test data to be predicted
         Kwargs:
             return_proba (boolean): If the function should return the probabilities instead of the classes
-            alternative_version (bool): If an alternative predict version must be used. Should be faster with low nb of inputs.
+            alternative_version (bool): If an alternative predict version (`tf.function` + `model.__call__`) must be used. Should be faster with low nb of inputs.
         Raises:
             ValueError: If the model is not of classifier type
         Returns:
@@ -359,6 +359,10 @@ class ModelKeras(ModelClass):
         if alternative_version:
             predicted_proba = self._alternative_predict_proba(x_test)
         else:
+            # We advise you to avoid using model.predict with newest TensorFlow versions (possible memory leak) in a production environment (e.g. API)
+            # https://github.com/tensorflow/tensorflow/issues/58676
+            # Instead, you can use the alternative version that uses tf.function decorator & model.__call__
+            # However, it should still be better to use `model.predict` for one-shot, batch mode, large input, iterations.
             predicted_proba = self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
         # We return the probabilities if wanted
@@ -374,7 +378,7 @@ class ModelKeras(ModelClass):
         Args:
             x_test (pd.DataFrame): DataFrame with the test data to be predicted
         Kwargs:
-            alternative_version (bool): If an alternative predict version must be used. Should be faster with low nb of inputs.
+            alternative_version (bool): If an alternative predict version (`tf.function` + `model.__call__`) must be used. Should be faster with low nb of inputs.
         Raises:
             ValueError: If the model is not of regressor type
         Returns:
@@ -387,6 +391,9 @@ class ModelKeras(ModelClass):
         if alternative_version:
             predictions = self._alternative_predict_proba(x_test)
         else:
+            # We advise you to avoid using model.predict with newest TensorFlow versions (possible memory leak) in a production environment (e.g. API)
+            # https://github.com/tensorflow/tensorflow/issues/58676
+            # Instead, you can use the alternative version that uses tf.function decorator & model.__call__
             predictions = self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
         # Finally, we get the final format
@@ -401,7 +408,7 @@ class ModelKeras(ModelClass):
         Args:
             x_test (pd.DataFrame): Array-like, shape = [n_samples, n_features]
         Kwargs:
-            alternative_version (bool): If an alternative predict version must be used. Should be faster with low nb of inputs.
+            alternative_version (bool): If an alternative predict version (`tf.function` + `model.__call__`) must be used. Should be faster with low nb of inputs.
         Raises:
             ValueError: If model not classifier
         Returns:
