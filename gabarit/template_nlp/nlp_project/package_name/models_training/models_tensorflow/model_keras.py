@@ -320,7 +320,7 @@ class ModelKeras(ModelClass):
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Kwargs:
             return_proba (bool): If the function should return the probabilities instead of the classes
-            alternative_version (bool): If an alternative predict version must be used. Should be faster with low nb of inputs.
+            alternative_version (bool): If an alternative predict version (`tf.function` + `model.__call__`) must be used. Should be faster with low nb of inputs.
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
@@ -345,7 +345,7 @@ class ModelKeras(ModelClass):
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
         Kwargs:
-            alternative_version (bool): If an alternative predict version must be used. Should be faster with low nb of inputs.
+            alternative_version (bool): If an alternative predict version (`tf.function` + `model.__call__`) must be used. Should be faster with low nb of inputs.
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
@@ -355,6 +355,10 @@ class ModelKeras(ModelClass):
         if alternative_version:
             return self._alternative_predict_proba(x_test)
         else:
+            # We advise you to avoid using `model.predict` with newest TensorFlow versions (possible memory leak) in a production environment (e.g. API)
+            # https://github.com/tensorflow/tensorflow/issues/58676
+            # Instead, you can use the alternative version that uses tf.function decorator & model.__call__
+            # However, it should still be better to use `model.predict` for one-shot, batch mode, large input, iterations.
             return self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
 
     @utils.trained_needed
@@ -369,7 +373,7 @@ class ModelKeras(ModelClass):
         '''
         return self._serve(x_test).numpy()
 
-    @tf.function
+    @tf.function(reduce_retracing=True)  # reduce_retracing must be set to avoid retracing (tensors with different shapes)
     def _serve(self, x: np.ndarray):
         '''Improves predict function using tf.function (cf. https://www.tensorflow.org/guide/function)
 
