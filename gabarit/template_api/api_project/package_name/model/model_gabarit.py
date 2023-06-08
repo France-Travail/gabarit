@@ -116,7 +116,12 @@ class ModelGabarit(Model):
         if isinstance(content, list) or isinstance(content, dict):
             content = pd.DataFrame(content)
 
-        return utils_models.predict(content, model=self._model, model_conf=self._model_conf, **kwargs)
+        # For APIs, we default to alternative_version = True
+        # It uses `tf.function` and `model.__call__` which is way faster for low number of inputs
+        # It also prevents some memory issues with newest version of TensorFlow
+        # https://github.com/tensorflow/tensorflow/issues/58676
+        return utils_models.predict(content, model=self._model, model_conf=self._model_conf,
+                                    alternative_version=True, **kwargs)
 
     def explain_as_json(self, content: Any, *args, **kwargs) -> Union[dict, list]:
         """Compute explanations about a prediction and return a JSON serializable object"""
