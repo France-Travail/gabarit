@@ -612,7 +612,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test09_model_lgbm_classifier_fit_with_seed(self):
+    def test09_model_dense_classifier_fit_with_seed(self):
         '''Test random seed for {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier.ModelDenseClassifier'''
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')

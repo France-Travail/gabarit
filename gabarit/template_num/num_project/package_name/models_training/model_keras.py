@@ -103,7 +103,7 @@ class ModelKeras(ModelClass):
     # -> reload_from_standalone
 
     def __init__(self, batch_size: int = 64, epochs: int = 99, validation_split: float = 0.2,
-                 patience: int = 5, keras_params: Union[dict, None] = None,  **kwargs) -> None:
+                 patience: int = 5, keras_params: Union[dict, None] = None, **kwargs) -> None:
         '''Initialization of the class (see ModelClass for more arguments)
 
         Kwargs:

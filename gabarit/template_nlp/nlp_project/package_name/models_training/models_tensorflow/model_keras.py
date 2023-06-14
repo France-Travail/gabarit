@@ -681,7 +681,6 @@ class ModelKeras(ModelClass):
         json_data['patience'] = self.patience
         json_data['embedding_name'] = self.embedding_name
         json_data['keras_params'] = self.keras_params
-        json_data['random_seed'] = self.random_seed
 
         if self.model is not None:
             json_data['keras_model'] = json.loads(self.model.to_json())

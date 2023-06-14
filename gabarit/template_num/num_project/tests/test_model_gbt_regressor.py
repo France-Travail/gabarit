@@ -36,6 +36,7 @@ logging.disable(logging.CRITICAL)
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
+    
 
 def compare_trees(tree1, tree2):
     '''Checks if two DecisionTreeClassifiers are equal

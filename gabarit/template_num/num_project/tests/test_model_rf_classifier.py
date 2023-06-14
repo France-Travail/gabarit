@@ -37,6 +37,7 @@ logging.disable(logging.CRITICAL)
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
+
 def compare_trees(tree1, tree2):
     '''Checks if two DecisionTreeClassifiers are equal
     Args:
@@ -52,6 +53,7 @@ def compare_trees(tree1, tree2):
     if not np.array_equal(state1["values"], state2["values"]):
         return False
     return True   
+
 
 class ModelRFClassifierTests(unittest.TestCase):
     '''Main class to test model_rf_classifier'''

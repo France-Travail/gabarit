@@ -40,6 +40,7 @@ logging.disable(logging.CRITICAL)
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
+
 def compare_keras_models(model1, model2):
     ''' Checks if all weights of each keras model layer are the same
     '''
@@ -49,6 +50,7 @@ def compare_keras_models(model1, model2):
         if not all(np.array_equal(weights1, weights2) for weights1, weights2 in zip(l1, l2)):
             return False
     return True
+
 
 class ModelDenseRegressorTests(unittest.TestCase):
     '''Main class to test model_dense_regressor'''

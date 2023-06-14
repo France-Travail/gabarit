@@ -156,9 +156,6 @@ class ModelTfidfDense(ModelKeras):
         if json_data is None:
             json_data = {}
 
-        # Add specific params
-        json_data['random_seed'] = self.random_seed
-
         # Add tfidf params
         confs = self.tfidf.get_params()
         # Get rid of some non serializable conf
