@@ -500,6 +500,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
+
     def test09_model_embedding_cnn_fit_with_seed(self):
         '''Test random seed for {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn'''
 

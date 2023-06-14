@@ -103,8 +103,8 @@ class ModelXgboostRegressor(ModelRegressorMixin, ModelClass):
 
         # Shuffle x, y if wanted
         if with_shuffle:
-            random_state = np.random.RandomState(self.random_seed)
-            p = random_state.permutation(len(x_train))
+            rng = np.random.RandomState(self.random_seed)
+            p = rng.permutation(len(x_train))
             x_train = np.array(x_train)[p]
             y_train = np.array(y_train)[p]
         # Else still transform to numpy array

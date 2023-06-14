@@ -80,7 +80,7 @@ class ModelDenseRegressor(ModelRegressorMixin, ModelKeras):
         x = Dense(64, activation=None, kernel_initializer=heUniform_ini)(x)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.2, seed=self.random_seed)(x)
+        x = Dropout(0.2, seed=self.random_seed + 1 if self.random_seed is not None else None)(x)
 
         # Last layer
         activation = None  # 'relu' if result should be > 0

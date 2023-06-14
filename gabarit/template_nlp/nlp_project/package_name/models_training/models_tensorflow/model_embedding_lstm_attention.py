@@ -212,7 +212,6 @@ class ModelEmbeddingLstmAttention(ModelKeras):
         json_data['padding'] = self.padding
         json_data['truncating'] = self.truncating
         json_data['tokenizer_filters'] = self.tokenizer_filters
-        json_data['random_seed'] = self.random_seed
 
         # Save tokenizer if not None & level_save > LOW
         if (self.tokenizer is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
