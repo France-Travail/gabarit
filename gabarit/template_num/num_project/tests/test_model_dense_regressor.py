@@ -23,7 +23,6 @@ from unittest.mock import patch
 import os
 import json
 import shutil
-import tensorflow
 import numpy as np
 import pandas as pd
 import tensorflow.keras as keras
