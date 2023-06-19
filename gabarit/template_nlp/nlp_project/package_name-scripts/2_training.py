@@ -65,9 +65,9 @@ warnings.filterwarnings("ignore", category=DeprecationWarning)
 logger = logging.getLogger('{{package_name}}.2_training')
 
 
-def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]], 
-         random_seed: Union[int, None] = None, 
+def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]],
          filename_valid: Union[str, None] = None,
+         random_seed: Union[int, None] = None, 
          min_rows: Union[int, None] = None, level_save: str = 'HIGH',
          sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}',
          model: Union[Type[ModelClass], None] = None,
