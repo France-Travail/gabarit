@@ -1981,15 +1981,15 @@ def test_model_multi_class_mono_label(test_class, test_model):
 class Case4_MultiClassMonoLabel(unittest.TestCase):
     '''Class to test the multi-classes / mono-label case'''
 
-    # def test01_PrepareDatasets(self):
-    #     '''Prepares the datasets'''
-    #     print("Prepares the datasets for the multi-classes / mono-label case")
+    def test01_PrepareDatasets(self):
+        '''Prepares the datasets'''
+        print("Prepares the datasets for the multi-classes / mono-label case")
 
-    #     # Gen. datasets
-    #     split_train_valid_test = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f multi_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
-    #     preprocessing = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/1_preprocess_data.py --overwrite -f multi_class_mono_label_train.csv multi_class_mono_label_valid.csv -p preprocess_P1 --input_col x_col"
-    #     self.assertEqual(subprocess.run(split_train_valid_test, shell=True).returncode, 0)
-    #     self.assertEqual(subprocess.run(preprocessing, shell=True).returncode, 0)
+        # Gen. datasets
+        split_train_valid_test = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_split_train_valid_test.py --overwrite -f multi_class_mono_label.csv --split_type random --perc_train 0.6 --perc_valid 0.2 --perc_test 0.2 --x_col x_col --y_col y_col --seed 42"
+        preprocessing = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/1_preprocess_data.py --overwrite -f multi_class_mono_label_train.csv multi_class_mono_label_valid.csv -p preprocess_P1 --input_col x_col"
+        self.assertEqual(subprocess.run(split_train_valid_test, shell=True).returncode, 0)
+        self.assertEqual(subprocess.run(preprocessing, shell=True).returncode, 0)
 
     # def test02_Model_TfidfSvm(self):
     #     '''Test of the model TF-IDF/SVM'''
