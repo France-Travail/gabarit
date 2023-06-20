@@ -266,8 +266,8 @@ if __name__ == '__main__':
     parser.add_argument('--pip_index_url', default=None, help="PIP index-url argument to be used.")
     parser.add_argument('unittest_args', nargs='*', help="Optional unitest args")
     args = parser.parse_args()
-    Case1_Env.pip_trusted_host = args.pip_trusted_host
-    Case1_Env.pip_index_url = args.pip_index_url
+    # Case1_Env.pip_trusted_host = args.pip_trusted_host
+    # Case1_Env.pip_index_url = args.pip_index_url
     sys.argv[1:] = args.unittest_args
 
     # Change directory to script directory parent
