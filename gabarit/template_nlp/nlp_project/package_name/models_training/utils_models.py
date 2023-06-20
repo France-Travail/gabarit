@@ -37,6 +37,7 @@ import os
 import gc
 import json
 import math
+import torch
 import pprint
 import shutil
 import logging
@@ -534,6 +535,52 @@ def search_hp_cv(model_cls, model_params: dict, hp_params: dict, scoring_fn: Uni
 
     # Return model to be fitted
     return best_model
+
+
+def init_kaiming_uniform_generator(weight, generator):
+    '''Initialize weight using kaiming uniform initializer from generator
+
+    Args:
+        weight (Tensor): n-dimensional torch.Tensor to initialize
+        generator (Generator): generator object that manages the state of the algorithm which produces pseudo random numbers
+    '''
+    with torch.random.fork_rng():
+        # Use specific generator
+        torch.random.set_rng_state(generator.get_state())
+        
+        # Initialise with kaiming_uniform_
+        torch.nn.init.kaiming_uniform_(weight, a=math.sqrt(5))
+
+
+def init_normal_generator(weight, generator):
+    '''Initialize weight using normal initializer from generator
+
+    Args:
+        weight (Tensor): n-dimensional torch.Tensor to initialize
+        generator (Generator): generator object that manages the state of the algorithm which produces pseudo random numbers
+    '''
+    with torch.random.fork_rng():
+        # Use specific generator
+        torch.random.set_rng_state(generator.get_state())
+        
+        # Initialise with normal_
+        torch.nn.init.normal_(weight)
+
+
+def init_uniform_generator(bias, bound, generator):
+    '''Initialize weight using uniform initializer from generator
+
+    Args:
+        weight (Tensor): n-dimensional torch.Tensor to initialize
+        bound (float): bound of the uniform distribution
+        generator (Generator): generator object that manages the state of the algorithm which produces pseudo random numbers
+    '''
+    with torch.random.fork_rng():
+        # Use specific generator
+        torch.random.set_rng_state(generator.get_state())
+        
+        # Initialise with uniform_
+        torch.nn.init.uniform_(bias, -bound, bound)
 
 
 if __name__ == '__main__':

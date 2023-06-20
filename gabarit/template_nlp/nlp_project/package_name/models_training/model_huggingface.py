@@ -43,6 +43,7 @@ from transformers import (AutoModelForSequenceClassification, TrainingArguments,
                           TrainerCallback, EarlyStoppingCallback)
 
 from .. import utils
+from . import utils_models
 from . import hf_metrics
 from .model_class import ModelClass
 
@@ -452,12 +453,12 @@ class ModelHuggingFace(ModelClass):
             generator.manual_seed(self.random_seed)
             for name, module in model.named_modules():
                 if isinstance(module, torch.nn.Linear):
-                    utils.init_kaiming_uniform_generator(module.weight, generator)
+                    utils_models.init_kaiming_uniform_generator(module.weight, generator)
                     fan_in, _ = torch.nn.init._calculate_fan_in_and_fan_out(module.weight)
                     bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
-                    utils.init_uniform_generator(module.bias, bound, generator)
+                    utils_models.init_uniform_generator(module.bias, bound, generator)
                 if isinstance(module, torch.nn.Embedding):
-                        utils.init_normal_generator(module.weight, generator)
+                        utils_models.init_normal_generator(module.weight, generator)
 
         # Set model on gpu if available
         model = model.to('cuda') if self._is_gpu_activated() else model.to('cpu')
