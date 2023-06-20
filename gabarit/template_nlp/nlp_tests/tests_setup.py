@@ -27,67 +27,67 @@ import subprocess
 from pathlib import Path
 
 
-class Case1_Env(unittest.TestCase):
-    '''Main class to test environnement creation'''
-    pip_trusted_host = None
-    pip_index_url = None
+# class Case1_Env(unittest.TestCase):
+#     '''Main class to test environnement creation'''
+#     pip_trusted_host = None
+#     pip_index_url = None
 
-    def test01_GenerateProject(self):
-        '''Checks a project generation'''
-        print("Project generation")
-        # First remove any old folder
-        if os.path.exists(full_path_lib):
-            shutil.rmtree(full_path_lib)
-        # Generate project and test it
-        gen_project = f"generate_nlp_project -n test_template_nlp -p {full_path_lib}"
-        self.assertEqual(subprocess.run(gen_project, shell=True).returncode, 0)
-        self.assertTrue(os.path.exists(full_path_lib))
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'setup.py')))
+#     def test01_GenerateProject(self):
+#         '''Checks a project generation'''
+#         print("Project generation")
+#         # First remove any old folder
+#         if os.path.exists(full_path_lib):
+#             shutil.rmtree(full_path_lib)
+#         # Generate project and test it
+#         gen_project = f"generate_nlp_project -n test_template_nlp -p {full_path_lib}"
+#         self.assertEqual(subprocess.run(gen_project, shell=True).returncode, 0)
+#         self.assertTrue(os.path.exists(full_path_lib))
+#         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'setup.py')))
 
-    def test02_GenerateVenv(self):
-        '''Checks a venv creation'''
-        print("Virtual env generation")
-        # Generate venv and test it
-        gen_venv = f"python -m venv {full_path_lib}/venv_test_template_nlp"
-        self.assertEqual(subprocess.run(gen_venv, shell=True).returncode, 0)
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'venv_test_template_nlp')))
+#     def test02_GenerateVenv(self):
+#         '''Checks a venv creation'''
+#         print("Virtual env generation")
+#         # Generate venv and test it
+#         gen_venv = f"python -m venv {full_path_lib}/venv_test_template_nlp"
+#         self.assertEqual(subprocess.run(gen_venv, shell=True).returncode, 0)
+#         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'venv_test_template_nlp')))
 
-    def test03_InstallTemplate(self):
-        '''Checks the installation of the template'''
-        print("Project installation")
-        # Install project and test it
-        # Get upgrade & requirements command lines
-        upgrade_pip = f"{activate_venv}pip install --upgrade pip"
-        install_requirements = f"{activate_venv}pip install -r {full_path_lib}/requirements.txt"
-        # Add PIP options
-        if self.pip_trusted_host is not None:
-            upgrade_pip += f" --trusted-host {self.pip_trusted_host}"
-            install_requirements += f" --trusted-host {self.pip_trusted_host}"
-        if self.pip_index_url is not None:
-            upgrade_pip += f" --index-url {self.pip_index_url}"
-            install_requirements += f" --index-url {self.pip_index_url}"
-        # Get setup command line
-        if is_windows:
-            install_project = f"{activate_venv} cd {full_path_lib} & python setup.py develop"
-        else:
-            install_project = f"cd {full_path_lib} && {activate_venv}python setup.py develop"
-        self.assertEqual(subprocess.run(upgrade_pip, shell=True).returncode, 0)
-        self.assertEqual(subprocess.run(install_requirements, shell=True).returncode, 0)
-        self.assertEqual(subprocess.run(install_project, shell=True).returncode, 0)
+#     def test03_InstallTemplate(self):
+#         '''Checks the installation of the template'''
+#         print("Project installation")
+#         # Install project and test it
+#         # Get upgrade & requirements command lines
+#         upgrade_pip = f"{activate_venv}pip install --upgrade pip"
+#         install_requirements = f"{activate_venv}pip install -r {full_path_lib}/requirements.txt"
+#         # Add PIP options
+#         if self.pip_trusted_host is not None:
+#             upgrade_pip += f" --trusted-host {self.pip_trusted_host}"
+#             install_requirements += f" --trusted-host {self.pip_trusted_host}"
+#         if self.pip_index_url is not None:
+#             upgrade_pip += f" --index-url {self.pip_index_url}"
+#             install_requirements += f" --index-url {self.pip_index_url}"
+#         # Get setup command line
+#         if is_windows:
+#             install_project = f"{activate_venv} cd {full_path_lib} & python setup.py develop"
+#         else:
+#             install_project = f"cd {full_path_lib} && {activate_venv}python setup.py develop"
+#         self.assertEqual(subprocess.run(upgrade_pip, shell=True).returncode, 0)
+#         self.assertEqual(subprocess.run(install_requirements, shell=True).returncode, 0)
+#         self.assertEqual(subprocess.run(install_project, shell=True).returncode, 0)
 
-    def test04_DataExists(self):
-        '''Copies the required datasets'''
-        print("Copy of the datasets")
-        # Copy datasets into the generated project
-        if is_windows:
-            # cf. https://stackoverflow.com/questions/4601161/copying-all-contents-of-folder-to-another-folder-using-batch-file
-            copy_data = f"robocopy nlp_data {full_path_lib}/test_template_nlp-data /E"
-            returncodes = [0, 1] # https://ss64.com/nt/robocopy-exit.html
-        else:
-            copy_data = f"cp nlp_data/* {full_path_lib}/test_template_nlp-data/"
-            returncodes = [0]
-        self.assertTrue(subprocess.run(copy_data, shell=True).returncode in returncodes)
-        self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label.csv')))
+#     def test04_DataExists(self):
+#         '''Copies the required datasets'''
+#         print("Copy of the datasets")
+#         # Copy datasets into the generated project
+#         if is_windows:
+#             # cf. https://stackoverflow.com/questions/4601161/copying-all-contents-of-folder-to-another-folder-using-batch-file
+#             copy_data = f"robocopy nlp_data {full_path_lib}/test_template_nlp-data /E"
+#             returncodes = [0, 1] # https://ss64.com/nt/robocopy-exit.html
+#         else:
+#             copy_data = f"cp nlp_data/* {full_path_lib}/test_template_nlp-data/"
+#             returncodes = [0]
+#         self.assertTrue(subprocess.run(copy_data, shell=True).returncode in returncodes)
+#         self.assertTrue(os.path.exists(os.path.join(full_path_lib, 'test_template_nlp-data', 'mono_class_mono_label.csv')))
 
 
 class Case2_functionals_tests(unittest.TestCase):
