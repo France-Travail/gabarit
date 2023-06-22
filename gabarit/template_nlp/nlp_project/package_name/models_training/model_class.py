@@ -927,7 +927,7 @@ class ModelClass:
         model.nb_fit = configs.get('nb_fit', 1)  # Consider one unique fit by default
         model.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'random_seed']:
             setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
 
         # Return the new model

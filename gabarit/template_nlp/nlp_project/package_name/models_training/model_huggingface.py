@@ -21,12 +21,11 @@
 
 
 import os
+import math
 import shutil
 import logging
 import numpy as np
 import pandas as pd
-import torch
-import math
 import dill as pickle
 import seaborn as sns
 from copy import deepcopy
@@ -462,9 +461,7 @@ class ModelHuggingFace(ModelClass):
 
         # Set model on gpu if available
         model = model.to('cuda') if self._is_gpu_activated() else model.to('cpu')
-        
         return model
-
 
     def _get_tokenizer(self, model_path: str = None) -> PreTrainedTokenizer:
         '''Gets a tokenizer

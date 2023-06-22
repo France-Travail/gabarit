@@ -765,7 +765,7 @@ class ModelKeras(ModelClass):
 
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['batch_size', 'epochs', 'validation_split', 'patience',
-                          'embedding_name', 'keras_params', 'random_seed']:
+                          'embedding_name', 'keras_params']:
             setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
 
         # Return the new model

@@ -33,7 +33,6 @@ from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.initializers import HeUniform, GlorotUniform
 from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout, Input
 
-
 from ... import utils_deep_keras
 from ...model_keras import ModelKeras
 from ..model_classifier import ModelClassifierMixin  # type: ignore

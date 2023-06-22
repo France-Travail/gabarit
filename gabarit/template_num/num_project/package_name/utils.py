@@ -336,7 +336,7 @@ def flatten(my_list: Iterable) -> Generator:
         if isinstance(el, Iterable) and not isinstance(el, (str, bytes)):
             yield from flatten(el)
         else:
-            yield el 
+            yield el
 
 
 # JSON encoder to manage numpy objects

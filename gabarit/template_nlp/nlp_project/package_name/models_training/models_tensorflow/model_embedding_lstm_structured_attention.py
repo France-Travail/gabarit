@@ -27,11 +27,11 @@
 
 import os
 import json
-import dill as pickle
 import logging
 import shutil
 import numpy as np
 import pandas as pd
+import dill as pickle
 import seaborn as sns
 from typing import Union, Any, List, Callable
 
@@ -344,7 +344,7 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
         model = super()._init_new_instance_from_configs(configs)
 
         # Try to read the following attributes from configs and, if absent, keep the current one
-        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'oov_token', 'tokenizer_filters', 'random_seed']:
+        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'oov_token', 'tokenizer_filters']:
             setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
 
         # Return the new model

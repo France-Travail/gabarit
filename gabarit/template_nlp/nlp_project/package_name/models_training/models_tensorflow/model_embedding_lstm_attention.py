@@ -27,19 +27,18 @@
 
 import os
 import json
-import dill as pickle
-import logging
 import shutil
+import logging
 import numpy as np
 import seaborn as sns
+import dill as pickle
 from typing import Union, Any, List, Callable
 
-import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.initializers import GlorotUniform, Orthogonal
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
+from tensorflow.keras.initializers import GlorotUniform, Orthogonal
 from tensorflow.keras.layers import (Dense, Input, Embedding, GlobalMaxPooling1D,
                                      GlobalAveragePooling1D, BatchNormalization, LSTM,
                                      GRU, SpatialDropout1D, Bidirectional, concatenate)
@@ -237,7 +236,7 @@ class ModelEmbeddingLstmAttention(ModelKeras):
         model = super()._init_new_instance_from_configs(configs)
 
         # Try to read the following attributes from configs and, if absent, keep the current one
-        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters', 'random_seed']:
+        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
             setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
 
         # Return the new model

@@ -23,10 +23,10 @@
 import os
 import json
 import shutil
-import dill as pickle
 import logging
 import numpy as np
 import seaborn as sns
+import dill as pickle
 from typing import Union, Any, List, Callable
 
 from tensorflow.keras.optimizers import Adam
@@ -203,7 +203,6 @@ class ModelEmbeddingCnn(ModelKeras):
         json_data['padding'] = self.padding
         json_data['truncating'] = self.truncating
         json_data['tokenizer_filters'] = self.tokenizer_filters
-        json_data['random_seed'] = self.random_seed
 
         # Save tokenizer if not None & level_save > LOW
         if (self.tokenizer is not None) and (self.level_save in ['MEDIUM', 'HIGH']):
@@ -229,7 +228,7 @@ class ModelEmbeddingCnn(ModelKeras):
         model = super()._init_new_instance_from_configs(configs)
 
         # Try to read the following attributes from configs and, if absent, keep the current one
-        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters', 'random_seed']:
+        for attribute in ['max_sequence_length', 'max_words', 'padding', 'truncating', 'tokenizer_filters']:
             setattr(model, attribute, configs.get(attribute, getattr(model, attribute)))
 
         # Return the new model
