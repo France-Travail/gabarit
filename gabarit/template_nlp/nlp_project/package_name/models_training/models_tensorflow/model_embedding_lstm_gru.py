@@ -155,7 +155,7 @@ class ModelEmbeddingLstmGru(ModelKeras):
         x = BatchNormalization(momentum=0.9)(x)
         x, state_h, state_c = Bidirectional(GRU(GRU_UNITS, return_sequences=True, return_state=True, 
                                                 kernel_initializer=GlorotUniform(random_state.randint(limit)), 
-                                                recurrent_initializer=Orthogonal(random_state.randint(limit))))(x)
+                                                recurrent_initializer=Orthogonal(seed=random_state.randint(limit))))(x)
         x = BatchNormalization(momentum=0.9)(x)
         state_h = BatchNormalization(momentum=0.9)(state_h)
         state_c = BatchNormalization(momentum=0.9)(state_c)
