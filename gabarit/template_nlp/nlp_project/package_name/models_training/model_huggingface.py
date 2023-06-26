@@ -30,6 +30,7 @@ import dill as pickle
 import seaborn as sns
 from copy import deepcopy
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 from typing import no_type_check, Union, Tuple, Any, Dict
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
@@ -114,6 +115,8 @@ class ModelHuggingFace(ModelClass):
                 'load_best_model_at_end': True
             }
         # TODO: maybe we should keep the default dict & only add/replace keys in provided dict ?
+
+        # By default huggingface uses seed = 42 if not specified
         if 'seed' not in trainer_params:
             trainer_params['seed'] = self.random_seed if self.random_seed is not None else 42
         self.trainer_params = trainer_params
@@ -239,12 +242,8 @@ class ModelHuggingFace(ModelClass):
         # If no valid set, split train set according to validation_split
         if y_valid is None:
             self.logger.warning(f"Warning, no validation set. The training set will be splitted (validation fraction = {self.validation_split})")
-            p = rng.permutation(len(x_train))
-            cutoff = int(len(x_train) * self.validation_split)
-            x_valid = x_train[p[0:cutoff]]
-            x_train = x_train[p[cutoff:]]
-            y_valid_dummies = y_train_dummies[p[0:cutoff]]
-            y_train_dummies = y_train_dummies[p[cutoff:]]
+            x_train, x_valid, y_train_dummies, y_valid_dummies = train_test_split(x_train, y_train_dummies, test_size=self.validation_split,
+                                                                                  random_state=self.random_seed)
 
         ##############################################
         # Get model & prepare datasets
@@ -286,7 +285,7 @@ class ModelHuggingFace(ModelClass):
             # Save model & tokenizer
             hf_model_dir = os.path.join(self.model_dir, 'hf_model')
             hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
-            trainer.model.save_pretrained(save_directory=hf_model_dir)
+            self.model.save_pretrained(save_directory=hf_model_dir)
             self.tokenizer.save_pretrained(save_directory=hf_tokenizer_dir)
             self.trainer_model = trainer.model
             # Remove checkpoint dir if save total limit is set to 1 (no need to keep this as we resave the model)
@@ -438,26 +437,16 @@ class ModelHuggingFace(ModelClass):
         # Return model if already set
         if self.model is not None:
             return self.model
-
-        model = AutoModelForSequenceClassification.from_pretrained(
-                self.transformer_name if model_path is None else model_path,
-                num_labels=len(self.list_classes) if num_labels is None else num_labels,
-                problem_type="multi_label_classification" if self.multi_label else "single_label_classification",
-                {% if huggingface_proxies is not none %}proxies={{huggingface_proxies}},
-                {% endif %}cache_dir=HF_CACHE_DIR)
-        
-        # Manually initialize weights if random_seed is not None
-        if self.random_seed is not None:
-            generator = torch.Generator()
-            generator.manual_seed(self.random_seed)
-            for name, module in model.named_modules():
-                if isinstance(module, torch.nn.Linear):
-                    utils_models.init_kaiming_uniform_generator(module.weight, generator)
-                    fan_in, _ = torch.nn.init._calculate_fan_in_and_fan_out(module.weight)
-                    bound = 1 / math.sqrt(fan_in) if fan_in > 0 else 0
-                    utils_models.init_uniform_generator(module.bias, bound, generator)
-                if isinstance(module, torch.nn.Embedding):
-                        utils_models.init_normal_generator(module.weight, generator)
+        generator = torch.Generator()
+        generator.manual_seed(self.random_seed)
+        with torch.random.fork_rng():
+            torch.random.set_rng_state(generator.get_state())
+            model = AutoModelForSequenceClassification.from_pretrained(
+                    self.transformer_name if model_path is None else model_path,
+                    num_labels=len(self.list_classes) if num_labels is None else num_labels,
+                    problem_type="multi_label_classification" if self.multi_label else "single_label_classification",
+                    {% if huggingface_proxies is not none %}proxies={{huggingface_proxies}},
+                    {% endif %}cache_dir=HF_CACHE_DIR)
 
         # Set model on gpu if available
         model = model.to('cuda') if self._is_gpu_activated() else model.to('cpu')

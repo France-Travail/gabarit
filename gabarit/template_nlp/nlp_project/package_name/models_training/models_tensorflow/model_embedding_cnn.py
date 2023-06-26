@@ -131,10 +131,10 @@ class ModelEmbeddingCnn(ModelKeras):
         # Get model
         num_classes = len(self.list_classes)
 
-        # Get kernel initializers
-        he_uniform_ini = HeUniform(self.random_seed)
-        glorot_uniform_ini = GlorotUniform(self.random_seed)
-
+        # Get random_state
+        random_state = np.random.RandomState(self.random_seed)
+        limit = 1e9
+        
         # Process
         model = Sequential()
 
@@ -143,29 +143,29 @@ class ModelEmbeddingCnn(ModelKeras):
                             input_length=self.max_sequence_length,
                             trainable=False))
 
-        model.add(Conv1D(128, 3, activation=None, kernel_initializer=he_uniform_ini))
+        model.add(Conv1D(128, 3, activation=None, kernel_initializer=HeUniform(random_state.randint(limit))))
         model.add(BatchNormalization(momentum=0.9))
         model.add(ELU(alpha=1.0))
         model.add(AveragePooling1D(2))
 
-        model.add(Conv1D(128, 3, activation=None, kernel_initializer=he_uniform_ini))
+        model.add(Conv1D(128, 3, activation=None, kernel_initializer=HeUniform(random_state.randint(limit))))
         model.add(BatchNormalization(momentum=0.9))
         model.add(ELU(alpha=1.0))
         model.add(GlobalMaxPooling1D())
 
-        model.add(Dense(512, activation=None, kernel_initializer=he_uniform_ini))
+        model.add(Dense(512, activation=None, kernel_initializer=HeUniform(random_state.randint(limit))))
         model.add(BatchNormalization(momentum=0.9))
         model.add(ELU(alpha=1.0))
-        model.add(Dropout(0.5, seed=self.random_seed))
+        model.add(Dropout(0.5, seed=random_state.randint(limit)))
 
-        model.add(Dense(512, activation=None, kernel_initializer=he_uniform_ini))
+        model.add(Dense(512, activation=None, kernel_initializer=HeUniform(random_state.randint(limit))))
         model.add(BatchNormalization(momentum=0.9))
         model.add(ELU(alpha=1.0))
-        model.add(Dropout(0.5, seed=None if self.random_seed is None else self.random_seed + 1))
+        model.add(Dropout(0.5, seed=random_state.randint(limit)))
 
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        model.add(Dense(num_classes, activation=activation, kernel_initializer=glorot_uniform_ini))
+        model.add(Dense(num_classes, activation=activation, kernel_initializer=GlorotUniform(random_state.randint(limit))))
 
         # Compile model
         lr = self.keras_params.get('learning_rate', 0.002)

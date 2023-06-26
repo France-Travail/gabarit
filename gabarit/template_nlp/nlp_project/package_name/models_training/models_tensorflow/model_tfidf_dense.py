@@ -102,30 +102,30 @@ class ModelTfidfDense(ModelKeras):
         input_dim = len(self.tfidf.get_feature_names())
         num_classes = len(self.list_classes)
 
-        # Get kernel initializer
-        glorot_uniform_ini = GlorotUniform(self.random_seed)
-        he_uniform_ini = HeUniform(self.random_seed)
+        # Get random_state
+        random_state = np.random.RandomState(self.random_seed)
+        limit = 1e9
 
         # Process
         tfidf_features = Input(shape=(input_dim,))
-        x = Dense(128, activation=None, kernel_initializer=he_uniform_ini)(tfidf_features)
+        x = Dense(128, activation=None, kernel_initializer=HeUniform(random_state.randint(limit)))(tfidf_features)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.5, seed=self.random_seed)(x)
+        x = Dropout(0.5,seed=random_state.randint(limit))(x)
 
-        x = Dense(64, activation=None, kernel_initializer=he_uniform_ini)(x)
+        x = Dense(64, activation=None, kernel_initializer=HeUniform(random_state.randint(limit)))(x)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.5, seed=self.random_seed + 1 if self.random_seed is not None else None)(x)
+        x = Dropout(0.5, seed=random_state.randint(limit))(x)
 
-        x = Dense(32, activation=None, kernel_initializer=he_uniform_ini)(x)
+        x = Dense(32, activation=None, kernel_initializer=HeUniform(random_state.randint(limit)))(x)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.5, seed=self.random_seed + 2 if self.random_seed is not None else None)(x)
+        x = Dropout(0.5, seed=random_state.randint(limit))(x)
 
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        out = Dense(num_classes, activation=activation, kernel_initializer=glorot_uniform_ini)(x)
+        out = Dense(num_classes, activation=activation, kernel_initializer=GlorotUniform(random_state.randint(limit)))(x)
 
         # Compile model
         model = Model(inputs=tfidf_features, outputs=[out])

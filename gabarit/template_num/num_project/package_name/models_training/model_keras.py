@@ -54,27 +54,20 @@ sns.set(style="darkgrid")
 class RandomStateDataGenerator(Sequence):
     '''Custom data generator to control batch randomness with random_state'''
 
-    def __init__(self, x_train: np.ndarray, y_train: np.ndarray, batch_size: int,
-                  random_state: np.random.RandomState, shuffle_batches: bool):
+    def __init__(self, x_train: np.ndarray, y_train: np.ndarray, batch_size: int = 32,
+                  random_seed: Union[int, None] = None):
         '''Initialization of the class
-
         Args:
             x_train (ndarray): training features
             y_train (ndarray): training outputs
             batch_size (int): Batch size
-            random_state (np.random.RandomState): RandomState to control shuffle randomness
-            shuffle_batches (bool): Shuffle batches between epochs
+            random_seed (int or None): seed to use for random_state initialization
         '''
         self.x = x_train
         self.y = y_train
         self.batch_size = batch_size
-        self.random_state = random_state
-        self.shuffle_batches = shuffle_batches
-
-        if self.shuffle_batches:
-            self.indices = shuffle(np.arange(len(self.x)), random_state=self.random_state)
-        else:
-            self.indices = np.arange(len(self.x))
+        self.random_state = np.random.RandomState(seed=random_seed)
+        self.indices = shuffle(np.arange(len(self.x)), random_state=self.random_state)
 
 
     def __len__(self):
@@ -89,8 +82,7 @@ class RandomStateDataGenerator(Sequence):
     
     
     def on_epoch_end(self):
-        if self.shuffle_batches: 
-            self.indices = shuffle(np.arange(len(self.x)), random_state=self.random_state)
+        self.indices = shuffle(np.arange(len(self.x)), random_state=self.random_state)
 
 
 class ModelKeras(ModelClass):
@@ -146,8 +138,7 @@ class ModelKeras(ModelClass):
         # Keras custom objects : we get the ones specified in utils_deep_keras
         self.custom_objects = utils_deep_keras.custom_objects
 
-    def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True,
-            shuffle_batches: bool = True, **kwargs) -> None:
+    def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:
         '''Fits the model
 
         Args:
@@ -159,7 +150,6 @@ class ModelKeras(ModelClass):
             with_shuffle (bool): If x, y must be shuffled before fitting
                 This should be used if y is not shuffled as the split_validation takes the lines in order.
                 Thus, the validation set might get classes which are not in the train set ...
-            shuffle_batches (bool): If batches must be shuffled between epochs
         Raises:
             ValueError: If different classes when comparing an already fitted model and a new dataset
         '''
@@ -290,9 +280,8 @@ class ModelKeras(ModelClass):
         callbacks = self._get_callbacks()
 
         # Create data generator
-        random_state = np.random.RandomState(self.random_seed)
-        data_train_generator = RandomStateDataGenerator(x_train, y_train, self.batch_size, random_state, shuffle_batches)
-        data_val_generator = RandomStateDataGenerator(x_valid, y_valid, self.batch_size, random_state, shuffle_batches)
+        data_train_generator = RandomStateDataGenerator(x_train, y_train, self.batch_size, self.random_seed)
+        data_val_generator = RandomStateDataGenerator(x_valid, y_valid, self.batch_size, self.random_seed)
         
         # Fit
         # We use a try...except in order to save the model if an error arises

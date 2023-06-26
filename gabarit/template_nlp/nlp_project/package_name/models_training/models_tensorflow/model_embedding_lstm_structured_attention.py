@@ -158,17 +158,17 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
         # Get model
         num_classes = len(self.list_classes)
 
-        # Get kernel initializer
-        glorot_uniform_ini = GlorotUniform(self.random_seed)
-        orthogonal_ini = Orthogonal(seed=self.random_seed)
+        # Get random_state
+        random_state = np.random.RandomState(self.random_seed)
+        limit = 1e9
 
         # Process
         words = Input(shape=(self.max_sequence_length,))
         x = Embedding(input_dim, embedding_size, weights=[embedding_matrix], trainable=False)(words)
-        h = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_initializer=glorot_uniform_ini, 
-                               recurrent_initializer=orthogonal_ini))(x)
-        x = Dense(dense_size, activation='tanh', kernel_initializer=glorot_uniform_ini)(h)  # tanh(W_{S1}*H^T) , H^T = x (LSTM output), dim = d_a*2u
-        a = Dense(attention_hops, activation=utils_deep_keras.softmax_axis, kernel_initializer=glorot_uniform_ini)(x)  # softmax(W_{s2}*X) = A
+        h = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_initializer=GlorotUniform(random_state.randint(limit)), 
+                               recurrent_initializer=Orthogonal(seed=random_state.randint(limit))))(x)
+        x = Dense(dense_size, activation='tanh', kernel_initializer=GlorotUniform(random_state.randint(limit)))(h)  # tanh(W_{S1}*H^T) , H^T = x (LSTM output), dim = d_a*2u
+        a = Dense(attention_hops, activation=utils_deep_keras.softmax_axis, kernel_initializer=GlorotUniform(random_state.randint(limit)))(x)  # softmax(W_{s2}*X) = A
         at = tf.transpose(a, perm=[0, 2, 1], name="attention_layer")  # At, used in Kaushalshetty project, output dim = (r,n)
         # Trick to name the attention layer (does not work with TensorFlow layers)
         # https://github.com/keras-team/keras/issues/6194#issuecomment-416365112
@@ -178,7 +178,7 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
 
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        out = Dense(num_classes, activation=activation, kernel_initializer=glorot_uniform_ini)(x)
+        out = Dense(num_classes, activation=activation, kernel_initializer=GlorotUniform(random_state.randint(limit)))(x)
 
         # Compile model
         model = Model(inputs=words, outputs=[out])

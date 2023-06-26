@@ -24,6 +24,7 @@ import os
 import json
 import shutil
 import logging
+import numpy as np
 import dill as pickle
 from typing import Union, List, Callable
 
@@ -65,26 +66,26 @@ class ModelDenseClassifier(ModelClassifierMixin, ModelKeras):
         input_dim = len(self.x_col)
         num_classes = len(self.list_classes)
 
-        # Get kernel initializers
-        heUniform_ini = HeUniform(self.random_seed)
-        glorotUniform_ini = GlorotUniform(self.random_seed)
+        # Get random_state
+        random_state = np.random.RandomState(self.random_seed)
+        limit = 1e9
 
         # Process
         input_layer = Input(shape=(input_dim,))
 
-        x = Dense(64, activation=None, kernel_initializer=heUniform_ini)(input_layer)
+        x = Dense(64, activation=None, kernel_initializer=HeUniform(random_state.randint(limit)))(input_layer)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.2, seed=self.random_seed)(x)
+        x = Dropout(0.2, seed=random_state.randint(limit))(x)
 
-        x = Dense(64, activation=None, kernel_initializer=heUniform_ini)(x)
+        x = Dense(64, activation=None, kernel_initializer=HeUniform(random_state.randint(limit)))(x)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.2, seed=self.random_seed + 1 if self.random_seed is not None else None)(x)
+        x = Dropout(0.2, seed=random_state.randint(limit))(x)
 
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        out = Dense(num_classes, activation=activation, kernel_initializer=glorotUniform_ini)(x)
+        out = Dense(num_classes, activation=activation, kernel_initializer=GlorotUniform(random_state.randint(limit)))(x)
 
         # Set model
         model = Model(inputs=input_layer, outputs=[out])
