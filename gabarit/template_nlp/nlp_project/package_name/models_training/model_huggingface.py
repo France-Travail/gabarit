@@ -438,7 +438,7 @@ class ModelHuggingFace(ModelClass):
         if self.model is not None:
             return self.model
         generator = torch.Generator()
-        generator.manual_seed(self.random_seed if self.random_seed is not None else np.random.randint(1e9))
+        generator.manual_seed(self.random_seed if self.random_seed is not None else np.random.randint(int(1e9)))
         with torch.random.fork_rng():
             torch.random.set_rng_state(generator.get_state())
             model = AutoModelForSequenceClassification.from_pretrained(
