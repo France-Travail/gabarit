@@ -133,7 +133,7 @@ class ModelEmbeddingCnn(ModelKeras):
 
         # Get random_state
         random_state = np.random.RandomState(self.random_seed)
-        limit = 1e9
+        limit = int(1e9)
         
         # Process
         model = Sequential()
