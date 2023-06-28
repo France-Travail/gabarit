@@ -1112,7 +1112,8 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             test_model = model_huggingface.ModelHuggingFace(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             batch_size=16, epochs=2, patience=5,
                                                             transformer_name='Geotrend/distilbert-base-fr-cased',
-                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir,
+                                                            random_seed=42)
             # Test it
             test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
                       filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
@@ -1746,7 +1747,8 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             test_model = model_huggingface.ModelHuggingFace(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             batch_size=16, epochs=2, patience=5,
                                                             transformer_name='Geotrend/distilbert-base-fr-cased',
-                                                            multi_label=True, model_name=model_name, model_dir=model_dir)
+                                                            multi_label=True, model_name=model_name, model_dir=model_dir,
+                                                            random_seed=42)
             # Test it
             test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
                       filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
@@ -2412,7 +2414,8 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             test_model = model_huggingface.ModelHuggingFace(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                             batch_size=16, epochs=2, patience=5,
                                                             transformer_name='Geotrend/distilbert-base-fr-cased',
-                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir,
+                                                            random_seed=42)
             # Test it
             test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)
