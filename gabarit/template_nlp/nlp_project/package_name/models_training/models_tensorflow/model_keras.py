@@ -151,7 +151,7 @@ class ModelKeras(ModelClass):
         # Keras custom objects : we get the ones specified in utils_deep_keras
         self.custom_objects = utils_deep_keras.custom_objects
 
-    def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True) -> None:
+    def fit(self, x_train, y_train, x_valid=None, y_valid=None, with_shuffle: bool = True, **kwargs) -> None:
         '''Fits the model
 
         Args:
