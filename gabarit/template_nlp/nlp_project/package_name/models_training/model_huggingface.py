@@ -287,7 +287,6 @@ class ModelHuggingFace(ModelClass):
             hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
             self.model.save_pretrained(save_directory=hf_model_dir)
             self.tokenizer.save_pretrained(save_directory=hf_tokenizer_dir)
-            self.trainer_model = trainer.model
             # Remove checkpoint dir if save total limit is set to 1 (no need to keep this as we resave the model)
             if self.trainer_params.get('save_total_limit', None) == 1:
                 checkpoint_dirs = [_ for _ in os.listdir(self.model_dir) if _.startswith('checkpoint-')]

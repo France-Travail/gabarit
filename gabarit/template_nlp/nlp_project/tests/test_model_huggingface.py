@@ -902,12 +902,12 @@ class ModelHuggingFaceTests(unittest.TestCase):
         y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
 
         # Mono-label same random_seed
-        model1 = ModelHuggingFace(model_dir=model_dir, batch_size=32, epochs=1, multi_label=False,
+        model1 = ModelHuggingFace(model_dir=model_dir, batch_size=32, epochs=2, multi_label=False,
                                   max_sequence_length=10, max_words=100, random_seed=42,
                                   padding='pre', truncating='post',
                                   embedding_name='fake_embedding.pkl')
         model1.fit(x_train, y_train_mono)
-        model2 = ModelHuggingFace(model_dir=model_dir2, batch_size=32, epochs=1, multi_label=False,
+        model2 = ModelHuggingFace(model_dir=model_dir2, batch_size=32, epochs=2, multi_label=False,
                                   max_sequence_length=10, max_words=100, random_seed=42,
                                   padding='pre', truncating='post',
                                   embedding_name='fake_embedding.pkl')
@@ -916,45 +916,45 @@ class ModelHuggingFaceTests(unittest.TestCase):
         remove_dir(model_dir), remove_dir(model_dir2)
 
         # Multi-label same random_seed
-        model1 = ModelHuggingFace(model_dir=model_dir, batch_size=32, epochs=1, multi_label=True,
+        model1 = ModelHuggingFace(model_dir=model_dir, batch_size=32, epochs=2, multi_label=True,
                                   max_sequence_length=10, max_words=100, random_seed=42,
                                   padding='pre', truncating='post',
                                   embedding_name='fake_embedding.pkl')
         model1.fit(x_train, y_train_multi)
-        model2 = ModelHuggingFace(model_dir=model_dir2, batch_size=32, epochs=1, multi_label=True,
+        model2 = ModelHuggingFace(model_dir=model_dir2, batch_size=32, epochs=2, multi_label=True,
                                   max_sequence_length=10, max_words=100, random_seed=42,
                                   padding='pre', truncating='post',
                                   embedding_name='fake_embedding.pkl')
         model2.fit(x_train, y_train_multi)
-        self.assertTrue(compare_transformers_models(model1.trainer_model, model2.trainer_model))
+        self.assertTrue(compare_transformers_models(model1.model, model2.model))
         remove_dir(model_dir), remove_dir(model_dir2)
 
         # Mono-label different random_seed
-        model1 = ModelHuggingFace(model_dir=model_dir, batch_size=32, epochs=1, multi_label=False,
+        model1 = ModelHuggingFace(model_dir=model_dir, batch_size=32, epochs=2, multi_label=False,
                                   max_sequence_length=10, max_words=100, random_seed=42,
                                   padding='pre', truncating='post',
                                   embedding_name='fake_embedding.pkl')
         model1.fit(x_train, y_train_mono)
-        model2 = ModelHuggingFace(model_dir=model_dir2, batch_size=32, epochs=1, multi_label=False,
+        model2 = ModelHuggingFace(model_dir=model_dir2, batch_size=32, epochs=2, multi_label=False,
                                   max_sequence_length=10, max_words=100, random_seed=41,
                                   padding='pre', truncating='post',
                                   embedding_name='fake_embedding.pkl')
         model2.fit(x_train, y_train_mono)
-        self.assertFalse(compare_transformers_models(model1.trainer_model, model2.trainer_model))
+        self.assertFalse(compare_transformers_models(model1.model, model2.model))
         remove_dir(model_dir), remove_dir(model_dir2)
 
         # Multi-label different random_seed
-        model1 = ModelHuggingFace(model_dir=model_dir, batch_size=32, epochs=1, multi_label=True,
+        model1 = ModelHuggingFace(model_dir=model_dir, batch_size=32, epochs=2, multi_label=True,
                                   max_sequence_length=10, max_words=100, random_seed=42,
                                   padding='pre', truncating='post',
                                   embedding_name='fake_embedding.pkl')
         model1.fit(x_train, y_train_multi)
-        model2 = ModelHuggingFace(model_dir=model_dir2, batch_size=32, epochs=1, multi_label=True,
+        model2 = ModelHuggingFace(model_dir=model_dir2, batch_size=32, epochs=2, multi_label=True,
                                   max_sequence_length=10, max_words=100, random_seed=41,
                                   padding='pre', truncating='post',
                                   embedding_name='fake_embedding.pkl')
         model2.fit(x_train, y_train_multi)
-        self.assertFalse(compare_transformers_models(model1.trainer_model, model2.trainer_model))
+        self.assertFalse(compare_transformers_models(model1.model, model2.model))
         remove_dir(model_dir), remove_dir(model_dir2)
         
 # Perform tests
