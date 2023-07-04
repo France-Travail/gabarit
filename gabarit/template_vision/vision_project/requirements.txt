@@ -19,6 +19,7 @@ torchvision==0.9.1+cpu
 # If GPU with cuda 11.1 : replace +cpu by +cu111
 --find-links https://dl.fbaipublicfiles.com/detectron2/wheels/cpu/torch1.8/index.html
 detectron2==0.6+cpu; platform_system != "Windows"
+pillow==9.5.0 # TODO check if we can upgrade this version
 # Warning, on windows, there are no pre-built for detectron2
 # You must first install torch and then install detectron2 manually:
 # pip install git+https://github.com/facebookresearch/detectron2.git@v0.6+cpu

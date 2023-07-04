@@ -64,7 +64,7 @@ setup(
         'tqdm>=4.40,<4.65',
     ],
     extras_require={
-        "detectron": ["torch==1.8.1+cpu", "detectron2==0.6+cpu", "torchvision==0.9.1+cpu"],  # If GPU with cuda 11.1 : replace +cpu by +cu111
+        "detectron": ["torch==1.8.1+cpu", "detectron2==0.6+cpu", "torchvision==0.9.1+cpu", "pillow==9.5.0"],  # If GPU with cuda 11.1 : replace +cpu by +cu111
         "explicability": ['lime>=0.2,<1.0'],
     }
     # pip install {{package_name}} || pip install {{package_name}}[detectron]
