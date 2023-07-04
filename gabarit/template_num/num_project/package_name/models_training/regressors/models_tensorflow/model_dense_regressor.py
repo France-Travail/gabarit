@@ -65,10 +65,6 @@ class ModelDenseRegressor(ModelRegressorMixin, ModelKeras):
         # Get input/output dimensions
         input_dim = len(self.x_col)
 
-        # Get kernel initializers
-        heUniform_ini = HeUniform(self.random_seed)
-        glorotUniform_ini = GlorotUniform(self.random_seed)
-
         # Get random_state
         random_state = np.random.RandomState(self.random_seed)
         limit = int(1e9)
