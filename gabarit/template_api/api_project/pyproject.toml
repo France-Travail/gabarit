@@ -7,7 +7,7 @@ name = "{{package_name}}"
 version = "0.0.1"
 requires-python = ">=3.7,<4.0"
 dependencies = [
-    "fastapi>=0.94.1,<1.0",
+    "fastapi>=0.94.1,<0.100",
     "uvicorn[standard]>=0.20,<1.0",
     "starlette-prometheus>=0.9,<1.0",
     "numpy>=1.19,<2.0",
