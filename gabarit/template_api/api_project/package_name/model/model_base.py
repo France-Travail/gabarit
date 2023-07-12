@@ -55,7 +55,6 @@ class ModelSettings(BaseSettings):
     """
 
     model_path: Path = DEFAULT_MODEL_PATH
-    print(model_path)
 
     model_config = SettingsConfigDict(env_file=".env", extra='ignore', protected_namespaces=('settings', ))
 
