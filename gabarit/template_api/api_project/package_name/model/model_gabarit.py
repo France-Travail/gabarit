@@ -83,9 +83,9 @@ class ModelSettings(BaseSettings):
     to the default ones you can see above.
     """
 
-    data_dir: Union[Path, str] = DEFAULT_DATA_DIR
-    models_dir: Union[Path, str] = DEFAULT_MODELS_DIR
-    model_path: Union[Path, str] = DEFAULT_MODELS_DIR / "model"
+    data_dir: Path = DEFAULT_DATA_DIR
+    models_dir: Path = DEFAULT_MODELS_DIR
+    model_path: Path = DEFAULT_MODELS_DIR / "model"
     artifactory_model_url: str = ""
     artifactory_user: str = ""
     artifactory_password: str = ""

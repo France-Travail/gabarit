@@ -54,7 +54,8 @@ class ModelSettings(BaseSettings):
     to the default ones you can see above.
     """
 
-    model_path: Union[Path, str] = DEFAULT_MODEL_PATH
+    model_path: Path = DEFAULT_MODEL_PATH
+    print(model_path)
 
     model_config = SettingsConfigDict(env_file=".env", extra='ignore', protected_namespaces=('settings', ))
 
