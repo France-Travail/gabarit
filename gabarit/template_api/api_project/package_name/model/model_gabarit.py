@@ -35,13 +35,13 @@ ModelGabarit overwrite some methods of the base Model class :
 """
 
 
-import logging
 import shutil
+import logging
 import tempfile
 import pandas as pd
 from pathlib import Path
 from typing import Any, Union
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from .model_base import Model
 
@@ -91,8 +91,7 @@ class ModelSettings(BaseSettings):
     artifactory_password: str = ""
     redownload: bool = False
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env", extra='ignore', protected_namespaces=('settings', ))
 
 
 class ModelGabarit(Model):

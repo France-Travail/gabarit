@@ -27,11 +27,11 @@ download_model or predict depending on your needs.
 """
 
 
-import dill as pickle
 import logging
+import dill as pickle
 from pathlib import Path
-from pydantic import BaseSettings
 from typing import Any, Tuple, Union
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 # Manage paths
@@ -56,8 +56,7 @@ class ModelSettings(BaseSettings):
 
     model_path: Path = DEFAULT_MODEL_PATH
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env", extra='ignore', protected_namespaces=('settings', ))
 
 
 class Model:
