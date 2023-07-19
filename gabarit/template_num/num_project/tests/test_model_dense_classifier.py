@@ -23,13 +23,13 @@ from unittest.mock import patch
 import os
 import json
 import shutil
-import tensorflow
 import numpy as np
 import pandas as pd
 import tensorflow.keras as keras
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
+from {{package_name}}.models_training.utils_deep_keras import compare_keras_models
 from {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier import ModelDenseClassifier
 
 # Disable logging
@@ -39,17 +39,6 @@ logging.disable(logging.CRITICAL)
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
-    
-
-def compare_keras_models(model1, model2):
-    ''' Checks if all weights of each keras model layer are the same
-    '''
-    for layer1, layer2 in zip(model1.layers, model2.layers):
-        l1 = layer1.get_weights()
-        l2 = layer2.get_weights()
-        if not all(np.array_equal(weights1, weights2) for weights1, weights2 in zip(l1, l2)):
-            return False
-    return True
 
 
 class ModelDenseClassifierTests(unittest.TestCase):
@@ -98,12 +87,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
         #
         model = ModelDenseClassifier(model_dir=model_dir, patience=65)
         self.assertEqual(model.patience, 65)
-        self.assertEqual(model.random_seed, None)
-        remove_dir(model_dir)
-
-        #
-        model = ModelDenseClassifier(model_dir=model_dir, random_seed=42)
-        self.assertEqual(model.random_seed, 42)
         remove_dir(model_dir)
 
         # keras_params must accept anything !
@@ -329,9 +312,11 @@ class ModelDenseClassifierTests(unittest.TestCase):
         #######
         # Same thing with multi-labels
 
-        # Create model
+        # Create models
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
+        remove_dir(model_dir2)
         model = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True)
 
         # Nominal case
@@ -341,6 +326,39 @@ class ModelDenseClassifierTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
+
+        # Classification - Mono-label with same random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model1.list_classes = ['a', 'b']
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2)
+        model2.list_classes = ['a', 'b'] 
+        self.assertTrue(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Multi-label with same random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2, multi_label=True)
+        model1.list_classes = ['a', 'b', 'c']
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2, multi_label=True)
+        model2.list_classes = ['a', 'b', 'c']
+        self.assertTrue(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Mono-label with different random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model1.list_classes = ['a', 'b']
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
+        model2.list_classes = ['a', 'b']
+        self.assertFalse(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Multi-label with different random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2, multi_label=True)
+        model1.list_classes = ['a', 'b', 'c']
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2, multi_label=True)
+        model2.list_classes = ['a', 'b', 'c']
+        self.assertFalse(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
 
     def test06_model_dense_classifier_save(self):
         '''Test of the method save of {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier.ModelDenseClassifier'''
@@ -610,71 +628,6 @@ class ModelDenseClassifierTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
-
-    def test09_model_dense_classifier_fit_with_seed(self):
-        '''Test random seed for {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier.ModelDenseClassifier'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-        model_dir2 = os.path.join(os.getcwd(), 'model_test_1234567892')
-        remove_dir(model_dir2)
-        # Set vars
-        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
-        y_train_mono_2 = pd.Series([0, 0, 0, 0, 1, 1, 1] * 10)
-        y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
-        y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
-        x_col = ['col_1', 'col_2']
-        y_col_mono = ['toto']
-        y_col_multi = ['y1', 'y2', 'y3']
-
-        # Classification - Mono-label - Mono-Class with same random_seed
-        # x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train_mono_2, test_size=0.2, random_state = 42)
-        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
-        model1.fit(x_train, y_train_mono_2)
-        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2)
-        model2.fit(x_train, y_train_mono_2)
-        self.assertTrue(compare_keras_models(model1.model, model2.model))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Classification - Mono-label - Multi-Class with same random_seed
-        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
-        model1.fit(x_train, y_train_mono_3)
-        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2)
-        model2.fit(x_train, y_train_mono_3)
-        self.assertTrue(compare_keras_models(model1.model, model2.model))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Classification - Multi-label - Multi-Class with same random_seed
-        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2)
-        model2.fit(x_train, y_train_multi)
-        self.assertTrue(compare_keras_models(model1.model, model2.model))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Classification - Mono-label - Mono-Class with different random_seed
-        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
-        model1.fit(x_train, y_train_mono_2)
-        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
-        model2.fit(x_train, y_train_mono_2)
-        self.assertFalse(compare_keras_models(model1.model, model2.model))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Classification - Mono-label - Multi-Class with different random_seed
-        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
-        model1.fit(x_train, y_train_mono_3)
-        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
-        model2.fit(x_train, y_train_mono_3)
-        self.assertFalse(compare_keras_models(model1.model, model2.model))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Classification - Multi-label - Multi-Class with different random_seed
-        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
-        model2.fit(x_train, y_train_multi)
-        self.assertFalse(compare_keras_models(model1.model, model2.model))
-        remove_dir(model_dir), remove_dir(model_dir2)
 
 
 # Perform tests

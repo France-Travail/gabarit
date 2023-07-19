@@ -69,12 +69,8 @@ class ModelLGBMRegressorTests(unittest.TestCase):
         model = ModelLGBMRegressor(model_dir=model_dir, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10})
         self.assertEqual(model.pipeline['lgbm'].learning_rate, 0.5)
         self.assertEqual(model.pipeline['lgbm'].n_estimators, 10)
-        self.assertEqual(model.random_seed, None)
         remove_dir(model_dir)
 
-        model = ModelLGBMRegressor(model_dir=model_dir, random_seed=42)
-        self.assertEqual(model.random_seed, 42)
-        remove_dir(model_dir)
 
     def test02_model_lgbm_regressor_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_lgbm_regressor.ModelLGBMRegressor'''
@@ -134,6 +130,7 @@ class ModelLGBMRegressorTests(unittest.TestCase):
         self.assertTrue('nb_fit' in configs.keys())
         self.assertTrue('x_col' in configs.keys())
         self.assertTrue('y_col' in configs.keys())
+        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('columns_in' in configs.keys())
         self.assertTrue('mandatory_columns' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
@@ -210,38 +207,6 @@ class ModelLGBMRegressorTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
-
-    def test05_model_lgbm_regressor_fit_with_seed(self):
-        '''Test random seed for {{package_name}}.models_training.regressors.models_sklearn.model_lgbm_regressor.ModelLGBMRegressor'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-        model_dir2 = os.path.join(os.getcwd(), 'model_test_1234567892')
-        remove_dir(model_dir2)
-
-        # Set vars
-        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
-        y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
-        x_col = ['col_1', 'col_2']
-        y_col_mono = ['toto']
-
-        # Regression with same random_seed
-        model1 = ModelLGBMRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model1.fit(x_train, y_train_regressor)
-        model2 = ModelLGBMRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model2.fit(x_train, y_train_regressor)
-        self.assertEqual(model1.lgbm.get_params(),  model2.lgbm.get_params())
-        self.assertTrue(model1.lgbm.booster_.trees_to_dataframe().equals(model2.lgbm.booster_.trees_to_dataframe()))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Regression with different random_seed
-        model1 = ModelLGBMRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model1.fit(x_train, y_train_regressor)
-        model2 = ModelLGBMRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model2.fit(x_train, y_train_regressor)
-        self.assertNotEqual(model1.lgbm.get_params(),  model2.lgbm.get_params())
-        self.assertFalse(model1.lgbm.booster_.trees_to_dataframe().equals(model2.lgbm.booster_.trees_to_dataframe()))
-        remove_dir(model_dir), remove_dir(model_dir2)
 
 
 # Perform tests

@@ -417,14 +417,14 @@ class ModelTfidfGbtTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Nominal case
-        model = ModelTfidfGbt(model_dir=model_dir, multi_label=False, multiclass_strategy='ovr')
+        model = ModelTfidfGbt(model_dir=model_dir, random_seed=42, multi_label=False, multiclass_strategy='ovr')
         model.save(json_data={'test': 8})
         configs = model.load_configs(model_dir=model_dir)
         new_model = ModelTfidfGbt._init_new_instance_from_configs(configs=configs)
         self.assertTrue(isinstance(new_model, ModelTfidfGbt))
         self.assertEqual(new_model.nb_fit, 0)
         self.assertFalse(new_model.trained)
-        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'random_seed', 'multi_label', 'level_save']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -445,7 +445,7 @@ class ModelTfidfGbtTests(unittest.TestCase):
         self.assertTrue(isinstance(new_model, ModelTfidfGbt))
         self.assertEqual(new_model.nb_fit, 2)
         self.assertTrue(new_model.trained)
-        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'random_seed', 'multi_label', 'level_save']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -540,159 +540,6 @@ class ModelTfidfGbtTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             model._load_standalone_files(sklearn_pipeline_path=model_dir)
         remove_dir(model_dir)
-
-    def test08_model_tfidf_gbt_classifier_fit_with_seed(self):
-        '''Test random seed for {{package_name}}.models_training.models_sklearn.model_tfidf_gbt.ModelTfidfGbt'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
-        remove_dir(model_dir2)
-
-        # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"])
-        y_train_mono = np.array([0, 1, 0, 1, 2])
-        n_classes = 3
-        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0], 'test2': [1, 0, 0, 0, 0], 'test3': [0, 0, 0, 1, 0]})
-        cols = ['test1', 'test2', 'test3']
-
-        # Mono-label - no strategy - same random_seed
-        model1 = ModelTfidfGbt(model_dir=model_dir, multi_label=False, multiclass_strategy=None, random_seed=42)
-        model1.fit(x_train, y_train_mono)
-        model2 = ModelTfidfGbt(model_dir=model_dir2, multi_label=False, multiclass_strategy=None, random_seed=42)
-        model2.fit(x_train, y_train_mono)
-        self.assertEqual(model1.gbt.get_params(),  model2.gbt.get_params())
-        self.assertTrue(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.gbt.estimators_.flatten(), model2.gbt.estimators_.flatten())))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mono-label - ovr strategy - same random_seed
-        model1 = ModelTfidfGbt(model_dir=model_dir, multi_label=False, multiclass_strategy='ovr', random_seed=42)
-        model1.fit(x_train, y_train_mono)
-        model2 = ModelTfidfGbt(model_dir=model_dir2, multi_label=False, multiclass_strategy='ovr', random_seed=42)
-        model2.fit(x_train, y_train_mono)
-        models1, models2 = model1.pipeline['gbt'].estimators_, model2.pipeline['gbt'].estimators_
-        self.assertEqual(model1.gbt.get_params(),  model2.gbt.get_params())
-        self.assertTrue(all(all(compare_trees(tree1, tree2) 
-                                for tree1, tree2 in zip(m1.estimators_.flatten(), m2.estimators_.flatten()))
-                             for m1, m2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mono-label - ovo strategy - same random_seed
-        model1 = ModelTfidfGbt(model_dir=model_dir, multi_label=False, multiclass_strategy='ovo', random_seed=42)
-        model1.fit(x_train, y_train_mono)
-        model2 = ModelTfidfGbt(model_dir=model_dir2, multi_label=False, multiclass_strategy='ovo', random_seed=42)
-        model2.fit(x_train, y_train_mono)
-        models1, models2 = model1.pipeline['gbt'].estimators_, model2.pipeline['gbt'].estimators_
-        self.assertEqual(model1.gbt.get_params(),  model2.gbt.get_params())
-        self.assertTrue(all(all(compare_trees(tree1, tree2) 
-                                for tree1, tree2 in zip(m1.estimators_.flatten(), m2.estimators_.flatten()))
-                             for m1, m2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Multi-label - no strategy - same random_seed
-        model1 = ModelTfidfGbt(model_dir=model_dir, multi_label=True, multiclass_strategy=None, random_seed=42)
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelTfidfGbt(model_dir=model_dir2, multi_label=True, multiclass_strategy=None, random_seed=42)
-        model2.fit(x_train, y_train_multi)
-        models1, models2 = model1.pipeline['gbt'].estimators_, model2.pipeline['gbt'].estimators_
-        self.assertEqual(model1.gbt.get_params(),  model2.gbt.get_params())
-        self.assertTrue(all(all(compare_trees(tree1, tree2) 
-                                for tree1, tree2 in zip(m1.estimators_.flatten(), m2.estimators_.flatten()))
-                             for m1, m2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mutli-label - ovr strategy - same random_seed
-        model1 = ModelTfidfGbt(model_dir=model_dir, multi_label=True, multiclass_strategy='ovr', random_seed=42)
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelTfidfGbt(model_dir=model_dir2, multi_label=True, multiclass_strategy='ovr', random_seed=42)
-        model2.fit(x_train, y_train_multi)
-        models1, models2 = model1.pipeline['gbt'].estimators_, model2.pipeline['gbt'].estimators_
-        self.assertEqual(model1.gbt.get_params(),  model2.gbt.get_params())
-        self.assertTrue(all(all(compare_trees(tree1, tree2) 
-                                for tree1, tree2 in zip(m1.estimators_.flatten(), m2.estimators_.flatten()))
-                             for m1, m2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mutli-label - ovo strategy - same random_seed
-        model1 = ModelTfidfGbt(model_dir=model_dir, multi_label=True, multiclass_strategy='ovo', random_seed=42)
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelTfidfGbt(model_dir=model_dir2, multi_label=True, multiclass_strategy='ovo', random_seed=42)
-        model2.fit(x_train, y_train_multi)
-        models1, models2 = model1.pipeline['gbt'].estimators_, model2.pipeline['gbt'].estimators_
-        self.assertEqual(model1.gbt.get_params(),  model2.gbt.get_params())
-        self.assertTrue(all(all(compare_trees(tree1, tree2) 
-                                for tree1, tree2 in zip(m1.estimators_.flatten(), m2.estimators_.flatten()))
-                             for m1, m2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mono-label - no strategy - different random_seed
-        model1 = ModelTfidfGbt(model_dir=model_dir, multi_label=False, multiclass_strategy=None, random_seed=42)
-        model1.fit(x_train, y_train_mono)
-        model2 = ModelTfidfGbt(model_dir=model_dir2, multi_label=False, multiclass_strategy=None, random_seed=41)
-        model2.fit(x_train, y_train_mono)
-        self.assertNotEqual(model1.gbt.get_params(),  model2.gbt.get_params())
-        self.assertFalse(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.gbt.estimators_.flatten(), model2.gbt.estimators_.flatten())))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mono-label - ovr strategy - different random_seed
-        model1 = ModelTfidfGbt(model_dir=model_dir, multi_label=False, multiclass_strategy='ovr', random_seed=42)
-        model1.fit(x_train, y_train_mono)
-        model2 = ModelTfidfGbt(model_dir=model_dir2, multi_label=False, multiclass_strategy='ovr', random_seed=41)
-        model2.fit(x_train, y_train_mono)
-        models1, models2 = model1.pipeline['gbt'].estimators_, model2.pipeline['gbt'].estimators_
-        self.assertNotEqual(model1.gbt.get_params(),  model2.gbt.get_params())
-        self.assertFalse(all(all(compare_trees(tree1, tree2) 
-                                for tree1, tree2 in zip(m1.estimators_.flatten(), m2.estimators_.flatten()))
-                             for m1, m2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mono-label - ovo strategy - different random_seed
-        model1 = ModelTfidfGbt(model_dir=model_dir, multi_label=False, multiclass_strategy='ovo', random_seed=42)
-        model1.fit(x_train, y_train_mono)
-        model2 = ModelTfidfGbt(model_dir=model_dir2, multi_label=False, multiclass_strategy='ovo', random_seed=41)
-        model2.fit(x_train, y_train_mono)
-        models1, models2 = model1.pipeline['gbt'].estimators_, model2.pipeline['gbt'].estimators_
-        self.assertNotEqual(model1.gbt.get_params(),  model2.gbt.get_params())
-        self.assertFalse(all(all(compare_trees(tree1, tree2) 
-                                for tree1, tree2 in zip(m1.estimators_.flatten(), m2.estimators_.flatten()))
-                             for m1, m2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Multi-label - no strategy - different random_seed
-        model1 = ModelTfidfGbt(model_dir=model_dir, multi_label=True, multiclass_strategy=None, random_seed=42)
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelTfidfGbt(model_dir=model_dir2, multi_label=True, multiclass_strategy=None, random_seed=41)
-        model2.fit(x_train, y_train_multi)
-        models1, models2 = model1.pipeline['gbt'].estimators_, model2.pipeline['gbt'].estimators_
-        self.assertNotEqual(model1.gbt.get_params(),  model2.gbt.get_params())
-        self.assertFalse(all(all(compare_trees(tree1, tree2) 
-                                for tree1, tree2 in zip(m1.estimators_.flatten(), m2.estimators_.flatten()))
-                             for m1, m2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mutli-label - ovr strategy - different random_seed
-        model1 = ModelTfidfGbt(model_dir=model_dir, multi_label=True, multiclass_strategy='ovr', random_seed=42)
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelTfidfGbt(model_dir=model_dir2, multi_label=True, multiclass_strategy='ovr', random_seed=41)
-        model2.fit(x_train, y_train_multi)
-        models1, models2 = model1.pipeline['gbt'].estimators_, model2.pipeline['gbt'].estimators_
-        self.assertNotEqual(model1.gbt.get_params(),  model2.gbt.get_params())
-        self.assertFalse(all(all(compare_trees(tree1, tree2) 
-                                for tree1, tree2 in zip(m1.estimators_.flatten(), m2.estimators_.flatten()))
-                             for m1, m2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mutli-label - ovo strategy - different random_seed
-        model1 = ModelTfidfGbt(model_dir=model_dir, multi_label=True, multiclass_strategy='ovo', random_seed=42)
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelTfidfGbt(model_dir=model_dir2, multi_label=True, multiclass_strategy='ovo', random_seed=41)
-        model2.fit(x_train, y_train_multi)
-        models1, models2 = model1.pipeline['gbt'].estimators_, model2.pipeline['gbt'].estimators_
-        self.assertNotEqual(model1.gbt.get_params(),  model2.gbt.get_params())
-        self.assertFalse(all(all(compare_trees(tree1, tree2) 
-                                for tree1, tree2 in zip(m1.estimators_.flatten(), m2.estimators_.flatten()))
-                             for m1, m2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
 
 
 # Perform tests

@@ -36,23 +36,6 @@ logging.disable(logging.CRITICAL)
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
-    
-
-def compare_trees(tree1, tree2):
-    '''Checks if two DecisionTreeClassifiers are equal
-    Args:
-        tree1 (DecisionTreeClassifier): First tree to consider
-        tree2 (DecisionTreeClassifier): Second tree to consider
-    Results:
-        bool: True if all trees nodes and values are equal, else False
-    '''
-    state1 = tree1.tree_.__getstate__()
-    state2 = tree2.tree_.__getstate__()
-    if not np.array_equal(state1["nodes"], state2["nodes"]):
-        return False
-    if not np.array_equal(state1["values"], state2["values"]):
-        return False
-    return True 
 
 
 class ModelGBTRegressorTests(unittest.TestCase):
@@ -83,10 +66,9 @@ class ModelGBTRegressorTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Check GBT params
-        model = ModelGBTRegressor(model_dir=model_dir, gbt_params={'learning_rate': 0.5, 'n_estimators': 10}, random_seed=42)
+        model = ModelGBTRegressor(model_dir=model_dir, gbt_params={'learning_rate': 0.5, 'n_estimators': 10})
         self.assertEqual(model.pipeline['gbt'].learning_rate, 0.5)
         self.assertEqual(model.pipeline['gbt'].n_estimators, 10)
-        self.assertEqual(model.random_seed, 42)
         remove_dir(model_dir)
 
     def test02_model_gbt_regressor_predict(self):
@@ -147,6 +129,7 @@ class ModelGBTRegressorTests(unittest.TestCase):
         self.assertTrue('nb_fit' in configs.keys())
         self.assertTrue('x_col' in configs.keys())
         self.assertTrue('y_col' in configs.keys())
+        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('columns_in' in configs.keys())
         self.assertTrue('mandatory_columns' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
@@ -224,37 +207,6 @@ class ModelGBTRegressorTests(unittest.TestCase):
         # Clean
         remove_dir(model_dir)
 
-    def test05_model_gbt_regressor_fit_with_seed(self):
-        '''Test random seed for {{package_name}}.models_training.regressors.models_sklearn.model_gbt_regressor.ModelGBTRegressor'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-        model_dir2 = os.path.join(os.getcwd(), 'model_test_1234567892')
-        remove_dir(model_dir2)
-
-        # Set vars
-        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
-        y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
-        x_col = ['col_1', 'col_2']
-        y_col_mono = ['toto']
-
-        # Regression with same random_seed
-        model1 = ModelGBTRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
-        model1.fit(x_train, y_train_regressor)
-        model2 = ModelGBTRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42)
-        model2.fit(x_train, y_train_regressor)
-        self.assertEqual(model1.gbt.get_params(),  model2.gbt.get_params())
-        self.assertTrue(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.gbt.estimators_.flatten(), model2.gbt.estimators_.flatten())))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Regression with different random_seed
-        model1 = ModelGBTRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
-        model1.fit(x_train, y_train_regressor)
-        model2 = ModelGBTRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41)
-        model2.fit(x_train, y_train_regressor)
-        self.assertNotEqual(model1.gbt.get_params(),  model2.gbt.get_params())
-        self.assertFalse(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.gbt.estimators_.flatten(), model2.gbt.estimators_.flatten())))
-        remove_dir(model_dir), remove_dir(model_dir2)
 
 # Perform tests
 if __name__ == '__main__':

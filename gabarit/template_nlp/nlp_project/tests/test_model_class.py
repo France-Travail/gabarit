@@ -112,6 +112,10 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.level_save, 'LOW')
         remove_dir(model_dir)
 
+        model = ModelClass(model_dir=model_dir, random_seed=42)
+        self.assertEqual(model.random_seed, 42)
+        remove_dir(model_dir)
+
     def test02_model_class_predict_with_proba(self):
         '''Test of the method {{package_name}}.models_training.model_class.ModelClass.predict_with_proba'''
         # /!\ We must use a sub-class for the tests because the class ModelClass does not implement predict / predict_proba
@@ -778,6 +782,7 @@ class ModelClassTests(unittest.TestCase):
             'model_dir': os.getcwd(),
             'nb_fit': '25',
             'trained': True,
+            'random_seed': 42,
             'x_col': 'titi',
             'y_col': 'tata',
             'list_classes': ['tata', 'toto'],
@@ -792,6 +797,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertNotEqual(model.model_dir, configs['model_dir'])
         self.assertEqual(model.nb_fit, configs['nb_fit'])
         self.assertEqual(model.trained, configs['trained'])
+        self.assertEqual(model.random_seed, configs['random_seed'])
         self.assertEqual(model.x_col, configs['x_col'])
         self.assertEqual(model.y_col, configs['y_col'])
         self.assertEqual(model.list_classes, configs['list_classes'])
@@ -805,6 +811,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertNotEqual(model.model_dir, None)
         self.assertEqual(model.nb_fit, 1)
         self.assertEqual(model.trained, True)
+        self.assertEqual(model.random_seed, None)
         self.assertEqual(model.x_col, None)
         self.assertEqual(model.y_col, None)
         self.assertEqual(model.list_classes, None)

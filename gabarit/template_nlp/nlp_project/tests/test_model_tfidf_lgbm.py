@@ -400,14 +400,14 @@ class ModelTfidfLgbmTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Nominal case
-        model = ModelTfidfLgbm(model_dir=model_dir, multi_label=False, multiclass_strategy='ovr')
+        model = ModelTfidfLgbm(model_dir=model_dir, random_seed=42, multi_label=False, multiclass_strategy='ovr')
         model.save(json_data={'test': 8})
         configs = model.load_configs(model_dir=model_dir)
         new_model = ModelTfidfLgbm._init_new_instance_from_configs(configs=configs)
         self.assertTrue(isinstance(new_model, ModelTfidfLgbm))
         self.assertEqual(new_model.nb_fit, 0)
         self.assertFalse(new_model.trained)
-        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'random_seed', 'multi_label', 'level_save']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -428,7 +428,7 @@ class ModelTfidfLgbmTests(unittest.TestCase):
         self.assertTrue(isinstance(new_model, ModelTfidfLgbm))
         self.assertEqual(new_model.nb_fit, 2)
         self.assertTrue(new_model.trained)
-        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'random_seed', 'multi_label', 'level_save']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -522,178 +522,6 @@ class ModelTfidfLgbmTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             model._load_standalone_files(sklearn_pipeline_path=model_dir)
         remove_dir(model_dir)
-
-    def test08_model_tfidf_lgbm_classifier_fit_with_seed(self):
-        '''Test random seed for {{package_name}}.models_training.models_sklearn.model_tfidf_lgbm.ModelTfidfLgbm'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
-        remove_dir(model_dir2)
-
-        # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
-        y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
-        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
-
-        # Mono-label - no strategy - same random_seed
-        model1 = ModelTfidfLgbm(model_dir=model_dir, multi_label=False, multiclass_strategy=None, random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model1.fit(x_train, y_train_mono)
-        model2 = ModelTfidfLgbm(model_dir=model_dir2, multi_label=False, multiclass_strategy=None, random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model2.fit(x_train, y_train_mono)
-        self.assertEqual(model1.lgbm.get_params(),  model2.lgbm.get_params())
-        self.assertTrue(model1.lgbm.booster_.trees_to_dataframe().equals(model2.lgbm.booster_.trees_to_dataframe()))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mono-label - ovr strategy - same random_seed
-        model1 = ModelTfidfLgbm(model_dir=model_dir, multi_label=False, multiclass_strategy='ovr', random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model1.fit(x_train, y_train_mono)
-        model2 = ModelTfidfLgbm(model_dir=model_dir2, multi_label=False, multiclass_strategy='ovr', random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model2.fit(x_train, y_train_mono)
-        models1, models2 = model1.pipeline['lgbm'].estimators_, model2.pipeline['lgbm'].estimators_
-        self.assertEqual(model1.lgbm.get_params(),  model2.lgbm.get_params())
-        self.assertTrue(all(lgbm1.booster_.trees_to_dataframe().equals(lgbm2.booster_.trees_to_dataframe()) 
-                            for lgbm1, lgbm2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mono-label - ovo strategy - same random_seed
-        model1 = ModelTfidfLgbm(model_dir=model_dir, multi_label=False, multiclass_strategy='ovo', random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model1.fit(x_train, y_train_mono)
-        model2 = ModelTfidfLgbm(model_dir=model_dir2, multi_label=False, multiclass_strategy='ovo', random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model2.fit(x_train, y_train_mono)
-        models1, models2 = model1.pipeline['lgbm'].estimators_, model2.pipeline['lgbm'].estimators_
-        self.assertEqual(model1.lgbm.get_params(),  model2.lgbm.get_params())
-        self.assertTrue(all(lgbm1.booster_.trees_to_dataframe().equals(lgbm2.booster_.trees_to_dataframe()) 
-                            for lgbm1, lgbm2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mono-label - no strategy - different random_seed
-        model1 = ModelTfidfLgbm(model_dir=model_dir, multi_label=False, multiclass_strategy=None, random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model1.fit(x_train, y_train_mono)
-        model2 = ModelTfidfLgbm(model_dir=model_dir2, multi_label=False, multiclass_strategy=None, random_seed=41,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model2.fit(x_train, y_train_mono)
-        # print(model1.lgbm.booster_.dump_model())
-        # print(model2.lgbm.booster_.dump_model())
-        # print(model2.lgbm.booster_.trees_to_dataframe())
-        self.assertNotEqual(model1.lgbm.get_params(),  model2.lgbm.get_params())
-        self.assertFalse(model1.lgbm.booster_.trees_to_dataframe().equals(model2.lgbm.booster_.trees_to_dataframe()))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mono-label - ovr strategy - different random_seed
-        model1 = ModelTfidfLgbm(model_dir=model_dir, multi_label=False, multiclass_strategy='ovr', random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model1.fit(x_train, y_train_mono)
-        model2 = ModelTfidfLgbm(model_dir=model_dir2, multi_label=False, multiclass_strategy='ovr', random_seed=41,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model2.fit(x_train, y_train_mono)
-        models1, models2 = model1.pipeline['lgbm'].estimators_, model2.pipeline['lgbm'].estimators_
-        # print(models1)
-        # print(models1[0].booster_.trees_to_dataframe())
-        self.assertNotEqual(model1.lgbm.get_params(),  model2.lgbm.get_params())
-        self.assertFalse(all(lgbm1.booster_.trees_to_dataframe().equals(lgbm2.booster_.trees_to_dataframe()) 
-                            for lgbm1, lgbm2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mono-label - ovo strategy - different random_seed
-        model1 = ModelTfidfLgbm(model_dir=model_dir, multi_label=False, multiclass_strategy='ovo', random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model1.fit(x_train, y_train_mono)
-        model2 = ModelTfidfLgbm(model_dir=model_dir2, multi_label=False, multiclass_strategy='ovo', random_seed=41,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model2.fit(x_train, y_train_mono)
-        models1, models2 = model1.pipeline['lgbm'].estimators_, model2.pipeline['lgbm'].estimators_
-        self.assertNotEqual(model1.lgbm.get_params(),  model2.lgbm.get_params())
-        self.assertFalse(all(lgbm1.booster_.trees_to_dataframe().equals(lgbm2.booster_.trees_to_dataframe()) 
-                            for lgbm1, lgbm2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-
-
-        # Multi-label - no strategy - same random_seed
-        model1 = ModelTfidfLgbm(model_dir=model_dir, multi_label=True, multiclass_strategy=None, random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelTfidfLgbm(model_dir=model_dir2, multi_label=True, multiclass_strategy=None, random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model2.fit(x_train, y_train_multi)
-        models1, models2 = model1.pipeline['lgbm'].estimators_, model2.pipeline['lgbm'].estimators_
-        self.assertTrue(all(np.array_equal(lgbm1.get_params(), lgbm2.get_params()) for lgbm1, lgbm2 in zip(models1, models2)))
-        self.assertTrue(all(lgbm1.booster_.trees_to_dataframe().equals(lgbm2.booster_.trees_to_dataframe())
-                            for lgbm1, lgbm2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Multi-label - ovr strategy - same random_seed
-        model1 = ModelTfidfLgbm(model_dir=model_dir, multi_label=True, multiclass_strategy='ovr', random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelTfidfLgbm(model_dir=model_dir2, multi_label=True, multiclass_strategy='ovr', random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model2.fit(x_train, y_train_multi)
-        models1, models2 = model1.pipeline['lgbm'].estimators_, model2.pipeline['lgbm'].estimators_
-        self.assertEqual(model1.lgbm.get_params(),  model2.lgbm.get_params())
-        self.assertTrue(all(lgbm1.booster_.trees_to_dataframe().equals(lgbm2.booster_.trees_to_dataframe()) 
-                            for lgbm1, lgbm2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Multi-label - ovo strategy - same random_seed
-        model1 = ModelTfidfLgbm(model_dir=model_dir, multi_label=True, multiclass_strategy='ovo', random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelTfidfLgbm(model_dir=model_dir2, multi_label=True, multiclass_strategy='ovo', random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model2.fit(x_train, y_train_multi)
-        models1, models2 = model1.pipeline['lgbm'].estimators_, model2.pipeline['lgbm'].estimators_
-        self.assertEqual(model1.lgbm.get_params(),  model2.lgbm.get_params())
-        self.assertTrue(all(lgbm1.booster_.trees_to_dataframe().equals(lgbm2.booster_.trees_to_dataframe()) 
-                            for lgbm1, lgbm2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Multi-label - no strategy - different random_seed
-        model1 = ModelTfidfLgbm(model_dir=model_dir, multi_label=True, multiclass_strategy=None, random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelTfidfLgbm(model_dir=model_dir2, multi_label=True, multiclass_strategy=None, random_seed=41,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model2.fit(x_train, y_train_multi)
-        models1, models2 = model1.pipeline['lgbm'].estimators_, model2.pipeline['lgbm'].estimators_
-        self.assertFalse(all(np.array_equal(lgbm1.get_params(), lgbm2.get_params()) for lgbm1, lgbm2 in zip(models1, models2)))
-        self.assertFalse(all(lgbm1.booster_.trees_to_dataframe().equals(lgbm2.booster_.trees_to_dataframe())
-                            for lgbm1, lgbm2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Multi-label - ovr strategy - different random_seed
-        model1 = ModelTfidfLgbm(model_dir=model_dir, multi_label=True, multiclass_strategy='ovr', random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelTfidfLgbm(model_dir=model_dir2, multi_label=True, multiclass_strategy='ovr', random_seed=41,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model2.fit(x_train, y_train_multi)
-        models1, models2 = model1.pipeline['lgbm'].estimators_, model2.pipeline['lgbm'].estimators_
-        self.assertFalse(all(np.array_equal(lgbm1.get_params(), lgbm2.get_params()) for lgbm1, lgbm2 in zip(models1, models2)))
-        self.assertFalse(all(lgbm1.booster_.trees_to_dataframe().equals(lgbm2.booster_.trees_to_dataframe())
-                            for lgbm1, lgbm2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Multi-label - ovo strategy - different random_seed
-        model1 = ModelTfidfLgbm(model_dir=model_dir, multi_label=True, multiclass_strategy='ovo', random_seed=42,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelTfidfLgbm(model_dir=model_dir2, multi_label=True, multiclass_strategy='ovo', random_seed=41,
-                                lgbm_params={'learning_rate': 0.5, 'n_estimators': 10, 'subsample': 0.5, 'subsample_freq': 1})
-        model2.fit(x_train, y_train_multi)
-        models1, models2 = model1.pipeline['lgbm'].estimators_, model2.pipeline['lgbm'].estimators_
-        self.assertFalse(all(np.array_equal(lgbm1.get_params(), lgbm2.get_params()) for lgbm1, lgbm2 in zip(models1, models2)))
-        self.assertFalse(all(lgbm1.booster_.trees_to_dataframe().equals(lgbm2.booster_.trees_to_dataframe())
-                            for lgbm1, lgbm2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
 
 
 # Perform tests

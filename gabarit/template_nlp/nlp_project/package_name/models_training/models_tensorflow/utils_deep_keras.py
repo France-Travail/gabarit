@@ -25,6 +25,7 @@ import logging
 from functools import partial
 from typing import Callable, Any
 
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import activations
 from tensorflow.keras.layers import Layer
@@ -264,6 +265,19 @@ def get_weighted_binary_crossentropy(pos_weight: float = 10.0) -> Callable:
     # FIX:  AttributeError: 'functools.partial' object has no attribute '__name__'
     fn.__name__ = 'weighted_binary_crossentropy'  # type: ignore
     return fn
+
+
+def compare_keras_models(model1, model2):
+    ''' Checks if all weights of each keras model layer are the same
+    '''
+    for layer1, layer2 in zip(model1.layers, model2.layers):
+        if layer1.__class__.__name__!=layer2.__class__.__name__:
+            return False
+        l1 = layer1.get_weights()
+        l2 = layer2.get_weights()
+        if not all(np.array_equal(weights1, weights2) for weights1, weights2 in zip(l1, l2)):
+            return False
+    return True
 
 
 # ** EXPERIMENTAL **

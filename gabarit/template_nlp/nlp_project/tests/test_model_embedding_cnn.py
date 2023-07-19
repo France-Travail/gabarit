@@ -27,12 +27,12 @@ import dill as pickle
 import numpy as np
 import pandas as pd
 
-import tensorflow
 import tensorflow.keras as keras
 from tensorflow.keras.preprocessing.text import Tokenizer
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.models_tensorflow.model_embedding_cnn import ModelEmbeddingCnn
+from {{package_name}}.models_training.models_tensorflow.utils_deep_keras import compare_keras_models
 
 # Disable logging
 import logging
@@ -41,19 +41,6 @@ logging.disable(logging.CRITICAL)
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
-
-
-def compare_keras_models(model1, model2):
-    ''' Checks if all weights of each keras model layer are the same
-    '''
-    for layer1, layer2 in zip(model1.layers, model2.layers):
-        if layer1.__class__.__name__!=layer2.__class__.__name__:
-            return False
-        l1 = layer1.get_weights()
-        l2 = layer2.get_weights()
-        if not all(np.array_equal(weights1, weights2) for weights1, weights2 in zip(l1, l2)):
-            return False
-    return True
 
 
 class ModelEmbeddingCnnTests(unittest.TestCase):
@@ -266,9 +253,12 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
     def test05_model_embedding_cnn_get_model(self):
         '''Test of {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn._get_model'''
 
-        # Create model
+        # Create models
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
+        remove_dir(model_dir2)
+
         model = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                   max_sequence_length=10, max_words=100,
                                   padding='pre', truncating='post',
@@ -289,6 +279,71 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
+
+        # Mono-label same random_seed
+        model1 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1._prepare_x_train(x_train)
+        model1.list_classes = ['a', 'b']
+        model2 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2._prepare_x_train(x_train)
+        model2.list_classes = ['a', 'b']
+        self.assertTrue(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Mono-label different random_seed
+        model1 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1._prepare_x_train(x_train)
+        model1.list_classes = ['a', 'b']
+        model2 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=41,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2._prepare_x_train(x_train)
+        model2.list_classes = ['a', 'b']
+        self.assertFalse(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label same random_seed
+        model1 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1._prepare_x_train(x_train)
+        model1.list_classes = ['a', 'b']
+        model2 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2._prepare_x_train(x_train)
+        model2.list_classes = ['a', 'b']
+        self.assertTrue(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label different random_seed
+        model1 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1._prepare_x_train(x_train)
+        model1.list_classes = ['a', 'b']
+        model2 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=41,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2._prepare_x_train(x_train)
+        model2.list_classes = ['a', 'b']
+        self.assertFalse(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
 
     def test06_model_embedding_cnn_save(self):
         '''Test of the method save of {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn'''
@@ -328,7 +383,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         model = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                   max_sequence_length=max_sequence_length, max_words=100,
                                   padding=padding, truncating=truncating, tokenizer_filters=tokenizer_filters,
-                                  embedding_name='fake_embedding.pkl', random_seed=42)
+                                  embedding_name='fake_embedding.pkl')
         model.tokenizer = tokenizer
         model.save(json_data={'test': 8})
         self.assertTrue(os.path.exists(os.path.join(model.model_dir, 'configurations.json')))
@@ -343,7 +398,7 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         self.assertEqual(configs['padding'], padding)
         self.assertEqual(configs['truncating'], truncating)
         self.assertEqual(configs['tokenizer_filters'], tokenizer_filters)
-        self.assertEqual(configs['random_seed'], 42)
+        self.assertEqual(configs['random_seed'], None)
         remove_dir(model_dir)
 
         # Nominal case - with tokenizer, but level_save = 'LOW'
@@ -500,75 +555,6 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
-
-    def test09_model_embedding_cnn_fit_with_seed(self):
-        '''Test random seed for {{package_name}}.models_training.models_tensorflow.model_embedding_cnn.ModelEmbeddingCnn'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
-        remove_dir(model_dir2)
-
-        # Set vars
-        x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
-        y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
-        y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
-
-        # Mono-label same random_seed
-        model1 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                  max_sequence_length=10, max_words=100, random_seed=42,
-                                  padding='pre', truncating='post',
-                                  embedding_name='fake_embedding.pkl')
-        model1.fit(x_train, y_train_mono)
-        model2 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                  max_sequence_length=10, max_words=100, random_seed=42,
-                                  padding='pre', truncating='post',
-                                  embedding_name='fake_embedding.pkl')
-        model2.fit(x_train, y_train_mono)
-        self.assertTrue(compare_keras_models(model1.model, model2.model))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Multi-label same random_seed
-        model1 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
-                                  max_sequence_length=10, max_words=100, random_seed=42,
-                                  padding='pre', truncating='post',
-                                  embedding_name='fake_embedding.pkl')
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
-                                  max_sequence_length=10, max_words=100, random_seed=42,
-                                  padding='pre', truncating='post',
-                                  embedding_name='fake_embedding.pkl')
-        model2.fit(x_train, y_train_multi)
-        self.assertTrue(compare_keras_models(model1.model, model2.model))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Mono-label different random_seed
-        model1 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                  max_sequence_length=10, max_words=100, random_seed=42,
-                                  padding='pre', truncating='post',
-                                  embedding_name='fake_embedding.pkl')
-        model1.fit(x_train, y_train_mono)
-        model2 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                  max_sequence_length=10, max_words=100, random_seed=41,
-                                  padding='pre', truncating='post',
-                                  embedding_name='fake_embedding.pkl')
-        model2.fit(x_train, y_train_mono)
-        self.assertFalse(compare_keras_models(model1.model, model2.model))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Multi-label different random_seed
-        model1 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
-                                  max_sequence_length=10, max_words=100, random_seed=42,
-                                  padding='pre', truncating='post',
-                                  embedding_name='fake_embedding.pkl')
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelEmbeddingCnn(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
-                                  max_sequence_length=10, max_words=100, random_seed=41,
-                                  padding='pre', truncating='post',
-                                  embedding_name='fake_embedding.pkl')
-        model2.fit(x_train, y_train_multi)
-        self.assertFalse(compare_keras_models(model1.model, model2.model))
-        remove_dir(model_dir), remove_dir(model_dir2)
 
 # Perform tests
 if __name__ == '__main__':

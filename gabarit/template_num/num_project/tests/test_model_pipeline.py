@@ -31,6 +31,8 @@ from sklearn.ensemble import RandomForestClassifier, RandomForestRegressor
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.model_pipeline import ModelPipeline
+from {{package_name}}.models_training.regressors.models_sklearn.model_gbt_regressor import ModelGBTRegressor
+from {{package_name}}.models_training.classifiers.models_sklearn.model_gbt_classifier import ModelGBTClassifier
 
 # Disable logging
 import logging
@@ -39,6 +41,23 @@ logging.disable(logging.CRITICAL)
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
+
+
+def compare_trees(tree1, tree2):
+    '''Checks if two DecisionTreeClassifiers are equal
+    Args:
+        tree1 (DecisionTreeClassifier): First tree to consider
+        tree2 (DecisionTreeClassifier): Second tree to consider
+    Results:
+        bool: True if all trees nodes and values are equal, else False
+    '''
+    state1 = tree1.tree_.__getstate__()
+    state2 = tree2.tree_.__getstate__()
+    if not np.array_equal(state1["nodes"], state2["nodes"]):
+        return False
+    if not np.array_equal(state1["values"], state2["values"]):
+        return False
+    return True 
 
 
 class ModelPipelineTests(unittest.TestCase):
@@ -207,6 +226,88 @@ class ModelPipelineTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             model.fit(x_train, y_train_mono_2)
         remove_dir(model_dir)
+
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
+        remove_dir(model_dir2)
+
+        # ModelGBTRegressor with random seed
+        # Regression with same random_seed
+        model1 = ModelGBTRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
+        model1.fit(x_train, y_train_regressor)
+        model2 = ModelGBTRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42)
+        model2.fit(x_train, y_train_regressor)
+        self.assertEqual(model1.gbt.get_params(),  model2.gbt.get_params())
+        self.assertTrue(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.gbt.estimators_.flatten(), model2.gbt.estimators_.flatten())))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Regression with different random_seed
+        model1 = ModelGBTRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
+        model1.fit(x_train, y_train_regressor)
+        model2 = ModelGBTRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41)
+        model2.fit(x_train, y_train_regressor)
+        self.assertNotEqual(model1.gbt.get_params(),  model2.gbt.get_params())
+        self.assertFalse(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.gbt.estimators_.flatten(), model2.gbt.estimators_.flatten())))
+        remove_dir(model_dir), remove_dir(model_dir2)
+    
+        # ModelGBTClassifier with random seed
+        # Classification - Mono-label - Mono-Class with same random_seed
+        model1 = ModelGBTClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
+        model1.fit(x_train, y_train_mono_2)
+        model2 = ModelGBTClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42)
+        model2.fit(x_train, y_train_mono_2)
+        self.assertEqual(model1.gbt.get_params(),  model2.gbt.get_params())
+        self.assertTrue(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.gbt.estimators_.flatten(), model2.gbt.estimators_.flatten())))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Mono-label - Multi-Class with same random_seed
+        model1 = ModelGBTClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
+        model1.fit(x_train, y_train_mono_3)
+        model2 = ModelGBTClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42)
+        model2.fit(x_train, y_train_mono_3)
+        self.assertEqual(model1.gbt.get_params(),  model2.gbt.get_params())
+        self.assertTrue(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.gbt.estimators_.flatten(), model2.gbt.estimators_.flatten())))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Multi-label - Multi-Class with same random_seed
+        model1 = ModelGBTClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True)
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelGBTClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=42, multi_label=True)
+        model2.fit(x_train, y_train_multi)
+        models1, models2 = np.array(model1.pipeline['gbt'].estimators_), np.array(model2.pipeline['gbt'].estimators_)
+        self.assertEqual(model1.gbt.get_params(),  model2.gbt.get_params())
+        self.assertTrue(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(models1.flatten(), models2.flatten()))) 
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Mono-label - Mono-Class with different random_seed
+        model1 = ModelGBTClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
+        model1.fit(x_train, y_train_mono_2)
+        model2 = ModelGBTClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41)
+        model2.fit(x_train, y_train_mono_2)
+        self.assertNotEqual(model1.gbt.get_params(),  model2.gbt.get_params())
+        self.assertFalse(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.gbt.estimators_.flatten(), model2.gbt.estimators_.flatten())))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Mono-label - Multi-Class with different random_seed
+        model1 = ModelGBTClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42)
+        model1.fit(x_train, y_train_mono_3)
+        model2 = ModelGBTClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41)
+        model2.fit(x_train, y_train_mono_3)
+        self.assertNotEqual(model1.gbt.get_params(),  model2.gbt.get_params())
+        self.assertFalse(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(model1.gbt.estimators_.flatten(), model2.gbt.estimators_.flatten())))
+        remove_dir(model_dir), remove_dir(model_dir2)
+        
+        # Classification - Multi-label - Multi-Class with different random_seed
+        model1 = ModelGBTClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True)
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelGBTClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=41, multi_label=True)
+        model2.fit(x_train, y_train_multi)
+        models1, models2 = np.array(model1.pipeline['gbt'].estimators_), np.array(model2.pipeline['gbt'].estimators_)
+        self.assertNotEqual(model1.gbt.get_params(),  model2.gbt.get_params())
+        self.assertFalse(all(compare_trees(tree1, tree2) for tree1, tree2 in zip(models1.flatten(), models2.flatten()))) 
+        remove_dir(model_dir), remove_dir(model_dir2)
+
 
     def test03_model_pipeline_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_pipeline.ModelPipeline'''

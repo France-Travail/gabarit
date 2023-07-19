@@ -95,13 +95,7 @@ class ModelDenseRegressorTests(unittest.TestCase):
 
         #
         model = ModelDenseRegressor(model_dir=model_dir, patience=65)
-        self.assertEqual(model.random_seed, None)
         self.assertEqual(model.patience, 65)
-        remove_dir(model_dir)
-
-        #
-        model = ModelDenseRegressor(model_dir=model_dir, random_seed=42)
-        self.assertEqual(model.random_seed, 42)
         remove_dir(model_dir)
 
         # keras_params must accept anything !
@@ -155,9 +149,11 @@ class ModelDenseRegressorTests(unittest.TestCase):
         x_col = ['col_1', 'col_2']
         y_col_mono = ['toto']
 
-        # Create model
+        # Create models
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
+        remove_dir(model_dir2)
         model = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, epochs=2)
 
         # Nominal case
@@ -166,6 +162,22 @@ class ModelDenseRegressorTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
+
+        # Regression with same random_seed
+        model1 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model1.list_classes = ['a', 'b']
+        model2 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2)
+        model2.list_classes = ['a', 'b'] 
+        self.assertTrue(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Regression with different random_seed
+        model1 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model1.list_classes = ['a', 'b']
+        model2 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
+        model2.list_classes = ['a', 'b']
+        self.assertFalse(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
 
     def test04_model_dense_regressor_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_dense_regressor.ModelDenseRegressor'''
@@ -350,36 +362,6 @@ class ModelDenseRegressorTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
-
-    def test07_model_dense_regressor_fit_with_seed(self):
-        '''Test random seed for {{package_name}}.models_training.regressors.models_tensorflow.model_dense_regressor.ModelDenseRegressor'''
-
-        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
-        remove_dir(model_dir)
-        model_dir2 = os.path.join(os.getcwd(), 'model_test_1234567892')
-        remove_dir(model_dir2)
-
-        # Set vars
-        x_train = pd.DataFrame({'col_1': [-5, -1, 0, -2, 2, -6, 3] * 10, 'col_2': [2, -1, -8, 2, 3, 12, 2] * 10})
-        y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
-        x_col = ['col_1', 'col_2']
-        y_col_mono = ['toto']
-
-        # Regression with same random_seed
-        model1 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
-        model1.fit(x_train, y_train_regressor)
-        model2 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2)
-        model2.fit(x_train, y_train_regressor)
-        self.assertTrue(compare_keras_models(model1.model, model2.model))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
-        # Regression with different random_seed
-        model1 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
-        model1.fit(x_train, y_train_regressor)
-        model2 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
-        model2.fit(x_train, y_train_regressor)
-        self.assertFalse(compare_keras_models(model1.model, model2.model))
-        remove_dir(model_dir), remove_dir(model_dir2)
 
 
 # Perform tests
