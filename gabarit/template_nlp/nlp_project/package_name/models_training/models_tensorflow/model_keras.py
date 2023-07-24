@@ -373,7 +373,10 @@ class ModelKeras(ModelClass):
         '''
         return self._serve(x_test).numpy()
 
-    @tf.function(reduce_retracing=True)  # reduce_retracing must be set to avoid retracing (tensors with different shapes)
+    # We used to use reduce_retracing to avoid retracing and memory leaks (tensors with different shapes)
+    # but it is still experimental and seems to still do some retracing
+    # Hence, we now use input_signature and it seems to work as intended
+    @tf.function(input_signature=(tf.TensorSpec(shape=(None, None), dtype=tf.int32, name='x'), ))
     def _serve(self, x: np.ndarray):
         '''Improves predict function using tf.function (cf. https://www.tensorflow.org/guide/function)
 
