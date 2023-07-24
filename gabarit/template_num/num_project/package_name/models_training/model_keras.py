@@ -304,13 +304,15 @@ class ModelKeras(ModelClass):
         self.nb_fit += 1
 
     @utils.trained_needed
-    def predict(self, x_test: pd.DataFrame, return_proba: bool = False, alternative_version: bool = False, **kwargs) -> np.ndarray:
+    def predict(self, x_test: pd.DataFrame, return_proba: bool = False, batch_size: int = 128,
+                alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Predictions on test set
 
         Args:
             x_test (pd.DataFrame): DataFrame with the test data to be predicted
         Kwargs:
             return_proba (bool): If the function should return the probabilities instead of the classes
+            batch_size (int): size (approximate) of batches
             alternative_version (bool): If an alternative predict version (`tf.function` + `model.__call__`) must be used. Should be faster with low nb of inputs.
         Raises:
             ValueError: If the model is not classifier and return_proba=True
@@ -329,21 +331,22 @@ class ModelKeras(ModelClass):
 
         # Predict depends on model type
         if self.model_type == 'classifier':
-            return self._predict_classifier(x_test, return_proba=return_proba,
+            return self._predict_classifier(x_test, return_proba=return_proba, batch_size=batch_size,
                                             alternative_version=alternative_version)
         elif self.model_type == 'regressor':
-            return self._predict_regressor(x_test, alternative_version=alternative_version)
+            return self._predict_regressor(x_test, batch_size=batch_size, alternative_version=alternative_version)
         else:
             raise ValueError(f"The model type ({self.model_type}) must be 'classifier' or 'regressor'")
 
     @utils.trained_needed
-    def _predict_classifier(self, x_test: pd.DataFrame, return_proba: bool = False,
+    def _predict_classifier(self, x_test: pd.DataFrame, return_proba: bool = False, batch_size: int = 128,
                             alternative_version: bool = False) -> np.ndarray:
         '''Predictions on test
         Args:
             x_test (pd.DataFrame): DataFrame with the test data to be predicted
         Kwargs:
             return_proba (boolean): If the function should return the probabilities instead of the classes
+            batch_size (int): size (approximate) of batches
             alternative_version (bool): If an alternative predict version (`tf.function` + `model.__call__`) must be used. Should be faster with low nb of inputs.
         Raises:
             ValueError: If the model is not of classifier type
@@ -357,13 +360,13 @@ class ModelKeras(ModelClass):
 
         # Getting the predictions
         if alternative_version:
-            predicted_proba = self._alternative_predict_proba(x_test)
+            predicted_proba = self._alternative_predict_proba(x_test, batch_size=batch_size)
         else:
             # We advise you to avoid using model.predict with newest TensorFlow versions (possible memory leak) in a production environment (e.g. API)
             # https://github.com/tensorflow/tensorflow/issues/58676
             # Instead, you can use the alternative version that uses tf.function decorator & model.__call__
             # However, it should still be better to use `model.predict` for one-shot, batch mode, large input, iterations.
-            predicted_proba = self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
+            predicted_proba = self.model.predict(x_test, batch_size=batch_size, verbose=1)  # type: ignore
 
         # We return the probabilities if wanted
         if return_proba:
@@ -373,11 +376,12 @@ class ModelKeras(ModelClass):
         return self.get_classes_from_proba(predicted_proba)  # type: ignore
 
     @utils.trained_needed
-    def _predict_regressor(self, x_test, alternative_version: bool = False) -> np.ndarray:
+    def _predict_regressor(self, x_test, batch_size: int = 128, alternative_version: bool = False) -> np.ndarray:
         '''Predictions on test
         Args:
             x_test (pd.DataFrame): DataFrame with the test data to be predicted
         Kwargs:
+            batch_size (int): size (approximate) of batches
             alternative_version (bool): If an alternative predict version (`tf.function` + `model.__call__`) must be used. Should be faster with low nb of inputs.
         Raises:
             ValueError: If the model is not of regressor type
@@ -389,12 +393,12 @@ class ModelKeras(ModelClass):
 
         # Getting the predictions
         if alternative_version:
-            predictions = self._alternative_predict_proba(x_test)
+            predictions = self._alternative_predict_proba(x_test, batch_size=batch_size)
         else:
             # We advise you to avoid using model.predict with newest TensorFlow versions (possible memory leak) in a production environment (e.g. API)
             # https://github.com/tensorflow/tensorflow/issues/58676
             # Instead, you can use the alternative version that uses tf.function decorator & model.__call__
-            predictions = self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
+            predictions = self.model.predict(x_test, batch_size=batch_size, verbose=1)  # type: ignore
 
         # Finally, we get the final format
         # TODO : should certainly be changed for multi-output
@@ -424,26 +428,41 @@ class ModelKeras(ModelClass):
         return self.predict(x_test, return_proba=True, alternative_version=alternative_version)
 
     @utils.trained_needed
-    def _alternative_predict_proba(self, x_test: pd.DataFrame) -> np.ndarray:
+    def _alternative_predict_proba(self, x_test: pd.DataFrame, batch_size: int = 128) -> np.ndarray:
         '''Predicts probabilities on the test dataset - Alternative version
         Should be faster with low nb of inputs.
 
         Args:
             x_test (pd.DataFrame): Array-like, shape = [n_samples]
+        Kwargs:
+            batch_size (int): size (approximate) of batches
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        return self._serve(x_test).numpy()
+        # Assert batch size is >= 1
+        batch_size = max(1, batch_size)
+        # Process by batches - avoid huge memory impact
+        nb_batches = max(1, len(x_test)//batch_size)
+        np_results = None
+        # We also cast our dataframe to a numpy array
+        for arr in np.array_split(x_test.to_numpy(), nb_batches, axis=0):
+            tmp_results = self._serve(arr).numpy()
+            if np_results is None:
+                np_results = tmp_results
+            else:
+                np_results = np.concatenate((np_results, tmp_results))
+        # Return
+        return np_results
 
     # We used to use reduce_retracing to avoid retracing and memory leaks (tensors with different shapes)
     # but it is still experimental and seems to still do some retracing
     # Hence, we now use input_signature and it seems to work as intended
-    @tf.function(input_signature=(tf.TensorSpec(shape=(None, None), dtype=tf.int32, name='x'), ))
-    def _serve(self, x: pd.DataFrame):
+    @tf.function(input_signature=(tf.TensorSpec(shape=(None, None, None), dtype=tf.float64, name='x'), ))
+    def _serve(self, x: np.array):
         '''Improves predict function using tf.function (cf. https://www.tensorflow.org/guide/function)
 
         Args:
-            x (pd.DataFrame): input data
+            x (np.array): input data
         Returns:
             tf.tensor: model's output
         '''

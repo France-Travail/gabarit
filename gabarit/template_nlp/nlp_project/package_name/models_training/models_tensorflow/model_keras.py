@@ -313,13 +313,14 @@ class ModelKeras(ModelClass):
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict(self, x_test, return_proba: bool = False, alternative_version: bool = False, **kwargs) -> np.ndarray:
+    def predict(self, x_test, return_proba: bool = False, batch_size: int = 128, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Predictions on test set
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
         Kwargs:
             return_proba (bool): If the function should return the probabilities instead of the classes
+            batch_size (int): size (approximate) of batches
             alternative_version (bool): If an alternative predict version (`tf.function` + `model.__call__`) must be used. Should be faster with low nb of inputs.
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
@@ -328,7 +329,7 @@ class ModelKeras(ModelClass):
         x_test = pd.Series(x_test)
 
         # Predict
-        predicted_proba = self.predict_proba(x_test, alternative_version=alternative_version)
+        predicted_proba = self.predict_proba(x_test, batch_size=batch_size, alternative_version=alternative_version)
 
         # We return the probabilities if wanted
         if return_proba:
@@ -339,12 +340,13 @@ class ModelKeras(ModelClass):
 
     @utils.data_agnostic_str_to_list
     @utils.trained_needed
-    def predict_proba(self, x_test, alternative_version: bool = False, **kwargs) -> np.ndarray:
+    def predict_proba(self, x_test, batch_size: int = 128, alternative_version: bool = False, **kwargs) -> np.ndarray:
         '''Predicts probabilities on the test dataset
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples, n_features]
         Kwargs:
+            batch_size (int): size (approximate) of batches
             alternative_version (bool): If an alternative predict version (`tf.function` + `model.__call__`) must be used. Should be faster with low nb of inputs.
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
@@ -353,25 +355,39 @@ class ModelKeras(ModelClass):
         x_test = self._prepare_x_test(x_test)
         # Process
         if alternative_version:
-            return self._alternative_predict_proba(x_test)
+            return self._alternative_predict_proba(x_test, batch_size=batch_size)
         else:
             # We advise you to avoid using `model.predict` with newest TensorFlow versions (possible memory leak) in a production environment (e.g. API)
             # https://github.com/tensorflow/tensorflow/issues/58676
             # Instead, you can use the alternative version that uses tf.function decorator & model.__call__
             # However, it should still be better to use `model.predict` for one-shot, batch mode, large input, iterations.
-            return self.model.predict(x_test, batch_size=128, verbose=1)  # type: ignore
+            return self.model.predict(x_test, batch_size=batch_size, verbose=1)  # type: ignore
 
     @utils.trained_needed
-    def _alternative_predict_proba(self, x_test, **kwargs) -> np.ndarray:
+    def _alternative_predict_proba(self, x_test, batch_size: int = 128, **kwargs) -> np.ndarray:
         '''Predicts probabilities on the test dataset - Alternative version
         Should be faster with low nb of inputs.
 
         Args:
             x_test (?): Array-like or sparse matrix, shape = [n_samples]
+        Kwargs:
+            batch_size (int): size (approximate) of batches
         Returns:
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
-        return self._serve(x_test).numpy()
+        # Assert batch size is >= 1
+        batch_size = max(1, batch_size)
+        # Process by batches - avoid huge memory impact
+        nb_batches = max(1, len(x_test)//batch_size)
+        np_results = None
+        for arr in np.array_split(x_test, nb_batches, axis=0):
+            tmp_results = self._serve(arr).numpy()
+            if np_results is None:
+                np_results = tmp_results
+            else:
+                np_results = np.concatenate((np_results, tmp_results))
+        # Return
+        return np_results
 
     # We used to use reduce_retracing to avoid retracing and memory leaks (tensors with different shapes)
     # but it is still experimental and seems to still do some retracing
