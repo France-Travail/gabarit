@@ -466,17 +466,17 @@ class ModelKerasTests(unittest.TestCase):
         np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
 
         # Predict - return proba
-        preds = model.predict(x_train, return_proba=True, alternative_version=False)
-        preds_alternative = model.predict(x_train, return_proba=True, alternative_version=True)
-        self.assertEqual(preds.shape, (len(x_train), 3))
-        self.assertEqual(preds_alternative.shape, (len(x_train), 3))
-        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+        probas = model.predict(x_train, return_proba=True, alternative_version=False)
+        probas_alternative = model.predict(x_train, return_proba=True, alternative_version=True)
+        self.assertEqual(probas.shape, (len(x_train), 3))
+        self.assertEqual(probas_alternative.shape, (len(x_train), 3))
+        np.testing.assert_almost_equal(probas, probas_alternative, decimal=5)
         # 1 elem
-        preds = model.predict('test', return_proba=True, alternative_version=False)
-        preds_alternative = model.predict('test', return_proba=True, alternative_version=True)
-        self.assertEqual([elem for elem in preds], [elem for elem in model.predict(['test'], return_proba=True, alternative_version=False)[0]])
-        self.assertEqual([elem for elem in preds_alternative], [elem for elem in model.predict(['test'], return_proba=True, alternative_version=True)[0]])
-        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+        probas = model.predict('test', return_proba=True, alternative_version=False)
+        probas_alternative = model.predict('test', return_proba=True, alternative_version=True)
+        self.assertEqual([elem for elem in probas], [elem for elem in model.predict(['test'], return_proba=True, alternative_version=False)[0]])
+        self.assertEqual([elem for elem in probas_alternative], [elem for elem in model.predict(['test'], return_proba=True, alternative_version=True)[0]])
+        np.testing.assert_almost_equal(probas, probas_alternative, decimal=5)
 
         # Clean
         remove_dir(model_dir)
@@ -503,17 +503,17 @@ class ModelKerasTests(unittest.TestCase):
         np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
 
         # Predict - return proba
-        preds = model.predict(x_train, return_proba=True, alternative_version=False)
-        preds_alternative = model.predict(x_train, return_proba=True, alternative_version=True)
-        self.assertEqual(preds.shape, (len(x_train), len(cols)))
-        self.assertEqual(preds_alternative.shape, (len(x_train), len(cols)))
-        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+        probas = model.predict(x_train, return_proba=True, alternative_version=False)
+        probas_alternative = model.predict(x_train, return_proba=True, alternative_version=True)
+        self.assertEqual(probas.shape, (len(x_train), len(cols)))
+        self.assertEqual(probas_alternative.shape, (len(x_train), len(cols)))
+        np.testing.assert_almost_equal(probas, probas_alternative, decimal=5)
         # 1 elem
-        preds = model.predict('test', return_proba=True, alternative_version=False)
-        preds_alternative = model.predict('test', return_proba=True, alternative_version=True)
-        self.assertEqual([elem for elem in preds], [elem for elem in model.predict(['test'], return_proba=True, alternative_version=False)[0]])
-        self.assertEqual([elem for elem in preds_alternative], [elem for elem in model.predict(['test'], return_proba=True, alternative_version=True)[0]])
-        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+        probas = model.predict('test', return_proba=True, alternative_version=False)
+        probas_alternative = model.predict('test', return_proba=True, alternative_version=True)
+        self.assertEqual([elem for elem in probas], [elem for elem in model.predict(['test'], return_proba=True, alternative_version=False)[0]])
+        self.assertEqual([elem for elem in probas_alternative], [elem for elem in model.predict(['test'], return_proba=True, alternative_version=True)[0]])
+        np.testing.assert_almost_equal(probas, probas_alternative, decimal=5)
 
         # Clean
         remove_dir(model_dir)
