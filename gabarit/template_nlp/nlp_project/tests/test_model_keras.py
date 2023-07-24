@@ -440,65 +440,82 @@ class ModelKerasTests(unittest.TestCase):
 
         # Set vars
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
-        x_valid = np.array(["cela est un test", "ni cela", "non plus", "ici test", "là, rien de rien!"] * 100)
         y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
-        y_valid_mono = y_train_mono.copy()
         y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
-        y_valid_multi = y_train_multi.copy()
         cols = ['test1', 'test2', 'test3']
 
-        # Mono-label
+        ###
+        ### Mono-label
+        ###
         model = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                    max_sequence_length=10, max_words=100,
                                    embedding_name='fake_embedding.pkl')
         model.fit(x_train, y_train_mono)
-        #
-        preds = model.predict(x_train, return_proba=False)
-        preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
+
+        # Predict
+        preds = model.predict(x_train, return_proba=False, alternative_version=False)
+        preds_alternative = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
-        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
-        #
-        preds = model.predict('test', return_proba=False)
-        preds_alt = model.predict('test', return_proba=False, alternative_version=True)
-        self.assertEqual(preds, model.predict(['test'], return_proba=False)[0])
-        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
-        #
-        probas = model.predict(x_train, return_proba=True)
-        probas_alt = model.predict(x_train, return_proba=True, alternative_version=True)
-        self.assertEqual(probas.shape, (len(x_train), 3))
-        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
-        #
-        probas = model.predict('test', return_proba=True)
-        probas_alt = model.predict('test', return_proba=True, alternative_version=True)
-        self.assertEqual([elem for elem in probas], [elem for elem in model.predict(['test'], return_proba=True)[0]])
-        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
+        self.assertEqual(preds_alternative.shape, (len(x_train),))
+        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+        # 1 elem
+        preds = model.predict('test', return_proba=False, alternative_version=False)
+        preds_alternative = model.predict('test', return_proba=False, alternative_version=True)
+        self.assertEqual([elem for elem in preds], [elem for elem in model.predict(['test'], return_proba=False, alternative_version=False)[0]])
+        self.assertEqual([elem for elem in preds_alternative], [elem for elem in model.predict(['test'], return_proba=False, alternative_version=True)[0]])
+        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+
+        # Predict - return proba
+        preds = model.predict(x_train, return_proba=True, alternative_version=False)
+        preds_alternative = model.predict(x_train, return_proba=True, alternative_version=True)
+        self.assertEqual(preds.shape, (len(x_train), 3))
+        self.assertEqual(preds_alternative.shape, (len(x_train), 3))
+        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+        # 1 elem
+        preds = model.predict('test', return_proba=True, alternative_version=False)
+        preds_alternative = model.predict('test', return_proba=True, alternative_version=True)
+        self.assertEqual([elem for elem in preds], [elem for elem in model.predict(['test'], return_proba=True, alternative_version=False)[0]])
+        self.assertEqual([elem for elem in preds_alternative], [elem for elem in model.predict(['test'], return_proba=True, alternative_version=True)[0]])
+        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+
+        # Clean
         remove_dir(model_dir)
 
-        # Multi-labels
+        ###
+        ### Multi-labels
+        ###
         model = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
                                    max_sequence_length=10, max_words=100,
                                    embedding_name='fake_embedding.pkl')
         model.fit(x_train, y_train_multi)
-        #
-        preds = model.predict(x_train, return_proba=False)
-        preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
+
+        # Predict
+        preds = model.predict(x_train, return_proba=False, alternative_version=False)
+        preds_alternative = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train), len(cols)))
-        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
-        #
-        preds = model.predict('test', return_proba=False)
-        preds_alt = model.predict('test', return_proba=False, alternative_version=True)
-        self.assertEqual([elem for elem in preds], [elem for elem in model.predict(['test'], return_proba=False)[0]])
-        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
-        #
-        probas = model.predict(x_train, return_proba=True)
-        probas_alt = model.predict(x_train, return_proba=True, alternative_version=True)
-        self.assertEqual(probas.shape, (len(x_train), len(cols)))
-        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
-        #
-        probas = model.predict('test', return_proba=True)
-        probas_alt = model.predict('test', return_proba=True, alternative_version=True)
-        self.assertEqual([elem for elem in probas], [elem for elem in model.predict(['test'], return_proba=True)[0]])
-        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
+        self.assertEqual(preds_alternative.shape, (len(x_train), len(cols)))
+        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+        # 1 elem
+        preds = model.predict('test', return_proba=False, alternative_version=False)
+        preds_alternative = model.predict('test', return_proba=False, alternative_version=True)
+        self.assertEqual([elem for elem in preds], [elem for elem in model.predict(['test'], return_proba=False, alternative_version=False)[0]])
+        self.assertEqual([elem for elem in preds_alternative], [elem for elem in model.predict(['test'], return_proba=False, alternative_version=True)[0]])
+        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+
+        # Predict - return proba
+        preds = model.predict(x_train, return_proba=True, alternative_version=False)
+        preds_alternative = model.predict(x_train, return_proba=True, alternative_version=True)
+        self.assertEqual(preds.shape, (len(x_train), len(cols)))
+        self.assertEqual(preds_alternative.shape, (len(x_train), len(cols)))
+        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+        # 1 elem
+        preds = model.predict('test', return_proba=True, alternative_version=False)
+        preds_alternative = model.predict('test', return_proba=True, alternative_version=True)
+        self.assertEqual([elem for elem in preds], [elem for elem in model.predict(['test'], return_proba=True, alternative_version=False)[0]])
+        self.assertEqual([elem for elem in preds_alternative], [elem for elem in model.predict(['test'], return_proba=True, alternative_version=True)[0]])
+        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+
+        # Clean
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -836,7 +853,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(model.keras_params['coucou3'], new_model.keras_params['coucou3'])
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
-    
+
     def test12_model_keras_load_standalone_files(self):
         '''Test of the method _load_standalone_files of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
@@ -845,7 +862,7 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(new_model_dir)
 
         old_hdf5_path = os.path.join(model_dir, 'best.hdf5')
-        
+
 
         # Nominal case with default_model_dir
         model = ModelEmbeddingCnn(model_dir=model_dir, embedding_name='fake_embedding.pkl')
