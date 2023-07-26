@@ -526,7 +526,7 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Regressor
-        model = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, batch_size=8, epochs=2)
+        model = ModelDenseRegressor(model_dir=model_dir, batch_size=8, epochs=2)
         model.fit(x_train, y_train_regressor)
         preds = model.predict(x_train, return_proba=False, alternative_version=False)
         preds_alternative = model.predict(x_train, return_proba=False, alternative_version=True)
