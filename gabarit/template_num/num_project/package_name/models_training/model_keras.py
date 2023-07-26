@@ -457,7 +457,7 @@ class ModelKeras(ModelClass):
     # We used to use reduce_retracing to avoid retracing and memory leaks (tensors with different shapes)
     # but it is still experimental and seems to still do some retracing
     # Hence, we now use input_signature and it seems to work as intended
-    @tf.function(input_signature=(tf.TensorSpec(shape=(None, None, None), dtype=tf.float64, name='x'), ))
+    @tf.function(input_signature=(tf.TensorSpec(shape=(None, None,), dtype=tf.float64, name='x'), ))
     def _serve(self, x: np.array):
         '''Improves predict function using tf.function (cf. https://www.tensorflow.org/guide/function)
 

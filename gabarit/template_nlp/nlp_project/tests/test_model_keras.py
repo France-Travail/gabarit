@@ -461,8 +461,8 @@ class ModelKerasTests(unittest.TestCase):
         # 1 elem
         preds = model.predict('test', return_proba=False, alternative_version=False)
         preds_alternative = model.predict('test', return_proba=False, alternative_version=True)
-        self.assertEqual([elem for elem in preds], [elem for elem in model.predict(['test'], return_proba=False, alternative_version=False)[0]])
-        self.assertEqual([elem for elem in preds_alternative], [elem for elem in model.predict(['test'], return_proba=False, alternative_version=True)[0]])
+        self.assertEqual(preds, model.predict(['test'], return_proba=False, alternative_version=False)[0])
+        self.assertEqual(preds_alternative, model.predict(['test'], return_proba=False, alternative_version=True)[0])
         np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
 
         # Predict - return proba
