@@ -156,8 +156,8 @@ class ModelDenseClassifierTests(unittest.TestCase):
         model.fit(x_train, y_train_multi)
         preds = model.predict(x_train, return_proba=False, alternative_version=False)
         preds_alternative = model.predict(x_train, return_proba=False, alternative_version=True)
-        self.assertEqual(preds.shape, (len(x_train),))
-        self.assertEqual(preds_alternative.shape, (len(x_train),))
+        self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
+        self.assertEqual(preds_alternative.shape, (len(x_train), len(y_col_multi)))
         np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
         # return proba
         probas = model.predict(x_train, return_proba=True, alternative_version=False)
@@ -239,9 +239,9 @@ class ModelDenseClassifierTests(unittest.TestCase):
         # Model needs to be fitted
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         with self.assertRaises(AttributeError):
-            model.predict_proba('test')
+            model.predict_proba(x_train)
         with self.assertRaises(AttributeError):
-            model.predict_proba('test', alternative_version=True)
+            model.predict_proba(x_train, alternative_version=True)
         remove_dir(model_dir)
 
     def test04_model_dense_classifier_get_predict_position(self):
