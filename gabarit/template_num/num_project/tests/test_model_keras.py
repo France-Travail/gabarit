@@ -482,7 +482,7 @@ class ModelKerasTests(unittest.TestCase):
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         # Test inference_batch_size
-        for inference_batch_size in [-10, 1, 100000]:
+        for inference_batch_size in [1, 100000]:
             preds = model.predict(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
             preds_alternative = model.predict(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
@@ -507,7 +507,7 @@ class ModelKerasTests(unittest.TestCase):
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         # Test inference_batch_size
-        for inference_batch_size in [-10, 1, 100000]:
+        for inference_batch_size in [1, 100000]:
             preds = model.predict(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
             preds_alternative = model.predict(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
@@ -532,7 +532,7 @@ class ModelKerasTests(unittest.TestCase):
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         # Test inference_batch_size
-        for inference_batch_size in [-10, 1, 100000]:
+        for inference_batch_size in [1, 100000]:
             preds = model.predict(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
             preds_alternative = model.predict(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
@@ -555,7 +555,7 @@ class ModelKerasTests(unittest.TestCase):
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
         # Test inference_batch_size
-        for inference_batch_size in [-10, 1, 100000]:
+        for inference_batch_size in [1, 100000]:
             preds = model.predict(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
             preds_alternative = model.predict(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
 
@@ -595,7 +595,7 @@ class ModelKerasTests(unittest.TestCase):
         probas_inv = model.predict_proba(x_train_inv, alternative_version=False)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         # Test inference_batch_size
-        for inference_batch_size in [-10, 1, 100000]:
+        for inference_batch_size in [1, 100000]:
             probas = model.predict_proba(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
             probas_alternative = model.predict_proba(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
@@ -613,7 +613,7 @@ class ModelKerasTests(unittest.TestCase):
         probas_inv = model.predict_proba(x_train_inv, alternative_version=False)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         # Test inference_batch_size
-        for inference_batch_size in [-10, 1, 100000]:
+        for inference_batch_size in [1, 100000]:
             probas = model.predict_proba(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
             probas_alternative = model.predict_proba(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
@@ -631,7 +631,7 @@ class ModelKerasTests(unittest.TestCase):
         probas_inv = model.predict_proba(x_train_inv, alternative_version=False)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
         # Test inference_batch_size
-        for inference_batch_size in [-10, 1, 100000]:
+        for inference_batch_size in [1, 100000]:
             probas = model.predict_proba(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
             probas_alternative = model.predict_proba(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)

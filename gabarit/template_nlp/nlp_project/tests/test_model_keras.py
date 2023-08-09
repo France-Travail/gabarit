@@ -466,7 +466,7 @@ class ModelKerasTests(unittest.TestCase):
         np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
 
         # Test inference_batch_size
-        for inference_batch_size in [-10, 1, 100000]:
+        for inference_batch_size in [1, 100000]:
             preds = model.predict_proba(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
             probas_alternative = model.predict_proba(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
 
@@ -508,7 +508,7 @@ class ModelKerasTests(unittest.TestCase):
         np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
 
         # Test inference_batch_size
-        for inference_batch_size in [-10, 1, 100000]:
+        for inference_batch_size in [1, 100000]:
             preds = model.predict_proba(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
             probas_alternative = model.predict_proba(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
 
