@@ -153,63 +153,46 @@ class ModelEmbeddingLstmGruTests(unittest.TestCase):
 
         # Set vars
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
-        x_test = np.array(["cela est un test", "ni cela", "non plus", "ici test", "là, rien de rien!"] * 100)
         y_train_mono = np.array([0, 1, 0, 1, 2] * 100)
-        y_test_mono = y_train_mono.copy()
         y_train_multi = pd.DataFrame({'test1': [0, 0, 0, 1, 0] * 100, 'test2': [1, 0, 0, 0, 0] * 100, 'test3': [0, 0, 0, 1, 0] * 100})
-        y_test_multi = y_train_multi.copy()
         cols = ['test1', 'test2', 'test3']
 
         # Mono-label
         model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                         max_sequence_length=10, max_words=100,
-                                         padding='pre', truncating='post',
-                                         embedding_name='fake_embedding.pkl')
+                                      max_sequence_length=10, max_words=100,
+                                      padding='pre', truncating='post',
+                                      embedding_name='fake_embedding.pkl')
         model.fit(x_train, y_train_mono)
-        preds = model.predict_proba(x_train)
-        preds_alt = model.predict_proba(x_train, alternative_version=True)
-        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
-        self.assertEqual(preds.shape, (len(x_train), 3))
-        preds = model.predict_proba('test')
-        self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'])[0]])
-        remove_dir(model_dir)
-
-        #
-        model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
-                                         max_sequence_length=10, max_words=100,
-                                         padding='pre', truncating='post',
-                                         embedding_name='fake_embedding.pkl')
-        model.fit(x_train, y_train_mono)
-        preds = model.predict_proba(x_train, alternative_version=True)
-        self.assertEqual(preds.shape, (len(x_train), 3))
-        preds = model.predict_proba('test', alternative_version=True)
-        self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'], alternative_version=True)[0]])
+        probas = model.predict_proba(x_train, alternative_version=False)
+        probas_alternative = model.predict_proba(x_train, alternative_version=True)
+        self.assertEqual(probas.shape, (len(x_train), 3))
+        self.assertEqual(probas_alternative.shape, (len(x_train), 3))
+        np.testing.assert_almost_equal(probas, probas_alternative, decimal=5)
+        # 1 elem
+        probas = model.predict_proba('test', alternative_version=False)
+        probas_alternative = model.predict_proba('test', alternative_version=True)
+        self.assertEqual([elem for elem in probas], [elem for elem in model.predict_proba(['test'], alternative_version=False)[0]])
+        self.assertEqual([elem for elem in probas_alternative], [elem for elem in model.predict_proba(['test'], alternative_version=True)[0]])
+        np.testing.assert_almost_equal(probas, probas_alternative, decimal=5)
         remove_dir(model_dir)
 
         # Multi-labels
         model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
-                                         max_sequence_length=10, max_words=100,
-                                         padding='pre', truncating='post',
-                                         embedding_name='fake_embedding.pkl')
+                                      max_sequence_length=10, max_words=100,
+                                      padding='pre', truncating='post',
+                                      embedding_name='fake_embedding.pkl')
         model.fit(x_train, y_train_multi[cols])
-        preds = model.predict_proba(x_train)
-        preds_alt = model.predict_proba(x_train, alternative_version=True)
-        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
-        self.assertEqual(preds.shape, (len(x_train), len(cols)))
-        preds = model.predict_proba('test')
-        self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'])[0]])
-        remove_dir(model_dir)
-
-        #
-        model = ModelEmbeddingLstmGru(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
-                                         max_sequence_length=10, max_words=100,
-                                         padding='pre', truncating='post',
-                                         embedding_name='fake_embedding.pkl')
-        model.fit(x_train, y_train_multi[cols])
-        preds = model.predict_proba(x_train, alternative_version=True)
-        self.assertEqual(preds.shape, (len(x_train), len(cols)))
-        preds = model.predict_proba('test', alternative_version=True)
-        self.assertEqual([elem for elem in preds], [elem for elem in model.predict_proba(['test'], alternative_version=True)[0]])
+        probas = model.predict_proba(x_train, alternative_version=False)
+        probas_alternative = model.predict_proba(x_train, alternative_version=True)
+        self.assertEqual(probas.shape, (len(x_train), len(cols)))
+        self.assertEqual(probas_alternative.shape, (len(x_train), len(cols)))
+        np.testing.assert_almost_equal(probas, probas_alternative, decimal=5)
+        # 1 elem
+        probas = model.predict_proba('test', alternative_version=False)
+        probas_alternative = model.predict_proba('test', alternative_version=True)
+        self.assertEqual([elem for elem in probas], [elem for elem in model.predict_proba(['test'], alternative_version=False)[0]])
+        self.assertEqual([elem for elem in probas_alternative], [elem for elem in model.predict_proba(['test'], alternative_version=True)[0]])
+        np.testing.assert_almost_equal(probas, probas_alternative, decimal=5)
         remove_dir(model_dir)
 
         # Model needs to be fitted
@@ -498,7 +481,7 @@ class ModelEmbeddingLstmGruTests(unittest.TestCase):
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
-        
+
 # Perform tests
 if __name__ == '__main__':
     # Start tests

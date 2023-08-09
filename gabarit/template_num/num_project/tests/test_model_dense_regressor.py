@@ -109,18 +109,18 @@ class ModelDenseRegressorTests(unittest.TestCase):
         # Regressor
         model = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, batch_size=8, epochs=2)
         model.fit(x_train, y_train_regressor)
-        #
-        preds = model.predict(x_train, return_proba=False)
-        preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
-        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
+        preds = model.predict(x_train, return_proba=False, alternative_version=False)
+        preds_alternative = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
+        self.assertEqual(preds_alternative.shape, (len(x_train),))
+        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
         #
         with self.assertRaises(ValueError):
-            probas = model.predict(x_train, return_proba=True)
+            _ = model.predict(x_train, return_proba=True)
         with self.assertRaises(ValueError):
-            probas = model.predict(x_train, return_proba=True, alternative_version=True)
+            _ = model.predict(x_train, return_proba=True, alternative_version=True)
         # Test inversed columns order
-        preds_inv = model.predict(x_train_inv, return_proba=False)
+        preds_inv = model.predict(x_train_inv, return_proba=False, alternative_version=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
 
