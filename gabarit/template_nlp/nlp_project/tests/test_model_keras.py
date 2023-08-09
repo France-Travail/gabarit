@@ -465,6 +465,11 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(preds_alternative, model.predict(['test'], return_proba=False, alternative_version=True)[0])
         np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
 
+        # Test inference_batch_size
+        for inference_batch_size in [-10, 1, 100000]:
+            preds = model.predict_proba(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            probas_alternative = model.predict_proba(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
+
         # Predict - return proba
         probas = model.predict(x_train, return_proba=True, alternative_version=False)
         probas_alternative = model.predict(x_train, return_proba=True, alternative_version=True)
@@ -501,6 +506,11 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual([elem for elem in preds], [elem for elem in model.predict(['test'], return_proba=False, alternative_version=False)[0]])
         self.assertEqual([elem for elem in preds_alternative], [elem for elem in model.predict(['test'], return_proba=False, alternative_version=True)[0]])
         np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+
+        # Test inference_batch_size
+        for inference_batch_size in [-10, 1, 100000]:
+            preds = model.predict_proba(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            probas_alternative = model.predict_proba(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
 
         # Predict - return proba
         probas = model.predict(x_train, return_proba=True, alternative_version=False)

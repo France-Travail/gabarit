@@ -481,6 +481,10 @@ class ModelKerasTests(unittest.TestCase):
         probas_inv = model.predict(x_train_inv, return_proba=True, alternative_version=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
+        # Test inference_batch_size
+        for inference_batch_size in [-10, 1, 100000]:
+            preds = model.predict(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            preds_alternative = model.predict(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -502,6 +506,10 @@ class ModelKerasTests(unittest.TestCase):
         probas_inv = model.predict(x_train_inv, return_proba=True, alternative_version=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
+        # Test inference_batch_size
+        for inference_batch_size in [-10, 1, 100000]:
+            preds = model.predict(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            preds_alternative = model.predict(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -523,6 +531,10 @@ class ModelKerasTests(unittest.TestCase):
         probas_inv = model.predict(x_train_inv, return_proba=True, alternative_version=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
+        # Test inference_batch_size
+        for inference_batch_size in [-10, 1, 100000]:
+            preds = model.predict(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            preds_alternative = model.predict(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
 
         # Regressor
@@ -542,6 +554,10 @@ class ModelKerasTests(unittest.TestCase):
         preds_inv = model.predict(x_train_inv, return_proba=False, alternative_version=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
+        # Test inference_batch_size
+        for inference_batch_size in [-10, 1, 100000]:
+            preds = model.predict(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            preds_alternative = model.predict(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
 
         # Model needs to be fitted
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
@@ -578,6 +594,10 @@ class ModelKerasTests(unittest.TestCase):
         # Test inversed columns order
         probas_inv = model.predict_proba(x_train_inv, alternative_version=False)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
+        # Test inference_batch_size
+        for inference_batch_size in [-10, 1, 100000]:
+            probas = model.predict_proba(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            probas_alternative = model.predict_proba(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
@@ -592,6 +612,10 @@ class ModelKerasTests(unittest.TestCase):
         # Test inversed columns order
         probas_inv = model.predict_proba(x_train_inv, alternative_version=False)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
+        # Test inference_batch_size
+        for inference_batch_size in [-10, 1, 100000]:
+            probas = model.predict_proba(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            probas_alternative = model.predict_proba(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
@@ -606,6 +630,10 @@ class ModelKerasTests(unittest.TestCase):
         # Test inversed columns order
         probas_inv = model.predict_proba(x_train_inv, alternative_version=False)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
+        # Test inference_batch_size
+        for inference_batch_size in [-10, 1, 100000]:
+            probas = model.predict_proba(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            probas_alternative = model.predict_proba(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
 
         # Regressor
