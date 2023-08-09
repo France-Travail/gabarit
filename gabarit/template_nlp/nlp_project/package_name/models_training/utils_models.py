@@ -278,7 +278,7 @@ def load_model(model_dir: str, is_path: bool = False, **kwargs) -> Tuple[Any, di
     return model, model_conf
 
 
-def predict(content: Union[str, list], model, model_conf: dict, batch_size: int = 128, alternative_version: bool = False, **kwargs) -> list:
+def predict(content: Union[str, list], model, model_conf: dict, inference_batch_size: int = 128, alternative_version: bool = False, **kwargs) -> list:
     '''Gets predictions of a model on a content
 
     Args:
@@ -286,7 +286,7 @@ def predict(content: Union[str, list], model, model_conf: dict, batch_size: int 
         model (ModelClass): Model to use
         model_conf (dict): Model configurations
     Kwargs:
-        batch_size (int): size (approximate) of batches
+        inference_batch_size (int): size (approximate) of batches
         alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used.
             Should be faster with low nb of inputs. Only useful for Keras models.
             We advise you to set `alternative_version` to True for APIs to avoid possible memory leaks with `model.predict` on newest TensorFlow.
@@ -309,13 +309,13 @@ def predict(content: Union[str, list], model, model_conf: dict, batch_size: int 
     content = preprocessor(content)
 
     # Get prediction (some models need an iterable)
-    predictions = model.predict(content, batch_size=batch_size, alternative_version=alternative_version)
+    predictions = model.predict(content, inference_batch_size=inference_batch_size, alternative_version=alternative_version)
 
     # Return predictions with inverse transform when relevant
     return model.inverse_transform(predictions)
 
 
-def predict_with_proba(content: Union[str, list], model, model_conf: dict, batch_size: int = 128, alternative_version: bool = False,
+def predict_with_proba(content: Union[str, list], model, model_conf: dict, inference_batch_size: int = 128, alternative_version: bool = False,
                        **kwargs) -> Union[Tuple[List[str], List[float]], Tuple[List[tuple], List[tuple]]]:
     '''Gets predictions of a model on a content, with probabilities
 
@@ -324,7 +324,7 @@ def predict_with_proba(content: Union[str, list], model, model_conf: dict, batch
         model (ModelClass): Model to use
         model_conf (dict): Model configurations
     Kwargs:
-        batch_size (int): size (approximate) of batches
+        inference_batch_size (int): size (approximate) of batches
         alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used.
             Should be faster with low nb of inputs. Only useful for Keras models.
             We advise you to set `alternative_version` to True for APIs to avoid possible memory leaks with `model.predict` on newest TensorFlow.
@@ -354,7 +354,7 @@ def predict_with_proba(content: Union[str, list], model, model_conf: dict, batch
     # Get prediction (some models need an iterable)
     # predictions is a ndarray of shape (n_samples, n_classes)
     # probas is a ndarray of shape (n_samples, n_classes)
-    predictions, probas = model.predict_with_proba(content, batch_size=batch_size, alternative_version=alternative_version)
+    predictions, probas = model.predict_with_proba(content, inference_batch_size=inference_batch_size, alternative_version=alternative_version)
 
     # Rework format :
     if model.multi_label:
