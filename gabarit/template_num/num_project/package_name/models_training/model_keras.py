@@ -366,7 +366,7 @@ class ModelKeras(ModelClass):
             # https://github.com/tensorflow/tensorflow/issues/58676
             # Instead, you can use the alternative version that uses tf.function decorator & model.__call__
             # However, it should still be better to use `model.predict` for one-shot, batch mode, large input, iterations.
-            predicted_proba = self.model.predict(x_test, inference_batch_size=inference_batch_size, verbose=1)  # type: ignore
+            predicted_proba = self.model.predict(x_test, batch_size=inference_batch_size, verbose=1)  # type: ignore
 
         # We return the probabilities if wanted
         if return_proba:
@@ -398,7 +398,7 @@ class ModelKeras(ModelClass):
             # We advise you to avoid using model.predict with newest TensorFlow versions (possible memory leak) in a production environment (e.g. API)
             # https://github.com/tensorflow/tensorflow/issues/58676
             # Instead, you can use the alternative version that uses tf.function decorator & model.__call__
-            predictions = self.model.predict(x_test, inference_batch_size=inference_batch_size, verbose=1)  # type: ignore
+            predictions = self.model.predict(x_test, batch_size=inference_batch_size, verbose=1)  # type: ignore
 
         # Finally, we get the final format
         # TODO : should certainly be changed for multi-output

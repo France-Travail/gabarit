@@ -361,7 +361,7 @@ class ModelKeras(ModelClass):
             # https://github.com/tensorflow/tensorflow/issues/58676
             # Instead, you can use the alternative version that uses tf.function decorator & model.__call__
             # However, it should still be better to use `model.predict` for one-shot, batch mode, large input, iterations.
-            return self.model.predict(x_test, inference_batch_size=inference_batch_size, verbose=1)  # type: ignore
+            return self.model.predict(x_test, batch_size=inference_batch_size, verbose=1)  # type: ignore
 
     @utils.trained_needed
     def _alternative_predict_proba(self, x_test, inference_batch_size: int = 128, **kwargs) -> np.ndarray:
