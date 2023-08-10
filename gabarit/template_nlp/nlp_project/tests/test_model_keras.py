@@ -450,20 +450,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue(compare_keras_models(model1.model, model2.model))
         remove_dir(model_dir), remove_dir(model_dir2)
 
-        # Multi-label same random_seed
-        model1 = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
-                                  max_sequence_length=10, max_words=100, random_seed=42,
-                                  padding='pre', truncating='post',
-                                  embedding_name='fake_embedding.pkl')
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelEmbeddingLstm(model_dir=model_dir2, batch_size=8, epochs=2, multi_label=True,
-                                  max_sequence_length=10, max_words=100, random_seed=42,
-                                  padding='pre', truncating='post',
-                                  embedding_name='fake_embedding.pkl')
-        model2.fit(x_train, y_train_multi)
-        self.assertTrue(compare_keras_models(model1.model, model2.model))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
         # Mono-label different random_seed
         model1 = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
                                   max_sequence_length=10, max_words=100, random_seed=42,
@@ -476,6 +462,20 @@ class ModelKerasTests(unittest.TestCase):
                                   embedding_name='fake_embedding.pkl')
         model2.fit(x_train, y_train_mono)
         self.assertFalse(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label same random_seed
+        model1 = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelEmbeddingLstm(model_dir=model_dir2, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_multi)
+        self.assertTrue(compare_keras_models(model1.model, model2.model))
         remove_dir(model_dir), remove_dir(model_dir2)
 
         # Multi-label different random_seed
@@ -780,7 +780,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue('dict_classes' in configs.keys())
         self.assertTrue('x_col' in configs.keys())
         self.assertTrue('y_col' in configs.keys())
-        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('multi_label' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())
@@ -817,7 +816,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue('dict_classes' in configs.keys())
         self.assertTrue('x_col' in configs.keys())
         self.assertTrue('y_col' in configs.keys())
-        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('multi_label' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())

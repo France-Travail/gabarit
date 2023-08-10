@@ -411,7 +411,6 @@ class ModelRidgeClassifierTests(unittest.TestCase):
         self.assertTrue('nb_fit' in configs.keys())
         self.assertTrue('x_col' in configs.keys())
         self.assertTrue('y_col' in configs.keys())
-        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('columns_in' in configs.keys())
         self.assertTrue('mandatory_columns' in configs.keys())
         self.assertTrue('level_save' in configs.keys())

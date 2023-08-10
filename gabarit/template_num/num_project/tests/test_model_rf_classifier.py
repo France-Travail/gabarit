@@ -116,11 +116,6 @@ class ModelRFClassifierTests(unittest.TestCase):
         self.assertEqual(model.pipeline['rf'].n_estimators, 10)
         self.assertEqual(model.multi_label, True)
         remove_dir(model_dir)
-        model = ModelRFClassifier(model_dir=model_dir, multi_label=True, multiclass_strategy='ovo', rf_params={'max_depth': 8})
-        self.assertEqual(model.multiclass_strategy, 'ovo')
-        self.assertEqual(model.pipeline['rf'].max_depth, 8)
-        self.assertEqual(model.multi_label, True)
-        remove_dir(model_dir)
         # Error
         with self.assertRaises(ValueError):
             model = ModelRFClassifier(model_dir=model_dir, multi_label=False, multiclass_strategy='toto', rf_params={'max_depth': 8, 'n_estimators': 10})
@@ -424,7 +419,6 @@ class ModelRFClassifierTests(unittest.TestCase):
         self.assertTrue('nb_fit' in configs.keys())
         self.assertTrue('x_col' in configs.keys())
         self.assertTrue('y_col' in configs.keys())
-        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('columns_in' in configs.keys())
         self.assertTrue('mandatory_columns' in configs.keys())
         self.assertTrue('level_save' in configs.keys())

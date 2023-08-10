@@ -32,6 +32,7 @@ from tensorflow.keras.preprocessing.text import Tokenizer
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_gru import ModelEmbeddingLstmGru
+from {{package_name}}.models_training.models_tensorflow.utils_deep_keras import compare_keras_models
 
 # Disable logging
 import logging
@@ -40,19 +41,6 @@ logging.disable(logging.CRITICAL)
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
-
-
-def compare_keras_models(model1, model2):
-    ''' Checks if all weights of each keras model layer are the same
-    '''
-    for layer1, layer2 in zip(model1.layers, model2.layers):
-        if layer1.__class__.__name__!=layer2.__class__.__name__:
-            return False
-        l1 = layer1.get_weights()
-        l2 = layer2.get_weights()
-        if not all(np.array_equal(weights1, weights2) for weights1, weights2 in zip(l1, l2)):
-            return False
-    return True
 
 
 class ModelEmbeddingLstmGruTests(unittest.TestCase):
@@ -385,7 +373,6 @@ class ModelEmbeddingLstmGruTests(unittest.TestCase):
         self.assertEqual(configs['padding'], padding)
         self.assertEqual(configs['truncating'], truncating)
         self.assertEqual(configs['tokenizer_filters'], tokenizer_filters)
-        self.assertEqual(configs['random_seed'], 42)
         remove_dir(model_dir)
 
         # Nominal case - with tokenizer
@@ -409,7 +396,6 @@ class ModelEmbeddingLstmGruTests(unittest.TestCase):
         self.assertEqual(configs['padding'], padding)
         self.assertEqual(configs['truncating'], truncating)
         self.assertEqual(configs['tokenizer_filters'], tokenizer_filters)
-        self.assertEqual(configs['random_seed'], None)
         remove_dir(model_dir)
 
         # Nominal case - with tokenizer, but level_save = 'LOW'
@@ -432,7 +418,6 @@ class ModelEmbeddingLstmGruTests(unittest.TestCase):
         self.assertEqual(configs['padding'], padding)
         self.assertEqual(configs['truncating'], truncating)
         self.assertEqual(configs['tokenizer_filters'], tokenizer_filters)
-        self.assertEqual(configs['random_seed'], 42)
         remove_dir(model_dir)
 
     def test07_model_embedding_lstm_gru_init_new_instance_from_configs(self):

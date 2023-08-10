@@ -374,7 +374,6 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         self.assertEqual(configs['padding'], padding)
         self.assertEqual(configs['truncating'], truncating)
         self.assertEqual(configs['tokenizer_filters'], tokenizer_filters)
-        self.assertEqual(configs['random_seed'], 42)
         remove_dir(model_dir)
 
         # Nominal case - with tokenizer
@@ -398,7 +397,6 @@ class ModelEmbeddingCnnTests(unittest.TestCase):
         self.assertEqual(configs['padding'], padding)
         self.assertEqual(configs['truncating'], truncating)
         self.assertEqual(configs['tokenizer_filters'], tokenizer_filters)
-        self.assertEqual(configs['random_seed'], None)
         remove_dir(model_dir)
 
         # Nominal case - with tokenizer, but level_save = 'LOW'

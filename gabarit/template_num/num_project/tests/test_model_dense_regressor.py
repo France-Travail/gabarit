@@ -29,6 +29,7 @@ import tensorflow.keras as keras
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
+from {{package_name}}.models_training.utils_deep_keras import compare_keras_models
 from {{package_name}}.models_training.regressors.models_tensorflow.model_dense_regressor import ModelDenseRegressor
 
 # Disable logging
@@ -38,17 +39,6 @@ logging.disable(logging.CRITICAL)
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
-
-
-def compare_keras_models(model1, model2):
-    ''' Checks if all weights of each keras model layer are the same
-    '''
-    for layer1, layer2 in zip(model1.layers, model2.layers):
-        l1 = layer1.get_weights()
-        l2 = layer2.get_weights()
-        if not all(np.array_equal(weights1, weights2) for weights1, weights2 in zip(l1, l2)):
-            return False
-    return True
 
 
 class ModelDenseRegressorTests(unittest.TestCase):
@@ -165,17 +155,13 @@ class ModelDenseRegressorTests(unittest.TestCase):
 
         # Regression with same random_seed
         model1 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
-        model1.list_classes = ['a', 'b']
         model2 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2)
-        model2.list_classes = ['a', 'b'] 
         self.assertTrue(compare_keras_models(model1._get_model(), model2._get_model()))
         remove_dir(model_dir), remove_dir(model_dir2)
 
         # Regression with different random_seed
         model1 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
-        model1.list_classes = ['a', 'b']
         model2 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
-        model2.list_classes = ['a', 'b']
         self.assertFalse(compare_keras_models(model1._get_model(), model2._get_model()))
         remove_dir(model_dir), remove_dir(model_dir2)
 

@@ -81,9 +81,6 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         self.assertEqual(model.validation_split, 0.3)
         remove_dir(model_dir)
 
-        #
-        model = ModelXgboostClassifier(model_dir=model_dir)
-        remove_dir(model_dir)
 
     def test02_model_xgboost_classifier_fit(self):
         '''Test of the method fit of {{package_name}}.models_training.classifiers.model_xgboost_classifier.ModelXgboostClassifier'''
@@ -281,16 +278,6 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         self.assertEqual(model1.model.get_booster().get_dump(), model2.model.get_booster().get_dump())
         remove_dir(model_dir), remove_dir(model_dir2)
 
-        # Classification - Multi-label - Multi-Class with same random_seed
-        model1 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
-        model2.fit(x_train, y_train_multi)
-        models1, models2 = model1.model.estimators_, model2.model.estimators_
-        self.assertTrue(all(np.array_equal(xgb1.get_params(), xgb2.get_params()) for xgb1, xgb2 in zip(models1, models2)))
-        self.assertTrue(all(np.array_equal(xgb1.get_booster().get_dump(), xgb2.get_booster().get_dump()) for xgb1, xgb2 in zip(models1, models2)))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
         # Classification - Mono-label - Mono-Class with different random_seed
         model1 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
         model1.fit(x_train, y_train_mono_2)
@@ -307,6 +294,16 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         model2.fit(x_train, y_train_mono_3)
         self.assertNotEqual(model1.model.get_params(),  model2.model.get_params())
         self.assertNotEqual(model1.model.get_booster().get_dump(), model2.model.get_booster().get_dump())
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Multi-label - Multi-Class with same random_seed
+        model1 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelXgboostClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, multi_label=True, xgboost_params={'n_estimators': 5, 'booster': 'gbtree'})
+        model2.fit(x_train, y_train_multi)
+        models1, models2 = model1.model.estimators_, model2.model.estimators_
+        self.assertTrue(all(np.array_equal(xgb1.get_params(), xgb2.get_params()) for xgb1, xgb2 in zip(models1, models2)))
+        self.assertTrue(all(np.array_equal(xgb1.get_booster().get_dump(), xgb2.get_booster().get_dump()) for xgb1, xgb2 in zip(models1, models2)))
         remove_dir(model_dir), remove_dir(model_dir2)
         
         # Classification - Multi-label - Multi-Class with different random_seed
@@ -519,7 +516,6 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         self.assertTrue('nb_fit' in configs.keys())
         self.assertTrue('x_col' in configs.keys())
         self.assertTrue('y_col' in configs.keys())
-        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('columns_in' in configs.keys())
         self.assertTrue('mandatory_columns' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
@@ -556,7 +552,6 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         self.assertTrue('nb_fit' in configs.keys())
         self.assertTrue('x_col' in configs.keys())
         self.assertTrue('y_col' in configs.keys())
-        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('columns_in' in configs.keys())
         self.assertTrue('mandatory_columns' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
@@ -594,7 +589,6 @@ class ModelXgboostClassifierTests(unittest.TestCase):
         self.assertTrue('nb_fit' in configs.keys())
         self.assertTrue('x_col' in configs.keys())
         self.assertTrue('y_col' in configs.keys())
-        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('columns_in' in configs.keys())
         self.assertTrue('mandatory_columns' in configs.keys())
         self.assertTrue('level_save' in configs.keys())

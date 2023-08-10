@@ -33,6 +33,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.models_tensorflow.model_tfidf_dense import ModelTfidfDense
+from {{package_name}}.models_training.models_tensorflow.utils_deep_keras import compare_keras_models
 
 # Disable logging
 import logging
@@ -41,19 +42,6 @@ logging.disable(logging.CRITICAL)
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
-
-
-def compare_keras_models(model1, model2):
-    ''' Checks if all weights of each keras model layer are the same
-    '''
-    for layer1, layer2 in zip(model1.layers, model2.layers):
-        if layer1.__class__.__name__!=layer2.__class__.__name__:
-            return False
-        l1 = layer1.get_weights()
-        l2 = layer2.get_weights()
-        if not all(np.array_equal(weights1, weights2) for weights1, weights2 in zip(l1, l2)):
-            return False
-    return True
 
 
 class ModelTfidfDenseTests(unittest.TestCase):
@@ -306,7 +294,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         old_hdf5_path = os.path.join(model_dir, 'best.hdf5')
 
         # Nominal case with default_model_dir
-        model = ModelTfidfDense(model_dir=model_dir, random_seed=42)
+        model = ModelTfidfDense(model_dir=model_dir)
         model.list_classes = ['class_1', 'class_2']
         x_train = ['test titi toto', 'toto', 'titi test test toto']
         model._prepare_x_train(x_train)  # We force the creation of the tokenizer
@@ -326,7 +314,7 @@ class ModelTfidfDenseTests(unittest.TestCase):
         remove_dir(new_model.model_dir)
 
         # Nominal case with explicit paths
-        model = ModelTfidfDense(model_dir=model_dir, embedding_name='fake_embedding.pkl', random_seed=42)
+        model = ModelTfidfDense(model_dir=model_dir, embedding_name='fake_embedding.pkl')
         model.list_classes = ['class_1', 'class_2']
         x_train = ['test titi toto', 'toto', 'titi test test toto']
         model._prepare_x_train(x_train)  # We force the creation of the tokenizer

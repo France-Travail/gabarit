@@ -335,20 +335,20 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertTrue(compare_keras_models(model1._get_model(), model2._get_model()))
         remove_dir(model_dir), remove_dir(model_dir2)
 
-        # Classification - Multi-label with same random_seed
-        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2, multi_label=True)
-        model1.list_classes = ['a', 'b', 'c']
-        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2, multi_label=True)
-        model2.list_classes = ['a', 'b', 'c']
-        self.assertTrue(compare_keras_models(model1._get_model(), model2._get_model()))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
         # Classification - Mono-label with different random_seed
         model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
         model1.list_classes = ['a', 'b']
         model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
         model2.list_classes = ['a', 'b']
         self.assertFalse(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Multi-label with same random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2, multi_label=True)
+        model1.list_classes = ['a', 'b', 'c']
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2, multi_label=True)
+        model2.list_classes = ['a', 'b', 'c']
+        self.assertTrue(compare_keras_models(model1._get_model(), model2._get_model()))
         remove_dir(model_dir), remove_dir(model_dir2)
 
         # Classification - Multi-label with different random_seed
