@@ -88,4 +88,4 @@ if __name__ == '__main__':
     parser.add_argument('--encoding', default="{{default_encoding}}", help="Encoding to use with the .csv files")
     parser.add_argument('--overwrite', action='store_true', help="Whether to allow overwriting")
     args = parser.parse_args()
-    main(filenames=args.filenames, n_samples=args.n_samples, sep=args.sep, encoding=args.encoding, overwrite=args.overwrite)
+    main(filenames=args.filenames, n_samples=args.n_samples, random_seed=args.random_seed, sep=args.sep, encoding=args.encoding, overwrite=args.overwrite)
