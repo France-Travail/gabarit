@@ -470,14 +470,6 @@ class ModelKerasTests(unittest.TestCase):
         self.assertTrue(compare_keras_models(model1.model, model2.model))
         remove_dir(model_dir), remove_dir(model_dir2)
 
-        # Classification - Multi-label - Multi-Class with same random_seed
-        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2, multi_label=True)
-        model1.fit(x_train, y_train_multi)
-        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2, multi_label=True)
-        model2.fit(x_train, y_train_multi)
-        self.assertTrue(compare_keras_models(model1.model, model2.model))
-        remove_dir(model_dir), remove_dir(model_dir2)
-
         # Classification - Mono-label - Mono-Class with different random_seed
         model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
         model1.fit(x_train, y_train_mono_2)
@@ -492,6 +484,14 @@ class ModelKerasTests(unittest.TestCase):
         model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
         model2.fit(x_train, y_train_mono_3)
         self.assertFalse(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Multi-label - Multi-Class with same random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2, multi_label=True)
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2, multi_label=True)
+        model2.fit(x_train, y_train_multi)
+        self.assertTrue(compare_keras_models(model1.model, model2.model))
         remove_dir(model_dir), remove_dir(model_dir2)
 
         # Classification - Multi-label - Multi-Class with different random_seed
