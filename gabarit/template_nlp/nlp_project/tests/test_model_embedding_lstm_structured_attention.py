@@ -690,6 +690,73 @@ class ModelEmbeddingLstmStructuredAttentionTests(unittest.TestCase):
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
+    def test10_model_embedding_lstm_structured_attention_load_standalone_files(self):
+        '''Test of the method _load_standalone_files of {{package_name}}.models_training.models_tensorflow.model_embedding_lstm_structured_attention.ModelEmbeddingLstmStructuredAttention'''
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        new_model_dir = os.path.join(os.getcwd(), 'model_test_987654321')
+        remove_dir(new_model_dir)
+
+        old_hdf5_path = os.path.join(model_dir, 'best.hdf5')
+
+        # Nominal case with default_model_dir
+        model = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
+        model.list_classes = ['class_1', 'class_2']
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelEmbeddingLstmStructuredAttention._init_new_instance_from_configs(configs=configs)
+        new_hdf5_path = os.path.join(new_model.model_dir, 'best.hdf5')
+        new_model._load_standalone_files(default_model_dir=model_dir)
+        self.assertTrue(os.path.exists(new_hdf5_path))
+        self.check_weights_equality(model, new_model)
+        self.assertTrue(isinstance(new_model.tokenizer, Tokenizer))
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        # Nominal case with explicit paths
+        model = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
+        model.list_classes = ['class_1', 'class_2']
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelEmbeddingLstmStructuredAttention._init_new_instance_from_configs(configs=configs)
+        new_hdf5_path = os.path.join(new_model.model_dir, 'best.hdf5')
+        new_model._load_standalone_files(tokenizer_path=os.path.join(model_dir, 'embedding_tokenizer.pkl'),
+                                         hdf5_path=os.path.join(model_dir, 'best.hdf5'))
+        self.assertTrue(os.path.exists(new_hdf5_path))
+        self.check_weights_equality(model, new_model)
+        self.assertTrue(isinstance(new_model.tokenizer, Tokenizer))
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
+        # Errors
+        model = ModelEmbeddingLstmStructuredAttention(model_dir=model_dir, embedding_name='fake_embedding.pkl')
+        model.tokenizer = Tokenizer(num_words=model.max_words, filters=model.tokenizer_filters)
+        model.list_classes = ['class_1', 'class_2']
+        model.model = model._get_model()
+        model.model.save(old_hdf5_path)
+        model.save(json_data={'test': 8})
+        os.remove(os.path.join(model_dir, 'embedding_tokenizer.pkl'))
+
+        configs = model.load_configs(model_dir=model_dir)
+        new_model = ModelEmbeddingLstmStructuredAttention._init_new_instance_from_configs(configs=configs)
+        with self.assertRaises(ValueError):
+            new_model._load_standalone_files()
+        with self.assertRaises(FileNotFoundError):
+            new_model._load_standalone_files(default_model_dir=model_dir)
+
+        remove_dir(model_dir)
+        remove_dir(new_model.model_dir)
+
 
 # Perform tests
 if __name__ == '__main__':

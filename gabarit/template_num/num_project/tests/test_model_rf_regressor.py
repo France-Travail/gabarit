@@ -38,23 +38,6 @@ def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
 
-def compare_trees(tree1, tree2):
-    '''Checks if two DecisionTreeClassifiers are equal
-    Args:
-        tree1 (DecisionTreeClassifier): First tree to consider
-        tree2 (DecisionTreeClassifier): Second tree to consider
-    Results:
-        bool: True if all trees nodes and values are equal, else False
-    '''
-    state1 = tree1.tree_.__getstate__()
-    state2 = tree2.tree_.__getstate__()
-    if not np.array_equal(state1["nodes"], state2["nodes"]):
-        return False
-    if not np.array_equal(state1["values"], state2["values"]):
-        return False
-    return True   
-
-
 class ModelRFRegressorTests(unittest.TestCase):
     '''Main class to test model_rf_regressor'''
 

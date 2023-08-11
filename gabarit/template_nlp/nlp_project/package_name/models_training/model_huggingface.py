@@ -21,7 +21,6 @@
 
 
 import os
-import math
 import shutil
 import logging
 import numpy as np
@@ -43,7 +42,6 @@ from transformers import (AutoModelForSequenceClassification, TrainingArguments,
                           TrainerCallback, EarlyStoppingCallback)
 
 from .. import utils
-from . import utils_models
 from . import hf_metrics
 from .model_class import ModelClass
 
@@ -345,7 +343,7 @@ class ModelHuggingFace(ModelClass):
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
         # Does not work with np array nor pandas Series
-        if type(x_test) in [np.ndarray, pd.Series]:
+        if isinstance(x_test, (np.ndarray, pd.Series)):
             x_test = x_test.tolist()
         # Prepare predict
         if self.model.training:
@@ -377,9 +375,9 @@ class ModelHuggingFace(ModelClass):
         if self.tokenizer is None:
             self.tokenizer = self._get_tokenizer()
         # Check np format (should be the case if using fit)
-        if not type(x_train) == np.ndarray:
+        if not isinstance(x_train, np.ndarray):
             x_train = np.array(x_train)
-        if not type(y_train_dummies) == np.ndarray:
+        if not isinstance(y_train_dummies, np.ndarray):
             y_train_dummies = np.array(y_train_dummies)
         # It seems that HF does not manage dummies targets for non multilabel
         if not self.multi_label:
@@ -408,7 +406,7 @@ class ModelHuggingFace(ModelClass):
             (datasets.Dataset): Prepared dataset
         '''
         # Check np format
-        if not type(x_test) == np.ndarray:
+        if not isinstance(x_test, np.ndarray):
             x_test = np.array(x_test)
         # /!\ We don't use it as we are using a TextClassificationPipeline
         # yet we are leaving this here in case we need it later
@@ -436,8 +434,10 @@ class ModelHuggingFace(ModelClass):
         # Return model if already set
         if self.model is not None:
             return self.model
+        # We must use a random generator since the from_pretrained method apparently use some random
         generator = torch.Generator()
-        generator.manual_seed(self.random_seed if self.random_seed is not None else np.random.randint(int(1e9)))
+        if self.random_seed is not None:
+            generator.manual_seed(self.random_seed)
         with torch.random.fork_rng():
             torch.random.set_rng_state(generator.get_state())
             model = AutoModelForSequenceClassification.from_pretrained(

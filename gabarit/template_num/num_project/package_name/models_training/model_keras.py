@@ -257,7 +257,7 @@ class ModelKeras(ModelClass):
 
         # Also get y_valid as numpy & get validation_data (tuple) if available
         validation_data: Optional[tuple] = None  # Def. None if y_valid is None
-        if x_valid is not None and y_valid is not None:
+        if y_valid is not None:
             x_valid = np.array(x_valid)
             y_valid = np.array(y_valid)
             validation_data = (x_valid, y_valid)

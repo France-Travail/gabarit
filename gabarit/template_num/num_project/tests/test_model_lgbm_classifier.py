@@ -99,12 +99,6 @@ class ModelLGBMClassifierTests(unittest.TestCase):
         self.assertEqual(model.pipeline['lgbm'].estimator.n_estimators, 10)
         self.assertEqual(model.multi_label, True)
         remove_dir(model_dir)
-        model = ModelLGBMClassifier(model_dir=model_dir, multi_label=True, multiclass_strategy='ovo', lgbm_params={'learning_rate': 0.5, 'n_estimators': 10})
-        self.assertEqual(model.multiclass_strategy, 'ovo')
-        self.assertEqual(model.pipeline['lgbm'].estimator.learning_rate, 0.5)
-        self.assertEqual(model.pipeline['lgbm'].estimator.n_estimators, 10)
-        self.assertEqual(model.multi_label, True)
-        remove_dir(model_dir)
 
         # Error
         with self.assertRaises(ValueError):

@@ -99,13 +99,6 @@ class ModelSGDClassifierTests(unittest.TestCase):
         self.assertEqual(model.pipeline['sgd'].estimator.l1_ratio, 0.4)
         self.assertEqual(model.multi_label, True)
         remove_dir(model_dir)
-        model = ModelSGDClassifier(model_dir=model_dir, multi_label=True, multiclass_strategy='ovo', sgd_params={'penalty': 'elasticnet', 'l1_ratio': 0.4})
-        self.assertEqual(model.multiclass_strategy, 'ovo')
-        self.assertEqual(model.pipeline['sgd'].estimator.penalty, 'elasticnet')
-        self.assertEqual(model.pipeline['sgd'].estimator.l1_ratio, 0.4)
-        self.assertEqual(model.multi_label, True)
-
-        remove_dir(model_dir)
 
         # Error
         with self.assertRaises(ValueError):

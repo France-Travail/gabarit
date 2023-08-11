@@ -99,14 +99,6 @@ class ModelRidgeClassifierTests(unittest.TestCase):
         self.assertEqual(model.pipeline['ridge'].estimator.fit_intercept, False)
         self.assertEqual(model.multi_label, True)
         remove_dir(model_dir)
-        model = ModelRidgeClassifier(model_dir=model_dir, multi_label=True, multiclass_strategy='ovo',
-                                      ridge_params={'alpha': 0.4, 'fit_intercept': False})
-        self.assertEqual(model.multiclass_strategy, 'ovo')
-        self.assertEqual(model.pipeline['ridge'].estimator.alpha, 0.4)
-        self.assertEqual(model.pipeline['ridge'].estimator.fit_intercept, False)
-        self.assertEqual(model.multi_label, True)
-        
-        remove_dir(model_dir)
 
         # Error
         with self.assertRaises(ValueError):

@@ -23,7 +23,6 @@
 import os
 import time
 import json
-import random
 import ntpath
 import shutil
 import logging
