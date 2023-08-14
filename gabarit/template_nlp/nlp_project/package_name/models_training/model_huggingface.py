@@ -29,6 +29,7 @@ import dill as pickle
 import seaborn as sns
 from copy import deepcopy
 import matplotlib.pyplot as plt
+from sklearn.model_selection import train_test_split
 from typing import no_type_check, Union, Tuple, Any, Dict
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
@@ -112,6 +113,10 @@ class ModelHuggingFace(ModelClass):
                 'load_best_model_at_end': True
             }
         # TODO: maybe we should keep the default dict & only add/replace keys in provided dict ?
+
+        # By default huggingface uses seed = 42 if not specified
+        if 'seed' not in trainer_params:
+            trainer_params['seed'] = self.random_seed if self.random_seed is not None else 42
         self.trainer_params = trainer_params
 
         # Model set on fit or on reload
@@ -219,8 +224,9 @@ class ModelHuggingFace(ModelClass):
         # Shuffle x, y if wanted
         # It is advised as validation_split from keras does not shufle the data
         # Hence we might have classes in the validation data that we never met in the training data
+        rng = np.random.RandomState(self.random_seed)
         if with_shuffle:
-            p = np.random.permutation(len(x_train))
+            p = rng.permutation(len(x_train))
             x_train = np.array(x_train)[p]
             y_train_dummies = np.array(y_train_dummies)[p]
         # Else still transform to numpy array
@@ -234,20 +240,16 @@ class ModelHuggingFace(ModelClass):
         # If no valid set, split train set according to validation_split
         if y_valid is None:
             self.logger.warning(f"Warning, no validation set. The training set will be splitted (validation fraction = {self.validation_split})")
-            p = np.random.permutation(len(x_train))
-            cutoff = int(len(p) * self.validation_split)
-            x_valid = x_train[p[0:cutoff]]
-            x_train = x_train[p[cutoff:]]
-            y_valid_dummies = y_train_dummies[p[0:cutoff]]
-            y_train_dummies = y_train_dummies[p[cutoff:]]
+            x_train, x_valid, y_train_dummies, y_valid_dummies = train_test_split(x_train, y_train_dummies, test_size=self.validation_split,
+                                                                                  random_state=self.random_seed)
 
         ##############################################
         # Get model & prepare datasets
         ##############################################
-
+        
         # Get model (if already fitted, _get_model returns instance model)
         self.model = self._get_model(num_labels=y_train_dummies.shape[1])
-
+        
         # Get tokenizer (if already fitted, _get_tokenizer returns instance tokenizer)
         self.tokenizer = self._get_tokenizer()
 
@@ -281,7 +283,7 @@ class ModelHuggingFace(ModelClass):
             # Save model & tokenizer
             hf_model_dir = os.path.join(self.model_dir, 'hf_model')
             hf_tokenizer_dir = os.path.join(self.model_dir, 'hf_tokenizer')
-            trainer.model.save_pretrained(save_directory=hf_model_dir)
+            self.model.save_pretrained(save_directory=hf_model_dir)
             self.tokenizer.save_pretrained(save_directory=hf_tokenizer_dir)
             # Remove checkpoint dir if save total limit is set to 1 (no need to keep this as we resave the model)
             if self.trainer_params.get('save_total_limit', None) == 1:
@@ -341,7 +343,7 @@ class ModelHuggingFace(ModelClass):
             (np.ndarray): Array, shape = [n_samples, n_classes]
         '''
         # Does not work with np array nor pandas Series
-        if type(x_test) in [np.ndarray, pd.Series]:
+        if isinstance(x_test, (np.ndarray, pd.Series)):
             x_test = x_test.tolist()
         # Prepare predict
         if self.model.training:
@@ -373,9 +375,9 @@ class ModelHuggingFace(ModelClass):
         if self.tokenizer is None:
             self.tokenizer = self._get_tokenizer()
         # Check np format (should be the case if using fit)
-        if not type(x_train) == np.ndarray:
+        if not isinstance(x_train, np.ndarray):
             x_train = np.array(x_train)
-        if not type(y_train_dummies) == np.ndarray:
+        if not isinstance(y_train_dummies, np.ndarray):
             y_train_dummies = np.array(y_train_dummies)
         # It seems that HF does not manage dummies targets for non multilabel
         if not self.multi_label:
@@ -404,7 +406,7 @@ class ModelHuggingFace(ModelClass):
             (datasets.Dataset): Prepared dataset
         '''
         # Check np format
-        if not type(x_test) == np.ndarray:
+        if not isinstance(x_test, np.ndarray):
             x_test = np.array(x_test)
         # /!\ We don't use it as we are using a TextClassificationPipeline
         # yet we are leaving this here in case we need it later
@@ -432,13 +434,19 @@ class ModelHuggingFace(ModelClass):
         # Return model if already set
         if self.model is not None:
             return self.model
+        # We must use a random generator since the from_pretrained method apparently use some random
+        generator = torch.Generator()
+        if self.random_seed is not None:
+            generator.manual_seed(self.random_seed)
+        with torch.random.fork_rng():
+            torch.random.set_rng_state(generator.get_state())
+            model = AutoModelForSequenceClassification.from_pretrained(
+                    self.transformer_name if model_path is None else model_path,
+                    num_labels=len(self.list_classes) if num_labels is None else num_labels,
+                    problem_type="multi_label_classification" if self.multi_label else "single_label_classification",
+                    {% if huggingface_proxies is not none %}proxies={{huggingface_proxies}},
+                    {% endif %}cache_dir=HF_CACHE_DIR)
 
-        model = AutoModelForSequenceClassification.from_pretrained(
-                self.transformer_name if model_path is None else model_path,
-                num_labels=len(self.list_classes) if num_labels is None else num_labels,
-                problem_type="multi_label_classification" if self.multi_label else "single_label_classification",
-                {% if huggingface_proxies is not none %}proxies={{huggingface_proxies}},
-                {% endif %}cache_dir=HF_CACHE_DIR)
         # Set model on gpu if available
         model = model.to('cuda') if self._is_gpu_activated() else model.to('cpu')
         return model

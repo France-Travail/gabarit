@@ -38,6 +38,23 @@ def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
 
 
+def compare_trees(tree1, tree2):
+    '''Checks if two DecisionTreeClassifiers are equal
+    Args:
+        tree1 (DecisionTreeClassifier): First tree to consider
+        tree2 (DecisionTreeClassifier): Second tree to consider
+    Results:
+        bool: True if all trees nodes and values are equal, else False
+    '''
+    state1 = tree1.tree_.__getstate__()
+    state2 = tree2.tree_.__getstate__()
+    if not np.array_equal(state1["nodes"], state2["nodes"]):
+        return False
+    if not np.array_equal(state1["values"], state2["values"]):
+        return False
+    return True
+
+
 class ModelTfidfGbtTests(unittest.TestCase):
     '''Main class to test model_tfidf_gbt'''
 
@@ -398,14 +415,14 @@ class ModelTfidfGbtTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Nominal case
-        model = ModelTfidfGbt(model_dir=model_dir, multi_label=False, multiclass_strategy='ovr')
+        model = ModelTfidfGbt(model_dir=model_dir, random_seed=42, multi_label=False, multiclass_strategy='ovr')
         model.save(json_data={'test': 8})
         configs = model.load_configs(model_dir=model_dir)
         new_model = ModelTfidfGbt._init_new_instance_from_configs(configs=configs)
         self.assertTrue(isinstance(new_model, ModelTfidfGbt))
         self.assertEqual(new_model.nb_fit, 0)
         self.assertFalse(new_model.trained)
-        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'random_seed', 'multi_label', 'level_save']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -426,7 +443,7 @@ class ModelTfidfGbtTests(unittest.TestCase):
         self.assertTrue(isinstance(new_model, ModelTfidfGbt))
         self.assertEqual(new_model.nb_fit, 2)
         self.assertTrue(new_model.trained)
-        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'random_seed', 'multi_label', 'level_save']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -443,7 +460,7 @@ class ModelTfidfGbtTests(unittest.TestCase):
         # Multi label False
         model = ModelTfidfGbt(model_dir=model_dir, multi_label=False, multiclass_strategy=None,
                              tfidf_params={'ngram_range': (2, 2), 'max_df': 0.9, 'min_df': 2},
-                             gbt_params={'learning_rate': 0.2, 'n_estimators': 200})
+                             gbt_params={'learning_rate': 0.2, 'n_estimators': 200}, random_seed=42)
         # Save model
         model.save(json_data={'test': 8})
 
@@ -455,9 +472,11 @@ class ModelTfidfGbtTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 1)
         self.assertAlmostEqual(gbt.learning_rate, 0.1)
         self.assertEqual(gbt.n_estimators, 100)
+        self.assertEqual(new_model.random_seed, None)
         # First load the model configurations
         configs = ModelTfidfGbt.load_configs(model_dir=model_dir)
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'multiclass_strategy']:
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 
+                          'random_seed', 'level_save', 'multiclass_strategy']:
             setattr(new_model, attribute, configs.get(attribute, getattr(new_model, attribute)))
         new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
         tfidf = new_model.tfidf
@@ -467,6 +486,7 @@ class ModelTfidfGbtTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 2)
         self.assertAlmostEqual(gbt.learning_rate, 0.2)
         self.assertEqual(gbt.n_estimators, 200)
+        self.assertEqual(new_model.random_seed, 42)
         
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -474,7 +494,7 @@ class ModelTfidfGbtTests(unittest.TestCase):
         # Multi label True
         model = ModelTfidfGbt(model_dir=model_dir, multi_label=True, multiclass_strategy=None,
                              tfidf_params={'ngram_range': (2, 2), 'max_df': 0.9, 'min_df': 2},
-                             gbt_params={'learning_rate': 0.2, 'n_estimators': 200})
+                             gbt_params={'learning_rate': 0.2, 'n_estimators': 200}, random_seed=42)
         # Save model
         model.save(json_data={'test': 8})
 
@@ -486,9 +506,11 @@ class ModelTfidfGbtTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 1)
         self.assertAlmostEqual(gbt.learning_rate, 0.1)
         self.assertEqual(gbt.n_estimators, 100)
+        self.assertEqual(new_model.random_seed, None)
         # First load the model configurations
         configs = ModelTfidfGbt.load_configs(model_dir=model_dir)
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'multiclass_strategy']:
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 
+                          'random_seed', 'level_save', 'multiclass_strategy']:
             setattr(new_model, attribute, configs.get(attribute, getattr(new_model, attribute)))
         new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
         tfidf = new_model.tfidf
@@ -498,6 +520,7 @@ class ModelTfidfGbtTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 2)
         self.assertAlmostEqual(gbt.learning_rate, 0.2)
         self.assertEqual(gbt.n_estimators, 200)
+        self.assertEqual(new_model.random_seed, 42)
         
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)

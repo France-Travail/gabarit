@@ -23,6 +23,8 @@ from unittest.mock import patch
 import os
 import json
 import shutil
+import torch
+import warnings
 import numpy as np
 import pandas as pd
 from datasets.arrow_dataset import Batch
@@ -37,10 +39,22 @@ from {{package_name}}.models_training.model_huggingface import ModelHuggingFace
 # Disable logging
 import logging
 logging.disable(logging.CRITICAL)
-
+warnings.filterwarnings("ignore")
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
+
+
+def compare_transformers_models(model1, model2):
+    ''' Checks if all weights of each transformers model layer are the same
+    '''
+    layers_dict1, layers_dict2 = model1.state_dict(), model2.state_dict()
+    if layers_dict1.keys()!=layers_dict2.keys():
+        return False
+    for layer in layers_dict1.keys():
+        if not torch.allclose(layers_dict1[layer], layers_dict2[layer]):
+            return False
+    return True
 
 
 class ModelHuggingFaceTests(unittest.TestCase):
@@ -107,7 +121,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
 
         # trainer_params
         model = ModelHuggingFace(model_dir=model_dir, trainer_params={'toto': 5})
-        self.assertEqual(model.trainer_params, {'toto': 5})
+        self.assertEqual(model.trainer_params, {'toto': 5, 'seed': 42})
         remove_dir(model_dir)
 
     def test02_model_huggingface_fit(self):
@@ -115,6 +129,8 @@ class ModelHuggingFaceTests(unittest.TestCase):
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
+        remove_dir(model_dir2)
 
         # Set vars
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
@@ -377,6 +393,66 @@ class ModelHuggingFaceTests(unittest.TestCase):
         with self.assertRaises(ValueError):
             model.fit(x_train[:50], y_train_multi_fake[:50], x_valid=None, y_valid=None, with_shuffle=True)
         remove_dir(model_dir)
+
+
+        ###########
+        # ModelHuggingFace with random seed
+        # Mono-label same random_seed
+        model1 = ModelHuggingFace(model_dir=model_dir, batch_size=32, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_mono)
+        model2 = ModelHuggingFace(model_dir=model_dir2, batch_size=32, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_mono)
+        self.assertTrue(compare_transformers_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Mono-label different random_seed
+        model1 = ModelHuggingFace(model_dir=model_dir, batch_size=32, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_mono)
+        model2 = ModelHuggingFace(model_dir=model_dir2, batch_size=32, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=41,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_mono)
+        self.assertFalse(compare_transformers_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label same random_seed
+        model1 = ModelHuggingFace(model_dir=model_dir, batch_size=32, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelHuggingFace(model_dir=model_dir2, batch_size=32, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_multi)
+        self.assertTrue(compare_transformers_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label different random_seed
+        model1 = ModelHuggingFace(model_dir=model_dir, batch_size=32, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelHuggingFace(model_dir=model_dir2, batch_size=32, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=41,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_multi)
+        self.assertFalse(compare_transformers_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
 
     def test03_model_huggingface_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_huggingface.ModelHuggingFace'''
@@ -785,7 +861,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         self.assertTrue(isinstance(new_model, ModelHuggingFace))
         self.assertEqual(new_model.nb_fit, 2)
         self.assertTrue(new_model.trained)
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs', 'patience',
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'random_seed', 'batch_size', 'epochs', 'patience',
                           'transformer_name', 'model_max_length']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         for attribute in ['validation_split']:

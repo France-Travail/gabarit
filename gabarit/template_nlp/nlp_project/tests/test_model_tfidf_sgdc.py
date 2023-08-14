@@ -440,14 +440,14 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Nominal case
-        model = ModelTfidfSgdc(model_dir=model_dir, multi_label=False, multiclass_strategy='ovr')
+        model = ModelTfidfSgdc(model_dir=model_dir, random_seed=42, multi_label=False, multiclass_strategy='ovr')
         model.save(json_data={'test': 8})
         configs = model.load_configs(model_dir=model_dir)
         new_model = ModelTfidfSgdc._init_new_instance_from_configs(configs=configs)
         self.assertTrue(isinstance(new_model, ModelTfidfSgdc))
         self.assertEqual(new_model.nb_fit, 0)
         self.assertFalse(new_model.trained)
-        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'random_seed', 'multi_label', 'level_save']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -468,7 +468,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         self.assertTrue(isinstance(new_model, ModelTfidfSgdc))
         self.assertEqual(new_model.nb_fit, 2)
         self.assertTrue(new_model.trained)
-        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'random_seed', 'multi_label', 'level_save']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -485,7 +485,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         # Multi label False
         model = ModelTfidfSgdc(model_dir=model_dir, multi_label=False, multiclass_strategy=None,
                              tfidf_params={'ngram_range': (2, 2), 'max_df': 0.9, 'min_df': 2},
-                             sgdc_params={'l1_ratio': 0.2, 'loss': 'log_loss'})
+                             sgdc_params={'l1_ratio': 0.2, 'loss': 'log_loss'}, random_seed=42)
         # Save model
         model.save(json_data={'test': 8})
 
@@ -497,9 +497,11 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 1)
         self.assertAlmostEqual(sgdc.l1_ratio, 0.15)
         self.assertEqual(sgdc.loss, 'hinge')
+        self.assertEqual(new_model.random_seed, None)
         # First load the model configurations
         configs = ModelTfidfSgdc.load_configs(model_dir=model_dir)
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'multiclass_strategy']:
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 
+                          'random_seed', 'level_save', 'multiclass_strategy']:
             setattr(new_model, attribute, configs.get(attribute, getattr(new_model, attribute)))
         new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
         tfidf = new_model.tfidf
@@ -509,6 +511,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 2)
         self.assertAlmostEqual(sgdc.l1_ratio, 0.2)
         self.assertEqual(sgdc.loss, 'log_loss')
+        self.assertEqual(new_model.random_seed, 42)
         
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -516,7 +519,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         # Multi label True
         model = ModelTfidfSgdc(model_dir=model_dir, multi_label=True, multiclass_strategy=None,
                              tfidf_params={'ngram_range': (2, 2), 'max_df': 0.9, 'min_df': 2},
-                             sgdc_params={'l1_ratio': 0.2, 'loss': 'log_loss'})
+                             sgdc_params={'l1_ratio': 0.2, 'loss': 'log_loss'}, random_seed=42)
         # Save model
         model.save(json_data={'test': 8})
 
@@ -528,9 +531,11 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 1)
         self.assertAlmostEqual(sgdc.l1_ratio, 0.15)
         self.assertEqual(sgdc.loss, 'hinge')
+        self.assertEqual(new_model.random_seed, None)
         # First load the model configurations
         configs = ModelTfidfSgdc.load_configs(model_dir=model_dir)
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'multiclass_strategy']:
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 
+                          'random_seed', 'level_save', 'multiclass_strategy']:
             setattr(new_model, attribute, configs.get(attribute, getattr(new_model, attribute)))
         new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
         tfidf = new_model.tfidf
@@ -540,7 +545,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 2)
         self.assertAlmostEqual(sgdc.l1_ratio, 0.2)
         self.assertEqual(sgdc.loss, 'log_loss')
-        
+        self.assertEqual(new_model.random_seed, 42)
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
 
@@ -557,7 +562,7 @@ class ModelTfidfSgdcTests(unittest.TestCase):
         with self.assertRaises(FileNotFoundError):
             model._load_standalone_files(sklearn_pipeline_path=model_dir)
         remove_dir(model_dir)
-
+        
 
 # Perform tests
 if __name__ == '__main__':

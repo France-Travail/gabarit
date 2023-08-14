@@ -22,10 +22,10 @@
 
 import os
 import json
-import dill as pickle
 import shutil
 import logging
 import numpy as np
+import dill as pickle
 import seaborn as sns
 from typing import Union, Any, List, Callable
 
@@ -33,6 +33,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
+from tensorflow.keras.initializers import HeUniform, GlorotUniform, Orthogonal
 from tensorflow.keras.layers import (Dense, Input, Embedding, GlobalMaxPooling1D,
                                      GlobalAveragePooling1D, ELU, BatchNormalization, LSTM,
                                      SpatialDropout1D, Bidirectional, Concatenate, GRU)
@@ -128,6 +129,10 @@ class ModelEmbeddingLstmGru(ModelKeras):
         # Get input dim
         input_dim = embedding_matrix.shape[0]
 
+        # Get random_state
+        random_state = np.random.RandomState(self.random_seed)
+        limit = int(1e9)
+
         # Get model
         num_classes = len(self.list_classes)
         # Process
@@ -135,7 +140,7 @@ class ModelEmbeddingLstmGru(ModelKeras):
         GRU_UNITS = 120
         words = Input(shape=(self.max_sequence_length,))
         x = Embedding(input_dim, embedding_size, weights=[embedding_matrix], trainable=False)(words)
-        x = SpatialDropout1D(0.5)(x)
+        x = SpatialDropout1D(0.5, seed=random_state.randint(limit))(x)
         # LSTM and GRU will default to CuDNNLSTM and CuDNNGRU if all conditions are met:
         # - activation = 'tanh'
         # - recurrent_activation = 'sigmoid'
@@ -145,9 +150,12 @@ class ModelEmbeddingLstmGru(ModelKeras):
         # - Inputs, if masked, are strictly right-padded
         # - reset_after = True (GRU only)
         # /!\ https://stackoverflow.com/questions/60468385/is-there-cudnnlstm-or-cudnngru-alternative-in-tensorflow-2-0
-        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True))(x)
+        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True, kernel_initializer=GlorotUniform(random_state.randint(limit)), 
+                               recurrent_initializer=Orthogonal(seed=random_state.randint(limit))))(x)
         x = BatchNormalization(momentum=0.9)(x)
-        x, state_h, state_c = Bidirectional(GRU(GRU_UNITS, return_sequences=True, return_state=True))(x)
+        x, state_h, state_c = Bidirectional(GRU(GRU_UNITS, return_sequences=True, return_state=True, 
+                                                kernel_initializer=GlorotUniform(random_state.randint(limit)), 
+                                                recurrent_initializer=Orthogonal(seed=random_state.randint(limit))))(x)
         x = BatchNormalization(momentum=0.9)(x)
         state_h = BatchNormalization(momentum=0.9)(state_h)
         state_c = BatchNormalization(momentum=0.9)(state_c)
@@ -159,13 +167,13 @@ class ModelEmbeddingLstmGru(ModelKeras):
         pools.append(GlobalMaxPooling1D()(x))
         x = Concatenate()(pools)
 
-        x = Dense(128, activation=None, kernel_initializer="he_uniform")(x)
+        x = Dense(128, activation=None, kernel_initializer=HeUniform(random_state.randint(limit)))(x)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
 
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        out = Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform')(x)
+        out = Dense(num_classes, activation=activation, kernel_initializer=GlorotUniform(random_state.randint(limit)))(x)
 
         # Compile model
         model = Model(inputs=words, outputs=[out])

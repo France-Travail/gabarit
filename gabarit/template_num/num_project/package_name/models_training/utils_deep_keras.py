@@ -25,6 +25,7 @@ import logging
 from typing import Callable
 from functools import partial
 
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import backend as K
 
@@ -274,6 +275,17 @@ def root_mean_squared_error(y_true, y_pred) -> float:
         float: metric
     '''
     return K.sqrt(K.mean(K.square(y_pred - y_true)))
+
+
+def compare_keras_models(model1, model2):
+    ''' Checks if all weights of each keras model layer are the same
+    '''
+    for layer1, layer2 in zip(model1.layers, model2.layers):
+        l1 = layer1.get_weights()
+        l2 = layer2.get_weights()
+        if not all(np.array_equal(weights1, weights2) for weights1, weights2 in zip(l1, l2)):
+            return False
+    return True
 
 
 # /!\ Important -> This dictionary defines the "custom" objets used in our models

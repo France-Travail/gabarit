@@ -123,6 +123,10 @@ class ModelClassTests(unittest.TestCase):
         self.assertEqual(model.level_save, 'LOW')
         remove_dir(model_dir)
 
+        model = ModelClass(model_dir=model_dir, random_seed=42)
+        self.assertEqual(model.random_seed, 42)
+        remove_dir(model_dir)
+
         # Check the input(s) type(s)
         with self.assertRaises(ValueError):
             ModelClass(model_dir=model_dir, level_save='toto')
@@ -165,6 +169,7 @@ class ModelClassTests(unittest.TestCase):
         self.assertTrue('y_col' in configs.keys())
         self.assertTrue('columns_in' in configs.keys())
         self.assertTrue('mandatory_columns' in configs.keys())
+        self.assertTrue('random_seed' in configs.keys())
         self.assertTrue('level_save' in configs.keys())
         self.assertTrue('librairie' in configs.keys())
         self.assertEqual(configs['librairie'], None)

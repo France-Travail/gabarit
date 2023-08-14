@@ -1,13 +1,44 @@
-"""Generates the code reference pages and navigation."""
+"""Generates the code reference pages and navigation.
+
+This script is meant to be called by the mkdocs extension 
+[mkdocs-gen-files](https://oprypin.github.io/mkdocs-gen-files/). 
+
+In mkdocs.yaml, you will find the following section that tells mkdocs to use this script
+
+```yaml
+plugins:
+  - gen-files:
+      scripts:
+      - docs/gen_ref_pages.py
+```
+
+This script use the extension [mkdocstrings](https://mkdocstrings.github.io/recipes/) in
+combination with mkdocs-gen-files to automatically construct gabarit packages references
+
+It works as following : 
+
+1. Create a .mkdocs
+2. For each template specified in the TEMPLATES variable : 
+    - generate a project with the appropriate generate function from the template module
+      in the .mkdocs folder
+    - install the package in the current python environnment
+    - for each python module in the package, write an entry in the mkdocs navigation
+
+## Notes
+
+This process is repeated each time the doc is generated so to prevent it you can set
+the environment variable DOC_NO_REF to true : `DOC_NO_REF=true`
+
+"""
 import os
+import sys
 import shutil
 import subprocess
-import sys
-from importlib import import_module
+import mkdocs_gen_files
+
 from pathlib import Path
 from typing import Callable
-
-import mkdocs_gen_files
+from importlib import import_module
 
 from gabarit.template_api import generate_api_project
 from gabarit.template_nlp import generate_nlp_project
@@ -62,11 +93,12 @@ def create_dot_mkdocs() -> None:
             f.write("*")
 
 
-def pip_install_packages(*packages, editable=True) -> None:
+def pip_install_packages(*packages, editable=False) -> None:
     """Pip installs a package in the current env
 
     Args:
-        editable (bool, optional): If True, install packages in a editable way. Defaults to True.
+        editable (bool, optional): If True, install packages in a editable way. 
+            Defaults to True.
     """
     command = [sys.executable, "-m", "pip", "install"]
 
@@ -88,12 +120,19 @@ def get_source_package_tree(package_path: Path) -> list:
     Returns:
         list: Package tree as a list of python files
     """
-    return sorted([file_path.relative_to(package_path).as_posix() for file_path in package_path.rglob("**/*.py")])
+    return sorted(
+        [
+            file_path.relative_to(package_path).as_posix() 
+            for file_path in package_path.rglob("*.py")
+        ]
+    )
 
 
-def generate_and_install_template(template_name: str, generate_function: Callable, **kwargs: dict) -> bool:
-    """Generates a template with gabarit and installs it in the current env. Returns True if there are any changes
-    in the generated package source code
+def generate_and_install_template(
+        template_name: str, generate_function: Callable, **kwargs: dict
+    ) -> bool:
+    """Generates a template with gabarit and installs it in the current env. Returns 
+    True if there are any changes in the generated package source code
 
     This is mandatory to be able to use mkdocstrings
     Cf. https://mkdocstrings.github.io/usage/
@@ -133,25 +172,40 @@ def generate_and_install_template(template_name: str, generate_function: Callabl
     return get_source_package_tree(generated_template_path / template_name) != package_tree
 
 
-def generate_reference_template(template_name: str, dir_template: Path) -> None:
+def generate_reference_template(template_name: str) -> None:
     """Generates references doc files
 
     Based on recipe : https://mkdocstrings.github.io/recipes/#automatic-code-reference-pages
 
     Args:
         template_name (str): Template name. It is used as template and package name.
-        dir_template (Path): Directory containing the generated template.
     """
+    # We need to find the folder where the package is installed :
+    # We import the package and use __file__ to retrieve the path to the top __init__.py
+    # Then we use .parent to retreive the package path
+    template_pkg = import_module(template_name)
+    template_pkg_path = Path(template_pkg.__file__).parent
+
+    # We also get the directory where the package is installed so it will be then easier
+    # to get relative paths :
+    #
+    # >>> template_pkg_path_dir = Path("/home/user/venv/python/lib")
+    # >>> module_path = Path("/home/user/venv/python/lib/pkg/subpkg/module.py")
+    # >>>
+    # >>> module_path.relative_to(template_pkg_path_dir)
+    # Path("pkg/subpkg/module.py")
+    template_pkg_path_dir = template_pkg_path.parent
+
     # For each python file in the package directory of the template
-    for path in sorted(dir_template.rglob(f"{template_name}/**/*.py")):
+    for path in sorted(template_pkg_path.rglob("*.py")):
 
         # We get the module path relative to the package directory in a "import format"
         # ex : package.subpackage.module.py -> package.subpackage.module
-        module_path = path.relative_to(dir_template).with_suffix("")
+        module_path = path.relative_to(template_pkg_path_dir).with_suffix("")
 
         # We create a markdown path "doc_path" relative to that module and a "full_doc_path"
         # relative to "reference" directory inside docs
-        doc_path = path.relative_to(dir_template).with_suffix(".md")
+        doc_path = path.relative_to(template_pkg_path_dir).with_suffix(".md")
         full_doc_path = Path("reference", doc_path)
 
         parts = tuple(module_path.parts)
@@ -188,11 +242,12 @@ def main() -> None:
     ]
 
     # generate references and add them to the NAV object
-    for template_name, _, kwargs in TEMPLATES:
-        generate_reference_template(template_name, kwargs["project_path"])
+    for template_name, _, _ in TEMPLATES:
+        generate_reference_template(template_name)
 
     # if at least one of the templates has changed, we rebuild the summary
-    # otherwise we don't rebuild the summary since there is a conflict with live-reloading capability of mkdocs
+    # otherwise we don't rebuild the summary since there is a conflict with 
+    # live-reloading capability of mkdocs
     if any(changed_templates):
         DIR_DOC_REFERENCE.mkdir(exist_ok=True)
         with mkdocs_gen_files.open(f"{DIR_DOC_REFERENCE}/SUMMARY.md", "w") as reference_nav_file:

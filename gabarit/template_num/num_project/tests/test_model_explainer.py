@@ -21,10 +21,10 @@ from unittest.mock import patch
 
 # Utils libs
 import os
-import dill as pickle
 import shutil
 import numpy as np
 import pandas as pd
+import dill as pickle
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_models

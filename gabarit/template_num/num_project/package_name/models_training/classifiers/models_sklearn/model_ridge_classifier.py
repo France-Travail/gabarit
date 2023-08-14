@@ -63,6 +63,7 @@ class ModelRidgeClassifier(ModelClassifierMixin, ModelPipeline):
         # Manage model
         if ridge_params is None:
             ridge_params = {}
+        ridge_params["random_state"] = self.random_seed
         self.ridge = RidgeClassifier(**ridge_params)
         self.multiclass_strategy = multiclass_strategy
 
@@ -172,7 +173,7 @@ class ModelRidgeClassifier(ModelClassifierMixin, ModelPipeline):
         self.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['model_type', 'x_col', 'y_col', 'columns_in', 'mandatory_columns',
-                          'list_classes', 'dict_classes', 'multi_label', 'level_save',
+                          'list_classes', 'dict_classes', 'multi_label', 'random_seed', 'level_save',
                           'multiclass_strategy']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 

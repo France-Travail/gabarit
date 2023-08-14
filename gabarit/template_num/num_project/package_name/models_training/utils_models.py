@@ -348,15 +348,19 @@ def apply_pipeline(df: pd.DataFrame, preprocess_pipeline: ColumnTransformer) -> 
     return preprocessed_df
 
 
-def predict(content: pd.DataFrame, model, alternative_version: bool = False, **kwargs) -> list:
+def predict(content: pd.DataFrame, model, inference_batch_size: int = 128, alternative_version: bool = False, **kwargs) -> list:
     '''Gets predictions of a model on a dataset
 
     Args:
         content (pd.DataFrame): New dataset to be predicted
         model (ModelClass): Model to use
     Kwargs:
-        alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
-                                    Only available for Keras models.
+        inference_batch_size (int): size (approximate) of batches
+        alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used.
+            Should be faster with low nb of inputs. Only useful for Keras models.
+            We advise you to set `alternative_version` to True for APIs to avoid possible memory leaks with `model.predict` on newest TensorFlow.
+            https://github.com/tensorflow/tensorflow/issues/58676
+            Inferences will probably be way faster too.
     Returns:
         REGRESSION :
             float: prediction
@@ -375,7 +379,7 @@ def predict(content: pd.DataFrame, model, alternative_version: bool = False, **k
         logger.warning("No preprocessing pipeline found - we consider no preprocessing, but it should not be so !")
 
     # Get predictions
-    predictions = model.predict(df_prep, alternative_version=alternative_version)
+    predictions = model.predict(df_prep, inference_batch_size=inference_batch_size, alternative_version=alternative_version)
 
     # Inverse transform (needed for classification)
     predictions = model.inverse_transform(predictions)
@@ -384,7 +388,7 @@ def predict(content: pd.DataFrame, model, alternative_version: bool = False, **k
     return predictions
 
 
-def predict_with_proba(content: pd.DataFrame, model, alternative_version: bool = False,
+def predict_with_proba(content: pd.DataFrame, model, inference_batch_size: int = 128, alternative_version: bool = False,
                        **kwargs) -> Union[Tuple[List[str], List[float]], Tuple[List[tuple], List[tuple]]]:
     '''Gets probabilities predictions of a model on a dataset
 
@@ -392,8 +396,12 @@ def predict_with_proba(content: pd.DataFrame, model, alternative_version: bool =
         content (pd.DataFrame): New dataset to be predicted
         model (ModelClass): Model to use
     Kwargs:
-        alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
-                                    Only available for Keras models.
+        inference_batch_size (int): size (approximate) of batches
+        alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used.
+            Should be faster with low nb of inputs. Only useful for Keras models.
+            We advise you to set `alternative_version` to True for APIs to avoid possible memory leaks with `model.predict` on newest TensorFlow.
+            https://github.com/tensorflow/tensorflow/issues/58676
+            Inferences will probably be way faster too.
     Raises:
         ValueError: If the model type is not classifier
     Returns:
@@ -416,7 +424,7 @@ def predict_with_proba(content: pd.DataFrame, model, alternative_version: bool =
         logger.warning("No preprocessing pipeline found - we consider no preprocessing, but it should not be so !")
 
     # Get predictions
-    predictions, probas = model.predict_with_proba(df_prep, alternative_version=alternative_version)
+    predictions, probas = model.predict_with_proba(df_prep, inference_batch_size=inference_batch_size, alternative_version=alternative_version)
 
     # Rework format
     if not model.multi_label:

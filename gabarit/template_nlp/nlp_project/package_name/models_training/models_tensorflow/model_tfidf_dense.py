@@ -27,10 +27,13 @@ import seaborn as sns
 from typing import Union, List, Callable, Any
 from sklearn.feature_extraction.text import TfidfVectorizer
 
+import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
-from tensorflow.keras.models import Model, Sequential
+from tensorflow.keras.models import Model
 from tensorflow.keras.models import load_model as load_model_keras
-from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout
+from tensorflow.keras.initializers import HeUniform, GlorotUniform, Orthogonal
+from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout, Input
+
 
 from . import utils_deep_keras
 from .model_keras import ModelKeras
@@ -99,29 +102,33 @@ class ModelTfidfDense(ModelKeras):
         input_dim = len(self.tfidf.get_feature_names())
         num_classes = len(self.list_classes)
 
+        # Get random_state
+        random_state = np.random.RandomState(self.random_seed)
+        limit = int(1e9)
+
         # Process
-        model = Sequential()
+        tfidf_features = Input(shape=(input_dim,))
+        x = Dense(128, activation=None, kernel_initializer=HeUniform(random_state.randint(limit)))(tfidf_features)
+        x = BatchNormalization(momentum=0.9)(x)
+        x = ELU(alpha=1.0)(x)
+        x = Dropout(0.5,seed=random_state.randint(limit))(x)
 
-        model.add(Dense(128, activation=None, kernel_initializer='he_uniform', input_shape=(input_dim,)))
-        model.add(BatchNormalization(momentum=0.9))
-        model.add(ELU(alpha=1.0))
-        model.add(Dropout(0.5))
+        x = Dense(64, activation=None, kernel_initializer=HeUniform(random_state.randint(limit)))(x)
+        x = BatchNormalization(momentum=0.9)(x)
+        x = ELU(alpha=1.0)(x)
+        x = Dropout(0.5, seed=random_state.randint(limit))(x)
 
-        model.add(Dense(64, activation=None, kernel_initializer='he_uniform'))
-        model.add(BatchNormalization(momentum=0.9))
-        model.add(ELU(alpha=1.0))
-        model.add(Dropout(0.5))
-
-        model.add(Dense(32, activation=None, kernel_initializer='he_uniform'))
-        model.add(BatchNormalization(momentum=0.9))
-        model.add(ELU(alpha=1.0))
-        model.add(Dropout(0.5))
+        x = Dense(32, activation=None, kernel_initializer=HeUniform(random_state.randint(limit)))(x)
+        x = BatchNormalization(momentum=0.9)(x)
+        x = ELU(alpha=1.0)(x)
+        x = Dropout(0.5, seed=random_state.randint(limit))(x)
 
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        model.add(Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform'))
+        out = Dense(num_classes, activation=activation, kernel_initializer=GlorotUniform(random_state.randint(limit)))(x)
 
         # Compile model
+        model = Model(inputs=tfidf_features, outputs=[out])
         lr = self.keras_params.get('learning_rate', 0.002)
         decay = self.keras_params.get('decay', 0.0)
         self.logger.info(f"Learning rate: {lr}")
@@ -140,6 +147,16 @@ class ModelTfidfDense(ModelKeras):
 
         # Return
         return model
+
+    @tf.function(input_signature=(tf.TensorSpec(shape=(None, None), dtype=tf.float64, name='x'), ))
+    def _serve(self, x: np.ndarray):
+        '''Improves predict function using tf.function (cf. https://www.tensorflow.org/guide/function)
+        Args:
+            x (np.ndarray): input data
+        Returns:
+            tf.tensor: model's output
+        '''
+        return self.model(x, training=False)
 
     def save(self, json_data: Union[dict, None] = None) -> None:
         '''Saves the model

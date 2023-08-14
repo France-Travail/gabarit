@@ -25,6 +25,7 @@ import logging
 from functools import partial
 from typing import Callable, Any
 
+import numpy as np
 import tensorflow as tf
 from tensorflow.keras import activations
 from tensorflow.keras.layers import Layer
@@ -266,6 +267,19 @@ def get_weighted_binary_crossentropy(pos_weight: float = 10.0) -> Callable:
     return fn
 
 
+def compare_keras_models(model1, model2):
+    ''' Checks if all weights of each keras model layer are the same
+    '''
+    for layer1, layer2 in zip(model1.layers, model2.layers):
+        if layer1.__class__.__name__!=layer2.__class__.__name__:
+            return False
+        l1 = layer1.get_weights()
+        l2 = layer2.get_weights()
+        if not all(np.array_equal(weights1, weights2) for weights1, weights2 in zip(l1, l2)):
+            return False
+    return True
+
+
 # ** EXPERIMENTAL **
 # ** EXPERIMENTAL **
 # ** EXPERIMENTAL **
@@ -309,9 +323,13 @@ class AttentionWithContext(Layer):
     '''
     def __init__(self, W_regularizer=None, u_regularizer=None, b_regularizer=None,
                  W_constraint=None, u_constraint=None, b_constraint=None, bias=True,
-                 return_attention=False, **kwargs):
+                 return_attention=False, w_initializer=None, b_initializer=None, 
+                 u_initializer=None, **kwargs):
         self.return_attention = return_attention
         self.bias = bias
+        self.w_initializer = w_initializer
+        self.b_initializer = b_initializer
+        self.u_initializer = u_initializer
         super(AttentionWithContext, self).__init__(**kwargs)
 
     def get_config(self) -> Any:
@@ -328,13 +346,13 @@ class AttentionWithContext(Layer):
         input_shape_list = input_shape.as_list()
 
         self.W = self.add_weight(shape=((input_shape_list[-1], input_shape_list[-1])),
-                                 name='{}_W'.format(self.name))
+                                 name='{}_W'.format(self.name), initializer=self.w_initializer)
         if self.bias:
             self.b = self.add_weight(shape=(input_shape_list[-1],),
-                                     name='{}_b'.format(self.name))
+                                     name='{}_b'.format(self.name), initializer=self.b_initializer)
 
         self.u = self.add_weight(shape=(input_shape_list[-1],),
-                                 name='{}_u'.format(self.name))
+                                 name='{}_u'.format(self.name), initializer=self.u_initializer)
 
         super(AttentionWithContext, self).build(input_shape.as_list())
 

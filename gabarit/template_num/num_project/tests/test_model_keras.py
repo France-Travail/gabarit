@@ -34,8 +34,9 @@ import tensorflow.keras as keras
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
 from {{package_name}}.models_training.model_keras import ModelKeras
-from {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier import ModelDenseClassifier
+from {{package_name}}.models_training.utils_deep_keras import compare_keras_models
 from {{package_name}}.models_training.regressors.models_tensorflow.model_dense_regressor import ModelDenseRegressor
+from {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier import ModelDenseClassifier
 
 # Disable logging
 import logging
@@ -447,6 +448,78 @@ class ModelKerasTests(unittest.TestCase):
         remove_dir(model_dir_2)
         remove_dir(model_dir_3)
 
+        model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
+        remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
+        remove_dir(model_dir2)
+
+        # ModelDenseClassifier
+        # Classification - Mono-label - Mono-Class with same random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model1.fit(x_train, y_train_mono_2)
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2)
+        model2.fit(x_train, y_train_mono_2)
+        self.assertTrue(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Mono-label - Multi-Class with same random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model1.fit(x_train, y_train_mono_3)
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2)
+        model2.fit(x_train, y_train_mono_3)
+        self.assertTrue(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Mono-label - Mono-Class with different random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model1.fit(x_train, y_train_mono_2)
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
+        model2.fit(x_train, y_train_mono_2)
+        self.assertFalse(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Mono-label - Multi-Class with different random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model1.fit(x_train, y_train_mono_3)
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
+        model2.fit(x_train, y_train_mono_3)
+        self.assertFalse(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Multi-label - Multi-Class with same random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2, multi_label=True)
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2, multi_label=True)
+        model2.fit(x_train, y_train_multi)
+        self.assertTrue(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Multi-label - Multi-Class with different random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2, multi_label=True)
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2, multi_label=True)
+        model2.fit(x_train, y_train_multi)
+        self.assertFalse(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # ModelDenseRegressor
+        # Regression with same random_seed
+        model1 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model1.fit(x_train, y_train_regressor)
+        model2 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2)
+        model2.fit(x_train, y_train_regressor)
+        self.assertTrue(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Regression with different random_seed
+        model1 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model1.fit(x_train, y_train_regressor)
+        model2 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
+        model2.fit(x_train, y_train_regressor)
+        self.assertFalse(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+
     def test03_model_keras_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.model_keras.ModelKeras'''
 
@@ -460,92 +533,111 @@ class ModelKerasTests(unittest.TestCase):
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
-        x_col = ['col_1', 'col_2']
-        y_col_mono = ['toto']
         y_col_multi = ['y1', 'y2', 'y3']
 
         # Classification - Mono-label - Mono-Class
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono_2)
-        #
-        preds = model.predict(x_train, return_proba=False)
-        preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
+        preds = model.predict(x_train, return_proba=False, alternative_version=False)
+        preds_alternative = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
-        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
-        #
-        probas = model.predict(x_train, return_proba=True)
-        probas_alt = model.predict(x_train, return_proba=True, alternative_version=True)
+        self.assertEqual(preds_alternative.shape, (len(x_train),))
+        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+        # return proba
+        probas = model.predict(x_train, return_proba=True, alternative_version=False)
+        probas_alternative = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
-        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
+        self.assertEqual(probas_alternative.shape, (len(x_train), 2))  # 2 classes
+        np.testing.assert_almost_equal(probas, probas_alternative, decimal=5)
         # Test inversed columns order
-        preds_inv = model.predict(x_train_inv, return_proba=False)
+        preds_inv = model.predict(x_train_inv, return_proba=False, alternative_version=False)
+        probas_inv = model.predict(x_train_inv, return_proba=True, alternative_version=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
-        probas_inv = model.predict(x_train_inv, return_proba=True)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
+        # Test inference_batch_size
+        for inference_batch_size in [1, 100000]:
+            preds = model.predict(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            preds_alternative = model.predict(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono_3)
-        #
-        preds = model.predict(x_train, return_proba=False)
-        preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
+        preds = model.predict(x_train, return_proba=False, alternative_version=False)
+        preds_alternative = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
-        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
-        #
-        probas = model.predict(x_train, return_proba=True)
-        probas_alt = model.predict(x_train, return_proba=True, alternative_version=True)
+        self.assertEqual(preds_alternative.shape, (len(x_train),))
+        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+        # return proba
+        probas = model.predict(x_train, return_proba=True, alternative_version=False)
+        probas_alternative = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
-        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
+        self.assertEqual(probas_alternative.shape, (len(x_train), 3))  # 3 classes
+        np.testing.assert_almost_equal(probas, probas_alternative, decimal=5)
         # Test inversed columns order
-        preds_inv = model.predict(x_train_inv, return_proba=False)
+        preds_inv = model.predict(x_train_inv, return_proba=False, alternative_version=False)
+        probas_inv = model.predict(x_train_inv, return_proba=True, alternative_version=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
-        probas_inv = model.predict(x_train_inv, return_proba=True)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
+        # Test inference_batch_size
+        for inference_batch_size in [1, 100000]:
+            preds = model.predict(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            preds_alternative = model.predict(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         model.fit(x_train, y_train_multi)
-        #
-        preds = model.predict(x_train)
-        preds_alt = model.predict(x_train, return_proba=False, alternative_version=True)
+        preds = model.predict(x_train, return_proba=False, alternative_version=False)
+        preds_alternative = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train), len(y_col_multi)))
-        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
-        #
-        probas = model.predict(x_train, return_proba=True)
-        probas_alt = model.predict(x_train, return_proba=True, alternative_version=True)
+        self.assertEqual(preds_alternative.shape, (len(x_train), len(y_col_multi)))
+        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
+        # return proba
+        probas = model.predict(x_train, return_proba=True, alternative_version=False)
+        probas_alternative = model.predict(x_train, return_proba=True, alternative_version=True)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
-        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
+        self.assertEqual(probas_alternative.shape, (len(x_train), len(y_col_multi)))
+        np.testing.assert_almost_equal(probas, probas_alternative, decimal=5)
         # Test inversed columns order
-        preds_inv = model.predict(x_train_inv, return_proba=False)
+        preds_inv = model.predict(x_train_inv, return_proba=False, alternative_version=False)
+        probas_inv = model.predict(x_train_inv, return_proba=True, alternative_version=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
-        probas_inv = model.predict(x_train_inv, return_proba=True)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
+        # Test inference_batch_size
+        for inference_batch_size in [1, 100000]:
+            preds = model.predict(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            preds_alternative = model.predict(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
 
         # Regressor
         model = ModelDenseRegressor(model_dir=model_dir, batch_size=8, epochs=2)
         model.fit(x_train, y_train_regressor)
-        #
-        preds = model.predict(x_train)
-        preds_alt = model.predict(x_train, alternative_version=True)
+        preds = model.predict(x_train, return_proba=False, alternative_version=False)
+        preds_alternative = model.predict(x_train, return_proba=False, alternative_version=True)
         self.assertEqual(preds.shape, (len(x_train),))
-        np.testing.assert_almost_equal(preds, preds_alt, decimal=5)
+        self.assertEqual(preds_alternative.shape, (len(x_train),))
+        np.testing.assert_almost_equal(preds, preds_alternative, decimal=5)
         #
         with self.assertRaises(ValueError):
-            probas = model.predict(x_train, return_proba=True)
+            _ = model.predict(x_train, return_proba=True)
         with self.assertRaises(ValueError):
-            probas = model.predict(x_train, return_proba=True, alternative_version=True)
+            _ = model.predict(x_train, return_proba=True, alternative_version=True)
         # Test inversed columns order
-        preds_inv = model.predict(x_train_inv, return_proba=False)
+        preds_inv = model.predict(x_train_inv, return_proba=False, alternative_version=False)
         np.testing.assert_almost_equal(preds, preds_inv, decimal=5)
         remove_dir(model_dir)
+        # Test inference_batch_size
+        for inference_batch_size in [1, 100000]:
+            preds = model.predict(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            preds_alternative = model.predict(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
 
         # Model needs to be fitted
+        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         with self.assertRaises(AttributeError):
-            model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
             model.predict(x_train)
+        with self.assertRaises(AttributeError):
+            model.predict(x_train, alternative_version=True)
         remove_dir(model_dir)
 
     def test04_model_keras_predict_proba(self):
@@ -561,62 +653,77 @@ class ModelKerasTests(unittest.TestCase):
         y_train_mono_3 = pd.Series([0, 0, 0, 2, 1, 1, 1] * 10)
         y_train_regressor = pd.Series([-3, -2, -8, 0, 5, 6, 5] * 10)
         y_train_multi = pd.DataFrame({'y1': [0, 0, 0, 0, 1, 1, 1] * 10, 'y2': [1, 0, 0, 1, 1, 1, 1] * 10, 'y3': [0, 0, 1, 0, 1, 0, 1] * 10})
-        x_col = ['col_1', 'col_2']
-        y_col_mono = ['toto']
         y_col_multi = ['y1', 'y2', 'y3']
 
         # Classification - Mono-label - Mono-Class
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono_2)
-        probas = model.predict_proba(x_train)
-        probas_alt = model.predict_proba(x_train, alternative_version=True)
-        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
-        self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
+        probas = model.predict_proba(x_train, alternative_version=False)
+        probas_alternative = model.predict_proba(x_train, alternative_version=True)
+        self.assertEqual(probas.shape, (len(x_train), 2))
+        self.assertEqual(probas_alternative.shape, (len(x_train), 2))
+        np.testing.assert_almost_equal(probas, probas_alternative, decimal=5)
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         # Test inversed columns order
-        probas_inv = model.predict_proba(x_train_inv)
+        probas_inv = model.predict_proba(x_train_inv, alternative_version=False)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
+        # Test inference_batch_size
+        for inference_batch_size in [1, 100000]:
+            probas = model.predict_proba(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            probas_alternative = model.predict_proba(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         model.fit(x_train, y_train_mono_3)
-        probas = model.predict_proba(x_train)
-        probas_alt = model.predict_proba(x_train, alternative_version=True)
-        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
+        probas = model.predict_proba(x_train, alternative_version=False)
+        probas_alternative = model.predict_proba(x_train, alternative_version=True)
         self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
+        self.assertEqual(probas_alternative.shape, (len(x_train), 3))  # 3 classes
+        np.testing.assert_almost_equal(probas, probas_alternative, decimal=5)
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         # Test inversed columns order
-        probas_inv = model.predict_proba(x_train_inv)
+        probas_inv = model.predict_proba(x_train_inv, alternative_version=False)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
+        # Test inference_batch_size
+        for inference_batch_size in [1, 100000]:
+            probas = model.predict_proba(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            probas_alternative = model.predict_proba(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
 
         # Classification - Multi-labels
         model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True)
         model.fit(x_train, y_train_multi)
-        probas = model.predict_proba(x_train)
-        probas_alt = model.predict_proba(x_train, alternative_version=True)
-        np.testing.assert_almost_equal(probas, probas_alt, decimal=5)
-        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))  # 3 labels
+        probas = model.predict_proba(x_train, alternative_version=False)
+        probas_alternative = model.predict_proba(x_train, alternative_version=True)
+        self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))
+        self.assertEqual(probas_alternative.shape, (len(x_train), len(y_col_multi)))
+        np.testing.assert_almost_equal(probas, probas_alternative, decimal=5)
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         # Test inversed columns order
-        probas_inv = model.predict_proba(x_train_inv)
+        probas_inv = model.predict_proba(x_train_inv, alternative_version=False)
         np.testing.assert_almost_equal(probas, probas_inv, decimal=5)
+        # Test inference_batch_size
+        for inference_batch_size in [1, 100000]:
+            probas = model.predict_proba(x_train, alternative_version=False, inference_batch_size=inference_batch_size)
+            probas_alternative = model.predict_proba(x_train, alternative_version=True, inference_batch_size=inference_batch_size)
         remove_dir(model_dir)
 
         # Regressor
         model = ModelDenseRegressor(model_dir=model_dir, batch_size=8, epochs=2)
         model.fit(x_train, y_train_regressor)
         with self.assertRaises(ValueError):
-            proba = model.predict_proba(x_train)
+            _ = model.predict_proba(x_train)
         with self.assertRaises(ValueError):
-            proba = model.predict_proba(x_train, alternative_version=True)
+            _ = model.predict_proba(x_train, alternative_version=True)
         remove_dir(model_dir)
 
         # Model needs to be fitted
+        model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
         with self.assertRaises(AttributeError):
-            model = ModelDenseClassifier(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
-            model.predict_proba('test')
+            model.predict_proba(x_train)
+        with self.assertRaises(AttributeError):
+            model.predict_proba(x_train, alternative_version=True)
         remove_dir(model_dir)
 
     def test05_model_keras_get_callbacks(self):

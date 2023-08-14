@@ -35,13 +35,13 @@ ModelGabarit overwrite some methods of the base Model class :
 """
 
 
-import logging
 import shutil
+import logging
 import tempfile
 import pandas as pd
 from pathlib import Path
 from typing import Any, Union
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from .model_base import Model
 
@@ -91,8 +91,7 @@ class ModelSettings(BaseSettings):
     artifactory_password: str = ""
     redownload: bool = False
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env", extra='ignore', protected_namespaces=('settings', ))
 
 
 class ModelGabarit(Model):
@@ -116,7 +115,13 @@ class ModelGabarit(Model):
         if isinstance(content, list) or isinstance(content, dict):
             content = pd.DataFrame(content)
 
-        return utils_models.predict(content, model=self._model, model_conf=self._model_conf, **kwargs)
+        # For APIs, we default to alternative_version = True
+        # It uses `tf.function` and `model.__call__` which is way faster for low number of inputs
+        # It also prevents some memory issues with newest version of TensorFlow
+        # https://github.com/tensorflow/tensorflow/issues/58676
+        # You can change the inference batch size if it doesn't suit your model/project
+        return utils_models.predict(content, model=self._model, model_conf=self._model_conf,
+                                    inference_batch_size=128, alternative_version=True, **kwargs)
 
     def explain_as_json(self, content: Any, *args, **kwargs) -> Union[dict, list]:
         """Compute explanations about a prediction and return a JSON serializable object"""

@@ -398,14 +398,14 @@ class ModelTfidfLgbmTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Nominal case
-        model = ModelTfidfLgbm(model_dir=model_dir, multi_label=False, multiclass_strategy='ovr')
+        model = ModelTfidfLgbm(model_dir=model_dir, random_seed=42, multi_label=False, multiclass_strategy='ovr')
         model.save(json_data={'test': 8})
         configs = model.load_configs(model_dir=model_dir)
         new_model = ModelTfidfLgbm._init_new_instance_from_configs(configs=configs)
         self.assertTrue(isinstance(new_model, ModelTfidfLgbm))
         self.assertEqual(new_model.nb_fit, 0)
         self.assertFalse(new_model.trained)
-        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'random_seed', 'multi_label', 'level_save']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -426,7 +426,7 @@ class ModelTfidfLgbmTests(unittest.TestCase):
         self.assertTrue(isinstance(new_model, ModelTfidfLgbm))
         self.assertEqual(new_model.nb_fit, 2)
         self.assertTrue(new_model.trained)
-        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'random_seed', 'multi_label', 'level_save']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -443,7 +443,7 @@ class ModelTfidfLgbmTests(unittest.TestCase):
         # Multi label False
         model = ModelTfidfLgbm(model_dir=model_dir, multi_label=False, multiclass_strategy=None,
                              tfidf_params={'ngram_range': (2, 2), 'max_df': 0.9, 'min_df': 2},
-                             lgbm_params={'num_leaves': 32, 'max_depth': 5})
+                             lgbm_params={'num_leaves': 32, 'max_depth': 5}, random_seed=42)
         # Save model
         model.save(json_data={'test': 8})
 
@@ -455,9 +455,11 @@ class ModelTfidfLgbmTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 1)
         self.assertAlmostEqual(lgbm.num_leaves, 31)
         self.assertEqual(lgbm.max_depth, -1)
+        self.assertEqual(new_model.random_seed, None)
         # First load the model configurations
         configs = ModelTfidfLgbm.load_configs(model_dir=model_dir)
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'multiclass_strategy']:
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save',
+                          'random_seed', 'multiclass_strategy']:
             setattr(new_model, attribute, configs.get(attribute, getattr(new_model, attribute)))
         new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
         tfidf = new_model.tfidf
@@ -467,6 +469,7 @@ class ModelTfidfLgbmTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 2)
         self.assertAlmostEqual(lgbm.num_leaves, 32)
         self.assertEqual(lgbm.max_depth, 5)
+        self.assertEqual(new_model.random_seed, 42)
         
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -474,7 +477,7 @@ class ModelTfidfLgbmTests(unittest.TestCase):
         # Multi label True
         model = ModelTfidfLgbm(model_dir=model_dir, multi_label=True, multiclass_strategy=None,
                              tfidf_params={'ngram_range': (2, 2), 'max_df': 0.9, 'min_df': 2},
-                             lgbm_params={'num_leaves': 32, 'max_depth': 5})
+                             lgbm_params={'num_leaves': 32, 'max_depth': 5}, random_seed=42)
         # Save model
         model.save(json_data={'test': 8})
 
@@ -486,9 +489,11 @@ class ModelTfidfLgbmTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 1)
         self.assertAlmostEqual(lgbm.num_leaves, 31)
         self.assertEqual(lgbm.max_depth, -1)
+        self.assertEqual(new_model.random_seed, None)
         # First load the model configurations
         configs = ModelTfidfLgbm.load_configs(model_dir=model_dir)
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'multiclass_strategy']:
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save',
+                          'random_seed', 'multiclass_strategy']:
             setattr(new_model, attribute, configs.get(attribute, getattr(new_model, attribute)))
         new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
         tfidf = new_model.tfidf
@@ -498,6 +503,7 @@ class ModelTfidfLgbmTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 2)
         self.assertAlmostEqual(lgbm.num_leaves, 32)
         self.assertEqual(lgbm.max_depth, 5)
+        self.assertEqual(new_model.random_seed, 42)
         
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)

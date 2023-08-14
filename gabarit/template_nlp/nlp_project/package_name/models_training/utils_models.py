@@ -116,7 +116,7 @@ def normal_split(df: pd.DataFrame, test_size: float = 0.25, seed: Union[int, Non
     return df_train, df_test
 
 
-def stratified_split(df: pd.DataFrame, col: Union[str, int], test_size: float = 0.25, seed: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def stratified_split(df: pd.DataFrame, col: Union[str, int], test_size: float = 0.25, seed: Union[int, None] = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
     '''Splits a DataFrame into train and test sets - Stratified strategy
 
     Args:
@@ -146,7 +146,7 @@ def stratified_split(df: pd.DataFrame, col: Union[str, int], test_size: float = 
     return df_train, df_test
 
 
-def hierarchical_split(df: pd.DataFrame, col: Union[str, int], test_size: float = 0.25, seed: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def hierarchical_split(df: pd.DataFrame, col: Union[str, int], test_size: float = 0.25, seed: Union[int, None] = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
     '''Splits a DataFrame into train and test sets - Hierarchical strategy
 
     Args:
@@ -278,7 +278,7 @@ def load_model(model_dir: str, is_path: bool = False, **kwargs) -> Tuple[Any, di
     return model, model_conf
 
 
-def predict(content: Union[str, list], model, model_conf: dict, alternative_version: bool = False, **kwargs) -> list:
+def predict(content: Union[str, list], model, model_conf: dict, inference_batch_size: int = 128, alternative_version: bool = False, **kwargs) -> list:
     '''Gets predictions of a model on a content
 
     Args:
@@ -286,14 +286,18 @@ def predict(content: Union[str, list], model, model_conf: dict, alternative_vers
         model (ModelClass): Model to use
         model_conf (dict): Model configurations
     Kwargs:
-        alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
-                                    Only available for Keras models.
+        inference_batch_size (int): size (approximate) of batches
+        alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used.
+            Should be faster with low nb of inputs. Only useful for Keras models.
+            We advise you to set `alternative_version` to True for APIs to avoid possible memory leaks with `model.predict` on newest TensorFlow.
+            https://github.com/tensorflow/tensorflow/issues/58676
+            Inferences will probably be way faster too.
     Returns:
         list: a list of strings (resp. tuples) in case of mono-label (resp. multi-labels) classification predictions
     '''
     if isinstance(content, str):
         content = [content]
-        
+
     # Get preprocessor
     if 'preprocess_str' in model_conf.keys():
         preprocess_str = model_conf['preprocess_str']
@@ -305,13 +309,13 @@ def predict(content: Union[str, list], model, model_conf: dict, alternative_vers
     content = preprocessor(content)
 
     # Get prediction (some models need an iterable)
-    predictions = model.predict(content, alternative_version=alternative_version)
+    predictions = model.predict(content, inference_batch_size=inference_batch_size, alternative_version=alternative_version)
 
     # Return predictions with inverse transform when relevant
     return model.inverse_transform(predictions)
 
 
-def predict_with_proba(content: Union[str, list], model, model_conf: dict, alternative_version: bool = False,
+def predict_with_proba(content: Union[str, list], model, model_conf: dict, inference_batch_size: int = 128, alternative_version: bool = False,
                        **kwargs) -> Union[Tuple[List[str], List[float]], Tuple[List[tuple], List[tuple]]]:
     '''Gets predictions of a model on a content, with probabilities
 
@@ -320,8 +324,12 @@ def predict_with_proba(content: Union[str, list], model, model_conf: dict, alter
         model (ModelClass): Model to use
         model_conf (dict): Model configurations
     Kwargs:
-        alternative_version (bool): If an alternative version must be used. Should be faster with low nb of inputs.
-                                    Only available for Keras models.
+        inference_batch_size (int): size (approximate) of batches
+        alternative_version (bool): If an alternative version (`tf.function` + `model.__call__`) must be used.
+            Should be faster with low nb of inputs. Only useful for Keras models.
+            We advise you to set `alternative_version` to True for APIs to avoid possible memory leaks with `model.predict` on newest TensorFlow.
+            https://github.com/tensorflow/tensorflow/issues/58676
+            Inferences will probably be way faster too.
     Returns:
         MONO-LABEL CLASSIFICATION:
             List[str]: predictions
@@ -346,7 +354,7 @@ def predict_with_proba(content: Union[str, list], model, model_conf: dict, alter
     # Get prediction (some models need an iterable)
     # predictions is a ndarray of shape (n_samples, n_classes)
     # probas is a ndarray of shape (n_samples, n_classes)
-    predictions, probas = model.predict_with_proba(content, alternative_version=alternative_version)
+    predictions, probas = model.predict_with_proba(content, inference_batch_size=inference_batch_size, alternative_version=alternative_version)
 
     # Rework format :
     if model.multi_label:

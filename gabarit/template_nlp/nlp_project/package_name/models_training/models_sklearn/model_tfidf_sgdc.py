@@ -65,6 +65,7 @@ class ModelTfidfSgdc(ModelPipeline):
         self.tfidf = TfidfVectorizer(**tfidf_params)
         if sgdc_params is None:
             sgdc_params = {}
+        sgdc_params['random_state'] = self.random_seed
         self.sgdc = SGDClassifier(**sgdc_params)
         self.multiclass_strategy = multiclass_strategy
 

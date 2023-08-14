@@ -36,6 +36,23 @@ logging.disable(logging.CRITICAL)
 
 def remove_dir(path):
     if os.path.isdir(path): shutil.rmtree(path)
+    
+
+def compare_trees(tree1, tree2):
+    '''Checks if two DecisionTreeClassifiers are equal
+    Args:
+        tree1 (DecisionTreeClassifier): First tree to consider
+        tree2 (DecisionTreeClassifier): Second tree to consider
+    Results:
+        bool: True if all trees nodes and values are equal, else False
+    '''
+    state1 = tree1.tree_.__getstate__()
+    state2 = tree2.tree_.__getstate__()
+    if not np.array_equal(state1["nodes"], state2["nodes"]):
+        return False
+    if not np.array_equal(state1["values"], state2["values"]):
+        return False
+    return True 
 
 
 class ModelGBTClassifierTests(unittest.TestCase):
@@ -98,6 +115,13 @@ class ModelGBTClassifierTests(unittest.TestCase):
         self.assertEqual(model.pipeline['gbt'].estimator.learning_rate, 0.5)
         self.assertEqual(model.pipeline['gbt'].estimator.n_estimators, 10)
         self.assertEqual(model.multi_label, True)
+        remove_dir(model_dir)
+        model = ModelGBTClassifier(model_dir=model_dir, multi_label=True, multiclass_strategy='ovo', gbt_params={'learning_rate': 0.5, 'n_estimators': 10})
+        self.assertEqual(model.multiclass_strategy, 'ovo')
+        self.assertEqual(model.pipeline['gbt'].estimator.learning_rate, 0.5)
+        self.assertEqual(model.pipeline['gbt'].estimator.n_estimators, 10)
+        self.assertEqual(model.multi_label, True)
+
         remove_dir(model_dir)
 
         # Error
@@ -459,6 +483,7 @@ class ModelGBTClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)
@@ -494,6 +519,7 @@ class ModelGBTClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)
@@ -529,6 +555,7 @@ class ModelGBTClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)
@@ -567,6 +594,7 @@ class ModelGBTClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)
@@ -602,6 +630,7 @@ class ModelGBTClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)
@@ -637,6 +666,7 @@ class ModelGBTClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)

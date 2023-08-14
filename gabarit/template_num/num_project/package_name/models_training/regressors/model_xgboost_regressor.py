@@ -60,6 +60,7 @@ class ModelXgboostRegressor(ModelRegressorMixin, ModelClass):
         # Set parameters
         if xgboost_params is None:
             xgboost_params = {}
+        xgboost_params["random_state"] = self.random_seed
         self.xgboost_params = xgboost_params
         self.early_stopping_rounds = early_stopping_rounds
         self.validation_split = validation_split
@@ -98,11 +99,12 @@ class ModelXgboostRegressor(ModelRegressorMixin, ModelClass):
         # Otherwise, we do a random split
         else:
             self.logger.warning(f"Warning, no validation dataset. We split the training set (fraction valid = {self.validation_split})")
-            x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, test_size=self.validation_split)
+            x_train, x_valid, y_train, y_valid = train_test_split(x_train, y_train, test_size=self.validation_split, random_state=self.random_seed)
 
         # Shuffle x, y if wanted
         if with_shuffle:
-            p = np.random.permutation(len(x_train))
+            rng = np.random.RandomState(self.random_seed)
+            p = rng.permutation(len(x_train))
             x_train = np.array(x_train)[p]
             y_train = np.array(y_train)[p]
         # Else still transform to numpy array
@@ -236,7 +238,7 @@ class ModelXgboostRegressor(ModelRegressorMixin, ModelClass):
         self.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['model_type', 'x_col', 'y_col', 'columns_in', 'mandatory_columns',
-                          'level_save', 'xgboost_params', 'early_stopping_rounds', 'validation_split']:
+                          'random_seed', 'level_save', 'xgboost_params', 'early_stopping_rounds', 'validation_split']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload xgboost model

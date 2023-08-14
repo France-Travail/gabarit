@@ -153,6 +153,30 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(df1.shape[0], 200)
         self.assertEqual(df2.shape[0], 200)  # 200 row max
 
+        # Same random_seed
+        double_files_run_1 = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000 -s 42"
+        self.assertEqual(subprocess.run(double_files_run_1, shell=True).returncode, 0)
+        df1_mono = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        df1_multi = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/multi_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        double_files_run_2 = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000 -s 42"
+        self.assertEqual(subprocess.run(double_files_run_2, shell=True).returncode, 0)
+        df2_mono = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        df2_multi = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/multi_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        self.assertTrue(df1_mono.equals(df2_mono))
+        self.assertTrue(df1_multi.equals(df2_multi))
+
+        # Different random_seed
+        double_files_run_1 = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000 -s 42"
+        self.assertEqual(subprocess.run(double_files_run_1, shell=True).returncode, 0)
+        df1_mono = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        df1_multi = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/multi_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        double_files_run_2 = f"{activate_venv}python {full_path_lib}/test_template_nlp-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000 -s 41"
+        self.assertEqual(subprocess.run(double_files_run_2, shell=True).returncode, 0)
+        df2_mono = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/mono_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        df2_multi = pd.read_csv(f"{full_path_lib}/test_template_nlp-data/multi_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        self.assertFalse(df1_mono.equals(df2_mono))
+        self.assertFalse(df1_multi.equals(df2_multi))
+
     def test02_GetEmbeddingDict(self):
         '''Test of the file utils/0_get_embedding_dict.py'''
         print("Test of the file utils/0_get_embedding_dict.py")
@@ -1110,9 +1134,10 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             os.makedirs(model_dir)
             test_model = model_huggingface.ModelHuggingFace(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
-                                                            batch_size=16, epochs=2, patience=5,
+                                                            batch_size=16, epochs=3, patience=5,
                                                             transformer_name='Geotrend/distilbert-base-fr-cased',
-                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir,
+                                                            random_seed=43)
             # Test it
             test.main(filename='mono_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
                       filename_valid='mono_class_mono_label_train_preprocess_P1.csv', model=test_model)
@@ -1634,7 +1659,8 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
                                                                                     batch_size=16, epochs=40, patience=40,
                                                                                     max_sequence_length=60, max_words=100000,
                                                                                     embedding_name="custom.300.pkl",
-                                                                                    multi_label=True, model_name=model_name, model_dir=model_dir)
+                                                                                    multi_label=True, model_name=model_name, model_dir=model_dir,
+                                                                                    random_seed=42)
             # Run a first training
             test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
                       filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
@@ -1744,9 +1770,10 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             os.makedirs(model_dir)
             test_model = model_huggingface.ModelHuggingFace(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
-                                                            batch_size=16, epochs=2, patience=5,
+                                                            batch_size=16, epochs=3, patience=5,
                                                             transformer_name='Geotrend/distilbert-base-fr-cased',
-                                                            multi_label=True, model_name=model_name, model_dir=model_dir)
+                                                            multi_label=True, model_name=model_name, model_dir=model_dir,
+                                                            random_seed=43)
             # Test it
             test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
                       filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
@@ -2410,9 +2437,10 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             model_dir = os.path.join(utils.get_models_path(), model_name, datetime.now().strftime(f"{model_name}_%Y_%m_%d-%H_%M_%S"))
             os.makedirs(model_dir)
             test_model = model_huggingface.ModelHuggingFace(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
-                                                            batch_size=16, epochs=2, patience=5,
+                                                            batch_size=16, epochs=3, patience=5,
                                                             transformer_name='Geotrend/distilbert-base-fr-cased',
-                                                            multi_label=False, model_name=model_name, model_dir=model_dir)
+                                                            multi_label=False, model_name=model_name, model_dir=model_dir,
+                                                            random_seed=43)
             # Test it
             test.main(filename='multi_class_mono_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col'],
                       filename_valid='multi_class_mono_label_train_preprocess_P1.csv', model=test_model)

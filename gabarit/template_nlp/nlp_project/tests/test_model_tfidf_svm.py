@@ -444,14 +444,14 @@ class ModelTfidfSvmTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Nominal case
-        model = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy='ovr')
+        model = ModelTfidfSvm(model_dir=model_dir, random_seed=42, multi_label=False, multiclass_strategy='ovr')
         model.save(json_data={'test': 8})
         configs = model.load_configs(model_dir=model_dir)
         new_model = ModelTfidfSvm._init_new_instance_from_configs(configs=configs)
         self.assertTrue(isinstance(new_model, ModelTfidfSvm))
         self.assertEqual(new_model.nb_fit, 0)
         self.assertFalse(new_model.trained)
-        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'random_seed', 'multi_label', 'level_save']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -472,7 +472,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertTrue(isinstance(new_model, ModelTfidfSvm))
         self.assertEqual(new_model.nb_fit, 2)
         self.assertTrue(new_model.trained)
-        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save']:
+        for attribute in ['multiclass_strategy', 'x_col', 'y_col', 'list_classes', 'dict_classes', 'random_seed', 'multi_label', 'level_save']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -489,7 +489,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         # Multi label False
         model = ModelTfidfSvm(model_dir=model_dir, multi_label=False, multiclass_strategy=None,
                              tfidf_params={'ngram_range': (2, 2), 'max_df': 0.9, 'min_df': 2},
-                             svc_params={'penalty': 'l1', 'C': 0.9})
+                             svc_params={'penalty': 'l1', 'C': 0.9}, random_seed=42)
         # Save model
         model.save(json_data={'test': 8})
 
@@ -501,9 +501,11 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 1)
         self.assertAlmostEqual(svm.C, 1.0)
         self.assertEqual(svm.penalty, 'l2')
+        self.assertEqual(new_model.random_seed, None)
         # First load the model configurations
         configs = ModelTfidfSvm.load_configs(model_dir=model_dir)
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'multiclass_strategy']:
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label',
+                          'level_save', 'multiclass_strategy', 'random_seed']:
             setattr(new_model, attribute, configs.get(attribute, getattr(new_model, attribute)))
         new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
         tfidf = new_model.tfidf
@@ -513,6 +515,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 2)
         self.assertAlmostEqual(svm.C, 0.9)
         self.assertEqual(svm.penalty, 'l1')
+        self.assertEqual(new_model.random_seed, 42)
         
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)
@@ -520,7 +523,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         # Multi label True
         model = ModelTfidfSvm(model_dir=model_dir, multi_label=True, multiclass_strategy=None,
                              tfidf_params={'ngram_range': (2, 2), 'max_df': 0.9, 'min_df': 2},
-                             svc_params={'penalty': 'l1', 'C': 0.9})
+                             svc_params={'penalty': 'l1', 'C': 0.9}, random_seed=42)
         # Save model
         model.save(json_data={'test': 8})
 
@@ -532,9 +535,11 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 1)
         self.assertAlmostEqual(svm.C, 1.0)
         self.assertEqual(svm.penalty, 'l2')
+        self.assertEqual(new_model.random_seed, None)
         # First load the model configurations
         configs = ModelTfidfSvm.load_configs(model_dir=model_dir)
-        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'multiclass_strategy']:
+        for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label',
+                          'random_seed', 'level_save', 'multiclass_strategy']:
             setattr(new_model, attribute, configs.get(attribute, getattr(new_model, attribute)))
         new_model._load_standalone_files(sklearn_pipeline_path=sklearn_pipeline_path)
         tfidf = new_model.tfidf
@@ -544,6 +549,7 @@ class ModelTfidfSvmTests(unittest.TestCase):
         self.assertEqual(tfidf.min_df, 2)
         self.assertAlmostEqual(svm.C, 0.9)
         self.assertEqual(svm.penalty, 'l1')
+        self.assertEqual(new_model.random_seed, 42)
         
         remove_dir(model_dir)
         remove_dir(new_model.model_dir)

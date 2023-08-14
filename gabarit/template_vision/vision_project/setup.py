@@ -60,11 +60,11 @@ setup(
         'protobuf>=3.9.2,<3.20',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
         'mlflow>=1.11,<1.29',
         'tensorflow==2.9.2',  # Issue with serialization of transfer learning models. Can't upgrade to 2.10.x so far.
-        'pycocotools==2.0.4',
+        'pycocotools==2.0.6',
         'tqdm>=4.40,<4.65',
     ],
     extras_require={
-        "detectron": ["torch==1.8.1+cpu", "detectron2==0.6+cpu", "torchvision==0.9.1+cpu"],  # If GPU with cuda 11.1 : replace +cpu by +cu111
+        "detectron": ["torch==1.8.1+cpu", "detectron2==0.6+cpu", "torchvision==0.9.1+cpu", "pillow==9.5.0"],  # If GPU with cuda 11.1 : replace +cpu by +cu111
         "explicability": ['lime>=0.2,<1.0'],
     }
     # pip install {{package_name}} || pip install {{package_name}}[detectron]

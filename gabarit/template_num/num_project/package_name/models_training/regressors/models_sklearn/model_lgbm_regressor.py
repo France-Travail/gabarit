@@ -53,6 +53,7 @@ class ModelLGBMRegressor(ModelRegressorMixin, ModelPipeline):
         # Manage model
         if lgbm_params is None:
             lgbm_params = {}
+        lgbm_params["random_state"] = self.random_seed
         self.lgbm = LGBMRegressor(**lgbm_params)
         # We define a pipeline in order to be compatible with other models
         self.pipeline = Pipeline([('lgbm', self.lgbm)])
@@ -103,7 +104,7 @@ class ModelLGBMRegressor(ModelRegressorMixin, ModelPipeline):
         self.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['model_type', 'x_col', 'y_col', 'columns_in', 'mandatory_columns',
-                          'level_save']:
+                          'random_seed', 'level_save']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload pipeline model

@@ -22,7 +22,7 @@ This module handle global app configuration
 
 
 import pkg_resources  # type: ignore
-from pydantic import BaseSettings
+from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
@@ -31,8 +31,7 @@ class Settings(BaseSettings):
     api_entrypoint: str = "/{{package_name}}/rs/v1"
     log_level: str = "INFO"
 
-    class Config:
-        env_file = ".env"
+    model_config = SettingsConfigDict(env_file=".env", extra='ignore', protected_namespaces=('settings', ))
 
 
 settings = Settings()
