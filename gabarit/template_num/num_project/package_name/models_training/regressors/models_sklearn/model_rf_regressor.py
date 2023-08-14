@@ -53,6 +53,7 @@ class ModelRFRegressor(ModelRegressorMixin, ModelPipeline):
         # Manage model
         if rf_params is None:
             rf_params = {}
+        rf_params["random_state"] = self.random_seed
         self.rf = RandomForestRegressor(**rf_params)
         # We define a pipeline in order to be compatible with other models
         self.pipeline = Pipeline([('rf', self.rf)])
@@ -103,7 +104,7 @@ class ModelRFRegressor(ModelRegressorMixin, ModelPipeline):
         self.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['model_type', 'x_col', 'y_col', 'columns_in', 'mandatory_columns',
-                          'level_save']:
+                          'random_seed', 'level_save']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 
         # Reload pipeline model

@@ -116,7 +116,7 @@ def normal_split(df: pd.DataFrame, test_size: float = 0.25, seed: Union[int, Non
     return df_train, df_test
 
 
-def stratified_split(df: pd.DataFrame, col: Union[str, int], test_size: float = 0.25, seed: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def stratified_split(df: pd.DataFrame, col: Union[str, int], test_size: float = 0.25, seed: Union[int, None] = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
     '''Splits a DataFrame into train and test sets - Stratified strategy
 
     Args:
@@ -146,7 +146,7 @@ def stratified_split(df: pd.DataFrame, col: Union[str, int], test_size: float = 
     return df_train, df_test
 
 
-def hierarchical_split(df: pd.DataFrame, col: Union[str, int], test_size: float = 0.25, seed: int = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
+def hierarchical_split(df: pd.DataFrame, col: Union[str, int], test_size: float = 0.25, seed: Union[int, None] = None) -> Tuple[pd.DataFrame, pd.DataFrame]:
     '''Splits a DataFrame into train and test sets - Hierarchical strategy
 
     Args:

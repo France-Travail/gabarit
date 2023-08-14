@@ -31,7 +31,9 @@ import tensorflow as tf
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import Model
 from tensorflow.keras.models import load_model as load_model_keras
+from tensorflow.keras.initializers import HeUniform, GlorotUniform, Orthogonal
 from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout, Input
+
 
 from . import utils_deep_keras
 from .model_keras import ModelKeras
@@ -100,26 +102,30 @@ class ModelTfidfDense(ModelKeras):
         input_dim = len(self.tfidf.get_feature_names())
         num_classes = len(self.list_classes)
 
+        # Get random_state
+        random_state = np.random.RandomState(self.random_seed)
+        limit = int(1e9)
+
         # Process
         tfidf_features = Input(shape=(input_dim,))
-        x = Dense(128, activation=None, kernel_initializer='he_uniform')(tfidf_features)
+        x = Dense(128, activation=None, kernel_initializer=HeUniform(random_state.randint(limit)))(tfidf_features)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.5)(x)
+        x = Dropout(0.5,seed=random_state.randint(limit))(x)
 
-        x = Dense(64, activation=None, kernel_initializer='he_uniform')(x)
+        x = Dense(64, activation=None, kernel_initializer=HeUniform(random_state.randint(limit)))(x)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.5)(x)
+        x = Dropout(0.5, seed=random_state.randint(limit))(x)
 
-        x = Dense(32, activation=None, kernel_initializer='he_uniform')(x)
+        x = Dense(32, activation=None, kernel_initializer=HeUniform(random_state.randint(limit)))(x)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.5)(x)
+        x = Dropout(0.5, seed=random_state.randint(limit))(x)
 
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        out = Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform')(x)
+        out = Dense(num_classes, activation=activation, kernel_initializer=GlorotUniform(random_state.randint(limit)))(x)
 
         # Compile model
         model = Model(inputs=tfidf_features, outputs=[out])

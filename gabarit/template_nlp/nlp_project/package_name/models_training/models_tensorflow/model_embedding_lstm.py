@@ -31,6 +31,7 @@ from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
+from tensorflow.keras.initializers import HeUniform, GlorotUniform, Orthogonal
 from tensorflow.keras.layers import (LSTM, BatchNormalization, Bidirectional, Dense, Embedding,
                                      GlobalAveragePooling1D, GlobalMaxPooling1D, Input,
                                      SpatialDropout1D, add, concatenate)
@@ -127,6 +128,10 @@ class ModelEmbeddingLstm(ModelKeras):
         # Get input dim
         input_dim = embedding_matrix.shape[0]
 
+        # Get random_state
+        random_state = np.random.RandomState(self.random_seed)
+        limit = int(1e9)
+
         # Get model
         num_classes = len(self.list_classes)
         # Process
@@ -135,17 +140,18 @@ class ModelEmbeddingLstm(ModelKeras):
         words = Input(shape=(self.max_sequence_length,))
         x = Embedding(input_dim, embedding_size, weights=[embedding_matrix], trainable=False)(words)
         x = BatchNormalization(momentum=0.9)(x)
-        x = SpatialDropout1D(0.5)(x)
-        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True))(x)
-        x = SpatialDropout1D(0.5)(x)
+        x = SpatialDropout1D(0.5, seed=random_state.randint(limit))(x)
+        x = Bidirectional(LSTM(LSTM_UNITS, return_sequences=True, kernel_initializer=GlorotUniform(random_state.randint(limit)), 
+                               recurrent_initializer=Orthogonal(seed=random_state.randint(limit))))(x)
+        x = SpatialDropout1D(0.5, seed=random_state.randint(limit))(x)
         hidden = concatenate([
             GlobalMaxPooling1D()(x),
             GlobalAveragePooling1D()(x),
         ])
-        hidden = add([hidden, Dense(DENSE_HIDDEN_UNITS, activation='relu')(hidden)])
+        hidden = add([hidden, Dense(DENSE_HIDDEN_UNITS, activation='relu', kernel_initializer=GlorotUniform(random_state.randint(limit)))(hidden)])
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        out = Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform')(hidden)
+        out = Dense(num_classes, activation=activation, kernel_initializer=GlorotUniform(random_state.randint(limit)))(hidden)
 
         # Compile model
         model = Model(inputs=words, outputs=[out])

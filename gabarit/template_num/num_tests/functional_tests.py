@@ -78,6 +78,30 @@ class Case1_e2e_pipeline(unittest.TestCase):
         self.assertEqual(df1.shape[0], 210)
         self.assertEqual(df2.shape[0], 210)  # 210 row max
 
+        # Same random_seed
+        double_files_run_1 = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000 -s 42"
+        self.assertEqual(subprocess.run(double_files_run_1, shell=True).returncode, 0)
+        df1_mono = pd.read_csv(f"{full_path_lib}/test_template_num-data/mono_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        df1_multi = pd.read_csv(f"{full_path_lib}/test_template_num-data/multi_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        double_files_run_2 = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000 -s 42"
+        self.assertEqual(subprocess.run(double_files_run_2, shell=True).returncode, 0)
+        df2_mono = pd.read_csv(f"{full_path_lib}/test_template_num-data/mono_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        df2_multi = pd.read_csv(f"{full_path_lib}/test_template_num-data/multi_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        self.assertTrue(df1_mono.equals(df2_mono))
+        self.assertTrue(df1_multi.equals(df2_multi))
+
+        # Different random_seed
+        double_files_run_1 = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000 -s 42"
+        self.assertEqual(subprocess.run(double_files_run_1, shell=True).returncode, 0)
+        df1_mono = pd.read_csv(f"{full_path_lib}/test_template_num-data/mono_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        df1_multi = pd.read_csv(f"{full_path_lib}/test_template_num-data/multi_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        double_files_run_2 = f"{activate_venv}python {full_path_lib}/test_template_num-scripts/utils/0_create_samples.py --overwrite -f mono_class_mono_label.csv multi_class_mono_label.csv -n 2000 -s 41"
+        self.assertEqual(subprocess.run(double_files_run_2, shell=True).returncode, 0)
+        df2_mono = pd.read_csv(f"{full_path_lib}/test_template_num-data/mono_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        df2_multi = pd.read_csv(f"{full_path_lib}/test_template_num-data/multi_class_mono_label_2000_samples.csv", sep=';', encoding='utf-8')
+        self.assertFalse(df1_mono.equals(df2_mono))
+        self.assertFalse(df1_multi.equals(df2_multi))
+
     def test02_MergeFiles(self):
         '''Test of the file utils/0_merge_files.py'''
         print("Test of the file utils/0_merge_files.py")

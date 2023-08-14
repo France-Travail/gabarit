@@ -24,12 +24,14 @@ import os
 import json
 import shutil
 import logging
+import numpy as np
 import dill as pickle
 from typing import Union, List, Callable
 
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model as load_model_keras
+from tensorflow.keras.initializers import HeUniform, GlorotUniform
 from tensorflow.keras.layers import ELU, BatchNormalization, Dense, Dropout, Input
 
 from ... import utils_deep_keras
@@ -64,22 +66,26 @@ class ModelDenseClassifier(ModelClassifierMixin, ModelKeras):
         input_dim = len(self.x_col)
         num_classes = len(self.list_classes)
 
+        # Get random_state
+        random_state = np.random.RandomState(self.random_seed)
+        limit = int(1e9)
+
         # Process
         input_layer = Input(shape=(input_dim,))
 
-        x = Dense(64, activation=None, kernel_initializer="he_uniform")(input_layer)
+        x = Dense(64, activation=None, kernel_initializer=HeUniform(random_state.randint(limit)))(input_layer)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.2)(x)
+        x = Dropout(0.2, seed=random_state.randint(limit))(x)
 
-        x = Dense(64, activation=None, kernel_initializer="he_uniform")(x)
+        x = Dense(64, activation=None, kernel_initializer=HeUniform(random_state.randint(limit)))(x)
         x = BatchNormalization(momentum=0.9)(x)
         x = ELU(alpha=1.0)(x)
-        x = Dropout(0.2)(x)
+        x = Dropout(0.2, seed=random_state.randint(limit))(x)
 
         # Last layer
         activation = 'sigmoid' if self.multi_label else 'softmax'
-        out = Dense(num_classes, activation=activation, kernel_initializer='glorot_uniform')(x)
+        out = Dense(num_classes, activation=activation, kernel_initializer=GlorotUniform(random_state.randint(limit)))(x)
 
         # Set model
         model = Model(inputs=input_layer, outputs=[out])
@@ -172,7 +178,7 @@ class ModelDenseClassifier(ModelClassifierMixin, ModelKeras):
         self.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['model_type', 'x_col', 'y_col', 'columns_in', 'mandatory_columns',
-                          'list_classes', 'dict_classes', 'multi_label', 'level_save',
+                          'list_classes', 'dict_classes', 'multi_label', 'random_seed', 'level_save',
                           'batch_size', 'epochs', 'validation_split', 'patience', 'keras_params']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 

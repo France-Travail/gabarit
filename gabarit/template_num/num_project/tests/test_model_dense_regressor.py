@@ -23,13 +23,13 @@ from unittest.mock import patch
 import os
 import json
 import shutil
-import tensorflow
 import numpy as np
 import pandas as pd
 import tensorflow.keras as keras
 
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
+from {{package_name}}.models_training.utils_deep_keras import compare_keras_models
 from {{package_name}}.models_training.regressors.models_tensorflow.model_dense_regressor import ModelDenseRegressor
 
 # Disable logging
@@ -139,9 +139,11 @@ class ModelDenseRegressorTests(unittest.TestCase):
         x_col = ['col_1', 'col_2']
         y_col_mono = ['toto']
 
-        # Create model
+        # Create models
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
+        remove_dir(model_dir2)
         model = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, epochs=2)
 
         # Nominal case
@@ -150,6 +152,18 @@ class ModelDenseRegressorTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
+
+        # Regression with same random_seed
+        model1 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model2 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2)
+        self.assertTrue(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Regression with different random_seed
+        model1 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model2 = ModelDenseRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
+        self.assertFalse(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
 
     def test04_model_dense_regressor_save(self):
         '''Test of the method save of {{package_name}}.models_training.model_dense_regressor.ModelDenseRegressor'''
@@ -301,6 +315,7 @@ class ModelDenseRegressorTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.batch_size, new_model.batch_size)
         self.assertEqual(model.epochs, new_model.epochs)

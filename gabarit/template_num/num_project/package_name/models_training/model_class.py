@@ -57,7 +57,7 @@ class ModelClass:
     # -> get_and_save_metrics
 
     def __init__(self, model_dir: Union[str, None] = None, model_name: Union[str, None] = None,
-                 x_col: Union[list, None] = None, y_col: Union[str, int, list, None] = None,
+                 x_col: Union[list, None] = None, y_col: Union[str, int, list, None] = None, random_seed: Union[int, None] = None,
                  preprocess_pipeline: Union[ColumnTransformer, None] = None, level_save: str = 'HIGH', **kwargs) -> None:
         '''Initialization of the parent class.
 
@@ -67,6 +67,7 @@ class ModelClass:
             model_name (str): The name of the model
             x_col (list): Names of the columns used for the training - x
             y_col (str or int or list if multi-labels): Name of the model's target column(s) - y
+            random_seed (int): Seed to use for packages randomness
             preprocess_pipeline (ColumnTransformer): The pipeline used for preprocessing. If None -> no preprocessing !
             level_save (str): Level of saving
                 LOW: stats + configurations + logger keras - /!\\ The model can't be reused /!\\ -
@@ -91,6 +92,10 @@ class ModelClass:
         # Names of the columns used
         self.x_col = x_col
         self.y_col = y_col
+
+        # Random seed
+        self.random_seed = random_seed
+
         # Can be None if reloading a model
         if x_col is None:
             self.logger.warning("Warning, the attribute x_col is not given! The model might not work as intended.")
@@ -228,6 +233,7 @@ class ModelClass:
             'y_col': self.y_col,
             'columns_in': self.columns_in,
             'mandatory_columns': self.mandatory_columns,
+            'random_seed': self.random_seed,
             'level_save': self.level_save,
             'librairie': None,
         }

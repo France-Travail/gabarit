@@ -177,6 +177,7 @@ class ModelSGDRegressorTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.sgd.get_params(), sgd.get_params())
         self.assertTrue(new_model.preprocess_pipeline is not None)

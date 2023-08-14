@@ -33,6 +33,7 @@ from sklearn.feature_extraction.text import TfidfVectorizer
 
 from {{package_name}} import utils
 from {{package_name}}.models_training.models_tensorflow.model_tfidf_dense import ModelTfidfDense
+from {{package_name}}.models_training.models_tensorflow.utils_deep_keras import compare_keras_models
 
 # Disable logging
 import logging
@@ -202,9 +203,12 @@ class ModelTfidfDenseTests(unittest.TestCase):
     def test06_model_tfidf_dense_get_model(self):
         '''Test of {{package_name}}.models_training.models_tensorflow.model_tfidf_dense.ModelTfidfDense._get_model'''
 
-        # Create model
+        # Create models
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
+        remove_dir(model_dir2)
+        
         model = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
 
         # Nominal case
@@ -216,6 +220,39 @@ class ModelTfidfDenseTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
+
+        # Mono-label same random_seed
+        model1 = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1._prepare_x_train(x_train)
+        model1.list_classes = ['a', 'b']
+        model2 = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2._prepare_x_train(x_train)
+        model2.list_classes = ['a', 'b']
+        self.assertTrue(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Mono-label different random_seed
+        model1 = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1._prepare_x_train(x_train)
+        model1.list_classes = ['a', 'b']
+        model2 = ModelTfidfDense(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=41,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2._prepare_x_train(x_train)
+        model2.list_classes = ['a', 'b']
+        self.assertFalse(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+        
 
     def test07_model_tfidf_dense_save(self):
         '''Test of the method save of {{package_name}}.models_training.models_tensorflow.model_tfidf_dense.ModelTfidfDense'''

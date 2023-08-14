@@ -24,7 +24,7 @@ import ntpath
 import logging
 import argparse
 import pandas as pd
-from typing import List
+from typing import List, Union
 
 from {{package_name}} import utils
 
@@ -32,13 +32,14 @@ from {{package_name}} import utils
 logger = logging.getLogger('{{package_name}}.0_create_samples')
 
 
-def main(filenames: List[str], n_samples: int = 100, sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}', overwrite: bool = False) -> None:
+def main(filenames: List[str], n_samples: int = 100, random_seed: Union[int, None] = None, sep: str = '{{default_sep}}', encoding: str = '{{default_encoding}}', overwrite: bool = False) -> None:
     '''Extracts data subsets from a list of files
 
     Args:
         filenames (list<str>): Datasets filenames (actually paths relative to {{package_name}}-data)
     Kwargs:
         n_samples (int): Number of samples to extract
+        random_seed (int): Seed to use for packages randomness
         sep (str): Separator to use with the .csv files
         encoding (str): Encoding to use with the .csv files
         overwrite (bool): Whether to allow overwriting
@@ -73,7 +74,7 @@ def main(filenames: List[str], n_samples: int = 100, sep: str = '{{default_sep}}
         # Retrieve data & first line metadata
         df, first_line = utils.read_csv(file_path, sep=sep, encoding=encoding, dtype=str)
         # Get extract
-        extract = df.sample(n=min(n_samples, df.shape[0]))
+        extract = df.sample(n=min(n_samples, df.shape[0]), random_state=random_seed)
         # Save
         utils.to_csv(extract, new_path, first_line=first_line, sep='{{default_sep}}', encoding='{{default_encoding}}')
 
@@ -82,8 +83,9 @@ if __name__ == '__main__':
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--filenames', nargs='+', required=True, help="Datasets filenames (actually paths relative to {{package_name}}-data)")
     parser.add_argument('-n', '--n_samples', type=int, default=100, help="Number of samples to extract")
+    parser.add_argument('-s', '--random_seed', type=int, default=None,  help="Seed to use for packages randomness")
     parser.add_argument('--sep', default='{{default_sep}}', help="Separator to use with the .csv files")
     parser.add_argument('--encoding', default="{{default_encoding}}", help="Encoding to use with the .csv files")
     parser.add_argument('--overwrite', action='store_true', help="Whether to allow overwriting")
     args = parser.parse_args()
-    main(filenames=args.filenames, n_samples=args.n_samples, sep=args.sep, encoding=args.encoding, overwrite=args.overwrite)
+    main(filenames=args.filenames, n_samples=args.n_samples, random_seed=args.random_seed, sep=args.sep, encoding=args.encoding, overwrite=args.overwrite)

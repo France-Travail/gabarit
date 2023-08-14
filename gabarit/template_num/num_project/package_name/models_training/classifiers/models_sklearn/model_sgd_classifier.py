@@ -63,6 +63,7 @@ class ModelSGDClassifier(ModelClassifierMixin, ModelPipeline):
         # Manage model
         if sgd_params is None:
             sgd_params = {}
+        sgd_params["random_state"] = self.random_seed
         self.sgd = SGDClassifier(**sgd_params)
         self.multiclass_strategy = multiclass_strategy
 
@@ -177,7 +178,7 @@ class ModelSGDClassifier(ModelClassifierMixin, ModelPipeline):
         self.trained = configs.get('trained', True)  # Consider trained by default
         # Try to read the following attributes from configs and, if absent, keep the current one
         for attribute in ['model_type', 'x_col', 'y_col', 'columns_in', 'mandatory_columns',
-                          'list_classes', 'dict_classes', 'multi_label', 'level_save',
+                          'list_classes', 'dict_classes', 'multi_label', 'random_seed', 'level_save',
                           'multiclass_strategy']:
             setattr(self, attribute, configs.get(attribute, getattr(self, attribute)))
 

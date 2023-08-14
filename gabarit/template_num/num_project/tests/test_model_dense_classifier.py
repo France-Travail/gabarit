@@ -23,12 +23,13 @@ from unittest.mock import patch
 import os
 import json
 import shutil
-import tensorflow
 import numpy as np
 import pandas as pd
 import tensorflow.keras as keras
+
 from {{package_name}} import utils
 from {{package_name}}.models_training import utils_deep_keras
+from {{package_name}}.models_training.utils_deep_keras import compare_keras_models
 from {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier import ModelDenseClassifier
 
 # Disable logging
@@ -311,9 +312,11 @@ class ModelDenseClassifierTests(unittest.TestCase):
         #######
         # Same thing with multi-labels
 
-        # Create model
+        # Create models
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
+        remove_dir(model_dir2)
         model = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True)
 
         # Nominal case
@@ -323,6 +326,39 @@ class ModelDenseClassifierTests(unittest.TestCase):
 
         # Clean
         remove_dir(model_dir)
+
+        # Classification - Mono-label with same random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model1.list_classes = ['a', 'b']
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2)
+        model2.list_classes = ['a', 'b'] 
+        self.assertTrue(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Mono-label with different random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2)
+        model1.list_classes = ['a', 'b']
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2)
+        model2.list_classes = ['a', 'b']
+        self.assertFalse(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Multi-label with same random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2, multi_label=True)
+        model1.list_classes = ['a', 'b', 'c']
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=42, batch_size=8, epochs=2, multi_label=True)
+        model2.list_classes = ['a', 'b', 'c']
+        self.assertTrue(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Classification - Multi-label with different random_seed
+        model1 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, random_seed=42, batch_size=8, epochs=2, multi_label=True)
+        model1.list_classes = ['a', 'b', 'c']
+        model2 = ModelDenseClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir2, random_seed=41, batch_size=8, epochs=2, multi_label=True)
+        model2.list_classes = ['a', 'b', 'c']
+        self.assertFalse(compare_keras_models(model1._get_model(), model2._get_model()))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
 
     def test06_model_dense_classifier_save(self):
         '''Test of the method save of {{package_name}}.models_training.classifiers.models_tensorflow.model_dense_classifier.ModelDenseClassifier'''
@@ -515,6 +551,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)
@@ -555,6 +592,7 @@ class ModelDenseClassifierTests(unittest.TestCase):
         self.assertEqual(model.y_col, new_model.y_col)
         self.assertEqual(model.columns_in, new_model.columns_in)
         self.assertEqual(model.mandatory_columns, new_model.mandatory_columns)
+        self.assertEqual(model.random_seed, new_model.random_seed)
         self.assertEqual(model.level_save, new_model.level_save)
         self.assertEqual(model.list_classes, new_model.list_classes)
         self.assertEqual(model.dict_classes, new_model.dict_classes)

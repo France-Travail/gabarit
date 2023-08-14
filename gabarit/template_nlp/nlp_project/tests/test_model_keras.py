@@ -38,6 +38,7 @@ from {{package_name}} import utils
 from {{package_name}}.models_training.models_tensorflow import utils_deep_keras
 from {{package_name}}.models_training.models_tensorflow.model_keras import ModelKeras
 from {{package_name}}.models_training.models_tensorflow.model_embedding_cnn import ModelEmbeddingCnn
+from {{package_name}}.models_training.models_tensorflow.utils_deep_keras import compare_keras_models
 from {{package_name}}.models_training.models_tensorflow.model_embedding_lstm import ModelEmbeddingLstm
 
 # Disable logging
@@ -138,6 +139,8 @@ class ModelKerasTests(unittest.TestCase):
 
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
+        model_dir2 = os.path.join(os.getcwd(), 'model_test_123456789_2')
+        remove_dir(model_dir2)
 
         # Set vars
         x_train = np.array(["ceci est un test", "pas cela", "cela non plus", "ici test", "là, rien!"] * 100)
@@ -432,6 +435,64 @@ class ModelKerasTests(unittest.TestCase):
             model.fit(x_train[:50], y_train_multi_fake[:50], x_valid=None, y_valid=None, with_shuffle=True)
         remove_dir(model_dir)
 
+        ### ModelEmbeddingLstm with random seed
+        # Mono-label same random_seed
+        model1 = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_mono)
+        model2 = ModelEmbeddingLstm(model_dir=model_dir2, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_mono)
+        self.assertTrue(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Mono-label different random_seed
+        model1 = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_mono)
+        model2 = ModelEmbeddingLstm(model_dir=model_dir2, batch_size=8, epochs=2, multi_label=False,
+                                  max_sequence_length=10, max_words=100, random_seed=41,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_mono)
+        self.assertFalse(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label same random_seed
+        model1 = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelEmbeddingLstm(model_dir=model_dir2, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_multi)
+        self.assertTrue(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        # Multi-label different random_seed
+        model1 = ModelEmbeddingLstm(model_dir=model_dir, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=42,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model1.fit(x_train, y_train_multi)
+        model2 = ModelEmbeddingLstm(model_dir=model_dir2, batch_size=8, epochs=2, multi_label=True,
+                                  max_sequence_length=10, max_words=100, random_seed=41,
+                                  padding='pre', truncating='post',
+                                  embedding_name='fake_embedding.pkl')
+        model2.fit(x_train, y_train_multi)
+        self.assertFalse(compare_keras_models(model1.model, model2.model))
+        remove_dir(model_dir), remove_dir(model_dir2)
+
+        
     def test03_model_keras_predict(self):
         '''Test of the method predict of {{package_name}}.models_training.models_tensorflow.model_keras.ModelKeras'''
 
@@ -822,7 +883,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(new_model.nb_fit, 0)
         self.assertFalse(new_model.trained)
         for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
-                          'patience', 'embedding_name']:
+                          'patience', 'embedding_name', 'random_seed']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         for attribute in ['validation_split']:
             self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))
@@ -844,6 +905,7 @@ class ModelKerasTests(unittest.TestCase):
         model.validation_split = 0.3
         model.patience = 15
         model.embedding_name = 'coucou_embedding'
+        model.random_seed = 42
         model.keras_params = {'coucou':1, 'coucou2': 0.3, 'coucou3':'coucou4'}
         model.save(json_data={'test': 8})
         configs = model.load_configs(model_dir=model_dir)
@@ -853,7 +915,7 @@ class ModelKerasTests(unittest.TestCase):
         self.assertEqual(new_model.nb_fit, 2)
         self.assertTrue(new_model.trained)
         for attribute in ['x_col', 'y_col', 'list_classes', 'dict_classes', 'multi_label', 'level_save', 'batch_size', 'epochs',
-                          'patience', 'embedding_name']:
+                          'patience', 'embedding_name', 'random_seed']:
             self.assertEqual(getattr(model, attribute), getattr(new_model, attribute))
         for attribute in ['validation_split']:
             self.assertAlmostEqual(getattr(model, attribute), getattr(new_model, attribute))

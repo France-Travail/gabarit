@@ -64,6 +64,7 @@ class ModelTfidfLgbm(ModelPipeline):
         self.tfidf = TfidfVectorizer(**tfidf_params)
         if lgbm_params is None:
             lgbm_params = {}
+        lgbm_params['random_state'] = self.random_seed
         self.lgbm = LGBMClassifier(**lgbm_params)
         self.multiclass_strategy = multiclass_strategy
 
