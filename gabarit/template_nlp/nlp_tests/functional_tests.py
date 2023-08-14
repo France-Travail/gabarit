@@ -1659,7 +1659,8 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
                                                                                     batch_size=16, epochs=40, patience=40,
                                                                                     max_sequence_length=60, max_words=100000,
                                                                                     embedding_name="custom.300.pkl",
-                                                                                    multi_label=True, model_name=model_name, model_dir=model_dir)
+                                                                                    multi_label=True, model_name=model_name, model_dir=model_dir,
+                                                                                    random_seed=42)
             # Run a first training
             test.main(filename='mono_class_multi_label_train_preprocess_P1.csv', x_col='preprocessed_text', y_col=['y_col_1', 'y_col_2'],
                       filename_valid='mono_class_multi_label_train_preprocess_P1.csv', model=test_model)
