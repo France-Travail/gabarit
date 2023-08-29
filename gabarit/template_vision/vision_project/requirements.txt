@@ -47,7 +47,7 @@ streamlit==1.12.2
 altair==4.2.0
 
 # Optionnals - code quality & cie
-mypy==0.971
+mypy==1.4.1
 types-setuptools==65.3.0
 flake8==5.0.4
 black==21.4b2  # TO be updated with detectron
