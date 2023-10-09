@@ -166,11 +166,12 @@ class ModelObjectDetectorMixin:
         self.logger.info('--------------------------------')
 
         # Construction df_stats
-        df_stats = pd.DataFrame(columns=['Label', 'AP COCO', 'Support'])
-        df_stats = df_stats.append({'Label': 'All', 'AP COCO': coco_map, 'Support': 1.0}, ignore_index=True)
-        for cl in self.list_classes:
-            df_stats = df_stats.append({'Label': cl, 'AP COCO': dict_ap_coco[cl], 'Support': classes_support[cl]}, ignore_index=True)
+        dict_df_stats = {}
+        dict_df_stats[0] = {'Label': 'All', 'AP COCO': coco_map, 'Support': 1.0}
+        for i, cl in enumerate(self.list_classes):
+            dict_df_stats[i+1] = {'Label': cl, 'AP COCO': dict_ap_coco[cl], 'Support': classes_support[cl]}
 
+        df_stats = pd.DataFrame.from_dict(dict_df_stats, orient='index')
         # Save csv
         file_path = os.path.join(self.model_dir, f"map_coco{'_' + type_data if len(type_data) > 0 else ''}@{round(coco_map, 4)}.csv")
         df_stats.to_csv(file_path, sep='{{default_sep}}', index=False, encoding='{{default_encoding}}')
