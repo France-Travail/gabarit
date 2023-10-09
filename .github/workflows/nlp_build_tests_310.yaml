@@ -1,4 +1,4 @@
-name: Build & Tests - NLP
+name: Build & Tests - NLP 3.10
 on:
   push:
     branches:

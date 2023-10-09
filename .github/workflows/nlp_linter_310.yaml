@@ -1,4 +1,4 @@
-name: Linter - NLP
+name: Linter - NLP 3.10
 on:
   push:
     paths:
