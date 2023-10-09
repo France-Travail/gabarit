@@ -1,4 +1,4 @@
-name: Build & Tests - VISION
+name: Build & Tests - VISION 3.10
 on:
   push:
     branches:

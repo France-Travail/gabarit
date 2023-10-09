@@ -1,4 +1,4 @@
-name: Build & Tests - API
+name: Build & Tests - API 3.10
 on:
   push:
     paths:

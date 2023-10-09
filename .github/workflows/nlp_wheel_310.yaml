@@ -1,4 +1,4 @@
-name: Wheel setup - NLP
+name: Wheel setup - NLP 3.10
 on:
   push:
     branches:

@@ -1,4 +1,4 @@
-name: Wheel setup - NUM
+name: Wheel setup - NUM 3.10
 on:
   push:
     branches:

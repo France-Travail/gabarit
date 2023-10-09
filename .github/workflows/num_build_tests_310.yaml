@@ -1,4 +1,4 @@
-name: Build & Tests - NUM
+name: Build & Tests - NUM 3.10
 on:
   push:
     branches:

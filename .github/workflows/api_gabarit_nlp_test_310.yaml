@@ -1,4 +1,4 @@
-name: Build & Tests - API Gabarit NLP
+name: Build & Tests - API Gabarit NLP 3.10
 on:
   push:
     paths:
