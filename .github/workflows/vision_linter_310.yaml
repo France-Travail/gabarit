@@ -1,0 +1,45 @@
+name: Linter - VISION
+on:
+  push:
+    paths:
+      - 'gabarit/template_vision/**'
+      - '!*.md'
+  pull_request:
+    types: [opened, reopened, synchronize]
+    paths:
+      - 'gabarit/template_vision/**'
+      - '!*.md'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python "3.10"
+        uses: actions/setup-python@v3
+        with:
+          python-version: "3.10"
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install wheel
+          python setup.py sdist bdist_wheel
+          cd dist
+          whl_files=( *.whl )
+          whl_file=${whl_files[0]}
+          pip install $whl_file
+          pip install flake8
+      - name: Lint with flake8
+        run: |
+          # Create a new temporary project
+          cd gabarit/template_vision
+          python generate_vision_project.py -n tmp_project_flake8 -p tmp_project_flake8
+          cd tmp_project_flake8
+          # Stop the build if there are Python syntax errors or undefined names
+          flake8 tmp_project_flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
+          flake8 tmp_project_flake8-scripts --count --select=E9,F63,F7,F82 --show-source --statistics
+          # Exit-zero treats all errors as warnings.
+          flake8 tmp_project_flake8 --count --exit-zero --max-complexity=10 --ignore=E501,W503,E266,W605,C901,W292  --statistics
+          flake8 tmp_project_flake8-scripts --count --exit-zero --max-complexity=10 --ignore=E501,W503,E266,W605,C901,W292  --statistics

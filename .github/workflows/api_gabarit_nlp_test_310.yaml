@@ -1,0 +1,73 @@
+name: Build & Tests - API Gabarit NLP
+on:
+  push:
+    paths:
+      - 'gabarit/template_api/**'
+      - '!*.md'
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches:
+      - 'main'
+      - 'release/v*'
+    paths:
+      - 'gabarit/template_api/**'
+      - '!*.md'
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v3
+    - name: Setup Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v4
+      with:
+          python-version: ${{ matrix.python-version }}
+
+    - name: Install Gabarit and generate a nlp and a api project
+      run: |
+        python -m pip install --upgrade pip
+        pip install .
+        generate_nlp_project -n demo_nlp -p demo_nlp
+        generate_api_project -n demo_api_nlp -p demo_api_nlp --gabarit_package demo-nlp[explicability] --gabarit_no_spec
+        
+
+    - name: Install the NLP project and create a model
+      working-directory: demo_nlp
+      run: |
+        export VERSION=0.0.1
+
+        # Adapt DIR_PATH
+        sed -i "s|^DIR_PATH = None|DIR_PATH=\"$(pwd)\"|" demo_nlp/utils.py
+
+        # Install all requirements and NLP project
+        pip install -r requirements.txt
+        pip install -e .[explicability]
+
+        # Create a model
+        python demo_nlp-scripts/2_training.py -f ../../gabarit/template_nlp/nlp_data/mono_class_multi_label.csv -x x_col -y y_col_1 y_col_2
+
+        # Move it to api project
+        export MODEL="$(ls demo_nlp-models/model_tfidf_svm | grep model_tfidf_svm_ | tail -n 1)"
+        mv "demo_nlp-models/model_tfidf_svm/$MODEL" ../demo_api_nlp/demo_api_nlp-models/model
+
+    - name: Install the API project and test it
+      working-directory: demo_api_nlp
+      run: |
+        export VERSION=0.0.1
+
+        # Modify explainer
+        sed -i 's|import Explainer|import LimeExplainer as Explainer|' demo_api_nlp/model/model_gabarit.py
+
+        # Install api
+        pip install .[dev]
+
+        # Test the explain route
+        python ../gabarit/template_api/api_tests/test_explain_route.py demo_api_nlp
