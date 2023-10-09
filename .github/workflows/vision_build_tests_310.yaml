@@ -1,0 +1,128 @@
+name: Build & Tests - VISION
+on:
+  push:
+    branches:
+      - 'main'
+      - 'release/v*'
+    paths:
+      - 'gabarit/template_vision/**'
+      - '!*.md'
+  pull_request:
+    types: [opened, reopened, synchronize]
+    branches:
+      - 'main'
+      - 'release/v*'
+    paths:
+      - 'gabarit/template_vision/**'
+      - '!*.md'
+  schedule:
+    - cron: '0 0 * * 0'
+  workflow_dispatch:
+
+jobs:
+  build:
+    if: github.event_name != 'pull_request' || ! github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install wheel
+          python setup.py sdist bdist_wheel
+          cd dist
+          whl_files=( *.whl )
+          whl_file=${whl_files[0]}
+          pip install $whl_file
+          pip install flake8
+      - name: Lint with flake8
+        run: |
+          # Create a new temporary project
+          cd gabarit/template_vision
+          python generate_vision_project.py -n tmp_project_flake8 -p tmp_project_flake8
+          cd tmp_project_flake8
+          # Stop the build if there are Python syntax errors or undefined names
+          flake8 tmp_project_flake8 --count --select=E9,F63,F7,F82 --show-source --statistics
+          # Exit-zero treats all errors as warnings.
+          flake8 tmp_project_flake8 --count --exit-zero --max-complexity=10 --ignore=E501,W503,E266,W605,C901,W292  --statistics
+      - name: Test generate VISION
+        run: python gabarit/template_vision/vision_tests/tests_setup.py
+
+  streamlit-checks:
+    if: github.event_name != 'pull_request' || ! github.event.pull_request.draft
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: ["3.10"]
+    steps:
+      - uses: actions/checkout@v3
+      - uses: nanasess/setup-chromedriver@v2
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install wheel
+          python setup.py sdist bdist_wheel
+          cd dist
+          whl_files=( *.whl )
+          whl_file=${whl_files[0]}
+          pip install $whl_file
+      - name: Start demonstrator
+        run: |
+          # Create a new temporary project
+          cd gabarit/template_vision
+          python generate_vision_project.py -n tmp_project_selenium -p tmp_project_selenium
+          # Copy data
+          cp -R vision_data/mnist_v1 tmp_project_selenium/tmp_project_selenium-data/mnist_v1
+          # Init project
+          cd tmp_project_selenium
+          make create-virtualenv
+          source venv_tmp_project_selenium/bin/activate
+          make init-local-env
+          # Train a model
+          cd tmp_project_selenium-scripts
+          python 2_training_classifier.py -d mnist_v1
+          # Start demonstrator (nohup)
+          nohup streamlit run 4_demonstrator.py --server.port=8501 > out.file &
+      - name: Setup Selenium and Chrome Driver
+        run: |
+          # Install Selenium
+          pip install selenium==4.2.0
+          # Set chromedriver to PATH
+          export PATH="/usr/local/bin:$PATH"
+      - name: Take a screenshot
+        run: |
+          # Export display (needed ?)
+          google-chrome --version
+          export DISPLAY=:99
+          chromedriver --url-base=/wd/hub &
+          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # disable headless mode
+          # Take Screenshot
+          cd gabarit/template_vision/vision_tests
+          python selenium_screenshot.py -u 'http://localhost:8501' -o './demonstrator_screenshot.png'
+      - name: Archive screenshot for 2 days
+        uses: actions/upload-artifact@v3
+        with:
+          name: demonstrator_screenshot
+          path: gabarit/template_vision/vision_tests/demonstrator_screenshot.png
+          retention-days: 2
+      - name: Test demonstrator
+        run: |
+          # Export display (needed ?)
+          google-chrome --version
+          export DISPLAY=:99
+          chromedriver --url-base=/wd/hub &
+          sudo Xvfb -ac :99 -screen 0 1280x1024x24 > /dev/null 2>&1 & # disable headless mode
+          # Start tests
+          cd gabarit/template_vision/vision_tests
+          python selenium_tests.py -u 'http://localhost:8501' --with_trained_models
