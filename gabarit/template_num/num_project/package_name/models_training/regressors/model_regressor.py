@@ -142,22 +142,18 @@ class ModelRegressorMixin:
         self.logger.info('--------------------------------')
 
         # Metrics file
-        df_stats = pd.DataFrame(columns=['Label', 'MAE', 'MSE',
-                                         'RMSE', 'Explained variance',
-                                         'Coefficient of determination'])
-
         # TODO : add multi-outputs and stats for each output
 
         # Add global statistics
-        global_stats = {
+        dict_df_stats = {0: {
             'Label': 'All',
             'MAE': metric_mae,
             'MSE': metric_mse,
             'RMSE': metric_rmse,
             'Explained variance': metric_explained_variance_score,
             'Coefficient of determination': metric_r2,
-        }
-        df_stats = df_stats.append(global_stats, ignore_index=True)
+        }}
+        df_stats = pd.DataFrame.from_dict(dict_df_stats, orient='index')
 
         # Save .csv
         file_path = os.path.join(self.model_dir, f"mae{'_' + type_data if len(type_data) > 0 else ''}@{metric_mae}.csv")
@@ -224,22 +220,18 @@ class ModelRegressorMixin:
         metric_r2 = r2_score(y_true, y_pred)
 
         # Metrics file
-        df_stats = pd.DataFrame(columns=['Label', 'MAE', 'MSE',
-                                         'RMSE', 'Explained variance',
-                                         'Coefficient of determination'])
-
         # TODO : add multi-outputs and stats for each output
 
         # Add global statistics
-        global_stats = {
+        dict_df_stats = {0: {
             'Label': 'All',
             'MAE': metric_mae,
             'MSE': metric_mse,
             'RMSE': metric_rmse,
             'Explained variance': metric_explained_variance_score,
             'Coefficient of determination': metric_r2,
-        }
-        df_stats = df_stats.append(global_stats, ignore_index=True)
+        }}
+        df_stats = pd.DataFrame.from_dict(dict_df_stats, orient='index')
 
         # Return dataframe
         return df_stats

@@ -272,12 +272,7 @@ class ModelClassifierMixin:
         self.logger.info('--------------------------------')
 
         # Metrics file
-        df_stats = pd.DataFrame(columns=['Label', 'F1-Score', 'Accuracy',
-                                         'Precision', 'Recall', 'Trues', 'Falses',
-                                         'True positive', 'True negative',
-                                         'False positive', 'False negative',
-                                         'Condition positive', 'Condition negative',
-                                         'Predicted positive', 'Predicted negative'])
+        dict_df_stats = {}
 
         # Add metrics depending on mono/multi labels & manage confusion matrices
         labels = self.list_classes
@@ -287,7 +282,7 @@ class ModelClassifierMixin:
             mcm = multilabel_confusion_matrix(y_true, y_pred)
             for i, label in enumerate(labels):
                 c_mat = mcm[i]
-                df_stats = df_stats.append(self._update_info_from_c_mat(c_mat, label, log_info=log_stats), ignore_index=True)
+                dict_df_stats[i] = self._update_info_from_c_mat(c_mat, label, log_info=log_stats)
                 # Plot individual confusion matrix if level_save > LOW
                 if self.level_save in ['MEDIUM', 'HIGH']:
                     none_class = 'not_' + label
@@ -312,16 +307,16 @@ class ModelClassifierMixin:
                     self._plot_confusion_matrix(c_mat, labels, type_data=type_data, normalized=True)
 
             # Get statistics per class
-            for label in labels:
+            for i, label in enumerate(labels):
                 label_str = str(label)  # Fix : If label is an int, can cause some problems (e.g. only zeroes in the confusion matrix)
                 none_class = 'None' if label_str != 'None' else 'others'  # Check that the class is not already 'None'
                 y_true_tmp = [label_str if _ == label else none_class for _ in y_true]
                 y_pred_tmp = [label_str if _ == label else none_class for _ in y_pred]
                 c_mat_tmp = confusion_matrix(y_true_tmp, y_pred_tmp, labels=[none_class, label_str])
-                df_stats = df_stats.append(self._update_info_from_c_mat(c_mat_tmp, label, log_info=False), ignore_index=True)
+                dict_df_stats[i] = self._update_info_from_c_mat(c_mat_tmp, label, log_info=False)
 
         # Add global statistics
-        global_stats = {
+        dict_df_stats[i+1] = {
             'Label': 'All',
             'F1-Score': f1_weighted,
             'Accuracy': acc_tot,
@@ -338,7 +333,7 @@ class ModelClassifierMixin:
             'Predicted positive': None,
             'Predicted negative': None,
         }
-        df_stats = df_stats.append(global_stats, ignore_index=True)
+        df_stats = pd.DataFrame.from_dict(dict_df_stats, orient='index')
 
         # Add support
         df_stats['Support'] = support
@@ -394,25 +389,20 @@ class ModelClassifierMixin:
                 support[i] = counts_tmp[idx_tmp] / y_pred.shape[0]
 
         # DataFrame metrics
-        df_stats = pd.DataFrame(columns=['Label', 'F1-Score', 'Accuracy',
-                                         'Precision', 'Recall', 'Trues', 'Falses',
-                                         'True positive', 'True negative',
-                                         'False positive', 'False negative',
-                                         'Condition positive', 'Condition negative',
-                                         'Predicted positive', 'Predicted negative'])
+        dict_df_stats = {}
 
         # Get statistics per class
         labels = self.list_classes
-        for label in labels:
+        for i, label in enumerate(labels):
             label_str = str(label)  # Fix : If label is an int, can cause some problems (e.g. only zeroes in the confusion matrix)
             none_class = 'None' if label_str != 'None' else 'others'  # Check that the class is not already 'None'
             y_true_tmp = [label_str if _ == label else none_class for _ in y_true]
             y_pred_tmp = [label_str if _ == label else none_class for _ in y_pred]
             c_mat_tmp = confusion_matrix(y_true_tmp, y_pred_tmp, labels=[none_class, label_str])
-            df_stats = df_stats.append(self._update_info_from_c_mat(c_mat_tmp, label, log_info=False), ignore_index=True)
+            dict_df_stats[i] = self._update_info_from_c_mat(c_mat_tmp, label, log_info=False)
 
         # Add global statistics
-        global_stats = {
+        dict_df_stats[i+1] = {
             'Label': 'All',
             'F1-Score': f1_weighted,
             'Accuracy': acc_tot,
@@ -429,7 +419,7 @@ class ModelClassifierMixin:
             'Predicted positive': None,
             'Predicted negative': None,
         }
-        df_stats = df_stats.append(global_stats, ignore_index=True)
+        df_stats = pd.DataFrame.from_dict(dict_df_stats, orient='index')
 
         # Add support
         df_stats['Support'] = support
@@ -467,12 +457,7 @@ class ModelClassifierMixin:
         support = [_ / sum(support) for _ in support] + [1.0]
 
         # DataFrame metrics
-        df_stats = pd.DataFrame(columns=['Label', 'F1-Score', 'Accuracy',
-                                         'Precision', 'Recall', 'Trues', 'Falses',
-                                         'True positive', 'True negative',
-                                         'False positive', 'False negative',
-                                         'Condition positive', 'Condition negative',
-                                         'Predicted positive', 'Predicted negative'])
+        dict_df_stats = {}
 
         # Add metrics
         labels = self.list_classes
@@ -480,10 +465,10 @@ class ModelClassifierMixin:
         mcm = multilabel_confusion_matrix(y_true, y_pred)
         for i, label in enumerate(labels):
             c_mat = mcm[i]
-            df_stats = df_stats.append(self._update_info_from_c_mat(c_mat, label, log_info=False), ignore_index=True)
+            dict_df_stats[i] = self._update_info_from_c_mat(c_mat, label, log_info=False)
 
         # Add global statistics
-        global_stats = {
+        dict_df_stats[i+1] = {
             'Label': 'All',
             'F1-Score': f1_weighted,
             'Accuracy': acc_tot,
@@ -500,7 +485,7 @@ class ModelClassifierMixin:
             'Predicted positive': None,
             'Predicted negative': None,
         }
-        df_stats = df_stats.append(global_stats, ignore_index=True)
+        df_stats = pd.DataFrame.from_dict(dict_df_stats, orient='index')
 
         # Add support
         df_stats['Support'] = support
