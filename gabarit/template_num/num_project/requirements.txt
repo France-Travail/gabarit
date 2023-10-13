@@ -1,13 +1,10 @@
 # Data manipulation
-numpy==1.21.6; python_version < "3.8"
-numpy==1.23.2; python_version >= "3.8"
-pandas==1.3.5; python_version < "3.8"
-pandas==1.4.4; python_version >= "3.8"
+numpy==1.23.2
+pandas==1.4.4
 
 # Models
 tensorflow==2.10.0
-scikit_learn==1.0.2; python_version < "3.8"
-scikit_learn==1.1.2; python_version >= "3.8"
+scikit_learn==1.1.2
 lightgbm==3.3.2
 xgboost==1.6.2
 
@@ -28,8 +25,7 @@ fairlens==0.1.0
 # Optionnals - useless in prod.
 pydot==1.4.1  # Needed to plot models architecture
 shap==0.41.0  # Needed to get a model explanation
-ipython==7.34.0; python_version < "3.8"  # Needed by shap to display js figure
-ipython==8.6.0; python_version >= "3.8"  # Needed by shap to display js figure
+ipython==8.6.0  # Needed by shap to display js figure
 
 # Optionnals - streamlit POC
 streamlit==1.12.2

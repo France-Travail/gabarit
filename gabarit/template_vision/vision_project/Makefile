@@ -48,6 +48,7 @@ endif
 	mkdir -p ./{{package_name}}-models
 	mkdir -p ./{{package_name}}-data/sources
 	python -m pip install{% if pip_trusted_host is not none %} --trusted-host {{pip_trusted_host}}{% endif %}{% if pip_index_url is not none %} --index-url {{pip_index_url}}{% endif %} --upgrade pip
+	pip install{% if pip_trusted_host is not none %} --trusted-host {{pip_trusted_host}}{% endif %}{% if pip_index_url is not none %} --index-url {{pip_index_url}}{% endif %} setuptools;\
 	pip install{% if pip_trusted_host is not none %} --trusted-host {{pip_trusted_host}}{% endif %}{% if pip_index_url is not none %} --index-url {{pip_index_url}}{% endif %} -r requirements.txt;\
 	python setup.py develop{% if dvc_config_ok is true %}
 	@ bash -c "if command -v dvc &> /dev/null; then echo \"DVC install\" && dvc install; else echo \"----- [DVC] Can't find dvc command. Skipping  the install\"; fi;"

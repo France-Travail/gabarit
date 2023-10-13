@@ -1,4 +1,4 @@
-name: Build & Tests - NLP 3.10
+name: Build & Tests - NLP
 on:
   push:
     branches:
@@ -25,7 +25,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.10", "3.11"]
     steps:
       - uses: actions/checkout@v3
       - name: Set up Python ${{ matrix.python-version }}
@@ -36,6 +36,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install wheel
+          pip install setuptools
           python setup.py sdist bdist_wheel
           cd dist
           whl_files=( *.whl )
@@ -60,7 +61,7 @@ jobs:
     runs-on: ubuntu-latest
     strategy:
       matrix:
-        python-version: ["3.10"]
+        python-version: ["3.10", "3.11"]
     steps:
       - uses: actions/checkout@v3
       - uses: nanasess/setup-chromedriver@v2
@@ -72,6 +73,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install wheel
+          pip install setuptools
           python setup.py sdist bdist_wheel
           cd dist
           whl_files=( *.whl )
