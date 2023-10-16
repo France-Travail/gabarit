@@ -206,7 +206,7 @@ class ModelKeras(ModelClass):
             if isinstance(y_valid, np.ndarray) and len(y_valid.shape) == 2 and y_valid.shape[1] == 1:
                 y_valid = np.ravel(y_valid)
             # Transformation dummies
-            y_train_dummies = pd.get_dummies(y_train)
+            y_train_dummies = pd.get_dummies(y_train).astype(int)
             y_valid_dummies = pd.get_dummies(y_valid).astype(int) if y_valid is not None else None
             # Important : get_dummies reorder the columns in alphabetical order
             # Thus, there is no problem if we fit again on a new dataframe with shuffled data
