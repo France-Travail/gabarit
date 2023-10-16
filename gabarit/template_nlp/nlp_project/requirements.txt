@@ -1,6 +1,8 @@
 # Data manipulation
-numpy==1.26.1
-pandas==2.1.1
+numpy==1.26.1; python_version >= "3.10"
+numpy==1.23.2; python_version < "3.10"
+pandas==2.1.1; python_version >= "3.10"
+pandas==1.4.4; python_version < "3.10"
 
 # Models
 tensorflow==2.10.0
