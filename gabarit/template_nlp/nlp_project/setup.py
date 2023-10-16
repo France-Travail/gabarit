@@ -54,7 +54,7 @@ setup(
         'words-n-fun>=1.6.0',
         'nltk>=3.8',
         'matplotlib>=3.0.3,<3.6',
-        'seaborn>=0.9.0,<0.13',
+        'seaborn>=0.9.0',
         'dill>=0.3.2,<0.3.6',
         'protobuf>=3.9.2,<3.20',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
         'mlflow>=2.7',

@@ -53,7 +53,7 @@ setup(
         'lightgbm>=2.3.0,<3.4',
         'xgboost>=1.4.2,<1.7',
         'matplotlib>=3.0.3,<3.6',
-        'seaborn>=0.9.0,<0.13',
+        'seaborn>=0.9.0',
         'yellowbrick>=1.3.post1,<1.6',
         'dill>=0.3.2,<0.3.6',
         'protobuf>=3.9.2,<3.20',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
