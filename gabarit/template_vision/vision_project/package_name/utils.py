@@ -44,8 +44,8 @@ import json
 import logging
 import numpy as np
 import pandas as pd
-import pkg_resources
 from tqdm import tqdm
+import importlib.metadata
 from urllib import request
 from typing import Tuple, Union, Callable, List, Any
 
@@ -526,7 +526,7 @@ def get_package_version() -> str:
     Returns:
         str: version of the package
     '''
-    version = pkg_resources.get_distribution('{{package_name}}').version
+    version = importlib.metadata.version('{{package_name}}')
     return version
 
 

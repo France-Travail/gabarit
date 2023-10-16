@@ -20,9 +20,9 @@ import os
 import shutil
 import tempfile
 import argparse
-from typing import List, Union
 from pathlib import Path
-from pkg_resources import Requirement
+from typing import List, Union
+from packaging.requirements import Requirement
 from jinja2 import Environment, FileSystemLoader
 
 
@@ -69,10 +69,10 @@ def generate(package_name: str, project_path: str, gabarit_package_spec: Union[s
     # Parse Gabarit dependency
     if gabarit_package_spec is not None:
         # Parse Gabarit package specs.
-        gabarit_requirement = Requirement.parse(gabarit_package_spec)
-        gabarit_package_name = gabarit_requirement.project_name
+        gabarit_requirement = Requirement(gabarit_package_spec)
+        gabarit_package_name = gabarit_requirement.name
         # Check for gabarit version
-        if not gabarit_requirement.specs and not gabarit_no_spec:
+        if not gabarit_requirement.specifier and not gabarit_no_spec:
             raise Exception(f"Please specify a gabarit_package version. "
                             f"Example : --gabarit_package '{gabarit_package_name}==0.1'")
         # If no import name specified, backup on package_name (with '-' replaces by '_')
