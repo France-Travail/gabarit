@@ -40,7 +40,7 @@ import json
 import logging
 import numpy as np
 import pandas as pd
-import pkg_resources
+import importlib.metadata
 from collections.abc import Iterable
 from typing import Tuple, Union, Callable, Generator, List, Any
 
@@ -278,7 +278,7 @@ def get_package_version() -> str:
     Returns:
         str: version of the package
     '''
-    version = pkg_resources.get_distribution('{{package_name}}').version
+    version = importlib.metadata.version('{{package_name}}')
     return version
 
 

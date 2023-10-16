@@ -21,8 +21,8 @@ import os
 import argparse
 import tempfile
 import configparser
-import pkg_resources
 from typing import Union
+import importlib.metadata
 from shutil import copyfile, rmtree
 from distutils.dir_util import copy_tree
 from jinja2 import Environment, FileSystemLoader
@@ -30,8 +30,8 @@ from jinja2 import Environment, FileSystemLoader
 ROOT_DIR = os.path.dirname(os.path.abspath(__file__))
 
 try:
-    GABARIT_VERSION = pkg_resources.get_distribution("gabarit").version
-except pkg_resources.DistributionNotFound:
+    GABARIT_VERSION = importlib.metadata.version("gabarit")
+except importlib.metadata.PackageNotFoundError:
     GABARIT_VERSION = "custom"
 
 

@@ -21,13 +21,13 @@ This module handle global app configuration
 """
 
 
-import pkg_resources  # type: ignore
+import importlib.metadata
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
     app_name: str = "{{package_name}}"
-    app_version: str = pkg_resources.get_distribution("{{package_name}}").version
+    app_version: str = importlib.metadata.version("{{package_name}}")
     api_entrypoint: str = "/{{package_name}}/rs/v1"
     log_level: str = "INFO"
 
