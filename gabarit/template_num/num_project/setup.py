@@ -47,8 +47,8 @@ setup(
     include_package_data=True,
     package_data={'': ['{{package_name}}/configs/**']},
     install_requires=[
-        'pandas>=1.3,<1.5',
-        'numpy>=1.19,<1.24',
+        'pandas>=2.0',
+        'numpy>=1.19',
         'scikit_learn>=1.0.0,<1.2',
         'lightgbm>=2.3.0,<3.4',
         'xgboost>=1.4.2,<1.7',
@@ -57,7 +57,7 @@ setup(
         'yellowbrick>=1.3.post1,<1.6',
         'dill>=0.3.2,<0.3.6',
         'protobuf>=3.9.2,<3.20',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
-        'mlflow>=1.11,<1.29',
+        'mlflow>=2.7',
     ],
     extras_require={
         "tensorflow": ["tensorflow==2.10.0"],
