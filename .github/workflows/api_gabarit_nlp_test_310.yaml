@@ -1,4 +1,4 @@
-name: Build & Tests - API Gabarit NLP 3.10
+name: Build & Tests - API Gabarit NLP
 on:
   push:
     paths:
@@ -34,6 +34,7 @@ jobs:
     - name: Install Gabarit and generate a nlp and a api project
       run: |
         python -m pip install --upgrade pip
+        pip install setuptools
         pip install .
         generate_nlp_project -n demo_nlp -p demo_nlp
         generate_api_project -n demo_api_nlp -p demo_api_nlp --gabarit_package demo-nlp[explicability] --gabarit_no_spec
@@ -48,6 +49,7 @@ jobs:
         sed -i "s|^DIR_PATH = None|DIR_PATH=\"$(pwd)\"|" demo_nlp/utils.py
 
         # Install all requirements and NLP project
+        pip install setuptools
         pip install -r requirements.txt
         pip install -e .[explicability]
 
@@ -67,6 +69,7 @@ jobs:
         sed -i 's|import Explainer|import LimeExplainer as Explainer|' demo_api_nlp/model/model_gabarit.py
 
         # Install api
+        pip install setuptools
         pip install .[dev]
 
         # Test the explain route

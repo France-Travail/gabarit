@@ -1,4 +1,4 @@
-name: Linter - NUM
+name: Linter - NUM 3.8
 on:
   push:
     paths:

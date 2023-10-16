@@ -43,7 +43,7 @@ setup(
     description="Kickstart your AI project as code",
     url="https://github.com/OSS-Pole-Emploi/gabarit",
     platforms=['windows', 'linux'],
-    python_requires='>=3.7',
+    python_requires='>=3.8',
     include_package_data=True,
     install_requires=[
         'Jinja2==3.0.3'

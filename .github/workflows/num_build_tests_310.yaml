@@ -1,4 +1,4 @@
-name: Build & Tests - NUM 3.10
+name: Build & Tests - NUM
 on:
   push:
     branches:
@@ -36,6 +36,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install wheel
+          pip install setuptools
           python setup.py sdist bdist_wheel
           cd dist
           whl_files=( *.whl )
@@ -72,6 +73,7 @@ jobs:
         run: |
           python -m pip install --upgrade pip
           pip install wheel
+          pip install setuptools
           python setup.py sdist bdist_wheel
           cd dist
           whl_files=( *.whl )
