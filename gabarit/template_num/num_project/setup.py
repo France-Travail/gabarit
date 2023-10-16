@@ -47,7 +47,7 @@ setup(
     include_package_data=True,
     package_data={'': ['{{package_name}}/configs/**']},
     install_requires=[
-        'pandas>=2.0',
+        'pandas>=1.4.4',
         'numpy>=1.19',
         'scikit_learn>=1.0.0,<1.2',
         'lightgbm>=2.3.0,<3.4',
