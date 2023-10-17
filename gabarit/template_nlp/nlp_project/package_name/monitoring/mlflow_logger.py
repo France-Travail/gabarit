@@ -207,7 +207,7 @@ class MLflowLogger:
         Returns:
             bool: If key is a valid mlflow key
         '''
-        if mlflow.mlflow.utils.validation._VALID_PARAM_AND_METRIC_NAMES.match(key):
+        if mlflow.utils.validation._VALID_PARAM_AND_METRIC_NAMES.match(key):
             return True
         else:
             return False

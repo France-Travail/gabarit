@@ -1,6 +1,8 @@
 # Data manipulation
-numpy==1.23.2
-pandas==1.4.4
+numpy==1.25.2; python_version >= "3.10"
+numpy==1.23.2; python_version < "3.10"
+pandas==2.1.1; python_version >= "3.10"
+pandas==1.4.4; python_version < "3.10"
 
 # Models
 tensorflow==2.10.0
@@ -10,21 +12,21 @@ xgboost==1.6.2
 
 # Plots
 matplotlib==3.5.3
-seaborn==0.12.0
+seaborn==0.13.0
 yellowbrick==1.5
 
 # Others
 dill==0.3.5.1
 # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
 protobuf==3.19.4  # Latest available version for tensorflow 2.10
-mlflow==1.28.0
-sweetviz==2.1.4
+mlflow==2.7.1
+sweetviz==2.2.1
 fairlearn==0.7.0
 fairlens==0.1.0
 
 # Optionnals - useless in prod.
 pydot==1.4.1  # Needed to plot models architecture
-shap==0.41.0  # Needed to get a model explanation
+shap==0.43.0  # Needed to get a model explanation
 ipython==8.6.0  # Needed by shap to display js figure
 
 # Optionnals - streamlit POC
