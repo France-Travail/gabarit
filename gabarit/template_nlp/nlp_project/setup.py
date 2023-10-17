@@ -49,11 +49,11 @@ setup(
     install_requires=[
         'pandas>=1.4.4',
         'numpy>=1.19',
-        'scikit_learn>=1.0.0,<1.2',
-        'lightgbm>=2.3.0,<3.4',
+        'scikit_learn>=1.3',
+        'lightgbm>=2.3.0',
         'words-n-fun>=1.6.0',
         'nltk>=3.8',
-        'matplotlib>=3.0.3,<3.6',
+        'matplotlib>=3.0.3',
         'seaborn>=0.9.0',
         'dill>=0.3.2,<0.3.6',
         'protobuf>=3.9.2,<3.20',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
@@ -62,7 +62,7 @@ setup(
     extras_require={
         "tensorflow": ["tensorflow==2.10.0"],
         "torch": ["torch==1.12.1", "transformers==4.23.0", "sentencepiece>=0.1.91,!=0.1.92,<1.0"],  # If GPU, needs pip install torch==1.12.1 --extra-index-url https://download.pytorch.org/whl/cu116
-        "explicability": ['lime>=0.2,<1.0'],
+        "explicability": ['lime>=0.2'],
     }
     # pip install {{package_name}} || pip install {{package_name}}[tensorflow] || etc.
 )

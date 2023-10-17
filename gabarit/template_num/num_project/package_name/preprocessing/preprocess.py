@@ -159,14 +159,9 @@ def retrieve_columns_from_pipeline(df: pd.DataFrame, pipeline: ColumnTransformer
     # Second try : backup on old custom method
     # Third solution : ['x0', 'x1', ...]
     try:
-        try:
-            new_columns = pipeline.get_feature_names_out()
-        # Backup on old custom method
-        except:
-            new_columns = get_ct_feature_names(pipeline)
+        new_columns = pipeline.get_feature_names_out()
         if len(new_columns) != new_df.shape[1]:
             raise ValueError(f"There is a discrepancy in the number of columns between the preprocessed DataFrame ({new_df.shape[1]}) and the pipeline ({len(new_columns)}).")
-
     # No solution
     except Exception as e:
         logger.error("Can't get the names of the columns. Backup on ['x0', 'x1', ...]")
@@ -175,70 +170,6 @@ def retrieve_columns_from_pipeline(df: pd.DataFrame, pipeline: ColumnTransformer
     # TODO : check for duplicates in new_columns ???
     new_df.columns = new_columns
     return new_df
-
-
-# Backup solution if get_feature_names_out does not work
-# https://scikit-learn.org/stable/auto_examples/release_highlights/plot_release_highlights_1_0_0.html#feature-names-support
-def get_ct_feature_names(ct: ColumnTransformer) -> list:
-    '''Gets the names of the columns when considering a fitted ColumnTransfomer
-    From: https://stackoverflow.com/questions/57528350/can-you-consistently-keep-track-of-column-labels-using-sklearns-transformer-api
-
-    Args:
-        ColumnTransformer: Column tranformer to be processed
-    Returns:
-        list: List of new feature names
-    '''
-    # Handles all estimators, pipelines inside ColumnTransfomer
-    # does not work when remainder =='passthrough'
-    # which requires the input column names.
-    output_features = []
-
-    for name, estimator, features in ct.transformers_:
-        if name != 'remainder':
-            if isinstance(estimator, Pipeline):
-                current_features = features
-                for step in estimator:
-                    if type(step) == tuple:
-                        step = step[1]
-                    current_features = get_feature_out(step, current_features)
-                features_out = current_features
-            else:
-                features_out = get_feature_out(estimator, features)
-            if hasattr(ct, 'verbose_feature_names_out') and ct.verbose_feature_names_out == False:
-                output_features.extend(features_out)
-            else:
-                output_features.extend([f'{name}__{feat}' for feat in features_out])
-        elif estimator == 'passthrough':
-            # features is indexes in case of passthrough
-            if hasattr(ct, 'verbose_feature_names_out') and ct.verbose_feature_names_out == False:
-                output_features.extend(ct.feature_names_in_[features])
-            else:
-                output_features.extend([f'remainder__{feat}' for feat in ct.feature_names_in_[features]])
-
-    return output_features
-
-
-# Backup solution if get_feature_names_out does not work
-def get_feature_out(estimator, features_in: list) -> list:
-    '''Gets the name of a column when considering a fitted estimator
-    From: https://stackoverflow.com/questions/57528350/can-you-consistently-keep-track-of-column-labels-using-sklearns-transformer-api
-
-    Args:
-        (?): Estimator to be processed
-        (list): Input columns
-    Returns:
-        list: List of new feature names
-    '''
-    if hasattr(estimator, 'get_feature_names'):
-        if isinstance(estimator, _VectorizerMixin):
-            # handling all vectorizers
-            return estimator.get_feature_names()
-        else:
-            return estimator.get_feature_names(features_in)
-    elif isinstance(estimator, SelectorMixin):
-        return np.array(features_in)[estimator.get_support()]
-    else:
-        return features_in
 
 
 if __name__ == '__main__':

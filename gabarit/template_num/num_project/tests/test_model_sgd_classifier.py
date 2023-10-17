@@ -301,19 +301,19 @@ class ModelSGDClassifierTests(unittest.TestCase):
         #################
 
         # Classification - Mono-label - Mono-Class
-        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, sgd_params={'loss': 'log'})
+        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, sgd_params={'loss': 'log_loss'})
         model.fit(x_train, y_train_mono_2)
         probas = model.predict_proba(x_train)
         self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
-        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovr', sgd_params={'loss': 'log'})
+        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovr', sgd_params={'loss': 'log_loss'})
         model.fit(x_train, y_train_mono_2)
         probas = model.predict_proba(x_train)
         self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
-        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovo', sgd_params={'loss': 'log'})
+        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovo', sgd_params={'loss': 'log_loss'})
         model.fit(x_train, y_train_mono_2)
         probas = model.predict_proba(x_train)
         self.assertEqual(probas.shape, (len(x_train), 2))  # 2 classes
@@ -324,19 +324,19 @@ class ModelSGDClassifierTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Classification - Mono-label - Multi-Classes
-        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, sgd_params={'loss': 'log'})
+        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, sgd_params={'loss': 'log_loss'})
         model.fit(x_train, y_train_mono_3)
         probas = model.predict_proba(x_train)
         self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
-        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovr', sgd_params={'loss': 'log'})
+        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovr', sgd_params={'loss': 'log_loss'})
         model.fit(x_train, y_train_mono_3)
         probas = model.predict_proba(x_train)
         self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
-        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovo', sgd_params={'loss': 'log'})
+        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_mono, model_dir=model_dir, multiclass_strategy='ovo', sgd_params={'loss': 'log_loss'})
         model.fit(x_train, y_train_mono_3)
         probas = model.predict_proba(x_train)
         self.assertEqual(probas.shape, (len(x_train), 3))  # 3 classes
@@ -347,19 +347,19 @@ class ModelSGDClassifierTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Classification - Multi-labels
-        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True, sgd_params={'loss': 'log'})
+        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True, sgd_params={'loss': 'log_loss'})
         model.fit(x_train, y_train_multi)
         probas = model.predict_proba(x_train)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))  # 3 labels
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
-        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True, multiclass_strategy='ovr', sgd_params={'loss': 'log'})
+        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True, multiclass_strategy='ovr', sgd_params={'loss': 'log_loss'})
         model.fit(x_train, y_train_multi)
         probas = model.predict_proba(x_train)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))  # 3 labels
         self.assertTrue(isinstance(probas[0][0], (np.floating, float)))
         remove_dir(model_dir)
-        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True, multiclass_strategy='ovo', sgd_params={'loss': 'log'})
+        model = ModelSGDClassifier(x_col=x_col, y_col=y_col_multi, model_dir=model_dir, multi_label=True, multiclass_strategy='ovo', sgd_params={'loss': 'log_loss'})
         model.fit(x_train, y_train_multi)
         probas = model.predict_proba(x_train)
         self.assertEqual(probas.shape, (len(x_train), len(y_col_multi)))  # 3 labels

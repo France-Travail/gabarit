@@ -1070,7 +1070,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model_2 = model_tfidf_sgdc.ModelTfidfSgdc(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                            tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-                                                           sgdc_params={'loss': 'log', 'max_iter': 1000},
+                                                           sgdc_params={'loss': 'log_loss', 'max_iter': 1000},
                                                            multi_label=False, model_name=model_name, model_dir=model_dir,
                                                            multiclass_strategy='ovr')
             # Test it
@@ -1085,7 +1085,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             # os.makedirs(model_dir)
             # test_model_3 = model_tfidf_sgdc.ModelTfidfSgdc(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
             #                                                tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-            #                                                sgdc_params={'loss': 'log', 'max_iter': 1000},
+            #                                                sgdc_params={'loss': 'log_loss', 'max_iter': 1000},
             #                                                multi_label=False, model_name=model_name, model_dir=model_dir,
             #                                                multiclass_strategy='ovo')
             # # Test it
@@ -1706,7 +1706,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model_2 = model_tfidf_sgdc.ModelTfidfSgdc(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                            tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-                                                           sgdc_params={'loss': 'log', 'max_iter': 1000},
+                                                           sgdc_params={'loss': 'log_loss', 'max_iter': 1000},
                                                            multi_label=True, model_name=model_name, model_dir=model_dir,
                                                            multiclass_strategy='ovr')
             # Test it
@@ -1721,7 +1721,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             # os.makedirs(model_dir)
             # test_model_3 = model_tfidf_sgdc.ModelTfidfSgdc(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
             #                                                tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-            #                                                sgdc_params={'loss': 'log', 'max_iter': 1000},
+            #                                                sgdc_params={'loss': 'log_loss', 'max_iter': 1000},
             #                                                multi_label=True, model_name=model_name, model_dir=model_dir,
             #                                                multiclass_strategy='ovo')
             # # Test it
@@ -2373,7 +2373,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model_2 = model_tfidf_sgdc.ModelTfidfSgdc(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                            tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-                                                           sgdc_params={'loss': 'log', 'max_iter': 1000},
+                                                           sgdc_params={'loss': 'log_loss', 'max_iter': 1000},
                                                            multi_label=False, model_name=model_name, model_dir=model_dir,
                                                            multiclass_strategy='ovr')
             # Test it
@@ -2388,7 +2388,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             # os.makedirs(model_dir)
             # test_model_3 = model_tfidf_sgdc.ModelTfidfSgdc(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
             #                                                tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-            #                                                sgdc_params={'loss': 'log', 'max_iter': 1000},
+            #                                                sgdc_params={'loss': 'log_loss', 'max_iter': 1000},
             #                                                multi_label=False, model_name=model_name, model_dir=model_dir,
             #                                                multiclass_strategy='ovo')
             # # Test it

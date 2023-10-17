@@ -892,7 +892,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model = model_sgd_classifier.ModelSGDClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
                                                                  preprocess_pipeline=preprocess_pipeline,
-                                                                 sgd_params={'loss': 'log', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
+                                                                 sgd_params={'loss': 'log_loss', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
                                                                  multi_label=False, model_name=model_name, model_dir=model_dir,
                                                                  multiclass_strategy=None)
 
@@ -907,7 +907,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model_2 = model_sgd_classifier.ModelSGDClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
                                                                    preprocess_pipeline=preprocess_pipeline,
-                                                                   sgd_params={'loss': 'log', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
+                                                                   sgd_params={'loss': 'log_loss', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
                                                                    multi_label=False, model_name=model_name, model_dir=model_dir,
                                                                    multiclass_strategy='ovr')
             # Test it
@@ -922,7 +922,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             # os.makedirs(model_dir)
             # test_model_3 = model_sgd_classifier.ModelSGDClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
             #                                                        preprocess_pipeline=preprocess_pipeline,
-            #                                                        sgd_params={'loss': 'log', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
+            #                                                        sgd_params={'loss': 'log_loss', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
             #                                                        multi_label=False, model_name=model_name, model_dir=model_dir,
             #                                                        multiclass_strategy='ovo')
             # # Test it
@@ -1608,7 +1608,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model = model_sgd_classifier.ModelSGDClassifier(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                                  preprocess_pipeline=preprocess_pipeline,
-                                                                 sgd_params={'loss': 'log', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
+                                                                 sgd_params={'loss': 'log_loss', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
                                                                  multi_label=True, model_name=model_name, model_dir=model_dir,
                                                                  multiclass_strategy=None)
 
@@ -2298,7 +2298,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model = model_sgd_classifier.ModelSGDClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
                                                                  preprocess_pipeline=preprocess_pipeline,
-                                                                 sgd_params={'loss': 'log', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
+                                                                 sgd_params={'loss': 'log_loss', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
                                                                  multi_label=False, model_name=model_name, model_dir=model_dir,
                                                                  multiclass_strategy=None)
 
@@ -2313,7 +2313,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model_2 = model_sgd_classifier.ModelSGDClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
                                                                    preprocess_pipeline=preprocess_pipeline,
-                                                                   sgd_params={'loss': 'log', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
+                                                                   sgd_params={'loss': 'log_loss', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
                                                                    multi_label=False, model_name=model_name, model_dir=model_dir,
                                                                    multiclass_strategy='ovr')
             # Test it
@@ -2328,7 +2328,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             # os.makedirs(model_dir)
             # test_model_3 = model_sgd_classifier.ModelSGDClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
             #                                                        preprocess_pipeline=preprocess_pipeline,
-            #                                                        sgd_params={'loss': 'log', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
+            #                                                        sgd_params={'loss': 'log_loss', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
             #                                                        multi_label=False, model_name=model_name, model_dir=model_dir,
             #                                                        multiclass_strategy='ovo')
             # # Test it

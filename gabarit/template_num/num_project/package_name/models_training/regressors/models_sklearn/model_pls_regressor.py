@@ -60,20 +60,6 @@ class ModelPLSRegressor(ModelRegressorMixin, ModelPipeline):
         # We define a pipeline in order to be compatible with other models
         self.pipeline = Pipeline([('pls', self.pls)])
 
-    @utils.trained_needed
-    def predict(self, x_test: pd.DataFrame, return_proba: bool = False, **kwargs) -> np.ndarray:
-        '''Predictions on test set. We override this function because the PLS does not return the same
-        format for the predictions.
-
-        Args:
-            x_test (pd.DataFrame): DataFrame with the test data to be predicted
-        Kwargs:
-            return_proba (bool): If the function should return the probabilities instead of the classes (Keras compatibility)
-        Returns:
-            (np.ndarray): Array, shape = [n_samples,]
-        '''
-        return np.array([_[0] for _ in super().predict(x_test, return_proba, **kwargs)])
-
     def reload_from_standalone(self, **kwargs) -> None:
         '''Reloads a model from its configuration and "standalones" files
         - /!\\ Experimental /!\\ -
