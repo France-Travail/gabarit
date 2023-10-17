@@ -18,7 +18,8 @@ words-n-fun==1.6.0
 nltk==3.8.1  # Already in wnf
 
 # Plots
-matplotlib==3.8.0
+matplotlib==3.8.0; python_version >= "3.10"
+matplotlib==3.7.3; python_version < "3.10"
 seaborn==0.13.0
 
 # Others

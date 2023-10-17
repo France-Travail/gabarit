@@ -11,7 +11,8 @@ lightgbm==4.1.0
 xgboost==2.0.0
 
 # Plots
-matplotlib==3.8.0
+matplotlib==3.8.0; python_version >= "3.10"
+matplotlib==3.7.3; python_version < "3.10"
 seaborn==0.13.0
 yellowbrick==1.5
 
@@ -27,7 +28,8 @@ fairlens==0.1.0
 # Optionnals - useless in prod.
 pydot==1.4.2  # Needed to plot models architecture
 shap==0.43.0  # Needed to get a model explanation
-ipython==8.16.1  # Needed by shap to display js figure
+ipython==8.16.1; python_version >= "3.10"  # Needed by shap to display js figure
+ipython==8.13.0; python_version >= "3.10"  # Needed by shap to display js figure
 
 # Optionnals - streamlit POC
 streamlit==1.12.2
