@@ -243,7 +243,7 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]],
                                               multi_label=multi_label, random_seed=random_seed)
         # model = model_tfidf_gbt.ModelTfidfGbt(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                       tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-        #                                       gbt_params={'learning_rate': 0.1, 'n_estimators': 100, 'max_depth': 10, 'subsample': 1.0, 'max_features': 'auto'},
+        #                                       gbt_params={'learning_rate': 0.1, 'n_estimators': 100, 'max_depth': 10, 'subsample': 1.0, 'max_features': 'sqrt'},
         #                                       multi_label=multi_label, random_seed=random_seed)
         # model = model_tfidf_lgbm.ModelTfidfLgbm(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                         tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
