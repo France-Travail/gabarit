@@ -61,7 +61,7 @@ setup(
     ],
     extras_require={
         "tensorflow": ["tensorflow>=2.13.1"],
-        "torch": ["torch>=2.0", "transformers>=4.23.0", "sentencepiece>=0.1.93"],
+        "torch": ["torch>=2.0", "transformers>=4.23.0", "sentencepiece>=0.1.93", "accelerate>=0.23.0"],
         "explicability": ['lime>=0.2'],
     }
     # pip install {{package_name}} || pip install {{package_name}}[tensorflow] || etc.

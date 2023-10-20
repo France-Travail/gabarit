@@ -44,7 +44,7 @@ from typing import Union, List, Callable, Any
 from sklearn.model_selection import train_test_split
 
 import tensorflow as tf
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers.legacy import Adam
 from tensorflow.keras.models import Model, clone_model
 from tensorflow.keras.preprocessing.image import Iterator
 from tensorflow.keras.applications.vgg16 import preprocess_input as preprocess_input_vgg16

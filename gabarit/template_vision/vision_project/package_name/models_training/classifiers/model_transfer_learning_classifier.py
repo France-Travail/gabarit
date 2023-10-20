@@ -32,7 +32,7 @@ from keras.utils import data_utils
 from typing import Union, List, Callable
 
 from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers.legacy import Adam
 from tensorflow.keras.applications import VGG16, EfficientNetB6
 from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.applications.vgg16 import preprocess_input as vgg16_preprocess_input

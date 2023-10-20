@@ -37,7 +37,7 @@ from typing import Union, Any, List, Callable
 
 import tensorflow as tf
 from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers.legacy import Adam
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.initializers import HeUniform, GlorotUniform, Orthogonal
