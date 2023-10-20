@@ -786,7 +786,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model = model_tfidf_gbt.ModelTfidfGbt(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                        tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-                                                       gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 'sqrt'},
+                                                       gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 1.0},
                                                        multi_label=False, model_name=model_name, model_dir=model_dir,
                                                        multiclass_strategy=None)
             # Test it
@@ -800,7 +800,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model_2 = model_tfidf_gbt.ModelTfidfGbt(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                        tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-                                                       gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 'sqrt'},
+                                                       gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 1.0},
                                                        multi_label=False, model_name=model_name, model_dir=model_dir,
                                                        multiclass_strategy='ovr')
             # Test it
@@ -815,7 +815,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             # os.makedirs(model_dir)
             # test_model_3 = model_tfidf_gbt.ModelTfidfGbt(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
             #                                            tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-            #                                            gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 'sqrt'},
+            #                                            gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 1.0},
             #                                            multi_label=False, model_name=model_name, model_dir=model_dir,
             #                                            multiclass_strategy='ovo')
             # # Test it
@@ -1419,7 +1419,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model = model_tfidf_gbt.ModelTfidfGbt(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                        tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-                                                       gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 'sqrt'},
+                                                       gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 1.0},
                                                        multi_label=True, model_name=model_name, model_dir=model_dir,
                                                        multiclass_strategy=None)
             # Test it
@@ -1433,7 +1433,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model_2 = model_tfidf_gbt.ModelTfidfGbt(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                        tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-                                                       gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 'sqrt'},
+                                                       gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 1.0},
                                                        multi_label=True, model_name=model_name, model_dir=model_dir,
                                                        multiclass_strategy='ovr')
             # Test it
@@ -1448,7 +1448,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             # os.makedirs(model_dir)
             # test_model_3 = model_tfidf_gbt.ModelTfidfGbt(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
             #                                            tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-            #                                            gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 'sqrt'},
+            #                                            gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 1.0},
             #                                            multi_label=True, model_name=model_name, model_dir=model_dir,
             #                                            multiclass_strategy='ovo')
             # # Test it
@@ -2089,7 +2089,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model = model_tfidf_gbt.ModelTfidfGbt(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                        tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-                                                       gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 'sqrt'},
+                                                       gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 1.0},
                                                        multi_label=False, model_name=model_name, model_dir=model_dir,
                                                        multiclass_strategy=None)
             # Test it
@@ -2103,7 +2103,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model_2 = model_tfidf_gbt.ModelTfidfGbt(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
                                                          tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-                                                         gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 'sqrt'},
+                                                         gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 1.0},
                                                          multi_label=False, model_name=model_name, model_dir=model_dir,
                                                          multiclass_strategy='ovr')
             # Test it
@@ -2118,7 +2118,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             # os.makedirs(model_dir)
             # test_model_3 = model_tfidf_gbt.ModelTfidfGbt(x_col='preprocessed_text', y_col='y_col', level_save="HIGH",
             #                                              tfidf_params={'analyzer': 'word', 'ngram_range': (1, 2), 'min_df': 1, 'max_df': 0.25, 'max_features': 100000},
-            #                                              gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 'sqrt'},
+            #                                              gbt_params={'learning_rate': 0.1, 'n_estimators': 5, 'max_depth': 5, 'subsample': 1.0, 'max_features': 1.0},
             #                                              multi_label=False, model_name=model_name, model_dir=model_dir,
             #                                              multiclass_strategy='ovo')
             # # Test it
