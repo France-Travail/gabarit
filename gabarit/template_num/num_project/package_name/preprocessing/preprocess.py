@@ -221,23 +221,16 @@ def get_ct_feature_names(ct: ColumnTransformer) -> list:
 # Backup solution if get_feature_names_out does not work
 def get_feature_out(estimator, features_in: list) -> list:
     '''Gets the name of a column when considering a fitted estimator
-    From: https://stackoverflow.com/questions/57528350/can-you-consistently-keep-track-of-column-labels-using-sklearns-transformer-api
-
+    
     Args:
         (?): Estimator to be processed
         (list): Input columns
     Returns:
         list: List of new feature names
     '''
-    if hasattr(estimator, 'get_feature_names'):
-        if isinstance(estimator, _VectorizerMixin):
-            # handling all vectorizers
-            return estimator.get_feature_names()
-        else:
-            return estimator.get_feature_names(features_in)
-    elif isinstance(estimator, SelectorMixin):
-        return np.array(features_in)[estimator.get_support()]
-    else:
+    try:
+        return estimator.get_feature_names_out(features_in)
+    except:
         return features_in
 
 

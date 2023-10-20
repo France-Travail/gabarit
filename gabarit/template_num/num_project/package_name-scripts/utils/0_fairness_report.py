@@ -312,7 +312,7 @@ def get_and_save_metrics_graphs(metric_frame: fairlearn.metrics.MetricFrame, out
     ax_count.figure.savefig(os.path.join(output_path, 'fairness_count_groups.png'), bbox_inches="tight")
     # Add the 'overall' row to df_metrics
     nb_level_index = df_metrics.index.nlevels
-    df_overall = pd.DataFrame(metric_frame._overall).T
+    df_overall = pd.DataFrame(metric_frame.overall).T
     if nb_level_index == 1:
         df_overall.index = pd.Index(['overall'], name=df_metrics.index.name)
     else:

@@ -49,12 +49,12 @@ setup(
     install_requires=[
         'pandas>=1.4.4',
         'numpy>=1.19',
-        'scikit_learn>=1.0.0,<1.2',
-        'lightgbm>=2.3.0,<3.4',
-        'xgboost>=1.4.2,<1.7',
-        'matplotlib>=3.0.3,<3.6',
+        'scikit_learn>=1.3',
+        'lightgbm>=2.3.0',
+        'xgboost>=1.4.2',
+        'matplotlib>=3.0.3',
         'seaborn>=0.9.0',
-        'yellowbrick>=1.3.post1,<1.6',
+        'yellowbrick>=1.3.post1',
         'dill>=0.3.2,<0.3.6',
         'protobuf>=3.9.2,<3.20',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
         'mlflow>=2.7',

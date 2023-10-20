@@ -99,7 +99,7 @@ class ModelTfidfDense(ModelKeras):
             return self.model
 
         # Get input/output dimensions
-        input_dim = len(self.tfidf.get_feature_names())
+        input_dim = len(self.tfidf.get_feature_names_out())
         num_classes = len(self.list_classes)
 
         # Get random_state

@@ -39,20 +39,22 @@ def remove_dir(path):
 
 
 def compare_trees(tree1, tree2):
-    '''Checks if two DecisionTreeClassifiers are equal
+    '''Checks if two DecisionTree are equal
     Args:
-        tree1 (DecisionTreeClassifier): First tree to consider
-        tree2 (DecisionTreeClassifier): Second tree to consider
+        tree1 (DecisionTree): First tree to consider
+        tree2 (DecisionTree): Second tree to consider
     Results:
         bool: True if all trees nodes and values are equal, else False
     '''
     state1 = tree1.tree_.__getstate__()
     state2 = tree2.tree_.__getstate__()
-    if not np.array_equal(state1["nodes"], state2["nodes"]):
+    node_1 = np.array([list(element)[:-1] for element in state1['nodes']])
+    node_2 = np.array([list(element)[:-1] for element in state2['nodes']])
+    if not np.array_equal(node_1, node_2):
         return False
     if not np.array_equal(state1["values"], state2["values"]):
         return False
-    return True
+    return True 
 
 
 class ModelTfidfGbtTests(unittest.TestCase):

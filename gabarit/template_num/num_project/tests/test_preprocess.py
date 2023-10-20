@@ -42,14 +42,12 @@ logging.disable(logging.CRITICAL)
 class PreprocessTests(unittest.TestCase):
     '''Main class to test all functions in {{package_name}}.preprocessing.preprocess'''
 
-
     def setUp(self):
         '''SetUp fonction'''
         # Change directory to script directory
         abspath = os.path.abspath(__file__)
         dname = os.path.dirname(abspath)
         os.chdir(dname)
-
 
     def test01_get_pipelines_dict(self):
         '''Test of the function preprocess.get_pipelines_dict'''
@@ -69,7 +67,6 @@ class PreprocessTests(unittest.TestCase):
             p.fit(content, y)
             self.assertEqual(type(p.transform(content)), np.ndarray)
 
-
     def test02_get_pipeline(self):
         '''Test of the function preprocess.get_pipeline'''
         # Valids to test
@@ -84,7 +81,6 @@ class PreprocessTests(unittest.TestCase):
         # Check the input(s) type(s)
         with self.assertRaises(ValueError):
             preprocess.get_pipeline('NOT A VALID PREPROCESS')
-
 
     def test03_retrieve_columns_from_pipeline(self):
         '''Test of the function preprocess.retrieve_columns_from_pipeline'''
@@ -155,7 +151,6 @@ class PreprocessTests(unittest.TestCase):
         with self.assertRaises(AttributeError):
             new_transformed_df_passthrough_verbose = preprocess.retrieve_columns_from_pipeline(df, tmp_pipeline_passthrough_verbose)
 
-
     def test04_get_ct_feature_names(self):
         '''Test of the function preprocess.get_ct_feature_names'''
         # Pipeline
@@ -195,13 +190,12 @@ class PreprocessTests(unittest.TestCase):
         self.assertEqual(output_features, ['col_1', 'col_3', 'col_2_0.0', 'col_2_1.0', 'dernier', 'test', 'toto'])
         self.assertEqual(output_features_verbose, ['tr1__col_1', 'tr1__col_3', 'tr2__col_2_0.0', 'tr2__col_2_1.0', 'tr3__dernier', 'tr3__test', 'remainder__toto'])
 
-
     def test05_get_feature_out(self):
         '''Test of the function preprocess.get_feature_out'''
 
         # Nominal case - non _VectorizerMixin - non SelectorMixin
         estimator = SimpleImputer(strategy='median')
-        estimator.fit(pd.DataFrame({'col': [1, 0, 1, 1, None]}))
+        estimator.fit(pd.DataFrame({'toto': [1, 0, 1, 1, None]}))
         feature_out = preprocess.get_feature_out(estimator, 'toto')
         self.assertEqual(feature_out, 'toto')
         feature_out = preprocess.get_feature_out(estimator, ['toto', 'tata'])  # Uses inputed cols
@@ -209,7 +203,7 @@ class PreprocessTests(unittest.TestCase):
 
         # Nominal case 2
         estimator = OneHotEncoder(handle_unknown='ignore')
-        estimator.fit(pd.DataFrame({'col': [0, 0, 1, 1, 0]}))
+        estimator.fit(pd.DataFrame({'toto': [0, 0, 1, 1, 0]}))
         feature_out = preprocess.get_feature_out(estimator, ['toto'])  # Uses inputed cols
         self.assertEqual(list(feature_out), ['toto_0', 'toto_1'])
 
@@ -221,11 +215,11 @@ class PreprocessTests(unittest.TestCase):
 
         # Nominal case - SelectorMixin
         estimator = SelectKBest(k=2)
-        estimator.fit(pd.DataFrame({'col_1': [0, 0, 1, 1, 1], 'col_2': [1, 1, 0, 0, 0], 'col_3': [0, 0, 0, 0, 0]}), pd.Series([-1, -1, 1, 1, 1]))
+        estimator.fit(pd.DataFrame({'toto_1': [0, 0, 1, 1, 1], 'toto_2': [1, 1, 0, 0, 0], 'toto_3': [0, 0, 0, 0, 0]}), pd.Series([-1, -1, 1, 1, 1]))
         feature_out = preprocess.get_feature_out(estimator, ['toto_1', 'toto_2', 'toto_3'])  # Uses inputed cols
         self.assertEqual(list(feature_out), ['toto_1', 'toto_2'])
 
-
+        
 # Perform tests
 if __name__ == '__main__':
     # Start tests
