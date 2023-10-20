@@ -216,7 +216,7 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
         # model = model_knn_regressor.ModelKNNRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                               preprocess_pipeline=preprocess_pipeline,
         #                                               knn_params={'n_neighbors': 7, 'weights': 'distance'})
-        # model = model_pls_regressor.ModelPLSRegression(x_col=x_col, y_col=y_col, level_save=level_save,
+        # model = model_pls_regressor.ModelPLSRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                preprocess_pipeline=preprocess_pipeline,
         #                                                pls_params={'n_components': 5, 'max_iter': 500})
         # model = model_rf_regressor.ModelRFRegressor(x_col=x_col, y_col=y_col, level_save=level_save,

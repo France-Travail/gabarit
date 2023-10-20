@@ -6,7 +6,7 @@ pandas==1.4.4; python_version < "3.10"
 
 # Models
 tensorflow==2.10.0
-scikit_learn==1.1.2
+scikit_learn==1.3.1
 lightgbm==4.1.0
 xgboost==2.0.0
 

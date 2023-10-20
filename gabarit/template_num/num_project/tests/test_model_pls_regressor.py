@@ -88,6 +88,7 @@ class ModelPLSRegressorTests(unittest.TestCase):
         model = ModelPLSRegressor(x_col=x_col, y_col=y_col_mono, model_dir=model_dir)
         model.fit(x_train, y_train_regressor)
         preds = model.predict(x_train, return_proba=False)
+        print(preds.shape, (len(x_train),))
         self.assertEqual(preds.shape, (len(x_train),))
         with self.assertRaises(ValueError):
             probas = model.predict(x_train, return_proba=True)
