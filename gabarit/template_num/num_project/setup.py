@@ -55,12 +55,12 @@ setup(
         'matplotlib>=3.0.3',
         'seaborn>=0.9.0',
         'yellowbrick>=1.3.post1',
-        'dill>=0.3.2,<0.3.6',
-        'protobuf>=3.9.2,<3.20',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+        'dill>=0.3.2',
+        'protobuf>=3.9.2',
         'mlflow>=2.7',
     ],
     extras_require={
-        "tensorflow": ["tensorflow==2.10.0"],
+        "tensorflow": ["tensorflow>=2.13.1"],
         "explicability": ['shap>=0.43.0'],
     }
     # pip install {{package_name}} || pip install {{package_name}}[tensorflow]
