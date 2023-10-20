@@ -39,9 +39,8 @@ import tensorflow as tf
 from tensorflow.keras.models import Model
 from tensorflow.keras.optimizers.legacy import Adam
 from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.models import load_model as load_model_keras
-from tensorflow.keras.initializers import HeUniform, GlorotUniform, Orthogonal
-from tensorflow.keras.layers import Lambda, Dense, Input, Embedding, LSTM, Bidirectional
+from tensorflow.keras.initializers import GlorotUniform, Orthogonal
+from tensorflow.keras.layers import Lambda, Dense, Input, Embedding, LSTM, Bidirectional, Softmax
 
 from ... import utils
 from . import utils_deep_keras
@@ -168,8 +167,9 @@ class ModelEmbeddingLstmStructuredAttention(ModelKeras):
         h = Bidirectional(LSTM(lstm_units, return_sequences=True, kernel_initializer=GlorotUniform(random_state.randint(limit)), 
                                recurrent_initializer=Orthogonal(seed=random_state.randint(limit))))(x)
         x = Dense(dense_size, activation='tanh', kernel_initializer=GlorotUniform(random_state.randint(limit)))(h)  # tanh(W_{S1}*H^T) , H^T = x (LSTM output), dim = d_a*2u
-        a = Dense(attention_hops, activation=utils_deep_keras.softmax_axis, kernel_initializer=GlorotUniform(random_state.randint(limit)))(x)  # softmax(W_{s2}*X) = A
-        at = tf.transpose(a, perm=[0, 2, 1], name="attention_layer")  # At, used in Kaushalshetty project, output dim = (r,n)
+        a = Dense(attention_hops, kernel_initializer=GlorotUniform(random_state.randint(limit)))(x)  # softmax(W_{s2}*X) = A
+        a_with_activation = Softmax(axis=1)(a)
+        at = tf.transpose(a_with_activation, perm=[0, 2, 1], name="attention_layer")  # At, used in Kaushalshetty project, output dim = (r,n)
         # Trick to name the attention layer (does not work with TensorFlow layers)
         # https://github.com/keras-team/keras/issues/6194#issuecomment-416365112
         at_identity = Lambda(lambda x: x, name="attention_layer")(at)
