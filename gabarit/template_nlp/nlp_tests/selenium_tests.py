@@ -70,7 +70,9 @@ class DemonstratorTests(unittest.TestCase):
         else:
             sidebar = self.driver.find_element(By.XPATH, "//*[@data-testid='stSidebar']")
             sidebar_selectbox = sidebar.find_element(By.XPATH, ".//*[@class='row-widget stSelectbox']")
-            text = sidebar_selectbox.find_element(By.XPATH, "./div/div/div/div[@aria-selected='true']").text
+            xpath = "/html/body/div/div[1]/div[1]/div/div/div/section[1]/div[1]/div[2]/div/div[1]/div/div[2]/div/div/div/div[1]/div[1]"
+            # text = sidebar_selectbox.find_element(By.XPATH, "./div/div/div/div[@aria-selected='true']").text
+            text = sidebar_selectbox.find_element(By.XPATH, xpath).text
             self.assertFalse(text.startswith('No options to select'))
 
     def test04_title_exists(self):
