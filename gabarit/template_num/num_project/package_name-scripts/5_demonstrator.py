@@ -62,7 +62,7 @@ except ImportError as e:
     logger.error("Please install it on your virtual env (check the correct version in the requirements.txt -> `pip install altair==...`")
     sys.exit("Can't import altair")
 
-if not st.runtime.exist():
+if not st.runtime.exists():
     logger.error('This script should not be run directly with python, but via streamlit')
     logger.error('e.g. "streamlit run 5_demonstrator.py')
     sys.exit("Streamlit not started")
