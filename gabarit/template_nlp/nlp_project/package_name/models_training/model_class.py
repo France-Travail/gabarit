@@ -656,9 +656,9 @@ class ModelClass:
         # Plot
         if normalized:
             c_mat = c_mat.astype('float') / c_mat.sum(axis=1)[:, np.newaxis]
-            sns.heatmap(c_mat, annot=True, fmt=".2f", cmap=plt.cm.Blues, ax=ax)
+            sns.heatmap(c_mat, annot=True, fmt=".2f", cmap=plt.cm.Blues, ax=ax) # type: ignore
         else:
-            sns.heatmap(c_mat, annot=True, fmt="d", cmap=plt.cm.Blues, ax=ax)
+            sns.heatmap(c_mat, annot=True, fmt="d", cmap=plt.cm.Blues, ax=ax) # type: ignore
 
         # labels, title and ticks
         ax.set_xlabel('Predicted classes', fontsize=height * 2)
