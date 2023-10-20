@@ -291,7 +291,7 @@ def main(filename: str, y_col: List[Union[str, int]], excluded_cols: Union[List[
         #                                               random_seed=random_seed, multi_label=multi_label)
         # model = model_gbt_classifier.ModelGBTClassifier(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                 preprocess_pipeline=preprocess_pipeline,
-        #                                                 gbt_params={'loss': 'deviance', 'learning_rate': 0.1,
+        #                                                 gbt_params={'loss': 'log_loss', 'learning_rate': 0.1,
         #                                                             'n_estimators': 100, 'subsample': 1.0,
         #                                                             'criterion': 'friedman_mse'},
         #                                                 random_seed=random_seed, multi_label=multi_label)

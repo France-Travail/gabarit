@@ -211,7 +211,7 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
         #                                               svr_params={'kernel': 'linear'})
         # model = model_sgd_regressor.ModelSGDRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                               preprocess_pipeline=preprocess_pipeline,
-        #                                               sgd_params={'loss': 'squared_loss', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
+        #                                               sgd_params={'loss': 'squared_error', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
         #                                               random_seed=random_seed)
         # model = model_knn_regressor.ModelKNNRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                               preprocess_pipeline=preprocess_pipeline,
@@ -225,7 +225,7 @@ def main(filename: str, y_col: Union[str, int], excluded_cols: Union[List[Union[
         #                                             random_seed=random_seed)
         # model = model_gbt_regressor.ModelGBTRegressor(x_col=x_col, y_col=y_col, level_save=level_save,
         #                                                            preprocess_pipeline=preprocess_pipeline,
-        #                                                            gbt_params={'loss': 'ls', 'learning_rate': 0.1,
+        #                                                            gbt_params={'loss': 'squared_error', 'learning_rate': 0.1,
         #                                                                        'n_estimators': 100, 'subsample': 1.0,
         #                                                                        'criterion': 'friedman_mse'},
         #                                               random_seed=random_seed)

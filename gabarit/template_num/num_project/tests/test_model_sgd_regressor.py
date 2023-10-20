@@ -66,8 +66,8 @@ class ModelSGDRegressorTests(unittest.TestCase):
         remove_dir(model_dir)
 
         # Check SGD parameters
-        model = ModelSGDRegressor(model_dir=model_dir, sgd_params={'loss': 'squared_loss', 'l1_ratio': 0.2})
-        self.assertEqual(model.pipeline['sgd'].loss, 'squared_loss')
+        model = ModelSGDRegressor(model_dir=model_dir, sgd_params={'loss': 'squared_error', 'l1_ratio': 0.2})
+        self.assertEqual(model.pipeline['sgd'].loss, 'squared_error')
         self.assertEqual(model.pipeline['sgd'].l1_ratio, 0.2)
         remove_dir(model_dir)
 

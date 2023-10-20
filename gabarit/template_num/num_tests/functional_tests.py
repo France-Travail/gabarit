@@ -1075,7 +1075,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model = model_gbt_classifier.ModelGBTClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
                                                                  preprocess_pipeline=preprocess_pipeline,
-                                                                 gbt_params={'loss': 'deviance', 'learning_rate': 0.1,
+                                                                 gbt_params={'loss': 'log_loss', 'learning_rate': 0.1,
                                                                              'n_estimators': 10, 'subsample': 1.0,
                                                                              'criterion': 'friedman_mse'},
                                                                  multi_label=False, model_name=model_name, model_dir=model_dir,
@@ -1092,7 +1092,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model_2 = model_gbt_classifier.ModelGBTClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
                                                                    preprocess_pipeline=preprocess_pipeline,
-                                                                   gbt_params={'loss': 'deviance', 'learning_rate': 0.1,
+                                                                   gbt_params={'loss': 'log_loss', 'learning_rate': 0.1,
                                                                                'n_estimators': 10, 'subsample': 1.0,
                                                                                'criterion': 'friedman_mse'},
                                                                    multi_label=False, model_name=model_name, model_dir=model_dir,
@@ -1109,7 +1109,7 @@ class Case2_MonoClassMonoLabel(unittest.TestCase):
             # os.makedirs(model_dir)
             # test_model_3 = model_gbt_classifier.ModelGBTClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
             #                                                        preprocess_pipeline=preprocess_pipeline,
-            #                                                        gbt_params={'loss': 'deviance', 'learning_rate': 0.1,
+            #                                                        gbt_params={'loss': 'log_loss', 'learning_rate': 0.1,
             #                                                                    'n_estimators': 10, 'subsample': 1.0,
             #                                                                    'criterion': 'friedman_mse'},
             #                                                        multi_label=False, model_name=model_name, model_dir=model_dir,
@@ -1704,7 +1704,7 @@ class Case3_MonoClassMultiLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model = model_gbt_classifier.ModelGBTClassifier(x_col=['col_1', 'col_2'], y_col=['y_col_1', 'y_col_2'], level_save='HIGH',
                                                                  preprocess_pipeline=preprocess_pipeline,
-                                                                 gbt_params={'loss': 'deviance', 'learning_rate': 0.1,
+                                                                 gbt_params={'loss': 'log_loss', 'learning_rate': 0.1,
                                                                              'n_estimators': 10, 'subsample': 1.0,
                                                                              'criterion': 'friedman_mse'},
                                                                  multi_label=True, model_name=model_name, model_dir=model_dir,
@@ -2481,7 +2481,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model = model_gbt_classifier.ModelGBTClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
                                                                  preprocess_pipeline=preprocess_pipeline,
-                                                                 gbt_params={'loss': 'deviance', 'learning_rate': 0.1,
+                                                                 gbt_params={'loss': 'log_loss', 'learning_rate': 0.1,
                                                                              'n_estimators': 10, 'subsample': 1.0,
                                                                              'criterion': 'friedman_mse'},
                                                                  multi_label=False, model_name=model_name, model_dir=model_dir,
@@ -2498,7 +2498,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             os.makedirs(model_dir)
             test_model_2 = model_gbt_classifier.ModelGBTClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
                                                                    preprocess_pipeline=preprocess_pipeline,
-                                                                   gbt_params={'loss': 'deviance', 'learning_rate': 0.1,
+                                                                   gbt_params={'loss': 'log_loss', 'learning_rate': 0.1,
                                                                                'n_estimators': 10, 'subsample': 1.0,
                                                                                'criterion': 'friedman_mse'},
                                                                    multi_label=False, model_name=model_name, model_dir=model_dir,
@@ -2515,7 +2515,7 @@ class Case4_MultiClassMonoLabel(unittest.TestCase):
             # os.makedirs(model_dir)
             # test_model_3 = model_gbt_classifier.ModelGBTClassifier(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
             #                                                        preprocess_pipeline=preprocess_pipeline,
-            #                                                        gbt_params={'loss': 'deviance', 'learning_rate': 0.1,
+            #                                                        gbt_params={'loss': 'log_loss', 'learning_rate': 0.1,
             #                                                                    'n_estimators': 10, 'subsample': 1.0,
             #                                                                    'criterion': 'friedman_mse'},
             #                                                        multi_label=False, model_name=model_name, model_dir=model_dir,
@@ -2976,7 +2976,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
             os.makedirs(model_dir)
             test_model = model_sgd_regressor.ModelSGDRegressor(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
                                                                preprocess_pipeline=None,
-                                                               sgd_params={'loss': 'squared_loss', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
+                                                               sgd_params={'loss': 'squared_error', 'penalty': 'elasticnet', 'l1_ratio': 0.5},
                                                                model_name=model_name, model_dir=model_dir)
             # Test it (directly on the file with no preprocessing)
             test.main(filename='mono_output_regression_train.csv', y_col='y_col',
@@ -3079,7 +3079,7 @@ class Case5_MonoOutputRegression(unittest.TestCase):
             os.makedirs(model_dir)
             test_model = model_gbt_regressor.ModelGBTRegressor(x_col=['col_1', 'col_2'], y_col='y_col', level_save='HIGH',
                                                                preprocess_pipeline=None,
-                                                               gbt_params={'loss': 'ls', 'learning_rate': 0.1,
+                                                               gbt_params={'loss': 'squared_error', 'learning_rate': 0.1,
                                                                            'n_estimators': 100, 'subsample': 1.0,
                                                                            'criterion': 'friedman_mse'},
                                                                model_name=model_name, model_dir=model_dir)
