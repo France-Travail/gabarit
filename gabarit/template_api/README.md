@@ -118,4 +118,4 @@ The "omit from toc" comments are here for the Markdown All in One VSCode extensi
 it permits to remove a title from the auto table of content
 
 See https://marketplace.visualstudio.com/items?itemName=yzhang.markdown-all-in-one
---> 
+-->
