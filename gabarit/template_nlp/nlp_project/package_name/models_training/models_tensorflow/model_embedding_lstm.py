@@ -28,10 +28,9 @@ import seaborn as sns
 from typing import Union, Any, List, Callable
 
 from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers.legacy import Adam
 from tensorflow.keras.preprocessing.text import Tokenizer
-from tensorflow.keras.models import load_model as load_model_keras
-from tensorflow.keras.initializers import HeUniform, GlorotUniform, Orthogonal
+from tensorflow.keras.initializers import GlorotUniform, Orthogonal
 from tensorflow.keras.layers import (LSTM, BatchNormalization, Bidirectional, Dense, Embedding,
                                      GlobalAveragePooling1D, GlobalMaxPooling1D, Input,
                                      SpatialDropout1D, add, concatenate)

@@ -55,13 +55,13 @@ setup(
         'nltk>=3.8',
         'matplotlib>=3.0.3',
         'seaborn>=0.9.0',
-        'dill>=0.3.2,<0.3.6',
-        'protobuf>=3.9.2,<3.20',  # https://developers.google.com/protocol-buffers/docs/news/2022-05-06#python-updates
+        'dill>=0.3.2',
+        'protobuf>=3.9.2',
         'mlflow>=2.7',
     ],
     extras_require={
-        "tensorflow": ["tensorflow==2.10.0"],
-        "torch": ["torch==1.12.1", "transformers==4.23.0", "sentencepiece>=0.1.91,!=0.1.92,<1.0"],  # If GPU, needs pip install torch==1.12.1 --extra-index-url https://download.pytorch.org/whl/cu116
+        "tensorflow": ["tensorflow>=2.13.1"],
+        "torch": ["torch>=2.0", "transformers>=4.23.0", "sentencepiece>=0.1.93", "accelerate>=0.23.0"],
         "explicability": ['lime>=0.2'],
     }
     # pip install {{package_name}} || pip install {{package_name}}[tensorflow] || etc.

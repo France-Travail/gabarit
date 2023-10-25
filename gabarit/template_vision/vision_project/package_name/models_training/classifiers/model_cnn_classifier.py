@@ -28,7 +28,7 @@ import dill as pickle
 from typing import Union, List, Callable
 
 from tensorflow.keras.models import Model
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers.legacy import Adam
 from tensorflow.keras.models import load_model as load_model_keras
 from tensorflow.keras.applications.imagenet_utils import preprocess_input
 from tensorflow.keras.layers import (ELU, BatchNormalization, Dense, Dropout,

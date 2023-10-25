@@ -30,12 +30,11 @@ import seaborn as sns
 from copy import deepcopy
 import matplotlib.pyplot as plt
 from sklearn.model_selection import train_test_split
-from typing import no_type_check, Union, Tuple, Any, Dict
+from typing import no_type_check, Union, Tuple, Any, Dict, List
 from sklearn.metrics import accuracy_score, f1_score, precision_score, recall_score
 
 import torch
 from datasets import Dataset, load_metric
-from datasets.arrow_dataset import Batch
 from transformers.tokenization_utils_base import BatchEncoding, VERY_LARGE_INTEGER
 from transformers import (AutoModelForSequenceClassification, TrainingArguments, Trainer, DataCollatorWithPadding,
                           AutoTokenizer, TextClassificationPipeline, PreTrainedTokenizer, EvalPrediction,
@@ -412,7 +411,7 @@ class ModelHuggingFace(ModelClass):
         # yet we are leaving this here in case we need it later
         return Dataset.from_dict({'text': x_test.tolist()}).map(self._tokenize_function, batched=True)
 
-    def _tokenize_function(self, examples: Batch) -> BatchEncoding:
+    def _tokenize_function(self, examples: Dict[str, List]) -> BatchEncoding:
         '''Tokenizes input data
 
         Args:

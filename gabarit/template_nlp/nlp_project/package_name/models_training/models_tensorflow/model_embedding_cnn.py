@@ -29,7 +29,7 @@ import seaborn as sns
 import dill as pickle
 from typing import Union, Any, List, Callable
 
-from tensorflow.keras.optimizers import Adam
+from tensorflow.keras.optimizers.legacy import Adam
 from tensorflow.keras.models import Sequential
 from tensorflow.keras.preprocessing.text import Tokenizer
 from tensorflow.keras.models import load_model as load_model_keras

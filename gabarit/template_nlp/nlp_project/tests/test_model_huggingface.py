@@ -27,8 +27,6 @@ import torch
 import warnings
 import numpy as np
 import pandas as pd
-from datasets.arrow_dataset import Batch
-from transformers import TextClassificationPipeline
 from transformers.trainer_utils import EvalPrediction
 from transformers.models.distilbert.modeling_distilbert import PreTrainedModel
 from transformers.tokenization_utils_base import BatchEncoding, PreTrainedTokenizerBase
@@ -615,7 +613,7 @@ class ModelHuggingFaceTests(unittest.TestCase):
         # Create model
         model_dir = os.path.join(os.getcwd(), 'model_test_123456789')
         remove_dir(model_dir)
-        batch = Batch(data={'text': 'titi test test toto', 'label': 1})
+        batch = {'text': ['titi test test toto'], 'label': [1]}
 
         # Nominal case - tokenizer not set
         model = ModelHuggingFace(model_dir=model_dir, batch_size=8, epochs=2, multi_label=False)
