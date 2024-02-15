@@ -17,14 +17,27 @@
 
 """Functional schemas"""
 
-
-import json
 from typing import Any
-from starlette.responses import JSONResponse
 
-from .utils import NumpyArrayEncoder
+import numpy as np
+import orjson
+from starlette.responses import JSONResponse
 
 
 class NumpyJSONResponse(JSONResponse):
     def render(self, content: Any) -> bytes:
-        return json.dumps(content, cls=NumpyArrayEncoder).encode()
+        return orjson.dumps(content, option=orjson.OPT_SERIALIZE_NUMPY, default=default)
+
+
+def default(obj):
+    if isinstance(obj, set):
+        return list(obj)
+    elif isinstance(obj, np.ndarray):
+        return obj.tolist()
+    elif hasattr(obj, "dtype") and hasattr(obj, "astype") and hasattr(obj, "tolist"):
+        if np.issubdtype(obj.dtype, np.integer):
+            return obj.astype(int).tolist()
+        elif np.issubdtype(obj.dtype, np.number):
+            return obj.astype(float).tolist()
+
+    raise TypeError
