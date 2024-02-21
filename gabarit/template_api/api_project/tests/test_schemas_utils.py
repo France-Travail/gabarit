@@ -19,7 +19,6 @@ import orjson
 import pytest
 
 from {{package_name}}.routers.schemas import functional
-from
 
 def test_numpy_encoder():
     """Test the NumpyArrayEncoder that is used by default to handle numpy objects"""
