@@ -100,7 +100,7 @@ class Model:
         """
         settings = ModelSettings(**kwargs)
 
-        Model.LOGGER.info("Loading the model from {%s}", settings.model_path)
+        Model.LOGGER.info(f"Loading the model from {settings.model_path}")
         with settings.model_path.open("rb") as f:
             self._model = pickle.load(f)
 
