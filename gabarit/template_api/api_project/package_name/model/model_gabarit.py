@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -62,15 +61,6 @@ except ImportError:
 {%- endif %}
 
 
-
-# Manage paths
-CURRENT_DIR = Path()
-DEFAULT_DATA_DIR = CURRENT_DIR / "{{package_name}}-data"
-DEFAULT_MODELS_DIR = CURRENT_DIR / "{{package_name}}-models"
-
-logger = logging.getLogger(__name__)
-
-
 class ModelSettings(BaseSettings):
     """Download settings
 
@@ -82,6 +72,10 @@ class ModelSettings(BaseSettings):
     where you can declare the values of the variables and finally it sets the values
     to the default ones you can see above.
     """
+
+    # Manage paths
+    DEFAULT_DATA_DIR = Path() / "{{package_name}}-data"
+    DEFAULT_MODELS_DIR = Path() / "{{package_name}}-models"
 
     data_dir: Path = DEFAULT_DATA_DIR
     models_dir: Path = DEFAULT_MODELS_DIR
@@ -102,6 +96,9 @@ class ModelGabarit(Model):
     - _load_model has been redefined to use utils_models.load_model
     - predict has been redefined to use utils_models.predict
     """
+
+    LOGGER = logging.getLogger(__name__)
+
     def __init__(self, *args, **kwargs):
         """Object initialization
         By default, it initialize the attributes _model, _model_config and _loaded
@@ -165,7 +162,7 @@ class ModelGabarit(Model):
 
         # If the model already exists there is no need to download it
         if not settings.redownload and model_path.is_dir() and not any(model_path.iterdir()):
-            logger.info(f"The model is already dowloaded : {model_path} already exists")
+            ModelGabarit.LOGGER.info(f"The model is already dowloaded : {model_path} already exists")
             return True
 
         # Create models directory if it doesn not exists
@@ -188,13 +185,13 @@ class ModelGabarit(Model):
             model_archive_path = Path(tmpdir) / model_artifactory_path.name
 
             # Download model
-            logger.info(f"Downloading the model to : {model_path}")
+            ModelGabarit.LOGGER.info(f"Downloading the model to : {model_path}")
             with model_archive_path.open("wb") as out:
                 model_artifactory_path.writeto(out)
 
             # Unzip model
             shutil.unpack_archive(model_archive_path, model_path)
-            logger.info(f"Model downloaded")
+            ModelGabarit.LOGGER.info(f"Model downloaded")
 
-        logger.info(f"Model archive removed")
+        ModelGabarit.LOGGER.info(f"Model archive removed")
         return True

@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -34,14 +33,6 @@ from typing import Any, Tuple, Union
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
-# Manage paths
-CURRENT_DIR = Path()
-DEFAULT_MODELS_DIR = CURRENT_DIR / "{{package_name}}-models"
-DEFAULT_MODEL_PATH = DEFAULT_MODELS_DIR / "model.pkl"
-
-logger = logging.getLogger(__name__)
-
-
 class ModelSettings(BaseSettings):
     """Download settings
 
@@ -53,6 +44,10 @@ class ModelSettings(BaseSettings):
     where you can declare the values of the variables and finally it sets the values
     to the default ones you can see above.
     """
+
+    # Manage paths
+    DEFAULT_MODELS_DIR = Path() / "{{package_name}}-models"
+    DEFAULT_MODEL_PATH = DEFAULT_MODELS_DIR / "model.pkl"
 
     model_path: Path = DEFAULT_MODEL_PATH
 
@@ -66,12 +61,15 @@ class Model:
     This class loads the model from a .pkl file. The model must have a predict function.
     """
 
+    LOGGER = logging.getLogger(__name__)
+
     def __init__(self):
         '''Init. model class'''
         self._model = None
         self._model_conf = None
         self._model_explainer = None
         self._loaded = False
+
 
     def is_model_loaded(self):
         """return the state of the model"""
@@ -102,7 +100,7 @@ class Model:
         """
         settings = ModelSettings(**kwargs)
 
-        logger.info(f"Loading the model from {settings.model_path}")
+        Model.LOGGER.info("Loading the model from {%s}", settings.model_path)
         with settings.model_path.open("rb") as f:
             self._model = pickle.load(f)
 
@@ -110,10 +108,10 @@ class Model:
             "model_path": settings.model_path.name,
             "model_name": settings.model_path.stem,
         }
-        logger.info(f"Model loaded")
+        Model.LOGGER.info(f"Model loaded")
 
     @staticmethod
     def download_model(**kwargs) -> bool:
         """You should implement a download method to automatically download your model"""
-        logger.info("The function download_model is empty. Implement it to automatically download your model.")
+        Model.LOGGER.info("The function download_model is empty. Implement it to automatically download your model.")
         return True

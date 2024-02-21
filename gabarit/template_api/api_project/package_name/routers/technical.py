@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -34,8 +33,7 @@ router = APIRouter()
 )
 async def get_liveness() -> ReponseLiveness:
     """Liveness probe for k8s"""
-    liveness_msg = ReponseLiveness(alive="ok")
-    return liveness_msg
+    return ReponseLiveness(alive="ok")
 
 
 @router.get(
