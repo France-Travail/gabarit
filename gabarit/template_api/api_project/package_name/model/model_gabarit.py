@@ -39,7 +39,7 @@ import logging
 import tempfile
 import pandas as pd
 from pathlib import Path
-from typing import Any, Union
+from typing import Any, Union, ClassVar
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 from .model_base import Model
@@ -74,8 +74,8 @@ class ModelSettings(BaseSettings):
     """
 
     # Manage paths
-    DEFAULT_DATA_DIR = Path() / "{{package_name}}-data"
-    DEFAULT_MODELS_DIR = Path() / "{{package_name}}-models"
+    DEFAULT_DATA_DIR: ClassVar = Path() / "{{package_name}}-data"
+    DEFAULT_MODELS_DIR: ClassVar = Path() / "{{package_name}}-models"
 
     data_dir: Path = DEFAULT_DATA_DIR
     models_dir: Path = DEFAULT_MODELS_DIR

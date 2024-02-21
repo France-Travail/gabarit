@@ -29,7 +29,7 @@ download_model or predict depending on your needs.
 import logging
 import dill as pickle
 from pathlib import Path
-from typing import Any, Tuple, Union
+from typing import Any, Tuple, Union, ClassVar
 from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
@@ -46,8 +46,8 @@ class ModelSettings(BaseSettings):
     """
 
     # Manage paths
-    DEFAULT_MODELS_DIR = Path() / "{{package_name}}-models"
-    DEFAULT_MODEL_PATH = DEFAULT_MODELS_DIR / "model.pkl"
+    DEFAULT_MODELS_DIR: ClassVar = Path() / "{{package_name}}-models"
+    DEFAULT_MODEL_PATH: ClassVar = DEFAULT_MODELS_DIR / "model.pkl"
 
     model_path: Path = DEFAULT_MODEL_PATH
 
