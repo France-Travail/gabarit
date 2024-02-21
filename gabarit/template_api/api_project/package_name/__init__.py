@@ -17,20 +17,37 @@ import logging
 import os
 
 from .core.config import settings
-from .core.logtools import get_pattern_log
 
-level = settings.log_level
-
-logger = logging.getLogger(__name__)
-logger.setLevel(level)
-
-ch = logging.StreamHandler()
-ch.setLevel(logging.DEBUG)
-
-formatterJson = logging.Formatter(get_pattern_log())
-ch.setFormatter(formatterJson)
-
-logger.addHandler(ch)
+logging.config.dictConfig(
+    {
+        "version": 1,
+        "disable_existing_loggers": False,
+        "formatters": {
+            "default": {
+                "format":  f'{"date": "%(asctime)s", "level": "%(levelname)s", "message": "%(message)s", "version": "{settings.app_version}", "function": "File %(pathname)s, line %(lineno)d, in %(funcName)s", "logger": "%(name)s"}'
+            }
+        },
+        "handlers": {
+            "default": {
+                "class": "logging.StreamHandler",
+                "formatter": "default",
+                "stream": "ext://sys.stdout",
+            }
+        },
+        "loggers": {
+            "": {  # root logger
+                "handlers": ["default"],
+                "level": "WARNING",
+                "propagate": False,
+            },
+            "{{package_name}}": {
+                "handlers": ["default"],
+                "level": settings.svc_log_level,
+                "propagate": False
+            }
+        }
+    }
+)
 
 
 # Filter some non essential dependency logs :
