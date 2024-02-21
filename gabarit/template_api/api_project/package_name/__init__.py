@@ -52,7 +52,7 @@ logging.config.dictConfig(
             },
             "{{package_name}}": {
                 "handlers": ["default"],
-                "level": settings.svc_log_level,
+                "level": settings.log_level,
                 "propagate": False
             }
         }
