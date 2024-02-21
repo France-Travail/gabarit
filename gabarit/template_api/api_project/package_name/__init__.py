@@ -14,7 +14,7 @@
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 
-import logging
+import logging.config
 import os
 
 from .core.config import settings
