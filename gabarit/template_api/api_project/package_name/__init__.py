@@ -19,13 +19,22 @@ import os
 
 from .core.config import settings
 
+LOG_FORMAT = "{"
+'"date": "%(asctime)s", '
+'"level": "%(levelname)s", '
+'"message": "%(message)s", '
+f'"version": "{settings.app_version}", '
+'"function": "File %(pathname)s, line %(lineno)d, in %(funcName)s", '
+'"logger": "%(name)s"'
+"}"
+
 logging.config.dictConfig(
     {
         "version": 1,
         "disable_existing_loggers": False,
         "formatters": {
             "default": {
-                "format":  f'{"date": "%(asctime)s", "level": "%(levelname)s", "message": "%(message)s", "version": "{settings.app_version}", "function": "File %(pathname)s, line %(lineno)d, in %(funcName)s", "logger": "%(name)s"}'
+                "format": LOG_FORMAT
             }
         },
         "handlers": {
