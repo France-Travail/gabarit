@@ -1,0 +1,30 @@
+{
+    "version": 1,
+    "disable_existing_loggers": true,
+    "formatters": {
+      "default": {
+        "format": "{\"date\": \"%(asctime)s\", \"level\": \"%(levelname)s\", \"version\": \"%(version)s\", \"environnement\": \"%(environnement)s\", \"ip\": \"%(ip)s\", \"message\": \"%(message)s\"}"
+      }
+    },
+    "handlers": {
+      "default": {
+        "class": "logging.StreamHandler",
+        "formatter": "default",
+        "stream": "ext://sys.stdout"
+      }
+    },
+    "loggers": {
+      "uvicorn.access": {
+        "propagate": true
+      },
+      "uvicorn.error": {
+        "propagate": true
+      }
+    },
+    "root": {
+      "handlers": [
+        "default"
+      ]
+    }
+  }
+  
