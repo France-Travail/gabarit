@@ -128,7 +128,7 @@ def main(filename: str, x_col: Union[str, int], model_dir: str, y_col: Union[Lis
             y_true = df[y_col[0]]
             # No need to cast target in string, already done by the data loader
 
-        cols_to_add: List[pd.Series] = []  # You can add columns to save here
+        cols_to_add: List[str] = []  # You can add columns to save here
         series_to_add = [df[col] for col in cols_to_add]
         # Change model directory to save dir & get preds
         model.model_dir = save_dir
