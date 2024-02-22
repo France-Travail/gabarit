@@ -12,6 +12,7 @@ dependencies = [
     "uvicorn[standard]>=0.20,<1.0",
     "starlette-prometheus>=0.9,<1.0",
     "numpy>=1.19",
+    "orjson>=3.9.10",
     "dill==0.3.5.1",
     {%- if gabarit_package_spec %}
     "{{gabarit_package_spec}}",
