@@ -1,4 +1,4 @@
-name: Wheel setup - VISION
+name: Wheel setup - VISION < 3.10
 on:
   push:
     branches:
