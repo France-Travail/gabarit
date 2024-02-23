@@ -33,7 +33,12 @@ jobs:
         with:
           python-version: ${{ matrix.python-version }}
       - name: Install dependencies
+        # Free space as indicated here : https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
         run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
           python -m pip install --upgrade pip
           pip install wheel
           python setup.py sdist bdist_wheel
