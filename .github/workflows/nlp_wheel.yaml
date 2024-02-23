@@ -1,4 +1,4 @@
-name: Wheel setup - NLP
+name: Wheel setup - NLP < 3.10
 on:
   push:
     branches:
@@ -32,13 +32,15 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
-      - name: Install dependencies
+      - name: Free space
         # Free space as indicated here : https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
         run: |
           sudo rm -rf /usr/share/dotnet
           sudo rm -rf /opt/ghc
           sudo rm -rf "/usr/local/share/boost"
           sudo rm -rf "$AGENT_TOOLSDIRECTORY"
+      - name: Install dependencies
+        run: |
           python -m pip install --upgrade pip
           pip install wheel
           python setup.py sdist bdist_wheel
@@ -78,6 +80,13 @@ jobs:
         uses: actions/setup-python@v3
         with:
           python-version: ${{ matrix.python-version }}
+      - name: Free space
+        # Free space as indicated here : https://github.com/actions/runner-images/issues/2840#issuecomment-790492173
+        run: |
+          sudo rm -rf /usr/share/dotnet
+          sudo rm -rf /opt/ghc
+          sudo rm -rf "/usr/local/share/boost"
+          sudo rm -rf "$AGENT_TOOLSDIRECTORY"
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
