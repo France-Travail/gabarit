@@ -321,7 +321,7 @@ def main(filename: str, x_col: Union[str, int], y_col: List[Union[str, int]],
     ##############################################
 
     # Series to add
-    cols_to_add: List[pd.Series] = []  # You can add columns to save here
+    cols_to_add: List[str] = []  # You can add columns to save here
     series_to_add_train = [df_train[col] for col in cols_to_add]
     series_to_add_valid = [df_valid[col] for col in cols_to_add]
     gc.collect()  # In some cases, helps with OOMs
