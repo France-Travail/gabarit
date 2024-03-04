@@ -46,8 +46,8 @@ class ModelSettings(BaseSettings):
     """
 
     # Manage paths
-    DEFAULT_MODELS_DIR: ClassVar = Path() / "{{package_name}}-models"
-    DEFAULT_MODEL_PATH: ClassVar = DEFAULT_MODELS_DIR / "model.pkl"
+    DEFAULT_MODELS_DIR: ClassVar[Path] = Path() / "{{package_name}}-models"
+    DEFAULT_MODEL_PATH: ClassVar[Path] = DEFAULT_MODELS_DIR / "model.pkl"
 
     model_path: Path = DEFAULT_MODEL_PATH
 
