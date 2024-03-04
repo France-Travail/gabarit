@@ -74,8 +74,8 @@ class ModelSettings(BaseSettings):
     """
 
     # Manage paths
-    DEFAULT_DATA_DIR: ClassVar = Path() / "{{package_name}}-data"
-    DEFAULT_MODELS_DIR: ClassVar = Path() / "{{package_name}}-models"
+    DEFAULT_DATA_DIR: ClassVar[Path] = Path() / "{{package_name}}-data"
+    DEFAULT_MODELS_DIR: ClassVar[Path] = Path() / "{{package_name}}-models"
 
     data_dir: Path = DEFAULT_DATA_DIR
     models_dir: Path = DEFAULT_MODELS_DIR
