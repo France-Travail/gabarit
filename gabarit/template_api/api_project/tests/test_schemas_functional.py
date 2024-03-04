@@ -13,26 +13,29 @@
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
-import json
-import pytest
 import numpy as np
+import orjson
+import pytest
 
-from {{package_name}}.routers.schemas.utils import NumpyArrayEncoder
-
+from {{package_name}}.routers.schemas import functional
 
 def test_numpy_encoder():
     """Test the NumpyArrayEncoder that is used by default to handle numpy objects"""
     obj = np.array([0.1, 0.2], dtype=np.longdouble)
-    assert json.dumps(obj, cls=NumpyArrayEncoder) == "[0.1, 0.2]"
+    assert orjson.dumps(obj, option=orjson.OPT_SERIALIZE_NUMPY, default=functional.default).decode(
+        'utf-8') == "[0.1,0.2]"
 
     obj = {0.1, 0.2}
-    assert json.dumps(obj, cls=NumpyArrayEncoder) == "[0.1, 0.2]"
+    assert orjson.dumps(obj, option=orjson.OPT_SERIALIZE_NUMPY, default=functional.default).decode(
+        'utf-8') == "[0.1,0.2]"
 
     obj = np.array([1, 2], dtype=np.int16)
-    assert json.dumps(obj, cls=NumpyArrayEncoder) == "[1, 2]"
+    assert orjson.dumps(obj, option=orjson.OPT_SERIALIZE_NUMPY, default=functional.default).decode(
+        'utf-8') == "[1,2]"
 
     obj = np.array(["a", "b"])
-    assert json.dumps(obj, cls=NumpyArrayEncoder) == '["a", "b"]'
+    assert orjson.dumps(obj, option=orjson.OPT_SERIALIZE_NUMPY, default=functional.default).decode(
+        'utf-8') == '["a","b"]'
 
     with pytest.raises(TypeError):
-        assert json.dumps(str, cls=NumpyArrayEncoder)
+        assert orjson.dumps(str)
