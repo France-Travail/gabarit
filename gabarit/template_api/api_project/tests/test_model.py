@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify

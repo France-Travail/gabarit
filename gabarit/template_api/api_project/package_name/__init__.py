@@ -1,4 +1,3 @@
-#!/usr/bin/env python3
 # Copyright (C) <2018-2022>  <Agence Data Services, DSI Pôle Emploi>
 #
 # This program is free software: you can redistribute it and/or modify
@@ -13,7 +12,6 @@
 #
 # You should have received a copy of the GNU Affero General Public License
 # along with this program.  If not, see <https://www.gnu.org/licenses/>.
-
 
 import logging
 import os
@@ -33,6 +31,7 @@ formatterJson = logging.Formatter(get_pattern_log())
 ch.setFormatter(formatterJson)
 
 logger.addHandler(ch)
+
 
 # Filter some non essential dependency logs :
 # words_n_fun
