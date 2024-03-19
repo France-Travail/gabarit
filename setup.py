@@ -39,7 +39,7 @@ setup(
     long_description=long_description,
     long_description_content_type='text/markdown',
     author="Agence Data Services PE Nantes",
-    author_email="contactadsaiframeworks.00619@pole-emploi.fr",
+    author_email="drosdadssocle.00620@francetravail.fr",
     description="Kickstart your AI project as code",
     url="https://github.com/OSS-Pole-Emploi/gabarit",
     platforms=['windows', 'linux'],
