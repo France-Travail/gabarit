@@ -155,7 +155,7 @@ The pdf file is located in [pole-emploi.org](https://www.pole-emploi.org/accueil
 
 If you have any question/enquiry feel free to drop us a mail :
 
-[:fontawesome-solid-paper-plane: Contact](mailto:contactadsaiframeworks.00619@pole-emploi.fr){ .md-button }
+[:fontawesome-solid-paper-plane: Contact](mailto:drosdadssocle.00620@francetravail.fr){ .md-button }
 
 Maintenance team :
 

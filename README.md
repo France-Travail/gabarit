@@ -168,7 +168,7 @@ The pdf file is located in [pole-emploi.org](https://www.pole-emploi.org/accueil
 
 ## Contacts
 
-If you have any question/enquiry feel free to drop us an email : drosdadsopportunitesia.00620@pole-emploi.fr
+If you have any question/enquiry feel free to drop us an email : drosdadssocle.00620@francetravail.fr
 
 - Gaëlle JOUIS   - Data Scientist
 - Gautier SOLARD - Data Scientist
