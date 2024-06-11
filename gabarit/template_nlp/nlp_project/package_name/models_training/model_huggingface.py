@@ -368,7 +368,7 @@ class ModelHuggingFace(ModelClass):
         Returns:
             (datasets.Dataset): Prepared dataset
         '''
-        # TMP FIX : https://github.com/OSS-Pole-Emploi/gabarit/issues/98
+        # TMP FIX : https://github.com/France-Travail/gabarit/issues/98
         # We can't call this function if the tokenizer is not set. We will pby change this object to a property.
         # This isn't really a problem as this function should not be called outside the class & tokenizer is set in the fit function.
         if self.tokenizer is None:

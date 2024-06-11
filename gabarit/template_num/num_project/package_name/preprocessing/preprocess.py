@@ -91,7 +91,7 @@ def preprocess_P1() -> ColumnTransformer:
     # Please try to use lambdas or local function, without any dependency. It reduces risk of changes.
     # If you still have to use a module function, try to never change it later on.
     # https://stackoverflow.com/questions/73788824/how-can-i-save-reload-a-functiontransformer-object-and-expect-it-to-always-wor
-    # https://github.com/OSS-Pole-Emploi/gabarit/issues/63
+    # https://github.com/France-Travail/gabarit/issues/63
     # /!\
 
     # /!\ EXEMPLE HERE /!\

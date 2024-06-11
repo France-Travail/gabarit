@@ -6,8 +6,8 @@ This project is distributed under the GNU AFFERO GENERAL PUBLIC LICENSE V3.0. Re
 
 ## CORE TEAM
 
-This project is developed by the "Tribu Socle" of the Data Services Agency of the "DSI Pôle Emploi".
-TODO: add an email address
+This project is developed by the "Tribu Nyx" of the Data Services Agency of the "DSI Pôle Emploi".
+You can contact us at the following address : drosdadssocle.00620@francetravail.fr
 
 ## Contributions
 

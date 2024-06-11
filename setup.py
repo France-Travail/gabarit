@@ -41,7 +41,7 @@ setup(
     author="Agence Data Services PE Nantes",
     author_email="drosdadssocle.00620@francetravail.fr",
     description="Kickstart your AI project as code",
-    url="https://github.com/OSS-Pole-Emploi/gabarit",
+    url="https://github.com/France-Travail/gabarit",
     platforms=['windows', 'linux'],
     python_requires='>=3.8',
     include_package_data=True,

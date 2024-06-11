@@ -39,4 +39,4 @@ Here is the structure of a project generated with `generate_nlp_project` command
     If you used a custom preprocessing function `funcA` with `FunctionTransformer`, be aware that the pickled pipeline 
     may not return wanted results if you later modify `funcA` definition. 
     
-    Please check [gabarit/issues/63](https://github.com/OSS-Pole-Emploi/gabarit/issues/63)
+    Please check [gabarit/issues/63](https://github.com/France-Travail/gabarit/issues/63)
