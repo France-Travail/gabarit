@@ -112,7 +112,7 @@ If the `make` tool is available, you can use the features provided in `Makefile`
 To generate this documentation locally first clone the gabarit repository : 
 
 ```bash
-git clone https://github.com/OSS-Pole-Emploi/gabarit.git
+git clone https://github.com/France-Travail/gabarit.git
 cd gabarit
 ```
 
@@ -156,10 +156,3 @@ The pdf file is located in [pole-emploi.org](https://www.pole-emploi.org/accueil
 If you have any question/enquiry feel free to drop us a mail :
 
 [:fontawesome-solid-paper-plane: Contact](mailto:drosdadssocle.00620@francetravail.fr){ .md-button }
-
-Maintenance team :
-
-- Alexandre GAREL - Data Scientist
-- Nicolas GREFFARD - Data Scientist
-- Gautier SOLARD - Data Scientist
-- Nicolas TOUZOT - Product Owner

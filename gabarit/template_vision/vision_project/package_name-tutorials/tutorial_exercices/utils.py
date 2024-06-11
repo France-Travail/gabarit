@@ -16,11 +16,11 @@ from tqdm import tqdm
 
 DATA_PATH = get_data_path()
 CLASSIF_DATA_URL = (
-    "https://api.github.com/repos/OSS-Pole-Emploi/"
+    "https://api.github.com/repos/France-Travail/"
     "gabarit/contents/gabarit/template_vision/vision_data/dataset_v3"
 )
 OBJ_DETECT_DATA_URL = (
-    "https://api.github.com/repos/OSS-Pole-Emploi/"
+    "https://api.github.com/repos/France-Travail/"
     "gabarit/contents/gabarit/template_vision/vision_data/dataset_object_detection"
 )
 

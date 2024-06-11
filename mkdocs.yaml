@@ -1,6 +1,6 @@
 site_name: Gabarit documentation
-repo_url: https://github.com/OSS-Pole-Emploi/gabarit
-repo_name: OSS-Pole-Emploi/gabarit
+repo_url: https://github.com/France-Travail/gabarit
+repo_name: France-Travail/gabarit
 
 theme:
   name: material

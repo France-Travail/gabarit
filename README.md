@@ -1,19 +1,19 @@
 [![pypi badge](https://img.shields.io/pypi/v/gabarit.svg)](https://pypi.python.org/pypi/gabarit)
-![NLP tests < 3.10](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/nlp_build_tests.yaml/badge.svg)
-![NUM tests < 3.10](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/num_build_tests.yaml/badge.svg)
-![VISION tests < 3.10](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/vision_build_tests.yaml/badge.svg)
-![API tests < 3.10](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/api_build_tests.yaml/badge.svg)
-![NLP wheel < 3.10](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/nlp_wheel.yaml/badge.svg)
-![NUM wheel < 3.10](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/num_wheel.yaml/badge.svg)
-![VISION wheel < 3.10](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/vision_wheel.yaml/badge.svg)
-![NLP tests >= 3.10](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/nlp_build_tests_310.yaml/badge.svg)
-![NUM tests >= 3.10](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/num_build_tests_310.yaml/badge.svg)
-![VISION tests >= 3.10](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/vision_build_tests_310.yaml/badge.svg)
-![API tests >= 3.10](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/api_build_tests_310.yaml/badge.svg)
-![NLP wheel >= 3.10](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/nlp_wheel_310.yaml/badge.svg)
-![NUM wheel >= 3.10](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/num_wheel_310.yaml/badge.svg)
-![VISION wheel >= 3.10](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/vision_wheel_310.yaml/badge.svg)
-![Documentation](https://github.com/OSS-Pole-Emploi/gabarit/actions/workflows/docs.yaml/badge.svg)
+![NLP tests < 3.10](https://github.com/France-Travail/gabarit/actions/workflows/nlp_build_tests.yaml/badge.svg)
+![NUM tests < 3.10](https://github.com/France-Travail/gabarit/actions/workflows/num_build_tests.yaml/badge.svg)
+![VISION tests < 3.10](https://github.com/France-Travail/gabarit/actions/workflows/vision_build_tests.yaml/badge.svg)
+![API tests < 3.10](https://github.com/France-Travail/gabarit/actions/workflows/api_build_tests.yaml/badge.svg)
+![NLP wheel < 3.10](https://github.com/France-Travail/gabarit/actions/workflows/nlp_wheel.yaml/badge.svg)
+![NUM wheel < 3.10](https://github.com/France-Travail/gabarit/actions/workflows/num_wheel.yaml/badge.svg)
+![VISION wheel < 3.10](https://github.com/France-Travail/gabarit/actions/workflows/vision_wheel.yaml/badge.svg)
+![NLP tests >= 3.10](https://github.com/France-Travail/gabarit/actions/workflows/nlp_build_tests_310.yaml/badge.svg)
+![NUM tests >= 3.10](https://github.com/France-Travail/gabarit/actions/workflows/num_build_tests_310.yaml/badge.svg)
+![VISION tests >= 3.10](https://github.com/France-Travail/gabarit/actions/workflows/vision_build_tests_310.yaml/badge.svg)
+![API tests >= 3.10](https://github.com/France-Travail/gabarit/actions/workflows/api_build_tests_310.yaml/badge.svg)
+![NLP wheel >= 3.10](https://github.com/France-Travail/gabarit/actions/workflows/nlp_wheel_310.yaml/badge.svg)
+![NUM wheel >= 3.10](https://github.com/France-Travail/gabarit/actions/workflows/num_wheel_310.yaml/badge.svg)
+![VISION wheel >= 3.10](https://github.com/France-Travail/gabarit/actions/workflows/vision_wheel_310.yaml/badge.svg)
+![Documentation](https://github.com/France-Travail/gabarit/actions/workflows/docs.yaml/badge.svg)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Generic badge](https://img.shields.io/badge/python-3.8|3.9|3.10|3.11-blue.svg)](https://shields.io/)
 
@@ -36,7 +36,7 @@ Gabarit provides you with a set of python templates (a.k.a. frameworks) for your
 6. [Ethics](#ethics)
 7. [Contacts](#contacts)
 
-**📚 Documentation :** [https://oss-pole-emploi.github.io/gabarit](https://oss-pole-emploi.github.io/gabarit) <!-- omit in toc -->
+**📚 Documentation :** [https://france-travail.github.io/gabarit](https://france-travail.github.io/gabarit) <!-- omit in toc -->
 
 ---
 
