@@ -10,7 +10,6 @@ export LD_BIND_NOW=1
 download-model
 
 uvicorn {{package_name}}.application:app \
-  --log-config log_conf.json \
   --host $HOST \
   --port $PORT \
   --workers $WORKERS
