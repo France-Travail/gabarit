@@ -116,6 +116,7 @@ jobs:
           name: demonstrator_screenshot
           path: gabarit/template_num/num_tests/demonstrator_screenshot.png
           retention-days: 2
+          overwrite: true
       - name: Test demonstrator
         run: |
           # Export display (needed ?)
