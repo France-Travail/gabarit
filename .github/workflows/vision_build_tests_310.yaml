@@ -113,11 +113,12 @@ jobs:
           cd gabarit/template_vision/vision_tests
           python selenium_screenshot.py -u 'http://localhost:8501' -o './demonstrator_screenshot.png'
       - name: Archive screenshot for 2 days
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: demonstrator_screenshot
           path: gabarit/template_vision/vision_tests/demonstrator_screenshot.png
           retention-days: 2
+          overwrite: true
       - name: Test demonstrator
         run: |
           # Export display (needed ?)
